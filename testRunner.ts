@@ -1,8 +1,9 @@
 import { JSDOM } from "jsdom";
 import { compile } from "svelte/compiler";
-import { readFileSync } from "fs";
-import path from "path";
+import { readFileSync, writeFileSync, mkdirSync, existsSync } from "fs";
+import * as path from "path";
 import { fireEvent } from "@testing-library/dom";
+import { Script, createContext } from "vm";
 
 // Setup a DOM environment for our tests
 const setupDOM = () => {
@@ -15,37 +16,50 @@ const setupDOM = () => {
   global.window = dom.window;
   global.document = dom.window.document;
   global.navigator = dom.window.navigator;
-
-  // Add all the window properties to the global namespace
-  Object.defineProperties(global, {
-    ...Object.getOwnPropertyDescriptors(dom.window),
-    ...Object.getOwnPropertyDescriptors(global),
-  });
-
-  // Required for DOM methods
-  global.Element = dom.window.Element;
   global.HTMLElement = dom.window.HTMLElement;
+  global.CustomEvent = dom.window.CustomEvent;
+
+  // Set up other browser globals that Svelte needs
+  global.location = dom.window.location;
   global.getComputedStyle = dom.window.getComputedStyle;
+  global.Element = dom.window.Element;
+
+  return dom;
 };
+
+// Create temp directory for compiled components
+const tempDir = path.resolve("./temp_compiled_components");
+if (!existsSync(tempDir)) {
+  mkdirSync(tempDir, { recursive: true });
+}
 
 // Compile a Svelte component
 const compileSvelteComponent = (filePath) => {
   try {
     const source = readFileSync(filePath, "utf-8");
+    const fileName = path.basename(filePath, ".svelte");
 
+    // Compile the component
     const result = compile(source, {
-      filename: path.basename(filePath),
+      filename: fileName,
+      name: fileName,
       generate: "client",
       dev: true,
-      runes: true, // Enable Svelte 5 runes
+      runes: true,
     });
 
-    // Create a module from the compiled code
-    const module = { exports: {} };
-    const fn = new Function("module", "exports", result.js.code);
-    fn(module, module.exports);
+    // Output the compiled code to a file for inspection
+    const tempFile = path.join(tempDir, `${fileName}.js`);
+    writeFileSync(tempFile, result.js.code);
 
-    return module.exports.default;
+    // Log the first few lines of the compiled code for debugging
+    console.log("\nCompiled component (first 3 lines):");
+    console.log(result.js.code.split("\n").slice(0, 3).join("\n") + "...\n");
+
+    return {
+      code: result.js.code,
+      filePath: tempFile,
+    };
   } catch (err) {
     console.error(`Failed to compile Svelte component: ${filePath}`);
     console.error(err);
@@ -55,10 +69,72 @@ const compileSvelteComponent = (filePath) => {
 
 // Custom render function for Svelte components
 const render = (componentPath, props = {}) => {
-  // Compile the component
-  const Component = compileSvelteComponent(componentPath);
+  // Setup a fresh DOM for each test
+  const dom = setupDOM();
 
-  // Create a target element
+  // Compile the component
+  const { code, filePath } = compileSvelteComponent(componentPath);
+
+  // Create a context with necessary globals
+  const context = {
+    ...global,
+    window: global.window,
+    document: global.document,
+    console,
+    setTimeout,
+    clearTimeout,
+    setInterval,
+    clearInterval,
+  };
+
+  // Execute the compiled code to get the component constructor
+  let Component;
+  try {
+    // Execute the code in a VM context
+    const script = new Script(`
+      ${code}
+      
+      // Extract the component constructor
+      Component = typeof module !== 'undefined' ? module.exports.default : null;
+    `);
+
+    const vmContext = createContext(context);
+    script.runInContext(vmContext);
+
+    // Get the component constructor from the context
+    Component = vmContext.Component;
+
+    if (!Component) {
+      // Try to find the component by examining the code
+      // Most Svelte compiled output follows a pattern like: function Component(...)
+      const match = code.match(/function\s+([A-Za-z0-9_$]+)\s*\(options\)/);
+      if (match && match[1]) {
+        const componentName = match[1];
+
+        // Re-run with the extracted component name
+        const componentExtractScript = new Script(`
+          ${code}
+          
+          // Extract the component constructor by name
+          Component = typeof ${componentName} !== 'undefined' ? ${componentName} : null;
+        `);
+
+        componentExtractScript.runInContext(vmContext);
+        Component = vmContext.Component;
+      }
+    }
+
+    if (!Component) {
+      throw new Error(
+        `Could not extract component constructor from compiled code. Check ${filePath} for details.`
+      );
+    }
+  } catch (err) {
+    console.error("Error executing compiled component code:", err);
+    throw err;
+  }
+
+  // Create a target element in the DOM
   const target = document.createElement("div");
   document.body.appendChild(target);
 
@@ -70,15 +146,15 @@ const render = (componentPath, props = {}) => {
 
   // Helper to get elements by text content
   const getByText = (text) => {
-    const element = [...document.querySelectorAll("*")].find(
+    const elements = [...document.querySelectorAll("*")].filter(
       (el) => el.textContent === text
     );
 
-    if (!element) {
+    if (elements.length === 0) {
       throw new Error(`Could not find element with text: ${text}`);
     }
 
-    return element;
+    return elements[0];
   };
 
   return {
@@ -122,9 +198,6 @@ const runTest = async (name, testFn) => {
 
 // Export a function to dynamically run tests
 export async function runTests(tests) {
-  // Setup DOM once
-  setupDOM();
-
   console.log("Running tests...");
   const results = [];
 
