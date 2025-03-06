@@ -1,7 +1,10 @@
 import { JSDOM } from "jsdom";
-import { render as svelteTLRender, fireEvent } from "@testing-library/svelte";
+import { compile } from "svelte/compiler";
+import { readFileSync } from "fs";
+import path from "path";
+import { fireEvent } from "@testing-library/dom";
 
-// Setup a minimal browser-like environment
+// Setup a DOM environment for our tests
 const setupDOM = () => {
   const dom = new JSDOM("<!DOCTYPE html><html><body></body></html>", {
     url: "http://localhost",
@@ -19,22 +22,72 @@ const setupDOM = () => {
     ...Object.getOwnPropertyDescriptors(global),
   });
 
-  // Required for some DOM testing library methods
+  // Required for DOM methods
   global.Element = dom.window.Element;
   global.HTMLElement = dom.window.HTMLElement;
   global.getComputedStyle = dom.window.getComputedStyle;
 };
 
-// Wrap the render function to always return useful queries
-const render = (Component, options = {}) => {
-  const result = svelteTLRender(Component, options);
+// Compile a Svelte component
+const compileSvelteComponent = (filePath) => {
+  try {
+    const source = readFileSync(filePath, "utf-8");
+
+    const result = compile(source, {
+      filename: path.basename(filePath),
+      generate: "client",
+      dev: true,
+      runes: true, // Enable Svelte 5 runes
+    });
+
+    // Create a module from the compiled code
+    const module = { exports: {} };
+    const fn = new Function("module", "exports", result.js.code);
+    fn(module, module.exports);
+
+    return module.exports.default;
+  } catch (err) {
+    console.error(`Failed to compile Svelte component: ${filePath}`);
+    console.error(err);
+    throw err;
+  }
+};
+
+// Custom render function for Svelte components
+const render = (componentPath, props = {}) => {
+  // Compile the component
+  const Component = compileSvelteComponent(componentPath);
+
+  // Create a target element
+  const target = document.createElement("div");
+  document.body.appendChild(target);
+
+  // Instantiate the component
+  const component = new Component({
+    target,
+    props,
+  });
+
+  // Helper to get elements by text content
+  const getByText = (text) => {
+    const element = [...document.querySelectorAll("*")].find(
+      (el) => el.textContent === text
+    );
+
+    if (!element) {
+      throw new Error(`Could not find element with text: ${text}`);
+    }
+
+    return element;
+  };
 
   return {
-    ...result,
-    getByText: (text) => {
-      const element = result.getByText(text);
-      if (!element) throw new Error(`Element with text "${text}" not found`);
-      return element;
+    component,
+    getByText,
+    // Method to cleanup the component
+    unmount: () => {
+      component.$destroy();
+      target.remove();
     },
   };
 };

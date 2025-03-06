@@ -5,14 +5,16 @@ import {
   assertEquals,
   assertExists,
 } from "./testRunner";
-import Counter from "./Counter.svelte";
+import path from "path";
 
 async function main() {
+  const counterPath = path.resolve("./Counter.svelte");
+
   const tests = [
     {
       name: "renders with initial count of 0",
       test: async () => {
-        const { getByText } = render(Counter);
+        const { getByText } = render(counterPath);
         const countElement = getByText("0");
         assertExists(countElement, "Should display initial count of 0");
       },
@@ -20,7 +22,7 @@ async function main() {
     {
       name: "increments the count when + button is clicked",
       test: async () => {
-        const { getByText } = render(Counter);
+        const { getByText } = render(counterPath);
         const incrementButton = getByText("+");
 
         await fireEvent.click(incrementButton);
@@ -32,7 +34,7 @@ async function main() {
     {
       name: "decrements the count when - button is clicked",
       test: async () => {
-        const { getByText } = render(Counter);
+        const { getByText } = render(counterPath);
 
         // First increment to 1
         const incrementButton = getByText("+");
@@ -51,7 +53,7 @@ async function main() {
   // Run all tests
   const results = await runTests(tests);
 
-  // You can inspect or process the results programmatically
+  // Process the results
   if (results.passed) {
     console.log("All tests passed! 🎉");
   } else {
