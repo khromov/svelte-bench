@@ -1,4 +1,10 @@
-import { runTests, render, fireEvent, assertEquals } from "./testRunner";
+import {
+  runTests,
+  render,
+  fireEvent,
+  assertEquals,
+  assertExists,
+} from "./testRunner";
 import Counter from "./Counter.svelte";
 
 async function main() {
@@ -8,7 +14,7 @@ async function main() {
       test: async () => {
         const { getByText } = render(Counter);
         const countElement = getByText("0");
-        assertEquals(!!countElement, true, "Should display initial count of 0");
+        assertExists(countElement, "Should display initial count of 0");
       },
     },
     {
@@ -20,7 +26,7 @@ async function main() {
         await fireEvent.click(incrementButton);
 
         const countElement = getByText("1");
-        assertEquals(!!countElement, true, "Count should be incremented to 1");
+        assertExists(countElement, "Count should be incremented to 1");
       },
     },
     {
@@ -37,11 +43,7 @@ async function main() {
         await fireEvent.click(decrementButton);
 
         const countElement = getByText("0");
-        assertEquals(
-          !!countElement,
-          true,
-          "Count should be decremented back to 0"
-        );
+        assertExists(countElement, "Count should be decremented back to 0");
       },
     },
   ];

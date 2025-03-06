@@ -1,6 +1,5 @@
 import { JSDOM } from "jsdom";
-import { render, fireEvent } from "@testing-library/svelte";
-import "@testing-library/jest-dom";
+import { render as svelteTLRender, fireEvent } from "@testing-library/svelte";
 
 // Setup a minimal browser-like environment
 const setupDOM = () => {
@@ -26,10 +25,31 @@ const setupDOM = () => {
   global.getComputedStyle = dom.window.getComputedStyle;
 };
 
-// Simple test assertion for assertEquals
-const assertEquals = (actual, expected, message = "") => {
+// Wrap the render function to always return useful queries
+const render = (Component, options = {}) => {
+  const result = svelteTLRender(Component, options);
+
+  return {
+    ...result,
+    getByText: (text) => {
+      const element = result.getByText(text);
+      if (!element) throw new Error(`Element with text "${text}" not found`);
+      return element;
+    },
+  };
+};
+
+// Simple assertion functions
+export const assertEquals = (actual, expected, message = "") => {
   if (actual !== expected) {
     throw new Error(`${message} Expected ${expected}, got ${actual}`);
+  }
+  return true;
+};
+
+export const assertExists = (element, message = "") => {
+  if (!element) {
+    throw new Error(`${message} Element should exist but was not found`);
   }
   return true;
 };
@@ -74,4 +94,4 @@ export async function runTests(tests) {
   };
 }
 
-export { render, fireEvent, assertEquals };
+export { render, fireEvent };
