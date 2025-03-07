@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from "@testing-library/svelte";
+import { render, screen } from "@testing-library/svelte";
 import { expect, test, describe } from "vitest";
 import userEvent from "@testing-library/user-event";
 import Counter from "./Counter.svelte"; // Adjust the path to your component
