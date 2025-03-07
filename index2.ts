@@ -29,10 +29,17 @@ async function compileAndRenderComponent() {
     } 
   </style>
 `;
-
+    // https://github.com/vivalence/Svelte-Widget-Demo/blob/master/server/bundler.js
     // Compile the component with client-side rendering
     const { js, css } = compile(source, {
+      name: "Counter",
+      customElement: true,
+      css: "injected",
       generate: "client",
+      discloseVersion: false,
+      //compatibility: {
+      //  componentApi: 4,
+      //},
       dev: false,
       runes: true,
     });
