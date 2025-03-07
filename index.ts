@@ -18,7 +18,7 @@ async function runCounterTests(method = "start") {
 
   try {
     console.log("🔍 Resolving test file path...");
-    const testFilePath = resolve(process.cwd(), "./Counter.test.js");
+    const testFilePath = resolve(process.cwd(), "./Counter.test.ts");
     console.log(`📁 Test file: ${testFilePath}`);
 
     let vitest;
