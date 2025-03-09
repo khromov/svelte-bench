@@ -5,6 +5,7 @@ export class OpenAIProvider implements LLMProvider {
   private client: OpenAI;
   private modelId: string;
   name = "OpenAI";
+  private readonly availableModels = ["gpt-4o"];
 
   constructor(modelId?: string) {
     const apiKey = process.env.OPENAI_API_KEY;
@@ -12,7 +13,7 @@ export class OpenAIProvider implements LLMProvider {
       throw new Error("OPENAI_API_KEY environment variable is required");
     }
     this.client = new OpenAI({ apiKey });
-    this.modelId = modelId || process.env.OPENAI_MODEL || "gpt-4o";
+    this.modelId = modelId || this.availableModels[0];
   }
 
   /**
@@ -55,6 +56,14 @@ export class OpenAIProvider implements LLMProvider {
         }`
       );
     }
+  }
+
+  /**
+   * Get all available models for this provider
+   * @returns Array of model identifiers
+   */
+  getModels(): string[] {
+    return [...this.availableModels];
   }
 
   /**

@@ -16,6 +16,12 @@ export interface LLMProvider {
   generateCode(prompt: string): Promise<string>;
 
   /**
+   * Get all available models for this provider
+   * @returns Array of model identifiers
+   */
+  getModels(): string[];
+
+  /**
    * Get the model identifier that was used for generation
    * @returns The model identifier string
    */
@@ -60,11 +66,9 @@ export async function getLLMProvider(
 export async function getAllLLMProviders(): Promise<ProviderWithModel[]> {
   const providers: ProviderWithModel[] = [];
 
-  // OpenAI provider models
-  const openaiModels = (process.env.OPENAI_MODELS || "gpt-4o")
-    .split(",")
-    .map((model) => model.trim());
-  for (const modelId of openaiModels) {
+  // OpenAI provider
+  const openaiProvider = await getLLMProvider("openai");
+  for (const modelId of openaiProvider.getModels()) {
     const provider = await getLLMProvider("openai", modelId);
     providers.push({
       provider,
@@ -73,13 +77,9 @@ export async function getAllLLMProviders(): Promise<ProviderWithModel[]> {
     });
   }
 
-  // Anthropic provider models
-  const anthropicModels = (
-    process.env.ANTHROPIC_MODELS || "claude-3-7-sonnet-20250219"
-  )
-    .split(",")
-    .map((model) => model.trim());
-  for (const modelId of anthropicModels) {
+  // Anthropic provider
+  const anthropicProvider = await getLLMProvider("anthropic");
+  for (const modelId of anthropicProvider.getModels()) {
     const provider = await getLLMProvider("anthropic", modelId);
     providers.push({
       provider,

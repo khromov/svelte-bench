@@ -5,6 +5,10 @@ export class AnthropicProvider implements LLMProvider {
   private client: Anthropic;
   private modelId: string;
   name = "Anthropic";
+  private readonly availableModels = [
+    "claude-3-sonnet-20240229",
+    "claude-3-7-sonnet-20250219",
+  ];
 
   constructor(modelId?: string) {
     const apiKey = process.env.ANTHROPIC_API_KEY;
@@ -12,8 +16,7 @@ export class AnthropicProvider implements LLMProvider {
       throw new Error("ANTHROPIC_API_KEY environment variable is required");
     }
     this.client = new Anthropic({ apiKey });
-    this.modelId =
-      modelId || process.env.ANTHROPIC_MODEL || "claude-3-7-sonnet-20250219";
+    this.modelId = modelId || this.availableModels[1]; // Default to claude-3-7-sonnet
   }
 
   /**
@@ -60,6 +63,14 @@ export class AnthropicProvider implements LLMProvider {
         }`
       );
     }
+  }
+
+  /**
+   * Get all available models for this provider
+   * @returns Array of model identifiers
+   */
+  getModels(): string[] {
+    return [...this.availableModels];
   }
 
   /**
