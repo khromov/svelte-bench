@@ -292,21 +292,30 @@
       background-color: #f8fafc;
     }
     
-    .benchmark-item a {
-      display: block;
+    .benchmark-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .benchmark-link {
       text-decoration: none;
       color: #2563eb;
       font-size: 16px;
     }
     
-    .benchmark-item a:hover {
+    .benchmark-link:hover {
       text-decoration: underline;
     }
     
-    .benchmark-date {
+    .json-link {
+      font-size: 12px;
       color: #666;
-      font-size: 14px;
-      margin-top: 5px;
+      text-decoration: none;
+    }
+    
+    .json-link:hover {
+      text-decoration: underline;
     }
   </style>
 </head>
@@ -324,11 +333,11 @@
       <ul class="benchmark-list">
         <% benchmarkFiles.forEach(file => { %>
           <li class="benchmark-item">
-            <a href="<%= file.name.replace('.json', '.html') %>">
-              <%= file.name.replace('benchmark-results-', '').replace('.json', '').replace(/-/g, ':').split('T')[0] %>
-            </a>
-            <div class="benchmark-date">
-              JSON: <a href="<%= file.name %>" download><%= file.name %></a>
+            <div class="benchmark-row">
+              <a href="<%= file.name.replace('.json', '.html') %>" class="benchmark-link">
+                <%= file.name.replace('.json', '') %>
+              </a>
+              <a href="<%= file.name %>" download class="json-link">JSON</a>
             </div>
           </li>
         <% }); %>
