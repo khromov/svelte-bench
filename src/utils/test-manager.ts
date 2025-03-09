@@ -161,15 +161,31 @@ export async function runAllTests(
 }
 
 /**
+ * Ensure the benchmarks directory exists
+ */
+export async function ensureBenchmarksDir(): Promise<void> {
+  const benchmarksDir = path.resolve(process.cwd(), "benchmarks");
+  try {
+    await fs.mkdir(benchmarksDir, { recursive: true });
+  } catch (error) {
+    console.error("Error creating benchmarks directory:", error);
+    throw error;
+  }
+}
+
+/**
  * Save benchmark results to a file
  */
 export async function saveBenchmarkResults(
   results: BenchmarkResult[]
 ): Promise<string> {
   try {
+    // Ensure the benchmarks directory exists
+    await ensureBenchmarksDir();
+
     const timestamp = new Date().toISOString().replace(/:/g, "-");
     const filename = `benchmark-results-${timestamp}.json`;
-    const filePath = path.resolve(process.cwd(), filename);
+    const filePath = path.resolve(process.cwd(), "benchmarks", filename);
 
     await fs.writeFile(filePath, JSON.stringify(results, null, 2));
     console.log(`📊 Saved benchmark results to ${filePath}`);

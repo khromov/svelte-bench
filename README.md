@@ -35,12 +35,28 @@ npm start
 LLM_PROVIDER=openai OPENAI_API_KEY=your_api_key_here npm start
 ```
 
+## Visualizing Results
+
+After running the benchmark, you can visualize the results using the built-in visualization tool:
+
+```bash
+npm run visualize
+```
+
+This will start a local web server at http://localhost:3000 where you can:
+
+- Select from different benchmark runs
+- View test results
+- Examine the generated code for each test
+- See details about test success/failure
+
 ## Directory Structure
 
 - `src/llms/`: LLM provider integrations
 - `src/tests/`: Test specifications (prompts and tests)
 - `src/utils/`: Utility functions for file operations and test running
 - `tmp/`: Temporary directory for generated files (cleaned before and after tests)
+- `benchmarks/`: Directory for storing benchmark results
 
 ## Adding New Tests
 
@@ -74,4 +90,4 @@ SvelteBench uses the following environment variables, which can be set in the `.
 
 ## Benchmark Results
 
-After running the benchmark, results are saved to a JSON file in the project root directory. The file is named `benchmark-results-{timestamp}.json`.
+After running the benchmark, results are saved to a JSON file in the `benchmarks` directory. The file is named `benchmark-results-{timestamp}.json`.

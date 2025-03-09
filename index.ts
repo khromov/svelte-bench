@@ -4,6 +4,7 @@ import "dotenv/config";
 import { getLLMProvider } from "./src/llms";
 import { ensureTmpDir, cleanTmpDir } from "./src/utils/file";
 import { runAllTests, saveBenchmarkResults } from "./src/utils/test-manager";
+import { ensureRequiredDirectories } from "./src/utils/ensure-dirs";
 
 /**
  * Main function to run the benchmark
@@ -12,8 +13,8 @@ async function runBenchmark() {
   console.log("🚀 Starting SvelteBench...");
 
   try {
-    // Ensure tmp directory exists
-    await ensureTmpDir();
+    // Ensure required directories exist
+    await ensureRequiredDirectories();
 
     // Clean tmp directory
     await cleanTmpDir();
