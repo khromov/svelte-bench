@@ -11,11 +11,8 @@ SvelteBench evaluates LLM-generated Svelte components by testing them against pr
 ## Setup
 
 ```bash
-# Install dependencies
+nvm use
 npm install
-
-# Or if using bun
-bun install
 
 # Create .env file from example
 cp .env.example .env
