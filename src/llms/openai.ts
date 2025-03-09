@@ -34,7 +34,7 @@ export class OpenAIProvider implements LLMProvider {
           },
           { role: "user", content: prompt },
         ],
-        temperature: 0.7,
+        // temperature: 0.7,
       });
 
       const generatedCode = completion.choices[0]?.message.content || "";
