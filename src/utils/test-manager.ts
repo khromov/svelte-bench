@@ -78,10 +78,18 @@ export async function runSingleTest(
 
     // Copy the test file to the tmp directory
     const testContent = await readFile(test.testPath);
-    const modifiedTestContent = testContent.replace(
-      /import .* from ".*"/,
-      `import ${test.name} from "./${test.name}.svelte"`
-    );
+
+    // Fix import paths - find any imports referencing our component and fix the path
+    // This is more robust than a simple regex replace
+    const modifiedTestContent = testContent
+      .replace(
+        /import\s+(\w+)\s+from\s+["'].*["'];?.*\/\/\s*Path to the generated component/,
+        `import $1 from "./${test.name}.svelte"; // Path to the generated component`
+      )
+      .replace(
+        /import\s+(\w+)\s+from\s+["'].*tmp\/.*\.svelte["']/,
+        `import $1 from "./${test.name}.svelte"`
+      );
 
     const testFilename = `${test.name}.test.ts`;
     await writeToTmpFile(testFilename, modifiedTestContent);
