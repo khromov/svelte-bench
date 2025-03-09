@@ -1,9 +1,10 @@
 // Load environment variables from .env file
 import "dotenv/config";
 
-import { getLLMProvider } from "./src/llms";
-import { ensureTmpDir, cleanTmpDir } from "./src/utils/file";
+import { getAllLLMProviders } from "./src/llms";
+import { cleanTmpDir } from "./src/utils/file";
 import { runAllTests, saveBenchmarkResults } from "./src/utils/test-manager";
+import type { BenchmarkResult } from "./src/utils/test-manager";
 import { ensureRequiredDirectories } from "./src/utils/ensure-dirs";
 
 /**
@@ -19,40 +20,71 @@ async function runBenchmark() {
     // Clean tmp directory
     await cleanTmpDir();
 
-    // Get the LLM provider (default to OpenAI for now)
-    const providerName = process.env.LLM_PROVIDER || "openai";
-    console.log(`👉 Using LLM provider: ${providerName}`);
+    // Get all available LLM providers and models
+    console.log("👉 Discovering available LLM providers and models...");
+    const providerModels = await getAllLLMProviders();
 
-    const llmProvider = await getLLMProvider(providerName);
+    console.log(
+      `👉 Found ${providerModels.length} provider/model combinations`
+    );
 
-    // Run all tests
-    const results = await runAllTests(llmProvider);
+    // Run all tests with all providers
+    const allResults: BenchmarkResult[] = [];
+
+    for (const providerWithModel of providerModels) {
+      console.log(
+        `\n👉 Running tests with ${providerWithModel.name} (${providerWithModel.modelId})...`
+      );
+
+      // Run tests with this provider
+      const results = await runAllTests(providerWithModel.provider);
+      allResults.push(...results);
+
+      // Clean tmp directory between providers
+      await cleanTmpDir();
+    }
 
     // Save benchmark results
-    await saveBenchmarkResults(results);
+    await saveBenchmarkResults(allResults);
 
     // Print summary
     console.log("\n📊 Benchmark Summary:");
     console.log("===========================================");
 
+    // Group results by test name
+    const resultsByTest: Record<string, BenchmarkResult[]> = {};
+    for (const result of allResults) {
+      if (!resultsByTest[result.testName]) {
+        resultsByTest[result.testName] = [];
+      }
+      resultsByTest[result.testName].push(result);
+    }
+
     let totalSuccess = 0;
 
-    for (const result of results) {
-      const status = result.testResult.success ? "✅ PASS" : "❌ FAIL";
-      console.log(`${status} - ${result.testName}`);
-      console.log(
-        `  Tests: ${result.testResult.totalTests}, Failed: ${result.testResult.failedTests}`
-      );
+    // Print results by test and provider
+    for (const [testName, results] of Object.entries(resultsByTest)) {
+      console.log(`\nTest: ${testName}`);
 
-      if (result.testResult.success) {
-        totalSuccess++;
+      for (const result of results) {
+        const status = result.testResult.success ? "✅ PASS" : "❌ FAIL";
+        console.log(
+          `  ${status} - ${result.llmProvider} (${result.modelIdentifier})`
+        );
+        console.log(
+          `    Tests: ${result.testResult.totalTests}, Failed: ${result.testResult.failedTests}`
+        );
+
+        if (result.testResult.success) {
+          totalSuccess++;
+        }
       }
     }
 
-    console.log("===========================================");
+    console.log("\n===========================================");
     console.log(
-      `Total: ${results.length}, Passed: ${totalSuccess}, Failed: ${
-        results.length - totalSuccess
+      `Total: ${allResults.length}, Passed: ${totalSuccess}, Failed: ${
+        allResults.length - totalSuccess
       }`
     );
 
@@ -60,7 +92,7 @@ async function runBenchmark() {
     await cleanTmpDir();
 
     // Exit with appropriate code
-    const exitCode = totalSuccess === results.length ? 0 : 1;
+    const exitCode = totalSuccess > 0 ? 0 : 1;
     process.exit(exitCode);
   } catch (error) {
     console.error("Error running benchmark:", error);

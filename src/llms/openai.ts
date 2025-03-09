@@ -3,14 +3,16 @@ import OpenAI from "openai";
 
 export class OpenAIProvider implements LLMProvider {
   private client: OpenAI;
+  private modelId: string;
   name = "OpenAI";
 
-  constructor() {
+  constructor(modelId?: string) {
     const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) {
       throw new Error("OPENAI_API_KEY environment variable is required");
     }
     this.client = new OpenAI({ apiKey });
+    this.modelId = modelId || process.env.OPENAI_MODEL || "gpt-4o";
   }
 
   /**
@@ -20,12 +22,12 @@ export class OpenAIProvider implements LLMProvider {
    */
   async generateCode(prompt: string): Promise<string> {
     try {
-      // Use model from environment variable or default to gpt-4o
-      const model = process.env.OPENAI_MODEL || "gpt-4o";
-      console.log(`🤖 Generating code with OpenAI using model: ${model}...`);
+      console.log(
+        `🤖 Generating code with OpenAI using model: ${this.modelId}...`
+      );
 
       const completion = await this.client.chat.completions.create({
-        model,
+        model: this.modelId,
         messages: [
           {
             role: "system",
@@ -60,6 +62,6 @@ export class OpenAIProvider implements LLMProvider {
    * @returns The model identifier string
    */
   getModelIdentifier(): string {
-    return process.env.OPENAI_MODEL || "gpt-4o";
+    return this.modelId;
   }
 }

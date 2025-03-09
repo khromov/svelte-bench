@@ -23,21 +23,70 @@ export interface LLMProvider {
 }
 
 /**
+ * Provider with model information
+ * Extends LLMProvider with additional information about the model
+ */
+export interface ProviderWithModel {
+  provider: LLMProvider;
+  name: string;
+  modelId: string;
+}
+
+/**
  * Factory function to get an LLM provider by name
  * @param providerName The name of the provider to get
  * @returns The LLM provider
  */
 export async function getLLMProvider(
-  providerName: string
+  providerName: string,
+  modelId?: string
 ): Promise<LLMProvider> {
   switch (providerName.toLowerCase()) {
     case "openai":
       const { OpenAIProvider } = await import("./openai");
-      return new OpenAIProvider();
+      return new OpenAIProvider(modelId);
     case "anthropic":
       const { AnthropicProvider } = await import("./anthropic");
-      return new AnthropicProvider();
+      return new AnthropicProvider(modelId);
     default:
       throw new Error(`Unknown LLM provider: ${providerName}`);
   }
+}
+
+/**
+ * Function to get all available LLM providers
+ * @returns Array of available LLM providers with their models
+ */
+export async function getAllLLMProviders(): Promise<ProviderWithModel[]> {
+  const providers: ProviderWithModel[] = [];
+
+  // OpenAI provider models
+  const openaiModels = (process.env.OPENAI_MODELS || "gpt-4o")
+    .split(",")
+    .map((model) => model.trim());
+  for (const modelId of openaiModels) {
+    const provider = await getLLMProvider("openai", modelId);
+    providers.push({
+      provider,
+      name: "OpenAI",
+      modelId,
+    });
+  }
+
+  // Anthropic provider models
+  const anthropicModels = (
+    process.env.ANTHROPIC_MODELS || "claude-3-7-sonnet-20250219"
+  )
+    .split(",")
+    .map((model) => model.trim());
+  for (const modelId of anthropicModels) {
+    const provider = await getLLMProvider("anthropic", modelId);
+    providers.push({
+      provider,
+      name: "Anthropic",
+      modelId,
+    });
+  }
+
+  return providers;
 }

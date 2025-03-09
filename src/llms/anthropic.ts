@@ -3,14 +3,17 @@ import { Anthropic } from "@anthropic-ai/sdk";
 
 export class AnthropicProvider implements LLMProvider {
   private client: Anthropic;
+  private modelId: string;
   name = "Anthropic";
 
-  constructor() {
+  constructor(modelId?: string) {
     const apiKey = process.env.ANTHROPIC_API_KEY;
     if (!apiKey) {
       throw new Error("ANTHROPIC_API_KEY environment variable is required");
     }
     this.client = new Anthropic({ apiKey });
+    this.modelId =
+      modelId || process.env.ANTHROPIC_MODEL || "claude-3-7-sonnet-20250219";
   }
 
   /**
@@ -20,12 +23,12 @@ export class AnthropicProvider implements LLMProvider {
    */
   async generateCode(prompt: string): Promise<string> {
     try {
-      // Use model from environment variable or default to claude-3-sonnet-20240229
-      const model = process.env.ANTHROPIC_MODEL || "claude-3-7-sonnet-20250219";
-      console.log(`🤖 Generating code with Anthropic using model: ${model}...`);
+      console.log(
+        `🤖 Generating code with Anthropic using model: ${this.modelId}...`
+      );
 
       const completion = await this.client.messages.create({
-        model,
+        model: this.modelId,
         max_tokens: 4000,
         messages: [
           {
@@ -64,6 +67,6 @@ export class AnthropicProvider implements LLMProvider {
    * @returns The model identifier string
    */
   getModelIdentifier(): string {
-    return process.env.ANTHROPIC_MODEL || "claude-3-7-sonnet-20250219";
+    return this.modelId;
   }
 }
