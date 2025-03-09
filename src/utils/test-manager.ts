@@ -1,8 +1,9 @@
 import path from "path";
 import fs from "fs/promises";
-import { LLMProvider } from "../llms";
+import type { LLMProvider } from "../llms";
 import { cleanTmpDir, writeToTmpFile, readFile } from "./file";
-import { runTest, TestResult } from "./test-runner";
+import { runTest } from "./test-runner";
+import type { TestResult } from "./test-runner";
 
 export interface TestDefinition {
   name: string;
