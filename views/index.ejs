@@ -5,66 +5,103 @@
   <style>
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      line-height: 1.5;
+      line-height: 1.4;
       max-width: 1200px;
       margin: 0 auto;
-      padding: 20px;
+      padding: 12px;
       color: #333;
     }
     
     h1, h2, h3, h4 {
       margin-top: 0;
+      margin-bottom: 0.5rem;
     }
     
     select {
-      padding: 8px;
-      margin-bottom: 20px;
+      padding: 6px;
+      margin-bottom: 12px;
       border-radius: 4px;
       border: 1px solid #ddd;
-      font-size: 16px;
+      font-size: 14px;
       width: 100%;
       max-width: 400px;
     }
     
     .provider-section {
-      margin-bottom: 30px;
+      margin-bottom: 16px;
       border: 1px solid #e2e8f0;
-      border-radius: 8px;
-      padding: 15px;
+      border-radius: 6px;
+      padding: 10px;
       background-color: #f8fafc;
     }
     
-    .provider-section h2 {
-      margin-top: 0;
-      padding-bottom: 10px;
-      border-bottom: 2px solid #e2e8f0;
+    .provider-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      padding-bottom: 6px;
+      border-bottom: 1px solid #e2e8f0;
       color: #2563eb;
     }
     
-    .model-section {
-      margin: 15px 0;
-      padding: 15px;
-      border-radius: 6px;
-      background-color: #fff;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    .provider-header h2 {
+      margin: 0;
+      padding: 0;
     }
     
-    .model-section h3 {
-      margin-top: 0;
-      margin-bottom: 15px;
+    .provider-content {
+      margin-top: 8px;
+      /* Collapsible content will be controlled by JS */
+    }
+    
+    .model-section {
+      margin: 8px 0;
+      padding: 10px;
+      border-radius: 6px;
+      background-color: #fff;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    }
+    
+    .model-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
       color: #1e40af;
       border-bottom: 1px solid #e2e8f0;
-      padding-bottom: 8px;
+      padding-bottom: 6px;
+      cursor: pointer;
+    }
+    
+    .model-header h3 {
+      margin: 0;
+      padding: 0;
+    }
+    
+    .model-content {
+      /* Collapsible content will be controlled by JS */
+    }
+    
+    .collapse-icon {
+      font-size: 18px;
+      font-weight: bold;
+      transition: transform 0.2s;
+    }
+    
+    .collapsed .collapse-icon {
+      transform: rotate(-90deg);
     }
     
     .results-table {
       width: 100%;
       border-collapse: collapse;
-      margin-bottom: 20px;
+      margin-bottom: 12px;
+      font-size: 14px;
     }
     
     .results-table th, .results-table td {
-      padding: 12px 15px;
+      padding: 6px 10px;
       border: 1px solid #ddd;
       text-align: left;
     }
@@ -90,14 +127,14 @@
     
     .error {
       color: #e53e3e;
-      padding: 15px;
+      padding: 10px;
       background-color: #fff5f5;
       border-radius: 5px;
-      margin: 15px 0;
+      margin: 10px 0;
     }
     
     .errors-section {
-      margin: 15px 0;
+      margin: 10px 0;
     }
     
     .error-list {
@@ -108,7 +145,7 @@
     }
     
     .error-item {
-      padding: 10px;
+      padding: 8px;
       border-bottom: 1px solid #ddd;
       background-color: #fff5f5;
     }
@@ -120,17 +157,17 @@
     .error-item pre {
       margin: 0;
       white-space: pre-wrap;
-      font-size: 14px;
+      font-size: 13px;
     }
     
     .view-code-button {
       background-color: #4299e1;
       color: white;
       border: none;
-      padding: 8px 12px;
+      padding: 4px 8px;
       border-radius: 4px;
       cursor: pointer;
-      font-size: 14px;
+      font-size: 13px;
     }
     
     .view-code-button:hover {
@@ -175,10 +212,10 @@
     
     .code-container {
       background-color: #f8f9fa;
-      padding: 15px;
+      padding: 12px;
       border-radius: 5px;
       overflow: auto;
-      margin-top: 15px;
+      margin-top: 12px;
     }
     
     .code-container pre {
@@ -187,13 +224,13 @@
     }
     
     .test-details {
-      margin-top: 20px;
-      padding-top: 20px;
+      margin-top: 16px;
+      padding-top: 16px;
       border-top: 1px solid #ddd;
     }
     
     .grouped-results {
-      margin-top: 20px;
+      margin-top: 16px;
     }
 
     .no-results {
@@ -202,6 +239,27 @@
       background-color: #fff5f5;
       border-radius: 5px;
       color: #e53e3e;
+    }
+    
+    /* Controls section */
+    .controls {
+      margin-bottom: 16px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    
+    .expand-all-btn, .collapse-all-btn {
+      background-color: #edf2f7;
+      border: 1px solid #cbd5e0;
+      border-radius: 4px;
+      padding: 6px 12px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    
+    .expand-all-btn:hover, .collapse-all-btn:hover {
+      background-color: #e2e8f0;
     }
   </style>
 </head>
@@ -225,57 +283,72 @@
       </select>
     </div>
     
+    <div class="controls">
+      <button class="expand-all-btn" onclick="expandAll()">Expand All</button>
+      <button class="collapse-all-btn" onclick="collapseAll()">Collapse All</button>
+    </div>
+    
     <% if (groupedResults.length > 0) { %>
       <div class="grouped-results">
         <% groupedResults.forEach(providerData => { %>
-          <div class="provider-section">
-            <h2><%= providerData.provider %></h2>
+          <div class="provider-section" id="provider-<%= providerData.provider.replace(/\s+/g, '-').toLowerCase() %>">
+            <div class="provider-header" onclick="toggleProvider('<%= providerData.provider.replace(/\s+/g, '-').toLowerCase() %>')">
+              <h2><%= providerData.provider %></h2>
+              <span class="collapse-icon">▼</span>
+            </div>
             
-            <% Object.entries(providerData.models).forEach(([model, results]) => { %>
-              <div class="model-section">
-                <h3><%= model %></h3>
-                
-                <table class="results-table">
-                  <tr>
-                    <th>Test</th>
-                    <th>Status</th>
-                    <th>Tests Passed</th>
-                    <th>Errors</th>
-                    <th>View Code</th>
-                  </tr>
+            <div class="provider-content">
+              <% Object.entries(providerData.models).forEach(([model, results]) => { %>
+                <div class="model-section" id="model-<%= providerData.provider.replace(/\s+/g, '-').toLowerCase() %>-<%= model.replace(/\s+/g, '-').toLowerCase() %>">
+                  <div class="model-header" onclick="toggleModel('<%= providerData.provider.replace(/\s+/g, '-').toLowerCase() %>', '<%= model.replace(/\s+/g, '-').toLowerCase() %>')">
+                    <h3><%= model %></h3>
+                    <span class="collapse-icon">▼</span>
+                  </div>
                   
-                  <% results.forEach((result, index) => { %>
-                    <tr>
-                      <td><%= result.testName %></td>
-                      <td>
-                        <% if (result.testResult.success) { %>
-                          <span class="success">✅ PASS</span>
-                        <% } else { %>
-                          <span class="failure">❌ FAIL</span>
-                        <% } %>
-                      </td>
-                      <td>
-                        <%= result.testResult.totalTests - result.testResult.failedTests %>/<%= result.testResult.totalTests %>
-                      </td>
-                      <td>
-                        <% const errorCount = result.testResult.errors ? result.testResult.errors.length : 0 %>
-                        <% if (errorCount > 0) { %>
-                          <span class="failure"><%= errorCount %></span>
-                        <% } else { %>
-                          0
-                        <% } %>
-                      </td>
-                      <td>
-                        <button class="view-code-button" 
-                                onclick="showCodeModal('<%= providerData.provider %>', '<%= model %>', <%= index %>)">
-                          View Code
-                        </button>
-                      </td>
-                    </tr>
-                  <% }); %>
-                </table>
-              </div>
-            <% }); %>
+                  <div class="model-content">
+                    <table class="results-table">
+                      <tr>
+                        <th>Test</th>
+                        <th>Status</th>
+                        <th>Tests Passed</th>
+                        <th>Errors</th>
+                        <th>View Code</th>
+                      </tr>
+                      
+                      <% results.forEach((result, index) => { %>
+                        <tr>
+                          <td><%= result.testName %></td>
+                          <td>
+                            <% if (result.testResult.success) { %>
+                              <span class="success">✅ PASS</span>
+                            <% } else { %>
+                              <span class="failure">❌ FAIL</span>
+                            <% } %>
+                          </td>
+                          <td>
+                            <%= result.testResult.totalTests - result.testResult.failedTests %>/<%= result.testResult.totalTests %>
+                          </td>
+                          <td>
+                            <% const errorCount = result.testResult.errors ? result.testResult.errors.length : 0 %>
+                            <% if (errorCount > 0) { %>
+                              <span class="failure"><%= errorCount %></span>
+                            <% } else { %>
+                              0
+                            <% } %>
+                          </td>
+                          <td>
+                            <button class="view-code-button" 
+                                    onclick="showCodeModal('<%= providerData.provider %>', '<%= model %>', <%= index %>)">
+                              View Code
+                            </button>
+                          </td>
+                        </tr>
+                      <% }); %>
+                    </table>
+                  </div>
+                </div>
+              <% }); %>
+            </div>
           </div>
         <% }); %>
       </div>
@@ -404,6 +477,85 @@
         codeModal.style.display = "block";
       }
 
+      // Toggle provider section visibility
+      function toggleProvider(providerId) {
+        const providerSection = document.getElementById(`provider-${providerId}`);
+        const providerContent = providerSection.querySelector('.provider-content');
+        const collapseIcon = providerSection.querySelector('.provider-header .collapse-icon');
+        
+        if (providerContent.style.display === 'none') {
+          // Expand
+          providerContent.style.display = 'block';
+          collapseIcon.textContent = '▼';
+          providerSection.classList.remove('collapsed');
+        } else {
+          // Collapse
+          providerContent.style.display = 'none';
+          collapseIcon.textContent = '►';
+          providerSection.classList.add('collapsed');
+        }
+      }
+      
+      // Toggle model section visibility
+      function toggleModel(providerId, modelId) {
+        const modelSection = document.getElementById(`model-${providerId}-${modelId}`);
+        const modelContent = modelSection.querySelector('.model-content');
+        const collapseIcon = modelSection.querySelector('.model-header .collapse-icon');
+        
+        if (modelContent.style.display === 'none') {
+          // Expand
+          modelContent.style.display = 'block';
+          collapseIcon.textContent = '▼';
+          modelSection.classList.remove('collapsed');
+        } else {
+          // Collapse
+          modelContent.style.display = 'none';
+          collapseIcon.textContent = '►';
+          modelSection.classList.add('collapsed');
+        }
+        
+        // Prevent the click from bubbling up to parent elements
+        event.stopPropagation();
+      }
+      
+      // Expand all sections
+      function expandAll() {
+        const providerSections = document.querySelectorAll('.provider-section');
+        providerSections.forEach(providerSection => {
+          const providerId = providerSection.id.replace('provider-', '');
+          const providerContent = providerSection.querySelector('.provider-content');
+          const providerCollapseIcon = providerSection.querySelector('.provider-header .collapse-icon');
+          
+          providerContent.style.display = 'block';
+          providerCollapseIcon.textContent = '▼';
+          providerSection.classList.remove('collapsed');
+          
+          const modelSections = providerSection.querySelectorAll('.model-section');
+          modelSections.forEach(modelSection => {
+            const modelContent = modelSection.querySelector('.model-content');
+            const modelCollapseIcon = modelSection.querySelector('.model-header .collapse-icon');
+            
+            modelContent.style.display = 'block';
+            modelCollapseIcon.textContent = '▼';
+            modelSection.classList.remove('collapsed');
+          });
+        });
+      }
+      
+      // Collapse all sections
+      function collapseAll() {
+        const providerSections = document.querySelectorAll('.provider-section');
+        providerSections.forEach(providerSection => {
+          const providerId = providerSection.id.replace('provider-', '');
+          const providerContent = providerSection.querySelector('.provider-content');
+          const providerCollapseIcon = providerSection.querySelector('.provider-header .collapse-icon');
+          
+          providerContent.style.display = 'none';
+          providerCollapseIcon.textContent = '►';
+          providerSection.classList.add('collapsed');
+        });
+      }
+
       // Initialize the page
       document.addEventListener("DOMContentLoaded", () => {
         // Close modal when clicking the close button
@@ -424,8 +576,10 @@
             }
           });
         }
+        
+        // Initialize all sections as expanded
+        expandAll();
       });
-
     </script>
   <% } %>
 </body>
