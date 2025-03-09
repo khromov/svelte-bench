@@ -5,7 +5,13 @@ export class OpenAIProvider implements LLMProvider {
   private client: OpenAI;
   private modelId: string;
   name = "OpenAI";
-  private readonly availableModels = ["gpt-4o"];
+  private readonly availableModels = [
+    "gpt-4o",
+    //"o1-mini",
+    //"o1-preview",
+    "o3-mini",
+    //"o1-mini",
+  ];
 
   constructor(modelId?: string) {
     const apiKey = process.env.OPENAI_API_KEY;
