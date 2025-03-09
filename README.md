@@ -15,18 +15,24 @@ npm install
 # Or if using bun
 bun install
 
-# Set your OpenAI API key (required for using the OpenAI provider)
-export OPENAI_API_KEY=your_api_key_here
+# Create .env file from example
+cp .env.example .env
+```
+
+Then edit the `.env` file and add your OpenAI API key:
+
+```
+OPENAI_API_KEY=your_api_key_here
 ```
 
 ## Running the Benchmark
 
 ```bash
-# Run the benchmark with default settings (OpenAI provider)
+# Run the benchmark with settings from .env file
 npm start
 
-# Specify a different LLM provider (when more are supported)
-LLM_PROVIDER=openai npm start
+# Or override settings from command line
+LLM_PROVIDER=openai OPENAI_API_KEY=your_api_key_here npm start
 ```
 
 ## Directory Structure
@@ -51,6 +57,14 @@ src/tests/your-test/
 ├── prompt.md    # Instructions for the LLM
 └── test.ts      # Tests for the generated component
 ```
+
+## Environment Variables
+
+SvelteBench uses the following environment variables, which can be set in the `.env` file:
+
+- `LLM_PROVIDER`: The LLM provider to use (currently only supports 'openai')
+- `OPENAI_API_KEY`: Your OpenAI API key (required for using the OpenAI provider)
+- `OPENAI_MODEL`: OpenAI model to use (optional, defaults to 'gpt-4')
 
 ## Requirements
 

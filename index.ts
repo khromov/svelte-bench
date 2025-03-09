@@ -1,3 +1,6 @@
+// Load environment variables from .env file
+import "dotenv/config";
+
 import { getLLMProvider } from "./src/llms";
 import { ensureTmpDir, cleanTmpDir } from "./src/utils/file";
 import { runAllTests, saveBenchmarkResults } from "./src/utils/test-manager";

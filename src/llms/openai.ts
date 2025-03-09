@@ -20,10 +20,12 @@ export class OpenAIProvider implements LLMProvider {
    */
   async generateCode(prompt: string): Promise<string> {
     try {
-      console.log(`🤖 Generating code with OpenAI...`);
+      // Use model from environment variable or default to gpt-4
+      const model = process.env.OPENAI_MODEL || "gpt-4";
+      console.log(`🤖 Generating code with OpenAI using model: ${model}...`);
 
       const completion = await this.client.chat.completions.create({
-        model: "gpt-4",
+        model,
         messages: [
           {
             role: "system",
