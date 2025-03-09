@@ -8,10 +8,16 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 const PORT = 3000;
 
+// Set up Express to use EJS and serve static files
+app.set("view engine", "ejs");
+app.set("views", path.join(__dirname, "views"));
+app.use("/benchmarks", express.static(path.join(__dirname, "benchmarks")));
+app.use(express.static(path.join(__dirname, "public")));
+
 /**
  * Load all benchmark results from the benchmarks directory
  */
-async function loadBenchmarkResults() {
+async function loadBenchmarkFiles() {
   await ensureBenchmarksDir();
 
   const benchmarksDir = path.resolve(process.cwd(), "benchmarks");
@@ -35,556 +41,271 @@ async function loadBenchmarkResults() {
 
   sortedFiles.sort((a, b) => b.mtime - a.mtime);
 
-  // Return the sorted file paths
-  return sortedFiles.map((file) => file.path);
+  // Return the sorted file paths and names
+  return sortedFiles.map((file) => ({
+    path: file.path,
+    name: file.name,
+  }));
 }
 
 /**
- * Generate the HTML for the visualization
+ * Load a benchmark file
  */
-async function generateVisualizationHtml() {
-  const benchmarkFiles = await loadBenchmarkResults();
-
-  if (benchmarkFiles.length === 0) {
-    return `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <title>SvelteBench Visualization</title>
-          <style>
-            body {
-              font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-              line-height: 1.5;
-              max-width: 1200px;
-              margin: 0 auto;
-              padding: 20px;
-            }
-            .error {
-              color: #e53e3e;
-              padding: 20px;
-              background-color: #fff5f5;
-              border-radius: 5px;
-              margin: 20px 0;
-            }
-          </style>
-        </head>
-        <body>
-          <h1>SvelteBench Visualization</h1>
-          <div class="error">
-            <h2>No benchmark results found</h2>
-            <p>Run the benchmark first using <code>npm start</code></p>
-          </div>
-        </body>
-      </html>
-    `;
+async function loadBenchmarkData(filePath: string) {
+  try {
+    const data = await fs.readFile(filePath, "utf-8");
+    return JSON.parse(data);
+  } catch (error) {
+    console.error(`Error loading benchmark file ${filePath}:`, error);
+    throw error;
   }
-
-  // Generate the JavaScript to load the benchmark files
-  const jsToLoadBenchmarks = `
-    const benchmarkFiles = ${JSON.stringify(
-      benchmarkFiles.map((file) => path.basename(file))
-    )};
-    const benchmarksPath = '/benchmarks';
-    
-    // Function to fetch benchmark data
-    async function fetchBenchmark(filename) {
-      const response = await fetch(\`\${benchmarksPath}/\${filename}\`);
-      if (!response.ok) {
-        throw new Error(\`Failed to load benchmark: \${filename}\`);
-      }
-      return response.json();
-    }
-    
-    // Function to group benchmark results
-    function groupBenchmarkResults(results) {
-      // First group by provider
-      const byProvider = {};
-      
-      // Ensure Anthropic comes first, then OpenAI
-      results.forEach(result => {
-        if (!byProvider[result.llmProvider]) {
-          byProvider[result.llmProvider] = [];
-        }
-        byProvider[result.llmProvider].push(result);
-      });
-      
-      // Sort providers to ensure Anthropic is first, then OpenAI
-      const sortedProviders = Object.keys(byProvider).sort((a, b) => {
-        if (a === 'Anthropic') return -1;
-        if (b === 'Anthropic') return 1;
-        if (a === 'OpenAI') return -1;
-        if (b === 'OpenAI') return 1;
-        return a.localeCompare(b);
-      });
-      
-      // Build the final structure
-      const groupedResults = [];
-      sortedProviders.forEach(provider => {
-        const providerData = {
-          provider,
-          models: {}
-        };
-        
-        // Group by model
-        byProvider[provider].forEach(result => {
-          if (!providerData.models[result.modelIdentifier]) {
-            providerData.models[result.modelIdentifier] = [];
-          }
-          providerData.models[result.modelIdentifier].push(result);
-        });
-        
-        groupedResults.push(providerData);
-      });
-      
-      return groupedResults;
-    }
-    
-    // Function to render benchmark results
-    function renderBenchmark(benchmark, container) {
-      // Clear existing content
-      container.innerHTML = '';
-      
-      // Group the results
-      const groupedResults = groupBenchmarkResults(benchmark);
-      
-      // Create a container for the grouped results
-      const resultsContainer = document.createElement('div');
-      resultsContainer.className = 'grouped-results';
-      
-      // Create the provider sections
-      groupedResults.forEach(providerData => {
-        const providerSection = document.createElement('div');
-        providerSection.className = 'provider-section';
-        
-        const providerHeader = document.createElement('h2');
-        providerHeader.textContent = providerData.provider;
-        providerSection.appendChild(providerHeader);
-        
-        // Create model sections
-        Object.keys(providerData.models).forEach(model => {
-          const modelSection = document.createElement('div');
-          modelSection.className = 'model-section';
-          
-          const modelHeader = document.createElement('h3');
-          modelHeader.textContent = model;
-          modelSection.appendChild(modelHeader);
-          
-          // Create a table for this model's results
-          const table = document.createElement('table');
-          table.className = 'results-table';
-          
-          // Create header row
-          const headerRow = document.createElement('tr');
-          ['Test', 'Status', 'Tests Passed', 'Errors', 'View Code'].forEach(headerText => {
-            const th = document.createElement('th');
-            th.textContent = headerText;
-            headerRow.appendChild(th);
-          });
-          table.appendChild(headerRow);
-          
-          // Add test results for this model
-          providerData.models[model].forEach(result => {
-            const row = document.createElement('tr');
-            
-            // Test name
-            const nameCell = document.createElement('td');
-            nameCell.textContent = result.testName;
-            row.appendChild(nameCell);
-            
-            // Status
-            const statusCell = document.createElement('td');
-            if (result.testResult.success) {
-              statusCell.innerHTML = '<span class="success">✅ PASS</span>';
-            } else {
-              statusCell.innerHTML = '<span class="failure">❌ FAIL</span>';
-            }
-            row.appendChild(statusCell);
-            
-            // Tests passed
-            const testsCell = document.createElement('td');
-            testsCell.textContent = \`\${result.testResult.totalTests - result.testResult.failedTests}/\${result.testResult.totalTests}\`;
-            row.appendChild(testsCell);
-            
-            // Errors count
-            const errorsCell = document.createElement('td');
-            const errorCount = result.testResult.errors ? result.testResult.errors.length : 0;
-            if (errorCount > 0) {
-              errorsCell.innerHTML = \`<span class="failure">\${errorCount}</span>\`;
-            } else {
-              errorsCell.textContent = '0';
-            }
-            row.appendChild(errorsCell);
-            
-            // View code button
-            const codeCell = document.createElement('td');
-            const codeButton = document.createElement('button');
-            codeButton.textContent = 'View Code';
-            codeButton.className = 'view-code-button';
-            codeButton.onclick = () => {
-              const codeModal = document.getElementById('code-modal');
-              const codeDisplay = document.getElementById('code-display');
-              const modalTitle = document.getElementById('modal-title');
-              
-              // Set the title and code content
-              modalTitle.textContent = \`\${result.testName} (\${result.testResult.success ? 'PASS' : 'FAIL'}) - \${result.llmProvider} \${result.modelIdentifier}\`;
-              
-              // Format the code with syntax highlighting
-              codeDisplay.innerHTML = \`<pre><code class="language-svelte">\${escapeHtml(result.generatedCode)}</code></pre>\`;
-              
-              // Add test results details
-              const testDetails = document.createElement('div');
-              testDetails.className = 'test-details';
-              
-              // Create errors section if there are errors
-              let errorsHtml = '';
-              if (result.testResult.errors && result.testResult.errors.length > 0) {
-                errorsHtml = \`
-                  <div class="errors-section">
-                    <h4>Errors (\${result.testResult.errors.length})</h4>
-                    <div class="error-list">
-                      \${result.testResult.errors.map(error => 
-                        \`<div class="error-item">
-                          <pre>\${escapeHtml(error)}</pre>
-                        </div>\`
-                      ).join('')}
-                    </div>
-                  </div>
-                \`;
-              }
-              
-              testDetails.innerHTML = \`
-                <h3>Test Results</h3>
-                <p>LLM Provider: \${result.llmProvider || 'N/A'}</p>
-                <p>Model: \${result.modelIdentifier || 'N/A'}</p>
-                \${errorsHtml}
-                <p>Total Tests: \${result.testResult.totalTests}</p>
-                <p>Passed: \${result.testResult.totalTests - result.testResult.failedTests}</p>
-                <p>Failed: \${result.testResult.failedTests}</p>
-                <p>Generated at: \${new Date(result.timestamp).toLocaleString()}</p>
-              \`;
-              codeDisplay.appendChild(testDetails);
-              
-              // Show the modal
-              codeModal.style.display = 'block';
-            };
-            codeCell.appendChild(codeButton);
-            row.appendChild(codeCell);
-            
-            table.appendChild(row);
-          });
-          
-          modelSection.appendChild(table);
-          providerSection.appendChild(modelSection);
-        });
-        
-        resultsContainer.appendChild(providerSection);
-      });
-      
-      container.appendChild(resultsContainer);
-    }
-    
-    // Function to escape HTML
-    function escapeHtml(unsafe) {
-      return unsafe
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-    }
-    
-    // Function to load and render selected benchmark
-    async function loadSelectedBenchmark() {
-      const select = document.getElementById('benchmark-select');
-      const filename = select.value;
-      const resultsContainer = document.getElementById('results-container');
-      
-      try {
-        const benchmark = await fetchBenchmark(filename);
-        renderBenchmark(benchmark, resultsContainer);
-      } catch (error) {
-        console.error('Failed to load benchmark:', error);
-        resultsContainer.innerHTML = \`<div class="error">Failed to load benchmark: \${error.message}</div>\`;
-      }
-    }
-    
-    // Initialize the page
-    document.addEventListener('DOMContentLoaded', async () => {
-      const select = document.getElementById('benchmark-select');
-      
-      // Populate the select with benchmark files
-      benchmarkFiles.forEach(filename => {
-        const option = document.createElement('option');
-        option.value = filename;
-        option.textContent = filename;
-        select.appendChild(option);
-      });
-      
-      // Load the first benchmark
-      if (benchmarkFiles.length > 0) {
-        await loadSelectedBenchmark();
-      }
-      
-      // Add change event listener to select
-      select.addEventListener('change', loadSelectedBenchmark);
-      
-      // Close modal when clicking the close button
-      const closeButton = document.getElementById('close-modal');
-      closeButton.addEventListener('click', () => {
-        const codeModal = document.getElementById('code-modal');
-        codeModal.style.display = 'none';
-      });
-      
-      // Close modal when clicking outside the modal content
-      const codeModal = document.getElementById('code-modal');
-      codeModal.addEventListener('click', (event) => {
-        if (event.target === codeModal) {
-          codeModal.style.display = 'none';
-        }
-      });
-    });
-  `;
-
-  return `
-    <!DOCTYPE html>
-    <html>
-      <head>
-        <title>SvelteBench Visualization</title>
-        <style>
-          body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            line-height: 1.5;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-            color: #333;
-          }
-          
-          h1, h2, h3, h4 {
-            margin-top: 0;
-          }
-          
-          select {
-            padding: 8px;
-            margin-bottom: 20px;
-            border-radius: 4px;
-            border: 1px solid #ddd;
-            font-size: 16px;
-            width: 100%;
-            max-width: 400px;
-          }
-          
-          .provider-section {
-            margin-bottom: 30px;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            padding: 15px;
-            background-color: #f8fafc;
-          }
-          
-          .provider-section h2 {
-            margin-top: 0;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #e2e8f0;
-            color: #2563eb;
-          }
-          
-          .model-section {
-            margin: 15px 0;
-            padding: 15px;
-            border-radius: 6px;
-            background-color: #fff;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-          }
-          
-          .model-section h3 {
-            margin-top: 0;
-            margin-bottom: 15px;
-            color: #1e40af;
-            border-bottom: 1px solid #e2e8f0;
-            padding-bottom: 8px;
-          }
-          
-          .results-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
-          }
-          
-          .results-table th, .results-table td {
-            padding: 12px 15px;
-            border: 1px solid #ddd;
-            text-align: left;
-          }
-          
-          .results-table th {
-            background-color: #f8f9fa;
-            font-weight: bold;
-          }
-          
-          .results-table tr:nth-child(even) {
-            background-color: #f8f9fa;
-          }
-          
-          .success {
-            color: #2f855a;
-            font-weight: bold;
-          }
-          
-          .failure {
-            color: #e53e3e;
-            font-weight: bold;
-          }
-          
-          .error {
-            color: #e53e3e;
-            padding: 15px;
-            background-color: #fff5f5;
-            border-radius: 5px;
-            margin: 15px 0;
-          }
-          
-          .errors-section {
-            margin: 15px 0;
-          }
-          
-          .error-list {
-            max-height: 300px;
-            overflow-y: auto;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-          }
-          
-          .error-item {
-            padding: 10px;
-            border-bottom: 1px solid #ddd;
-            background-color: #fff5f5;
-          }
-          
-          .error-item:last-child {
-            border-bottom: none;
-          }
-          
-          .error-item pre {
-            margin: 0;
-            white-space: pre-wrap;
-            font-size: 14px;
-          }
-          
-          .view-code-button {
-            background-color: #4299e1;
-            color: white;
-            border: none;
-            padding: 8px 12px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
-          }
-          
-          .view-code-button:hover {
-            background-color: #3182ce;
-          }
-          
-          /* Modal styles */
-          .modal {
-            display: none;
-            position: fixed;
-            z-index: 1;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0,0,0,0.4);
-          }
-          
-          .modal-content {
-            background-color: #fefefe;
-            margin: 5% auto;
-            padding: 20px;
-            border: 1px solid #888;
-            width: 80%;
-            max-width: 1000px;
-            border-radius: 5px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-          }
-          
-          .close {
-            color: #aaa;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-            cursor: pointer;
-          }
-          
-          .close:hover {
-            color: black;
-          }
-          
-          .code-container {
-            background-color: #f8f9fa;
-            padding: 15px;
-            border-radius: 5px;
-            overflow: auto;
-            margin-top: 15px;
-          }
-          
-          .code-container pre {
-            margin: 0;
-            white-space: pre-wrap;
-          }
-          
-          .test-details {
-            margin-top: 20px;
-            padding-top: 20px;
-            border-top: 1px solid #ddd;
-          }
-          
-          .grouped-results {
-            margin-top: 20px;
-          }
-        </style>
-      </head>
-      <body>
-        <h1>SvelteBench Visualization</h1>
-        
-        <div>
-          <label for="benchmark-select">Select Benchmark:</label>
-          <select id="benchmark-select"></select>
-        </div>
-        
-        <div id="results-container"></div>
-        
-        <!-- Modal for code view -->
-        <div id="code-modal" class="modal">
-          <div class="modal-content">
-            <span id="close-modal" class="close">&times;</span>
-            <h2 id="modal-title"></h2>
-            <div class="code-container" id="code-display"></div>
-          </div>
-        </div>
-        
-        <script>${jsToLoadBenchmarks}</script>
-      </body>
-    </html>
-  `;
 }
 
-// Set up Express server
-app.use("/benchmarks", express.static(path.join(__dirname, "benchmarks")));
+/**
+ * Group benchmark results by provider and model
+ */
+function groupBenchmarkResults(results: any[]) {
+  // Group by provider
+  const byProvider: Record<string, any[]> = {};
 
+  results.forEach((result) => {
+    if (!byProvider[result.llmProvider]) {
+      byProvider[result.llmProvider] = [];
+    }
+    byProvider[result.llmProvider].push(result);
+  });
+
+  // Sort providers alphabetically
+  const sortedProviders = Object.keys(byProvider).sort((a, b) =>
+    a.localeCompare(b)
+  );
+
+  // Build the final structure
+  const groupedResults = [];
+
+  for (const provider of sortedProviders) {
+    const providerData = {
+      provider,
+      models: {} as Record<string, any[]>,
+    };
+
+    // Group by model
+    byProvider[provider].forEach((result) => {
+      if (!providerData.models[result.modelIdentifier]) {
+        providerData.models[result.modelIdentifier] = [];
+      }
+      providerData.models[result.modelIdentifier].push(result);
+    });
+
+    // Sort models alphabetically
+    providerData.models = Object.entries(providerData.models)
+      .sort(([modelA], [modelB]) => modelA.localeCompare(modelB))
+      .reduce((acc, [model, results]) => {
+        acc[model] = results;
+        return acc;
+      }, {} as Record<string, any[]>);
+
+    groupedResults.push(providerData);
+  }
+
+  return groupedResults;
+}
+
+// Create directories if they don't exist
+async function ensureDirectories() {
+  const dirs = [
+    path.join(__dirname, "views"),
+    path.join(__dirname, "public"),
+    path.join(__dirname, "public", "js"),
+  ];
+
+  for (const dir of dirs) {
+    try {
+      await fs.mkdir(dir, { recursive: true });
+    } catch (error) {
+      console.error(`Error creating directory ${dir}:`, error);
+    }
+  }
+}
+
+// Create the JavaScript file
+async function createJsFile() {
+  const jsFilePath = path.join(__dirname, "public", "js", "visualizer.js");
+
+  try {
+    // Check if file already exists
+    await fs.access(jsFilePath);
+    return; // File exists, no need to create it
+  } catch (error) {
+    // File doesn't exist, create it
+    const jsContent = `// Function to escape HTML for safe display
+function escapeHtml(unsafe) {
+  return unsafe
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+// Function to show code modal
+function showCodeModal(provider, model, resultIndex) {
+  const codeModal = document.getElementById('code-modal');
+  const codeDisplay = document.getElementById('code-display');
+  const modalTitle = document.getElementById('modal-title');
+  
+  // Find the result in the benchmark data
+  let result = null;
+  for (const providerData of window.benchmarkData) {
+    if (providerData.provider === provider) {
+      for (const [modelName, results] of Object.entries(providerData.models)) {
+        if (modelName === model) {
+          result = results[resultIndex];
+          break;
+        }
+      }
+      if (result) break;
+    }
+  }
+  
+  if (!result) {
+    console.error('Result not found');
+    return;
+  }
+  
+  // Set the title and code content
+  modalTitle.textContent = \`\${result.testName} (\${result.testResult.success ? 'PASS' : 'FAIL'}) - \${result.llmProvider} \${result.modelIdentifier}\`;
+  
+  // Format the code with syntax highlighting
+  codeDisplay.innerHTML = \`<pre><code class="language-svelte">\${escapeHtml(result.generatedCode)}</code></pre>\`;
+  
+  // Add test results details
+  const testDetails = document.createElement('div');
+  testDetails.className = 'test-details';
+  
+  // Create errors section if there are errors
+  let errorsHtml = '';
+  if (result.testResult.errors && result.testResult.errors.length > 0) {
+    errorsHtml = \`
+      <div class="errors-section">
+        <h4>Errors (\${result.testResult.errors.length})</h4>
+        <div class="error-list">
+          \${result.testResult.errors.map(error => 
+            \`<div class="error-item">
+              <pre>\${escapeHtml(error)}</pre>
+            </div>\`
+          ).join('')}
+        </div>
+      </div>
+    \`;
+  }
+  
+  testDetails.innerHTML = \`
+    <h3>Test Results</h3>
+    <p>LLM Provider: \${result.llmProvider || 'N/A'}</p>
+    <p>Model: \${result.modelIdentifier || 'N/A'}</p>
+    \${errorsHtml}
+    <p>Total Tests: \${result.testResult.totalTests}</p>
+    <p>Passed: \${result.testResult.totalTests - result.testResult.failedTests}</p>
+    <p>Failed: \${result.testResult.failedTests}</p>
+    <p>Generated at: \${new Date(result.timestamp).toLocaleString()}</p>
+  \`;
+  codeDisplay.appendChild(testDetails);
+  
+  // Show the modal
+  codeModal.style.display = 'block';
+}
+
+// Initialize the page
+document.addEventListener('DOMContentLoaded', () => {
+  // Close modal when clicking the close button
+  const closeButton = document.getElementById('close-modal');
+  if (closeButton) {
+    closeButton.addEventListener('click', () => {
+      const codeModal = document.getElementById('code-modal');
+      codeModal.style.display = 'none';
+    });
+  }
+  
+  // Close modal when clicking outside the modal content
+  const codeModal = document.getElementById('code-modal');
+  if (codeModal) {
+    codeModal.addEventListener('click', (event) => {
+      if (event.target === codeModal) {
+        codeModal.style.display = 'none';
+      }
+    });
+  }
+});`;
+
+    await fs.writeFile(jsFilePath, jsContent);
+    console.log(`Created JS file at ${jsFilePath}`);
+  }
+}
+
+// Initialize the necessary directories and files
+async function initialize() {
+  await ensureBenchmarksDir();
+  await ensureDirectories();
+  await createJsFile();
+}
+
+// Set up the routes
 app.get("/", async (req, res) => {
   try {
-    const html = await generateVisualizationHtml();
-    res.send(html);
+    // Get all benchmark files
+    const benchmarkFiles = await loadBenchmarkFiles();
+
+    if (benchmarkFiles.length === 0) {
+      return res.render("index", {
+        benchmarkFiles: [],
+        selectedFile: null,
+        groupedResults: [],
+        benchmarkData: [],
+      });
+    }
+
+    // Get the selected file from query parameter or use the first file
+    const selectedFile = req.query.file
+      ? String(req.query.file)
+      : benchmarkFiles[0].name;
+    const selectedFilePath =
+      benchmarkFiles.find((f) => f.name === selectedFile)?.path ||
+      benchmarkFiles[0].path;
+
+    // Load the benchmark data
+    const benchmarkData = await loadBenchmarkData(selectedFilePath);
+
+    // Group the results
+    const groupedResults = groupBenchmarkResults(benchmarkData);
+
+    // Render the template
+    res.render("index", {
+      benchmarkFiles,
+      selectedFile,
+      groupedResults,
+      benchmarkData: groupedResults,
+    });
   } catch (error) {
-    console.error("Error generating visualization:", error);
-    res.status(500).send("Error generating visualization");
+    console.error("Error rendering visualization:", error);
+    res.status(500).send("Error rendering visualization");
   }
 });
 
 // Start the server
-app.listen(PORT, () => {
-  console.log(`🚀 Visualization server running at http://localhost:${PORT}`);
-  console.log(`🔍 Open your browser to view benchmark results`);
-});
+async function startServer() {
+  try {
+    await initialize();
+    app.listen(PORT, () => {
+      console.log(
+        `🚀 Visualization server running at http://localhost:${PORT}`
+      );
+      console.log(`🔍 Open your browser to view benchmark results`);
+    });
+  } catch (error) {
+    console.error("Error starting server:", error);
+    process.exit(1);
+  }
+}
+
+startServer();
