@@ -73,13 +73,9 @@ export async function runSingleTest(
     );
     const generatedCode = await llmProvider.generateCode(prompt);
 
-    // Write the generated code to a file - always use "Component.svelte"
+    // Write the generated code to a single file - always use "Component.svelte"
     const componentFilename = "Component.svelte";
     await writeToTmpFile(componentFilename, generatedCode);
-
-    // Also write a copy using the old naming pattern so tests still work with their original imports
-    const originalComponentFilename = `${test.name}.svelte`;
-    await writeToTmpFile(originalComponentFilename, generatedCode);
 
     // Copy the test file to the tmp directory - no modifications to test files
     const testContent = await readFile(test.testPath);
