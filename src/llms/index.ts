@@ -14,6 +14,12 @@ export interface LLMProvider {
    * @returns The generated code
    */
   generateCode(prompt: string): Promise<string>;
+
+  /**
+   * Get the model identifier that was used for generation
+   * @returns The model identifier string
+   */
+  getModelIdentifier(): string;
 }
 
 /**
@@ -28,6 +34,9 @@ export async function getLLMProvider(
     case "openai":
       const { OpenAIProvider } = await import("./openai");
       return new OpenAIProvider();
+    case "anthropic":
+      const { AnthropicProvider } = await import("./anthropic");
+      return new AnthropicProvider();
     default:
       throw new Error(`Unknown LLM provider: ${providerName}`);
   }

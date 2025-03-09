@@ -19,10 +19,16 @@ bun install
 cp .env.example .env
 ```
 
-Then edit the `.env` file and add your OpenAI API key:
+Then edit the `.env` file and add your API keys:
 
 ```
-OPENAI_API_KEY=your_api_key_here
+# OpenAI Configuration
+OPENAI_API_KEY=your_openai_api_key_here
+OPENAI_MODEL=gpt-4o
+
+# Anthropic Configuration
+ANTHROPIC_API_KEY=your_anthropic_api_key_here
+ANTHROPIC_MODEL=claude-3-sonnet-20240229
 ```
 
 ## Running the Benchmark
@@ -33,6 +39,9 @@ npm start
 
 # Or override settings from command line
 LLM_PROVIDER=openai OPENAI_API_KEY=your_api_key_here npm start
+
+# Using Anthropic provider
+LLM_PROVIDER=anthropic ANTHROPIC_API_KEY=your_api_key_here npm start
 ```
 
 ## Visualizing Results
@@ -78,15 +87,18 @@ src/tests/your-test/
 
 SvelteBench uses the following environment variables, which can be set in the `.env` file:
 
-- `LLM_PROVIDER`: The LLM provider to use (currently only supports 'openai')
+- `LLM_PROVIDER`: The LLM provider to use ('openai' or 'anthropic')
 - `OPENAI_API_KEY`: Your OpenAI API key (required for using the OpenAI provider)
-- `OPENAI_MODEL`: OpenAI model to use (optional, defaults to 'gpt-4')
+- `OPENAI_MODEL`: OpenAI model to use (optional, defaults to 'gpt-4o')
+- `ANTHROPIC_API_KEY`: Your Anthropic API key (required for using the Anthropic provider)
+- `ANTHROPIC_MODEL`: Anthropic model to use (optional, defaults to 'claude-3-sonnet-20240229')
 
 ## Requirements
 
 - Node.js v23 (specified in .nvmrc)
 - TypeScript 5+ (peer dependency)
 - OpenAI API key (for using the OpenAI provider)
+- Anthropic API key (for using the Anthropic provider)
 
 ## Benchmark Results
 

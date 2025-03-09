@@ -41,9 +41,9 @@ export class OpenAIProvider implements LLMProvider {
 
       // Clean up any markdown code block indicators if present
       return generatedCode
-        .replace(/```svelte\s*/, "")
-        .replace(/```html\s*/, "")
-        .replace(/```\s*$/, "")
+        .replace(/\`\`\`svelte\s*/, "")
+        .replace(/\`\`\`html\s*/, "")
+        .replace(/\`\`\`\s*$/, "")
         .trim();
     } catch (error) {
       console.error("Error generating code with OpenAI:", error);
@@ -53,5 +53,13 @@ export class OpenAIProvider implements LLMProvider {
         }`
       );
     }
+  }
+
+  /**
+   * Get the model identifier that was used for generation
+   * @returns The model identifier string
+   */
+  getModelIdentifier(): string {
+    return process.env.OPENAI_MODEL || "gpt-4o";
   }
 }

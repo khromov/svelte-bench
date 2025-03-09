@@ -106,7 +106,7 @@ async function generateVisualizationHtml() {
       
       // Create header row
       const headerRow = document.createElement('tr');
-      ['Test', 'Status', 'Tests Passed', 'Errors', 'View Code'].forEach(headerText => {
+      ['Test', 'Status', 'LLM', 'Model', 'Tests Passed', 'Errors', 'View Code'].forEach(headerText => {
         const th = document.createElement('th');
         th.textContent = headerText;
         headerRow.appendChild(th);
@@ -130,6 +130,16 @@ async function generateVisualizationHtml() {
           statusCell.innerHTML = '<span class="failure">❌ FAIL</span>';
         }
         row.appendChild(statusCell);
+        
+        // LLM Provider
+        const providerCell = document.createElement('td');
+        providerCell.textContent = result.llmProvider || 'N/A';
+        row.appendChild(providerCell);
+        
+        // Model Identifier
+        const modelCell = document.createElement('td');
+        modelCell.textContent = result.modelIdentifier || 'N/A';
+        row.appendChild(modelCell);
         
         // Tests passed
         const testsCell = document.createElement('td');
@@ -185,6 +195,8 @@ async function generateVisualizationHtml() {
           
           testDetails.innerHTML = \`
             <h3>Test Results</h3>
+            <p>LLM Provider: \${result.llmProvider || 'N/A'}</p>
+            <p>Model: \${result.modelIdentifier || 'N/A'}</p>
             \${errorsHtml}
             <p>Total Tests: \${result.testResult.totalTests}</p>
             <p>Passed: \${result.testResult.totalTests - result.testResult.failedTests}</p>

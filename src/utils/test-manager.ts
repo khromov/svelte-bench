@@ -14,6 +14,7 @@ export interface TestDefinition {
 export interface BenchmarkResult {
   testName: string;
   llmProvider: string;
+  modelIdentifier: string;
   generatedCode: string;
   testResult: TestResult;
   promptPath: string;
@@ -100,6 +101,7 @@ export async function runSingleTest(
     return {
       testName: test.name,
       llmProvider: llmProvider.name,
+      modelIdentifier: llmProvider.getModelIdentifier(),
       generatedCode,
       testResult,
       promptPath: test.promptPath,
@@ -112,6 +114,7 @@ export async function runSingleTest(
     return {
       testName: test.name,
       llmProvider: llmProvider.name,
+      modelIdentifier: llmProvider.getModelIdentifier(),
       generatedCode: "",
       testResult: {
         testName: test.name,
