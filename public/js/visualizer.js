@@ -8,15 +8,37 @@ function escapeHtml(unsafe) {
     .replace(/'/g, "&#039;");
 }
 
+// Function to decode base64 data
+function decodeBase64Data() {
+  const encodedData = document
+    .getElementById("benchmark-data")
+    .getAttribute("data-json");
+  if (!encodedData) {
+    console.error("No encoded data found");
+    return [];
+  }
+
+  try {
+    const jsonString = atob(encodedData);
+    return JSON.parse(jsonString);
+  } catch (error) {
+    console.error("Error decoding benchmark data:", error);
+    return [];
+  }
+}
+
 // Function to show code modal
 function showCodeModal(provider, model, resultIndex) {
   const codeModal = document.getElementById("code-modal");
   const codeDisplay = document.getElementById("code-display");
   const modalTitle = document.getElementById("modal-title");
 
+  // Get the benchmark data
+  const benchmarkData = decodeBase64Data();
+
   // Find the result in the benchmark data
   let result = null;
-  for (const providerData of window.benchmarkData) {
+  for (const providerData of benchmarkData) {
     if (providerData.provider === provider) {
       for (const [modelName, results] of Object.entries(providerData.models)) {
         if (modelName === model) {
