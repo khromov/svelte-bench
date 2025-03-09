@@ -8,7 +8,7 @@ export interface TestResult {
   testFiles: number;
   totalTests: number;
   failedTests: number;
-  error?: string;
+  errors: string[]; // All errors that occurred during test execution
 }
 
 /**
@@ -41,6 +41,17 @@ export async function runTest(testName: string): Promise<TestResult> {
     // Cancel the force exit timeout
     clearTimeout(forceExitTimeout);
 
+    // Collect all errors
+    const allErrors: string[] = [];
+
+    // Get unhandled errors
+    const unhandledErrors = vitest.state.getUnhandledErrors();
+    for (const error of unhandledErrors) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      allErrors.push(errorMessage);
+    }
+
     // Calculate success/failure
     let success = true;
     let totalTests = 0;
@@ -53,13 +64,21 @@ export async function runTest(testName: string): Promise<TestResult> {
         testFiles: 0,
         totalTests: 0,
         failedTests: 0,
-        error: "No test modules found",
+        errors: allErrors,
       };
     }
 
     for (const module of testModules) {
       if (!module.ok()) {
         success = false;
+      }
+
+      // Add module errors
+      const moduleErrors = module.errors();
+      for (const error of moduleErrors) {
+        if (error.message) {
+          allErrors.push(error.message);
+        }
       }
 
       if (!module.children) {
@@ -72,12 +91,24 @@ export async function runTest(testName: string): Promise<TestResult> {
 
         const moduleFailedTests = tests.filter((t) => {
           const result = t.result();
+
+          // Collect test errors
+          if (result.state === "failed" && result.errors) {
+            for (const testError of result.errors) {
+              if (testError.message) {
+                allErrors.push(testError.message);
+              }
+            }
+          }
+
           return result.state === "failed";
         });
 
         failedTests += moduleFailedTests.length;
       } catch (err) {
         console.error(`Error processing module tests for ${testName}:`, err);
+        const errorMessage = err instanceof Error ? err.message : String(err);
+        allErrors.push(errorMessage);
         success = false;
       }
     }
@@ -88,12 +119,14 @@ export async function runTest(testName: string): Promise<TestResult> {
       testFiles: testModules.length,
       totalTests,
       failedTests,
+      errors: allErrors,
     };
 
     console.log(`📊 Test results for ${testName}:`);
     console.log(`   Success: ${result.success ? "Yes ✅" : "No ❌"}`);
     console.log(`   Total Tests: ${result.totalTests}`);
     console.log(`   Failed Tests: ${result.failedTests}`);
+    console.log(`   Errors: ${result.errors.length}`);
 
     return result;
   } catch (error) {
@@ -109,7 +142,7 @@ export async function runTest(testName: string): Promise<TestResult> {
       testFiles: 0,
       totalTests: 0,
       failedTests: 0,
-      error: errorMessage,
+      errors: [errorMessage],
     };
   }
 }

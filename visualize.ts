@@ -106,7 +106,7 @@ async function generateVisualizationHtml() {
       
       // Create header row
       const headerRow = document.createElement('tr');
-      ['Test', 'Status', 'Tests Passed', 'View Code'].forEach(headerText => {
+      ['Test', 'Status', 'Tests Passed', 'Errors', 'View Code'].forEach(headerText => {
         const th = document.createElement('th');
         th.textContent = headerText;
         headerRow.appendChild(th);
@@ -136,6 +136,16 @@ async function generateVisualizationHtml() {
         testsCell.textContent = \`\${result.testResult.totalTests - result.testResult.failedTests}/\${result.testResult.totalTests}\`;
         row.appendChild(testsCell);
         
+        // Errors count
+        const errorsCell = document.createElement('td');
+        const errorCount = result.testResult.errors ? result.testResult.errors.length : 0;
+        if (errorCount > 0) {
+          errorsCell.innerHTML = \`<span class="failure">\${errorCount}</span>\`;
+        } else {
+          errorsCell.textContent = '0';
+        }
+        row.appendChild(errorsCell);
+        
         // View code button
         const codeCell = document.createElement('td');
         const codeButton = document.createElement('button');
@@ -155,13 +165,31 @@ async function generateVisualizationHtml() {
           // Add test results details
           const testDetails = document.createElement('div');
           testDetails.className = 'test-details';
+          
+          // Create errors section if there are errors
+          let errorsHtml = '';
+          if (result.testResult.errors && result.testResult.errors.length > 0) {
+            errorsHtml = \`
+              <div class="errors-section">
+                <h4>Errors (\${result.testResult.errors.length})</h4>
+                <div class="error-list">
+                  \${result.testResult.errors.map(error => 
+                    \`<div class="error-item">
+                      <pre>\${escapeHtml(error)}</pre>
+                    </div>\`
+                  ).join('')}
+                </div>
+              </div>
+            \`;
+          }
+          
           testDetails.innerHTML = \`
             <h3>Test Results</h3>
+            \${errorsHtml}
             <p>Total Tests: \${result.testResult.totalTests}</p>
             <p>Passed: \${result.testResult.totalTests - result.testResult.failedTests}</p>
             <p>Failed: \${result.testResult.failedTests}</p>
             <p>Generated at: \${new Date(result.timestamp).toLocaleString()}</p>
-            \${result.testResult.error ? \`<p class="error">Error: \${result.testResult.error}</p>\` : ''}
           \`;
           codeDisplay.appendChild(testDetails);
           
@@ -254,7 +282,7 @@ async function generateVisualizationHtml() {
             color: #333;
           }
           
-          h1, h2, h3 {
+          h1, h2, h3, h4 {
             margin-top: 0;
           }
           
@@ -305,6 +333,33 @@ async function generateVisualizationHtml() {
             background-color: #fff5f5;
             border-radius: 5px;
             margin: 15px 0;
+          }
+          
+          .errors-section {
+            margin: 15px 0;
+          }
+          
+          .error-list {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+          }
+          
+          .error-item {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+            background-color: #fff5f5;
+          }
+          
+          .error-item:last-child {
+            border-bottom: none;
+          }
+          
+          .error-item pre {
+            margin: 0;
+            white-space: pre-wrap;
+            font-size: 14px;
           }
           
           .view-code-button {
