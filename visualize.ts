@@ -95,126 +95,192 @@ async function generateVisualizationHtml() {
       return response.json();
     }
     
+    // Function to group benchmark results
+    function groupBenchmarkResults(results) {
+      // First group by provider
+      const byProvider = {};
+      
+      // Ensure Anthropic comes first, then OpenAI
+      results.forEach(result => {
+        if (!byProvider[result.llmProvider]) {
+          byProvider[result.llmProvider] = [];
+        }
+        byProvider[result.llmProvider].push(result);
+      });
+      
+      // Sort providers to ensure Anthropic is first, then OpenAI
+      const sortedProviders = Object.keys(byProvider).sort((a, b) => {
+        if (a === 'Anthropic') return -1;
+        if (b === 'Anthropic') return 1;
+        if (a === 'OpenAI') return -1;
+        if (b === 'OpenAI') return 1;
+        return a.localeCompare(b);
+      });
+      
+      // Build the final structure
+      const groupedResults = [];
+      sortedProviders.forEach(provider => {
+        const providerData = {
+          provider,
+          models: {}
+        };
+        
+        // Group by model
+        byProvider[provider].forEach(result => {
+          if (!providerData.models[result.modelIdentifier]) {
+            providerData.models[result.modelIdentifier] = [];
+          }
+          providerData.models[result.modelIdentifier].push(result);
+        });
+        
+        groupedResults.push(providerData);
+      });
+      
+      return groupedResults;
+    }
+    
     // Function to render benchmark results
     function renderBenchmark(benchmark, container) {
       // Clear existing content
       container.innerHTML = '';
       
-      // Create a table for the results
-      const table = document.createElement('table');
-      table.className = 'results-table';
+      // Group the results
+      const groupedResults = groupBenchmarkResults(benchmark);
       
-      // Create header row
-      const headerRow = document.createElement('tr');
-      ['Test', 'Status', 'LLM', 'Model', 'Tests Passed', 'Errors', 'View Code'].forEach(headerText => {
-        const th = document.createElement('th');
-        th.textContent = headerText;
-        headerRow.appendChild(th);
+      // Create a container for the grouped results
+      const resultsContainer = document.createElement('div');
+      resultsContainer.className = 'grouped-results';
+      
+      // Create the provider sections
+      groupedResults.forEach(providerData => {
+        const providerSection = document.createElement('div');
+        providerSection.className = 'provider-section';
+        
+        const providerHeader = document.createElement('h2');
+        providerHeader.textContent = providerData.provider;
+        providerSection.appendChild(providerHeader);
+        
+        // Create model sections
+        Object.keys(providerData.models).forEach(model => {
+          const modelSection = document.createElement('div');
+          modelSection.className = 'model-section';
+          
+          const modelHeader = document.createElement('h3');
+          modelHeader.textContent = model;
+          modelSection.appendChild(modelHeader);
+          
+          // Create a table for this model's results
+          const table = document.createElement('table');
+          table.className = 'results-table';
+          
+          // Create header row
+          const headerRow = document.createElement('tr');
+          ['Test', 'Status', 'Tests Passed', 'Errors', 'View Code'].forEach(headerText => {
+            const th = document.createElement('th');
+            th.textContent = headerText;
+            headerRow.appendChild(th);
+          });
+          table.appendChild(headerRow);
+          
+          // Add test results for this model
+          providerData.models[model].forEach(result => {
+            const row = document.createElement('tr');
+            
+            // Test name
+            const nameCell = document.createElement('td');
+            nameCell.textContent = result.testName;
+            row.appendChild(nameCell);
+            
+            // Status
+            const statusCell = document.createElement('td');
+            if (result.testResult.success) {
+              statusCell.innerHTML = '<span class="success">✅ PASS</span>';
+            } else {
+              statusCell.innerHTML = '<span class="failure">❌ FAIL</span>';
+            }
+            row.appendChild(statusCell);
+            
+            // Tests passed
+            const testsCell = document.createElement('td');
+            testsCell.textContent = \`\${result.testResult.totalTests - result.testResult.failedTests}/\${result.testResult.totalTests}\`;
+            row.appendChild(testsCell);
+            
+            // Errors count
+            const errorsCell = document.createElement('td');
+            const errorCount = result.testResult.errors ? result.testResult.errors.length : 0;
+            if (errorCount > 0) {
+              errorsCell.innerHTML = \`<span class="failure">\${errorCount}</span>\`;
+            } else {
+              errorsCell.textContent = '0';
+            }
+            row.appendChild(errorsCell);
+            
+            // View code button
+            const codeCell = document.createElement('td');
+            const codeButton = document.createElement('button');
+            codeButton.textContent = 'View Code';
+            codeButton.className = 'view-code-button';
+            codeButton.onclick = () => {
+              const codeModal = document.getElementById('code-modal');
+              const codeDisplay = document.getElementById('code-display');
+              const modalTitle = document.getElementById('modal-title');
+              
+              // Set the title and code content
+              modalTitle.textContent = \`\${result.testName} (\${result.testResult.success ? 'PASS' : 'FAIL'}) - \${result.llmProvider} \${result.modelIdentifier}\`;
+              
+              // Format the code with syntax highlighting
+              codeDisplay.innerHTML = \`<pre><code class="language-svelte">\${escapeHtml(result.generatedCode)}</code></pre>\`;
+              
+              // Add test results details
+              const testDetails = document.createElement('div');
+              testDetails.className = 'test-details';
+              
+              // Create errors section if there are errors
+              let errorsHtml = '';
+              if (result.testResult.errors && result.testResult.errors.length > 0) {
+                errorsHtml = \`
+                  <div class="errors-section">
+                    <h4>Errors (\${result.testResult.errors.length})</h4>
+                    <div class="error-list">
+                      \${result.testResult.errors.map(error => 
+                        \`<div class="error-item">
+                          <pre>\${escapeHtml(error)}</pre>
+                        </div>\`
+                      ).join('')}
+                    </div>
+                  </div>
+                \`;
+              }
+              
+              testDetails.innerHTML = \`
+                <h3>Test Results</h3>
+                <p>LLM Provider: \${result.llmProvider || 'N/A'}</p>
+                <p>Model: \${result.modelIdentifier || 'N/A'}</p>
+                \${errorsHtml}
+                <p>Total Tests: \${result.testResult.totalTests}</p>
+                <p>Passed: \${result.testResult.totalTests - result.testResult.failedTests}</p>
+                <p>Failed: \${result.testResult.failedTests}</p>
+                <p>Generated at: \${new Date(result.timestamp).toLocaleString()}</p>
+              \`;
+              codeDisplay.appendChild(testDetails);
+              
+              // Show the modal
+              codeModal.style.display = 'block';
+            };
+            codeCell.appendChild(codeButton);
+            row.appendChild(codeCell);
+            
+            table.appendChild(row);
+          });
+          
+          modelSection.appendChild(table);
+          providerSection.appendChild(modelSection);
+        });
+        
+        resultsContainer.appendChild(providerSection);
       });
-      table.appendChild(headerRow);
       
-      // Create a row for each test
-      benchmark.forEach(result => {
-        const row = document.createElement('tr');
-        
-        // Test name
-        const nameCell = document.createElement('td');
-        nameCell.textContent = result.testName;
-        row.appendChild(nameCell);
-        
-        // Status
-        const statusCell = document.createElement('td');
-        if (result.testResult.success) {
-          statusCell.innerHTML = '<span class="success">✅ PASS</span>';
-        } else {
-          statusCell.innerHTML = '<span class="failure">❌ FAIL</span>';
-        }
-        row.appendChild(statusCell);
-        
-        // LLM Provider
-        const providerCell = document.createElement('td');
-        providerCell.textContent = result.llmProvider || 'N/A';
-        row.appendChild(providerCell);
-        
-        // Model Identifier
-        const modelCell = document.createElement('td');
-        modelCell.textContent = result.modelIdentifier || 'N/A';
-        row.appendChild(modelCell);
-        
-        // Tests passed
-        const testsCell = document.createElement('td');
-        testsCell.textContent = \`\${result.testResult.totalTests - result.testResult.failedTests}/\${result.testResult.totalTests}\`;
-        row.appendChild(testsCell);
-        
-        // Errors count
-        const errorsCell = document.createElement('td');
-        const errorCount = result.testResult.errors ? result.testResult.errors.length : 0;
-        if (errorCount > 0) {
-          errorsCell.innerHTML = \`<span class="failure">\${errorCount}</span>\`;
-        } else {
-          errorsCell.textContent = '0';
-        }
-        row.appendChild(errorsCell);
-        
-        // View code button
-        const codeCell = document.createElement('td');
-        const codeButton = document.createElement('button');
-        codeButton.textContent = 'View Code';
-        codeButton.className = 'view-code-button';
-        codeButton.onclick = () => {
-          const codeModal = document.getElementById('code-modal');
-          const codeDisplay = document.getElementById('code-display');
-          const modalTitle = document.getElementById('modal-title');
-          
-          // Set the title and code content
-          modalTitle.textContent = \`\${result.testName} (\${result.testResult.success ? 'PASS' : 'FAIL'})\`;
-          
-          // Format the code with syntax highlighting
-          codeDisplay.innerHTML = \`<pre><code class="language-svelte">\${escapeHtml(result.generatedCode)}</code></pre>\`;
-          
-          // Add test results details
-          const testDetails = document.createElement('div');
-          testDetails.className = 'test-details';
-          
-          // Create errors section if there are errors
-          let errorsHtml = '';
-          if (result.testResult.errors && result.testResult.errors.length > 0) {
-            errorsHtml = \`
-              <div class="errors-section">
-                <h4>Errors (\${result.testResult.errors.length})</h4>
-                <div class="error-list">
-                  \${result.testResult.errors.map(error => 
-                    \`<div class="error-item">
-                      <pre>\${escapeHtml(error)}</pre>
-                    </div>\`
-                  ).join('')}
-                </div>
-              </div>
-            \`;
-          }
-          
-          testDetails.innerHTML = \`
-            <h3>Test Results</h3>
-            <p>LLM Provider: \${result.llmProvider || 'N/A'}</p>
-            <p>Model: \${result.modelIdentifier || 'N/A'}</p>
-            \${errorsHtml}
-            <p>Total Tests: \${result.testResult.totalTests}</p>
-            <p>Passed: \${result.testResult.totalTests - result.testResult.failedTests}</p>
-            <p>Failed: \${result.testResult.failedTests}</p>
-            <p>Generated at: \${new Date(result.timestamp).toLocaleString()}</p>
-          \`;
-          codeDisplay.appendChild(testDetails);
-          
-          // Show the modal
-          codeModal.style.display = 'block';
-        };
-        codeCell.appendChild(codeButton);
-        row.appendChild(codeCell);
-        
-        table.appendChild(row);
-      });
-      
-      container.appendChild(table);
+      container.appendChild(resultsContainer);
     }
     
     // Function to escape HTML
@@ -306,6 +372,37 @@ async function generateVisualizationHtml() {
             font-size: 16px;
             width: 100%;
             max-width: 400px;
+          }
+          
+          .provider-section {
+            margin-bottom: 30px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 15px;
+            background-color: #f8fafc;
+          }
+          
+          .provider-section h2 {
+            margin-top: 0;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e2e8f0;
+            color: #2563eb;
+          }
+          
+          .model-section {
+            margin: 15px 0;
+            padding: 15px;
+            border-radius: 6px;
+            background-color: #fff;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+          }
+          
+          .model-section h3 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            color: #1e40af;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 8px;
           }
           
           .results-table {
@@ -441,6 +538,10 @@ async function generateVisualizationHtml() {
             margin-top: 20px;
             padding-top: 20px;
             border-top: 1px solid #ddd;
+          }
+          
+          .grouped-results {
+            margin-top: 20px;
           }
         </style>
       </head>
