@@ -73,27 +73,18 @@ export async function runSingleTest(
     );
     const generatedCode = await llmProvider.generateCode(prompt);
 
-    // Write the generated code to a file
-    const componentFilename = `${test.name}.svelte`;
+    // Write the generated code to a file - always use "Component.svelte"
+    const componentFilename = "Component.svelte";
     await writeToTmpFile(componentFilename, generatedCode);
 
-    // Copy the test file to the tmp directory
+    // Also write a copy using the old naming pattern so tests still work with their original imports
+    const originalComponentFilename = `${test.name}.svelte`;
+    await writeToTmpFile(originalComponentFilename, generatedCode);
+
+    // Copy the test file to the tmp directory - no modifications to test files
     const testContent = await readFile(test.testPath);
-
-    // Fix import paths - find any imports referencing our component and fix the path
-    // This is more robust than a simple regex replace
-    const modifiedTestContent = testContent
-      .replace(
-        /import\s+(\w+)\s+from\s+["'].*["'];?.*\/\/\s*Path to the generated component/,
-        `import $1 from "./${test.name}.svelte"; // Path to the generated component`
-      )
-      .replace(
-        /import\s+(\w+)\s+from\s+["'].*tmp\/.*\.svelte["']/,
-        `import $1 from "./${test.name}.svelte"`
-      );
-
     const testFilename = `${test.name}.test.ts`;
-    await writeToTmpFile(testFilename, modifiedTestContent);
+    await writeToTmpFile(testFilename, testContent);
 
     // Run the test
     const testResult = await runTest(test.name);
@@ -122,7 +113,7 @@ export async function runSingleTest(
         testFiles: 0,
         totalTests: 0,
         failedTests: 0,
-        error: errorMessage,
+        errors: [errorMessage],
       },
       promptPath: test.promptPath,
       timestamp: new Date().toISOString(),

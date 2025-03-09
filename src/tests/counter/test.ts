@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/svelte";
 import { expect, test, describe } from "vitest";
 import userEvent from "@testing-library/user-event";
-import Counter from "./Counter.svelte"; // Path to the generated component
+import Counter from "./Component.svelte"; // Path to the generated component
 
 describe("Counter component", () => {
   test("renders with initial count of 0", () => {

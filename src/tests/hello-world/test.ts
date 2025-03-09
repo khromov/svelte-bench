@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/svelte";
 import { expect, test, describe } from "vitest";
-import HelloWorld from "./HelloWorld.svelte"; // Path to the generated component
+import HelloWorld from "./Component.svelte"; // Path to the generated component
 
 describe("HelloWorld component", () => {
   test("renders with Hello, World! text", () => {

@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/svelte";
 import { expect, test, describe } from "vitest";
-import Card from "./Card.svelte";
+import Card from "./Component.svelte";
 
 describe("Card component", () => {
   test("renders with default props", () => {
