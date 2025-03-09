@@ -23,4 +23,4 @@ Example structure:
 </div>
 ```
 
-Please implement this component using Svelte 5 syntax.
+Please implement this component using Svelte 5 syntax. Make sure you only return one component.

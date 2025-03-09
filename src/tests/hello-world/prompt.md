@@ -17,4 +17,4 @@ Example structure (you can modify it as needed):
 <div data-testid="greeting" class="greeting">Hello, World!</div>
 ```
 
-Please implement this component using Svelte 5 syntax.
+Please implement this component using Svelte 5 syntax. Make sure you only return one component.

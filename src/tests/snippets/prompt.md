@@ -71,4 +71,4 @@ Example usage:
 </Card>
 ```
 
-Please implement this component using Svelte 5 runes and the new snippets syntax.
+Please implement this component using Svelte 5 runes and the new snippets syntax. Make sure you only return one component.
