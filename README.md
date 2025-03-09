@@ -2,6 +2,8 @@
 
 An LLM benchmark for Svelte 5 based on the HumanEval methodology.
 
+**Work in progress**
+
 ## Overview
 
 SvelteBench evaluates LLM-generated Svelte components by testing them against predefined test suites. It works by sending prompts to LLMs, generating Svelte components, and verifying their functionality through automated tests.
