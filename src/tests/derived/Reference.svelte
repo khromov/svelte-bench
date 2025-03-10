@@ -9,8 +9,8 @@
     }
 </script>
   
-  <div>
+<div>
     <p data-testid="number-value">Number: {number}</p>
     <p data-testid="doubled-value">Doubled: {doubled}</p>
     <button data-testid="increment-button" onclick={increment}>Increment</button>
-  </div>
+</div>
