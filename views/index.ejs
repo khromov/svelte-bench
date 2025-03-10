@@ -174,6 +174,28 @@
       background-color: #3182ce;
     }
     
+    /* GitHub link buttons */
+    .github-button {
+      background-color: #f6f8fa;
+      color: #0366d6;
+      border: 1px solid #e1e4e8;
+      padding: 4px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 13px;
+      text-decoration: none;
+      display: inline-block;
+    }
+    
+    .github-button:hover {
+      background-color: #f0f3f6;
+    }
+    
+    .button-group {
+      display: flex;
+      gap: 5px;
+    }
+    
     /* Modal styles */
     .modal {
       display: none;
@@ -391,7 +413,7 @@
                         <th>Status</th>
                         <th>Tests Passed</th>
                         <th>Errors</th>
-                        <th>View Code</th>
+                        <th>Actions</th>
                       </tr>
                       
                       <% results.forEach((result, index) => { %>
@@ -416,10 +438,22 @@
                             <% } %>
                           </td>
                           <td>
-                            <button class="view-code-button" 
-                                    onclick="showCodeModal('<%= providerData.provider %>', '<%= model %>', <%= index %>)">
-                              View Code
-                            </button>
+                            <div class="button-group">
+                              <button class="view-code-button" 
+                                      onclick="showCodeModal('<%= providerData.provider %>', '<%= model %>', <%= index %>)">
+                                View Code
+                              </button>
+                              <a href="https://github.com/khromov/svelte-bench/blob/main/src/tests/<%= result.testName %>/prompt.md" 
+                                 target="_blank" 
+                                 class="github-button">
+                                View prompt.md
+                              </a>
+                              <a href="https://github.com/khromov/svelte-bench/blob/main/src/tests/<%= result.testName %>/test.ts" 
+                                 target="_blank" 
+                                 class="github-button">
+                                View tests.ts
+                              </a>
+                            </div>
                           </td>
                         </tr>
                       <% }); %>
