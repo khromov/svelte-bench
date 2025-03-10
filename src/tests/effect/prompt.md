@@ -1,11 +1,11 @@
 # $effect Rune Component Task
 
-Create a simple Svelte 5 component that demonstrates the `$derived` rune.
+Create a simple Svelte 5 component that demonstrates the `$effect` rune.
 
 ## Requirements:
 
 1. Use `$state` for a number input starting at 5
-2. Use `$derived` to calculate the doubled value of the number
+2. Use `$effect` to calculate the doubled value of the number
 3. Display both the number and the doubled value
 4. Include a button to increment the number by 1
 
