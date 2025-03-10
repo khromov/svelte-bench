@@ -1,3 +1,5 @@
+<svelte:options runes={true} />
+
 <script>
     let count = $state(0);
   
@@ -10,10 +12,10 @@
     }
   </script>
   
-  <div class="counter"> <!-- TODO: Verify runes mode -->
-    <button data-testid="decrement-button" on:click={decrement}>-</button>
+  <div class="counter">
+    <button data-testid="decrement-button" onclick={decrement}>-</button>
     <span data-testid="count-value">{count}</span>
-    <button data-testid="increment-button" on:click={increment}>+</button>
+    <button data-testid="increment-button" onclick={increment}>+</button>
   </div>
   
   <style>

@@ -1,3 +1,5 @@
+<svelte:options runes={true} />
+
 <div data-testid="greeting" class="greeting">Hello, World!</div>
 
 <style>
