@@ -11,7 +11,7 @@
 <div>
   <ul data-testid="colors-list">
     {#each colors as color, i}
-      <li data-testid="color-{i}">{i + 1}: {color}</li>
+      <li data-testid="color-{i}">{color}</li>
     {/each}
   </ul>
   <button data-testid="uppercase-button" onclick={makeUppercase}>

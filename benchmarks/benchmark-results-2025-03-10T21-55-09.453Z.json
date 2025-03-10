@@ -1,0 +1,590 @@
+[
+  {
+    "testName": "counter",
+    "llmProvider": "OpenAI",
+    "modelIdentifier": "gpt-4o",
+    "generatedCode": "<script>\n  $state = {\n    count: 0\n  };\n\n  function increment() {\n    $state.count += 1;\n  }\n\n  function decrement() {\n    $state.count -= 1;\n  }\n</script>\n\n<div class=\"counter\">\n  <button data-testid=\"decrement-button\" on:click={decrement}>-</button>\n  <span data-testid=\"count-value\">{$state.count}</span>\n  <button data-testid=\"increment-button\" on:click={increment}>+</button>\n</div>\n\n<style>\n  .counter {\n    display: flex;\n    align-items: center;\n    gap: 10px;\n  }\n</style>",
+    "testResult": {
+      "testName": "counter",
+      "success": false,
+      "testFiles": 1,
+      "totalTests": 0,
+      "failedTests": 0,
+      "errors": [
+        "tmp/Component.svelte:2:2 Cannot use rune without parentheses\nhttps://svelte.dev/e/rune_missing_parentheses"
+      ]
+    },
+    "promptPath": "/Users/k/Documents/GitHub/svelte-bench/src/tests/counter/prompt.md",
+    "timestamp": "2025-03-10T21:52:27.905Z"
+  },
+  {
+    "testName": "derived",
+    "llmProvider": "OpenAI",
+    "modelIdentifier": "gpt-4o",
+    "generatedCode": "<script>\n\tlet $number = $state(5);\n\tlet $doubled = $derived($number, $n => $n * 2);\n\n\tfunction increment() {\n\t\t$number = $number + 1;\n\t}\n</script>\n\n<div>\n\t<p data-testid=\"number-value\">Number: {$number}</p>\n\t<p data-testid=\"doubled-value\">Doubled: {$doubled}</p>\n\t<button data-testid=\"increment-button\" on:click={increment}>Increment</button>\n</div>",
+    "testResult": {
+      "testName": "derived",
+      "success": false,
+      "testFiles": 1,
+      "totalTests": 0,
+      "failedTests": 0,
+      "errors": [
+        "tmp/Component.svelte:2:5 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
+      ]
+    },
+    "promptPath": "/Users/k/Documents/GitHub/svelte-bench/src/tests/derived/prompt.md",
+    "timestamp": "2025-03-10T21:52:31.259Z"
+  },
+  {
+    "testName": "each",
+    "llmProvider": "OpenAI",
+    "modelIdentifier": "gpt-4o",
+    "generatedCode": "<script>\n\tlet colors = [\"Red\", \"Green\", \"Blue\"];\n\n\tfunction makeUppercase() {\n\t\tcolors = colors.map(color => color.toUpperCase());\n\t}\n</script>\n\n<div>\n\t<ul data-testid=\"colors-list\">\n\t\t{#each colors as color, index}\n\t\t\t<li data-testid={`color-${index}`}>{index} {color}</li>\n\t\t{/each}\n\t</ul>\n\t<button data-testid=\"uppercase-button\" on:click={makeUppercase}>\n\t\tMake Uppercase\n\t</button>\n</div>",
+    "testResult": {
+      "testName": "each",
+      "success": true,
+      "testFiles": 1,
+      "totalTests": 2,
+      "failedTests": 0,
+      "errors": []
+    },
+    "promptPath": "/Users/k/Documents/GitHub/svelte-bench/src/tests/each/prompt.md",
+    "timestamp": "2025-03-10T21:52:38.664Z"
+  },
+  {
+    "testName": "effect",
+    "llmProvider": "OpenAI",
+    "modelIdentifier": "gpt-4o",
+    "generatedCode": "<script>\n\timport { $state, $effect } from 'svelte';\n\n\tconst number = $state(5);\n\tlet doubled = number * 2;\n\n\t$effect(() => {\n\t\tdoubled = number * 2;\n\t});\n</script>\n\n<div>\n\t<p data-testid=\"number-value\">Number: {number}</p>\n\t<p data-testid=\"doubled-value\">Doubled: {doubled}</p>\n\t<button data-testid=\"increment-button\" on:click={() => number.set(number + 1)}>Increment</button>\n</div>",
+    "testResult": {
+      "testName": "effect",
+      "success": false,
+      "testFiles": 1,
+      "totalTests": 0,
+      "failedTests": 0,
+      "errors": [
+        "tmp/Component.svelte:2:10 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
+      ]
+    },
+    "promptPath": "/Users/k/Documents/GitHub/svelte-bench/src/tests/effect/prompt.md",
+    "timestamp": "2025-03-10T21:52:43.652Z"
+  },
+  {
+    "testName": "hello-world",
+    "llmProvider": "OpenAI",
+    "modelIdentifier": "gpt-4o",
+    "generatedCode": "<script>\n\t// No script needed for this simple component\n</script>\n\n<style>\n\t.greeting {\n\t\tcolor: blue;\n\t\tmargin: 10px;\n\t\ttext-align: center;\n\t}\n\thtml, body {\n\t\theight: 100%;\n\t\tmargin: 0;\n\t\tdisplay: flex;\n\t\talign-items: center;\n\t\tjustify-content: center;\n\t}\n</style>\n\n<div data-testid=\"greeting\" class=\"greeting\">\n\tHello, World!\n</div>",
+    "testResult": {
+      "testName": "hello-world",
+      "success": true,
+      "testFiles": 1,
+      "totalTests": 2,
+      "failedTests": 0,
+      "errors": []
+    },
+    "promptPath": "/Users/k/Documents/GitHub/svelte-bench/src/tests/hello-world/prompt.md",
+    "timestamp": "2025-03-10T21:52:47.530Z"
+  },
+  {
+    "testName": "counter",
+    "llmProvider": "OpenAI",
+    "modelIdentifier": "o3-mini",
+    "generatedCode": "<script>\n\t$state count = 0;\n\tfunction increment() {\n\t\tcount += 1;\n\t}\n\tfunction decrement() {\n\t\tcount -= 1;\n\t}\n</script>\n\n<div class=\"counter\">\n\t<button data-testid=\"decrement-button\" on:click={decrement}>-</button>\n\t<span data-testid=\"count-value\">{count}</span>\n\t<button data-testid=\"increment-button\" on:click={increment}>+</button>\n</div>\n\n<style>\n\t.counter {\n\t\tdisplay: inline-flex;\n\t\talign-items: center;\n\t\tgap: 0.5rem;\n\t}\n</style>",
+    "testResult": {
+      "testName": "counter",
+      "success": false,
+      "testFiles": 1,
+      "totalTests": 0,
+      "failedTests": 0,
+      "errors": [
+        "tmp/Component.svelte:2:8 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+      ]
+    },
+    "promptPath": "/Users/k/Documents/GitHub/svelte-bench/src/tests/counter/prompt.md",
+    "timestamp": "2025-03-10T21:52:54.292Z"
+  },
+  {
+    "testName": "derived",
+    "llmProvider": "OpenAI",
+    "modelIdentifier": "o3-mini",
+    "generatedCode": "<script>\n\t$state let number = 5;\n\t$derived let doubled = number * 2;\n\t\n\tfunction increment() {\n\t\tnumber++;\n\t}\n</script>\n\n<div>\n\t<p data-testid=\"number-value\">Number: {number}</p>\n\t<p data-testid=\"doubled-value\">Doubled: {doubled}</p>\n\t<button data-testid=\"increment-button\" on:click={increment}>Increment</button>\n</div>",
+    "testResult": {
+      "testName": "derived",
+      "success": false,
+      "testFiles": 1,
+      "totalTests": 0,
+      "failedTests": 0,
+      "errors": [
+        "tmp/Component.svelte:2:8 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+      ]
+    },
+    "promptPath": "/Users/k/Documents/GitHub/svelte-bench/src/tests/derived/prompt.md",
+    "timestamp": "2025-03-10T21:53:03.156Z"
+  },
+  {
+    "testName": "each",
+    "llmProvider": "OpenAI",
+    "modelIdentifier": "o3-mini",
+    "generatedCode": "<script>\n  let colors = [\"Red\", \"Green\", \"Blue\"]\n\n  function makeUppercase() {\n    colors = colors.map(color => color.toUpperCase())\n  }\n</script>\n\n<div>\n  <ul data-testid=\"colors-list\">\n    {#each colors as color, index}\n      <li data-testid={\"color-\" + index}>{index} {color}</li>\n    {/each}\n  </ul>\n  <button data-testid=\"uppercase-button\" on:click={makeUppercase}>Make Uppercase</button>\n</div>",
+    "testResult": {
+      "testName": "each",
+      "success": true,
+      "testFiles": 1,
+      "totalTests": 2,
+      "failedTests": 0,
+      "errors": []
+    },
+    "promptPath": "/Users/k/Documents/GitHub/svelte-bench/src/tests/each/prompt.md",
+    "timestamp": "2025-03-10T21:53:07.602Z"
+  },
+  {
+    "testName": "effect",
+    "llmProvider": "OpenAI",
+    "modelIdentifier": "o3-mini",
+    "generatedCode": "<script>\n\t$state number = 5\n\t$state doubled\n\n\t$effect(() => {\n\t\tdoubled = number * 2\n\t})\n\n\tfunction increment() {\n\t\tnumber = number + 1\n\t}\n</script>\n\n<div>\n\t<p data-testid=\"number-value\">Number: {number}</p>\n\t<p data-testid=\"doubled-value\">Doubled: {doubled}</p>\n\t<button data-testid=\"increment-button\" on:click={increment}>Increment</button>\n</div>",
+    "testResult": {
+      "testName": "effect",
+      "success": false,
+      "testFiles": 1,
+      "totalTests": 0,
+      "failedTests": 0,
+      "errors": [
+        "tmp/Component.svelte:2:8 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+      ]
+    },
+    "promptPath": "/Users/k/Documents/GitHub/svelte-bench/src/tests/effect/prompt.md",
+    "timestamp": "2025-03-10T21:53:12.847Z"
+  },
+  {
+    "testName": "hello-world",
+    "llmProvider": "OpenAI",
+    "modelIdentifier": "o3-mini",
+    "generatedCode": "<script>\n  // No additional logic needed\n</script>\n\n<style>\n  .greeting {\n    color: blue;\n    text-align: center;\n    margin: 10px;\n  }\n</style>\n\n<div data-testid=\"greeting\" class=\"greeting\">Hello, World!</div>",
+    "testResult": {
+      "testName": "hello-world",
+      "success": true,
+      "testFiles": 1,
+      "totalTests": 2,
+      "failedTests": 0,
+      "errors": []
+    },
+    "promptPath": "/Users/k/Documents/GitHub/svelte-bench/src/tests/hello-world/prompt.md",
+    "timestamp": "2025-03-10T21:53:16.042Z"
+  },
+  {
+    "testName": "counter",
+    "llmProvider": "Anthropic",
+    "modelIdentifier": "claude-3-7-sonnet-20250219",
+    "generatedCode": "<script>\n  let count = $state(0);\n\n  function increment() {\n    count++;\n  }\n\n  function decrement() {\n    count--;\n  }\n</script>\n\n<div class=\"counter\">\n  <button data-testid=\"decrement-button\" on:click={decrement}>-</button>\n  <span data-testid=\"count-value\">{count}</span>\n  <button data-testid=\"increment-button\" on:click={increment}>+</button>\n</div>\n\n<style>\n  .counter {\n    display: flex;\n    align-items: center;\n    gap: 1rem;\n  }\n\n  button {\n    width: 2rem;\n    height: 2rem;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    font-size: 1.2rem;\n    cursor: pointer;\n  }\n\n  span {\n    font-size: 1.2rem;\n    min-width: 2rem;\n    text-align: center;\n  }\n</style>",
+    "testResult": {
+      "testName": "counter",
+      "success": true,
+      "testFiles": 1,
+      "totalTests": 4,
+      "failedTests": 0,
+      "errors": []
+    },
+    "promptPath": "/Users/k/Documents/GitHub/svelte-bench/src/tests/counter/prompt.md",
+    "timestamp": "2025-03-10T21:53:23.392Z"
+  },
+  {
+    "testName": "derived",
+    "llmProvider": "Anthropic",
+    "modelIdentifier": "claude-3-7-sonnet-20250219",
+    "generatedCode": "<script>\n\tlet number = $state(5);\n\tlet doubled = $derived(number * 2);\n\t\n\tfunction increment() {\n\t\tnumber += 1;\n\t}\n</script>\n\n<div>\n\t<p data-testid=\"number-value\">Number: {number}</p>\n\t<p data-testid=\"doubled-value\">Doubled: {doubled}</p>\n\t<button data-testid=\"increment-button\" on:click={increment}>Increment</button>\n</div>",
+    "testResult": {
+      "testName": "derived",
+      "success": true,
+      "testFiles": 1,
+      "totalTests": 2,
+      "failedTests": 0,
+      "errors": []
+    },
+    "promptPath": "/Users/k/Documents/GitHub/svelte-bench/src/tests/derived/prompt.md",
+    "timestamp": "2025-03-10T21:53:26.884Z"
+  },
+  {
+    "testName": "each",
+    "llmProvider": "Anthropic",
+    "modelIdentifier": "claude-3-7-sonnet-20250219",
+    "generatedCode": "<script>\n  import { state } from 'svelte';\n  \n  let colors = state([\"Red\", \"Green\", \"Blue\"]);\n  \n  function makeUppercase() {\n    colors.update(c => c.map(color => color.toUpperCase()));\n  }\n</script>\n\n<div>\n  <ul data-testid=\"colors-list\">\n    {#each $colors as color, index}\n      <li data-testid=\"color-{index}\">{index}: {color}</li>\n    {/each}\n  </ul>\n  <button data-testid=\"uppercase-button\" on:click={makeUppercase}>Make Uppercase</button>\n</div>",
+    "testResult": {
+      "testName": "each",
+      "success": false,
+      "testFiles": 1,
+      "totalTests": 2,
+      "failedTests": 2,
+      "errors": [
+        "(0 , state) is not a function",
+        "(0 , state) is not a function"
+      ]
+    },
+    "promptPath": "/Users/k/Documents/GitHub/svelte-bench/src/tests/each/prompt.md",
+    "timestamp": "2025-03-10T21:53:34.824Z"
+  },
+  {
+    "testName": "effect",
+    "llmProvider": "Anthropic",
+    "modelIdentifier": "claude-3-7-sonnet-20250219",
+    "generatedCode": "<script>\n\tlet number = $state(5);\n\tlet doubled = $state(0);\n\n\t$effect(() => {\n\t\tdoubled = number * 2;\n\t});\n\n\tfunction increment() {\n\t\tnumber += 1;\n\t}\n</script>\n\n<div>\n\t<p data-testid=\"number-value\">Number: {number}</p>\n\t<p data-testid=\"doubled-value\">Doubled: {doubled}</p>\n\t<button data-testid=\"increment-button\" on:click={increment}>Increment</button>\n</div>",
+    "testResult": {
+      "testName": "effect",
+      "success": true,
+      "testFiles": 1,
+      "totalTests": 2,
+      "failedTests": 0,
+      "errors": []
+    },
+    "promptPath": "/Users/k/Documents/GitHub/svelte-bench/src/tests/effect/prompt.md",
+    "timestamp": "2025-03-10T21:53:38.916Z"
+  },
+  {
+    "testName": "hello-world",
+    "llmProvider": "Anthropic",
+    "modelIdentifier": "claude-3-7-sonnet-20250219",
+    "generatedCode": "<script>\n</script>\n\n<div data-testid=\"greeting\" class=\"greeting\">Hello, World!</div>\n\n<style>\n  .greeting {\n    color: blue;\n    text-align: center;\n    margin: 1rem;\n  }\n</style>",
+    "testResult": {
+      "testName": "hello-world",
+      "success": true,
+      "testFiles": 1,
+      "totalTests": 2,
+      "failedTests": 0,
+      "errors": []
+    },
+    "promptPath": "/Users/k/Documents/GitHub/svelte-bench/src/tests/hello-world/prompt.md",
+    "timestamp": "2025-03-10T21:53:41.084Z"
+  },
+  {
+    "testName": "counter",
+    "llmProvider": "Anthropic",
+    "modelIdentifier": "claude-3-5-sonnet-20241022",
+    "generatedCode": "<script>\nlet count = $state(0);\n\nfunction increment() {\n  count++;\n}\n\nfunction decrement() {\n  count--;\n}\n</script>\n\n<div class=\"counter\">\n  <button data-testid=\"decrement-button\" on:click={decrement}>-</button>\n  <span data-testid=\"count-value\">{count}</span>\n  <button data-testid=\"increment-button\" on:click={increment}>+</button>\n</div>\n\n<style>\n.counter {\n  display: flex;\n  align-items: center;\n  gap: 1rem;\n}\n\nbutton {\n  padding: 0.5rem 1rem;\n  font-size: 1.2rem;\n  cursor: pointer;\n}\n\nspan {\n  font-size: 1.2rem;\n  min-width: 2rem;\n  text-align: center;\n}\n</style>",
+    "testResult": {
+      "testName": "counter",
+      "success": true,
+      "testFiles": 1,
+      "totalTests": 4,
+      "failedTests": 0,
+      "errors": []
+    },
+    "promptPath": "/Users/k/Documents/GitHub/svelte-bench/src/tests/counter/prompt.md",
+    "timestamp": "2025-03-10T21:53:45.499Z"
+  },
+  {
+    "testName": "derived",
+    "llmProvider": "Anthropic",
+    "modelIdentifier": "claude-3-5-sonnet-20241022",
+    "generatedCode": "<script>\nlet number = $state(5);\nlet doubled = $derived(number * 2);\n\nfunction increment() {\n  number++;\n}\n</script>\n\n<div>\n  <p data-testid=\"number-value\">Number: {number}</p>\n  <p data-testid=\"doubled-value\">Doubled: {doubled}</p>\n  <button data-testid=\"increment-button\" on:click={increment}>Increment</button>\n</div>",
+    "testResult": {
+      "testName": "derived",
+      "success": true,
+      "testFiles": 1,
+      "totalTests": 2,
+      "failedTests": 0,
+      "errors": []
+    },
+    "promptPath": "/Users/k/Documents/GitHub/svelte-bench/src/tests/derived/prompt.md",
+    "timestamp": "2025-03-10T21:53:49.515Z"
+  },
+  {
+    "testName": "each",
+    "llmProvider": "Anthropic",
+    "modelIdentifier": "claude-3-5-sonnet-20241022",
+    "generatedCode": "<script>\n  let { state } = $;\n  \n  const colors = state([\"Red\", \"Green\", \"Blue\"]);\n  \n  function makeUppercase() {\n    colors.update(c => c.map(color => color.toUpperCase()));\n  }\n</script>\n\n<div>\n  <ul data-testid=\"colors-list\">\n    {#each $colors as color, i}\n      <li data-testid=\"color-{i}\">{i} - {color}</li>\n    {/each}\n  </ul>\n  \n  <button \n    data-testid=\"uppercase-button\"\n    on:click={makeUppercase}\n  >\n    Make Uppercase\n  </button>\n</div>",
+    "testResult": {
+      "testName": "each",
+      "success": false,
+      "testFiles": 1,
+      "totalTests": 0,
+      "failedTests": 0,
+      "errors": [
+        "tmp/Component.svelte:2:18 `$` is an illegal variable name. To reference a global variable called `$`, use `globalThis.$`\nhttps://svelte.dev/e/global_reference_invalid"
+      ]
+    },
+    "promptPath": "/Users/k/Documents/GitHub/svelte-bench/src/tests/each/prompt.md",
+    "timestamp": "2025-03-10T21:53:54.010Z"
+  },
+  {
+    "testName": "effect",
+    "llmProvider": "Anthropic",
+    "modelIdentifier": "claude-3-5-sonnet-20241022",
+    "generatedCode": "<script>\n  let number = $state(5);\n  let doubled = $derived(number * 2);\n\n  function increment() {\n    number++;\n  }\n</script>\n\n<div>\n  <p data-testid=\"number-value\">Number: {number}</p>\n  <p data-testid=\"doubled-value\">Doubled: {doubled}</p>\n  <button data-testid=\"increment-button\" on:click={increment}>\n    Increment\n  </button>\n</div>",
+    "testResult": {
+      "testName": "effect",
+      "success": true,
+      "testFiles": 1,
+      "totalTests": 2,
+      "failedTests": 0,
+      "errors": []
+    },
+    "promptPath": "/Users/k/Documents/GitHub/svelte-bench/src/tests/effect/prompt.md",
+    "timestamp": "2025-03-10T21:53:57.580Z"
+  },
+  {
+    "testName": "hello-world",
+    "llmProvider": "Anthropic",
+    "modelIdentifier": "claude-3-5-sonnet-20241022",
+    "generatedCode": "<div data-testid=\"greeting\" class=\"greeting\">Hello, World!</div>\n\n<style>\n    .greeting {\n        color: blue;\n        text-align: center;\n        margin: 1rem;\n    }\n</style>",
+    "testResult": {
+      "testName": "hello-world",
+      "success": true,
+      "testFiles": 1,
+      "totalTests": 2,
+      "failedTests": 0,
+      "errors": []
+    },
+    "promptPath": "/Users/k/Documents/GitHub/svelte-bench/src/tests/hello-world/prompt.md",
+    "timestamp": "2025-03-10T21:53:59.634Z"
+  },
+  {
+    "testName": "counter",
+    "llmProvider": "Anthropic",
+    "modelIdentifier": "claude-3-5-sonnet-20240620",
+    "generatedCode": "<script>\n  let count = $state(0);\n\n  function increment() {\n    count++;\n  }\n\n  function decrement() {\n    count--;\n  }\n</script>\n\n<div class=\"counter\">\n  <button data-testid=\"decrement-button\" on:click={decrement}>-</button>\n  <span data-testid=\"count-value\">{count}</span>\n  <button data-testid=\"increment-button\" on:click={increment}>+</button>\n</div>\n\n<style>\n  .counter {\n    display: flex;\n    align-items: center;\n    gap: 10px;\n  }\n\n  button {\n    padding: 5px 10px;\n    font-size: 16px;\n  }\n\n  span {\n    font-size: 18px;\n    font-weight: bold;\n  }\n</style>",
+    "testResult": {
+      "testName": "counter",
+      "success": true,
+      "testFiles": 1,
+      "totalTests": 4,
+      "failedTests": 0,
+      "errors": []
+    },
+    "promptPath": "/Users/k/Documents/GitHub/svelte-bench/src/tests/counter/prompt.md",
+    "timestamp": "2025-03-10T21:54:03.582Z"
+  },
+  {
+    "testName": "derived",
+    "llmProvider": "Anthropic",
+    "modelIdentifier": "claude-3-5-sonnet-20240620",
+    "generatedCode": "<script>\n  let number = $state(5);\n  let doubled = $derived(number * 2);\n\n  function increment() {\n    number++;\n  }\n</script>\n\n<div>\n  <p data-testid=\"number-value\">Number: {number}</p>\n  <p data-testid=\"doubled-value\">Doubled: {doubled}</p>\n  <button data-testid=\"increment-button\" on:click={increment}>Increment</button>\n</div>",
+    "testResult": {
+      "testName": "derived",
+      "success": true,
+      "testFiles": 1,
+      "totalTests": 2,
+      "failedTests": 0,
+      "errors": []
+    },
+    "promptPath": "/Users/k/Documents/GitHub/svelte-bench/src/tests/derived/prompt.md",
+    "timestamp": "2025-03-10T21:54:06.447Z"
+  },
+  {
+    "testName": "each",
+    "llmProvider": "Anthropic",
+    "modelIdentifier": "claude-3-5-sonnet-20240620",
+    "generatedCode": "<script>\n  import { let } from 'svelte/runes';\n\n  let colors = ['Red', 'Green', 'Blue'];\n  let isUppercase = $let(false);\n\n  function makeUppercase() {\n    isUppercase.set(true);\n  }\n</script>\n\n<div>\n  <ul data-testid=\"colors-list\">\n    {#each colors as color, index}\n      <li data-testid=\"color-{index}\">\n        {index + 1}: {$isUppercase ? color.toUpperCase() : color}\n      </li>\n    {/each}\n  </ul>\n  <button data-testid=\"uppercase-button\" on:click={makeUppercase}>\n    Make Uppercase\n  </button>\n</div>",
+    "testResult": {
+      "testName": "each",
+      "success": false,
+      "testFiles": 1,
+      "totalTests": 0,
+      "failedTests": 0,
+      "errors": [
+        "tmp/Component.svelte:2:11 The keyword 'let' is reserved\nhttps://svelte.dev/e/js_parse_error"
+      ]
+    },
+    "promptPath": "/Users/k/Documents/GitHub/svelte-bench/src/tests/each/prompt.md",
+    "timestamp": "2025-03-10T21:54:10.575Z"
+  },
+  {
+    "testName": "effect",
+    "llmProvider": "Anthropic",
+    "modelIdentifier": "claude-3-5-sonnet-20240620",
+    "generatedCode": "<script>\n  let number = $state(5);\n  let doubled = $derived(number * 2);\n\n  $effect(() => {\n    doubled = number * 2;\n  });\n\n  function increment() {\n    number += 1;\n  }\n</script>\n\n<div>\n  <p data-testid=\"number-value\">Number: {number}</p>\n  <p data-testid=\"doubled-value\">Doubled: {doubled}</p>\n  <button data-testid=\"increment-button\" on:click={increment}>Increment</button>\n</div>",
+    "testResult": {
+      "testName": "effect",
+      "success": false,
+      "testFiles": 1,
+      "totalTests": 0,
+      "failedTests": 0,
+      "errors": [
+        "tmp/Component.svelte:6:4 Cannot assign to derived state\nhttps://svelte.dev/e/constant_assignment"
+      ]
+    },
+    "promptPath": "/Users/k/Documents/GitHub/svelte-bench/src/tests/effect/prompt.md",
+    "timestamp": "2025-03-10T21:54:13.558Z"
+  },
+  {
+    "testName": "hello-world",
+    "llmProvider": "Anthropic",
+    "modelIdentifier": "claude-3-5-sonnet-20240620",
+    "generatedCode": "<script>\n</script>\n\n<div data-testid=\"greeting\" class=\"greeting\">Hello, World!</div>\n\n<style>\n  .greeting {\n    color: blue;\n    text-align: center;\n    margin: 10px;\n  }\n</style>",
+    "testResult": {
+      "testName": "hello-world",
+      "success": true,
+      "testFiles": 1,
+      "totalTests": 2,
+      "failedTests": 0,
+      "errors": []
+    },
+    "promptPath": "/Users/k/Documents/GitHub/svelte-bench/src/tests/hello-world/prompt.md",
+    "timestamp": "2025-03-10T21:54:15.585Z"
+  },
+  {
+    "testName": "counter",
+    "llmProvider": "Anthropic",
+    "modelIdentifier": "claude-3-5-haiku-20241022",
+    "generatedCode": "<script>\n\tlet count = $state(0);\n</script>\n\n<div class=\"counter\">\n\t<button \n\t\tdata-testid=\"decrement-button\" \n\t\ton:click={() => count--}\n\t>\n\t\t-\n\t</button>\n\t<span data-testid=\"count-value\">{count}</span>\n\t<button \n\t\tdata-testid=\"increment-button\" \n\t\ton:click={() => count++}\n\t>\n\t\t+\n\t</button>\n</div>\n\n<style>\n\t.counter {\n\t\tdisplay: flex;\n\t\talign-items: center;\n\t\tgap: 10px;\n\t}\n</style>",
+    "testResult": {
+      "testName": "counter",
+      "success": true,
+      "testFiles": 1,
+      "totalTests": 4,
+      "failedTests": 0,
+      "errors": []
+    },
+    "promptPath": "/Users/k/Documents/GitHub/svelte-bench/src/tests/counter/prompt.md",
+    "timestamp": "2025-03-10T21:54:19.275Z"
+  },
+  {
+    "testName": "derived",
+    "llmProvider": "Anthropic",
+    "modelIdentifier": "claude-3-5-haiku-20241022",
+    "generatedCode": "<script>\n  let number = $state(5)\n  const doubled = $derived(number * 2)\n\n  function increment() {\n    number += 1\n  }\n</script>\n\n<div>\n  <p data-testid=\"number-value\">Number: {number}</p>\n  <p data-testid=\"doubled-value\">Doubled: {doubled}</p>\n  <button data-testid=\"increment-button\" on:click={increment}>Increment</button>\n</div>",
+    "testResult": {
+      "testName": "derived",
+      "success": true,
+      "testFiles": 1,
+      "totalTests": 2,
+      "failedTests": 0,
+      "errors": []
+    },
+    "promptPath": "/Users/k/Documents/GitHub/svelte-bench/src/tests/derived/prompt.md",
+    "timestamp": "2025-03-10T21:54:23.311Z"
+  },
+  {
+    "testName": "each",
+    "llmProvider": "Anthropic",
+    "modelIdentifier": "claude-3-5-haiku-20241022",
+    "generatedCode": "<script lang=\"ts\">\n  let colors = ['Red', 'Green', 'Blue'];\n\n  function makeUppercase() {\n    colors = colors.map(color => color.toUpperCase());\n  }\n</script>\n\n<div>\n  <ul data-testid=\"colors-list\">\n    {#each colors as color, index}\n      <li data-testid=\"color-{index}\">{color}</li>\n    {/each}\n  </ul>\n  <button data-testid=\"uppercase-button\" on:click={makeUppercase}>\n    Make Uppercase\n  </button>\n</div>",
+    "testResult": {
+      "testName": "each",
+      "success": true,
+      "testFiles": 1,
+      "totalTests": 2,
+      "failedTests": 0,
+      "errors": []
+    },
+    "promptPath": "/Users/k/Documents/GitHub/svelte-bench/src/tests/each/prompt.md",
+    "timestamp": "2025-03-10T21:54:27.212Z"
+  },
+  {
+    "testName": "effect",
+    "llmProvider": "Anthropic",
+    "modelIdentifier": "claude-3-5-haiku-20241022",
+    "generatedCode": "<script>\n  let number = $state(5)\n  let doubled = $state(0)\n\n  $effect(() => {\n    doubled = number * 2\n  })\n\n  function incrementNumber() {\n    number += 1\n  }\n</script>\n\n<div>\n  <p data-testid=\"number-value\">Number: {number}</p>\n  <p data-testid=\"doubled-value\">Doubled: {doubled}</p>\n  <button data-testid=\"increment-button\" on:click={incrementNumber}>Increment</button>\n</div>",
+    "testResult": {
+      "testName": "effect",
+      "success": true,
+      "testFiles": 1,
+      "totalTests": 2,
+      "failedTests": 0,
+      "errors": []
+    },
+    "promptPath": "/Users/k/Documents/GitHub/svelte-bench/src/tests/effect/prompt.md",
+    "timestamp": "2025-03-10T21:54:30.527Z"
+  },
+  {
+    "testName": "hello-world",
+    "llmProvider": "Anthropic",
+    "modelIdentifier": "claude-3-5-haiku-20241022",
+    "generatedCode": "<script lang=\"ts\">\n  let message = \"Hello, World!\";\n</script>\n\n<div data-testid=\"greeting\" class=\"greeting\">\n  {message}\n</div>\n\n<style>\n  .greeting {\n    color: blue;\n    text-align: center;\n    margin: 20px;\n    font-size: 24px;\n  }\n</style>",
+    "testResult": {
+      "testName": "hello-world",
+      "success": true,
+      "testFiles": 1,
+      "totalTests": 2,
+      "failedTests": 0,
+      "errors": []
+    },
+    "promptPath": "/Users/k/Documents/GitHub/svelte-bench/src/tests/hello-world/prompt.md",
+    "timestamp": "2025-03-10T21:54:33.092Z"
+  },
+  {
+    "testName": "counter",
+    "llmProvider": "Anthropic",
+    "modelIdentifier": "claude-3-opus-20240229",
+    "generatedCode": "<script>\n  import { state } from 'svelte/state';\n  \n  const count = state(0);\n  \n  function increment() {\n    $count += 1;\n  }\n  \n  function decrement() {\n    $count -= 1;\n  }\n</script>\n\n<div class=\"counter\">\n  <button data-testid=\"decrement-button\" on:click={decrement}>-</button>\n  <span data-testid=\"count-value\">{$count}</span>\n  <button data-testid=\"increment-button\" on:click={increment}>+</button>\n</div>\n\n<style>\n  .counter {\n    display: flex;\n    align-items: center;\n    gap: 1rem;\n  }\n  \n  button {\n    font-size: 1.5rem;\n    padding: 0.5rem 1rem;\n  }\n  \n  span {\n    font-size: 2rem;\n  }\n</style>",
+    "testResult": {
+      "testName": "counter",
+      "success": false,
+      "testFiles": 1,
+      "totalTests": 0,
+      "failedTests": 0,
+      "errors": [
+        "Missing \"./state\" specifier in \"svelte\" package"
+      ]
+    },
+    "promptPath": "/Users/k/Documents/GitHub/svelte-bench/src/tests/counter/prompt.md",
+    "timestamp": "2025-03-10T21:54:43.655Z"
+  },
+  {
+    "testName": "derived",
+    "llmProvider": "Anthropic",
+    "modelIdentifier": "claude-3-opus-20240229",
+    "generatedCode": "<script>\n  let number = $state(5);\n  \n  $effect(() => console.log(`The number is now: ${$number}`));\n\n  const doubled = $derived(() => $number * 2);\n\n  function increment() {\n    $number += 1;\n  }\n</script>\n\n<div>\n  <p data-testid=\"number-value\">Number: {$number}</p>\n  <p data-testid=\"doubled-value\">Doubled: {$doubled}</p>\n  <button data-testid=\"increment-button\" on:click={increment}>\n    Increment\n  </button>\n</div>",
+    "testResult": {
+      "testName": "derived",
+      "success": false,
+      "testFiles": 1,
+      "totalTests": 2,
+      "failedTests": 2,
+      "errors": [
+        "store_invalid_shape\n`number` is not a store with a `subscribe` method\nhttps://svelte.dev/e/store_invalid_shape\n\n\tin {expression}\n\tin Component.svelte\n",
+        "store_invalid_shape\n`number` is not a store with a `subscribe` method\nhttps://svelte.dev/e/store_invalid_shape\n\n\tin {expression}\n\tin Component.svelte\n"
+      ]
+    },
+    "promptPath": "/Users/k/Documents/GitHub/svelte-bench/src/tests/derived/prompt.md",
+    "timestamp": "2025-03-10T21:54:51.657Z"
+  },
+  {
+    "testName": "each",
+    "llmProvider": "Anthropic",
+    "modelIdentifier": "claude-3-opus-20240229",
+    "generatedCode": "<script>\n  let colors = ['Red', 'Green', 'Blue'];\n  let uppercase = false;\n\n  function makeUppercase() {\n    uppercase = !uppercase;\n  }\n</script>\n\n<div>\n  <ul data-testid=\"colors-list\">\n    {#each colors as color, i}\n      <li data-testid=\"color-{i}\">{uppercase ? color.toUpperCase() : color}</li>\n    {/each}\n  </ul>\n  <button data-testid=\"uppercase-button\" on:click={makeUppercase}>\n    Make Uppercase\n  </button>\n</div>",
+    "testResult": {
+      "testName": "each",
+      "success": true,
+      "testFiles": 1,
+      "totalTests": 2,
+      "failedTests": 0,
+      "errors": []
+    },
+    "promptPath": "/Users/k/Documents/GitHub/svelte-bench/src/tests/each/prompt.md",
+    "timestamp": "2025-03-10T21:54:59.750Z"
+  },
+  {
+    "testName": "effect",
+    "llmProvider": "Anthropic",
+    "modelIdentifier": "claude-3-opus-20240229",
+    "generatedCode": "<script>\n  let number = $state(5);\n  \n  $effect(() => {\n    doubled = number * 2;\n  });\n</script>\n\n<div>\n  <p data-testid=\"number-value\">Number: {$number}</p>\n  <p data-testid=\"doubled-value\">Doubled: {$doubled}</p>\n  <button data-testid=\"increment-button\" on:click={() => $number++}>\n    Increment\n  </button>\n</div>",
+    "testResult": {
+      "testName": "effect",
+      "success": false,
+      "testFiles": 1,
+      "totalTests": 0,
+      "failedTests": 0,
+      "errors": [
+        "tmp/Component.svelte:11:43 `$doubled` is an illegal variable name. To reference a global variable called `$doubled`, use `globalThis.$doubled`\nhttps://svelte.dev/e/global_reference_invalid"
+      ]
+    },
+    "promptPath": "/Users/k/Documents/GitHub/svelte-bench/src/tests/effect/prompt.md",
+    "timestamp": "2025-03-10T21:55:06.066Z"
+  },
+  {
+    "testName": "hello-world",
+    "llmProvider": "Anthropic",
+    "modelIdentifier": "claude-3-opus-20240229",
+    "generatedCode": "<script>\n</script>\n\n<div data-testid=\"greeting\" class=\"greeting\">Hello, World!</div>\n\n<style>\n  .greeting {\n    color: blue;\n    text-align: center;\n    margin: 10px;\n  }\n</style>",
+    "testResult": {
+      "testName": "hello-world",
+      "success": true,
+      "testFiles": 1,
+      "totalTests": 2,
+      "failedTests": 0,
+      "errors": []
+    },
+    "promptPath": "/Users/k/Documents/GitHub/svelte-bench/src/tests/hello-world/prompt.md",
+    "timestamp": "2025-03-10T21:55:09.453Z"
+  }
+]

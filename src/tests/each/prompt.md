@@ -20,7 +20,7 @@ Example structure:
 ```html
 <div>
   <ul data-testid="colors-list">
-    <li data-testid="color-{0}">{1}: Red</li>
+    <li data-testid="color-{0}">Red</li>
     ...
   </ul>
   <button data-testid="uppercase-button">Make Uppercase</button>
