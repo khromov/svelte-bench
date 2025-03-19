@@ -33,10 +33,10 @@ async function loadBenchmarkFiles(): Promise<
     })
   );
 
-  // Sort all files by name using natural sort order
-  // Natural sort handles numbers within strings intelligently
+  // Sort all files by name using reverse natural sort order (Z to A)
+  // By swapping the arguments (b, a instead of a, b), we get the reverse order
   fileDetails.sort((a, b) => {
-    return a.name.localeCompare(b.name, undefined, {
+    return b.name.localeCompare(a.name, undefined, {
       numeric: true,
       sensitivity: "base",
     });
