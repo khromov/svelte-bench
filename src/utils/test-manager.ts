@@ -71,7 +71,13 @@ export async function runSingleTest(
     console.log(
       `🔄 Generating ${test.name} component with ${llmProvider.name}...`
     );
-    const generatedCode = await llmProvider.generateCode(prompt);
+    let generatedCode = await llmProvider.generateCode(prompt);
+
+    // Check if the generated code already includes <svelte:options runes={true} />
+    if (!generatedCode.includes("<svelte:options runes={true} />")) {
+      // Prepend it to the generated code
+      generatedCode = "<svelte:options runes={true} />\n\n" + generatedCode;
+    }
 
     // Write the generated code to a single file - always use "Component.svelte"
     const componentFilename = "Component.svelte";
