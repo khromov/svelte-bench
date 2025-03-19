@@ -20,8 +20,8 @@ async function loadBenchmarkFiles(): Promise<
   // Filter only JSON files
   const jsonFiles = files.filter((file) => file.endsWith(".json"));
 
-  // Sort files by modification date (newest first)
-  const sortedFiles = await Promise.all(
+  // Get file details with modification time
+  const fileDetails = await Promise.all(
     jsonFiles.map(async (file) => {
       const filePath = path.join(benchmarksDir, file);
       const stats = await fs.stat(filePath);
@@ -33,10 +33,16 @@ async function loadBenchmarkFiles(): Promise<
     })
   );
 
-  sortedFiles.sort((a, b) => b.mtime - a.mtime);
+  // Sort all files by name using natural sort order
+  // Natural sort handles numbers within strings intelligently
+  fileDetails.sort((a, b) => {
+    return a.name.localeCompare(b.name, undefined, {
+      numeric: true,
+      sensitivity: "base",
+    });
+  });
 
-  // Return the sorted file details
-  return sortedFiles;
+  return fileDetails;
 }
 
 /**
