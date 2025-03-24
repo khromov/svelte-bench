@@ -1,58 +1,40 @@
 <svelte:options runes={true} />
 
 <script>
-  let counter = $state(0);
-  let message = $state("Hello");
+  let text = $state("Hello world");
   
   // Basic $inspect usage
-  $inspect(counter);
+  $inspect(text);
   
   // Using $inspect(...).with
-  $inspect(message).with((type, value) => {
+  $inspect(text).with((type, value) => {
     if (type === "update") {
-      console.log(`Message updated to: ${value}`);
+      console.log(`Text updated to: "${value}"`);
     }
   });
   
-  // Using $inspect.trace
+  // Using $inspect.trace inside an effect
   $effect(() => {
-    $inspect.trace("reactive-changes");
-    // This effect runs whenever counter or message changes
-    console.log(`Current values - Counter: ${counter}, Message: ${message}`);
+    $inspect.trace("text-changes");
+    // This will run whenever text changes
+    console.log(`The text is now: "${text}" (${text.length} characters)`);
   });
   
-  function incrementCounter() {
-    counter++;
-  }
+  // Derived value for character count (not necessary for $inspect demo, but shows a common use case)
+  let charCount = $derived(text.length);
 </script>
 
-<div>
-  <div>
-    <p data-testid="counter-value">Counter: {counter}</p>
-    <button data-testid="increment-button" onclick={incrementCounter}>Increment</button>
+<div class="container">
+  <div class="input-group">
+    <label for="text-input">Enter some text:</label>
+    <input 
+      id="text-input"
+      data-testid="text-input" 
+      type="text" 
+      bind:value={text} 
+    />
   </div>
-  <div>
-    <p data-testid="message-value">Message: {message}</p>
-    <input data-testid="message-input" type="text" bind:value={message} />
-  </div>
+  
+  <p data-testid="text-value">Current text: "{text}"</p>
+  <p data-testid="char-count">Character count: {charCount}</p>
 </div>
-
-<style>
-  div {
-    margin-bottom: 1rem;
-  }
-  
-  button {
-    padding: 0.5rem;
-    background-color: #e2e8f0;
-    border: none;
-    border-radius: 0.25rem;
-    cursor: pointer;
-  }
-  
-  input {
-    padding: 0.5rem;
-    border: 1px solid #e2e8f0;
-    border-radius: 0.25rem;
-  }
-</style>

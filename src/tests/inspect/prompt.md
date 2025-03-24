@@ -1,37 +1,25 @@
 # $inspect Rune Component Task
 
-Create a Svelte 5 component that demonstrates the `$inspect` rune functionality.
+Create a Svelte 5 component that demonstrates the `$inspect` rune functionality using a single input field.
 
 ## Requirements:
 
-1. Use Svelte 5's `$state` for reactivity
-2. Create a counter starting at 0 and a message string starting with "Hello"
-3. Use basic `$inspect` to log the counter value
-4. Implement `$inspect(...).with` to track updates to the message with a custom callback
-5. Implement `$inspect.trace()` inside an effect that runs when either value changes
-6. Include a button to increment the counter with `data-testid="increment-button"`
-7. Include an input field to update the message with `data-testid="message-input"`
-8. Display both the counter and message in the component
-
-Elements should have these data-testid attributes:
-
-- "counter-value" for displaying the counter
-- "message-value" for displaying the message
-- "increment-button" for the increment button
-- "message-input" for the message input field
+1. Use Svelte 5's `$state` for a text input starting with "Hello world"
+2. Use basic `$inspect` to log the input value
+3. Implement `$inspect(...).with` to track updates to the input with a custom callback
+4. Implement `$inspect.trace()` inside an effect that runs when the input changes
+5. Display the character count of the input text (to demonstrate a derived value that depends on the input)
+6. Include an input field with `data-testid="text-input"`
+7. Display the input value with `data-testid="text-value"`
+8. Display the character count with `data-testid="char-count"`
 
 Example structure:
 
 ```html
 <div>
-  <div>
-    <p data-testid="counter-value">Counter: {counter}</p>
-    <button data-testid="increment-button">Increment</button>
-  </div>
-  <div>
-    <p data-testid="message-value">Message: {message}</p>
-    <input data-testid="message-input" type="text" bind:value="{message}" />
-  </div>
+  <input data-testid="text-input" type="text" bind:value="{text}" />
+  <p data-testid="text-value">Current text: {text}</p>
+  <p data-testid="char-count">Character count: {text.length}</p>
 </div>
 ```
 

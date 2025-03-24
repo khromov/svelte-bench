@@ -7,101 +7,119 @@ describe("InspectDemo component", () => {
   test("renders with initial state", () => {
     render(InspectDemo);
 
-    // Check initial counter and message values
-    expect(screen.getByTestId("counter-value")).toHaveTextContent("Counter: 0");
-    expect(screen.getByTestId("message-value")).toHaveTextContent(
-      "Message: Hello"
+    // Check initial text value and character count
+    expect(screen.getByTestId("text-value")).toHaveTextContent(
+      'Current text: "Hello world"'
+    );
+    expect(screen.getByTestId("char-count")).toHaveTextContent(
+      "Character count: 11"
     );
   });
 
-  test("updates counter when increment button is clicked", async () => {
+  test("updates text value and character count when input changes", async () => {
     const user = userEvent.setup();
 
-    // Mock console.log to verify $inspect is used
+    // Mock console.log to verify $inspect functionality
     const consoleSpy = vi.spyOn(console, "log");
 
     render(InspectDemo);
 
-    // Click the increment button
-    await user.click(screen.getByTestId("increment-button"));
+    // Update the input field
+    const input = screen.getByTestId("text-input");
+    await user.clear(input);
+    await user.type(input, "Testing $inspect");
 
-    // Check if counter updated
-    expect(screen.getByTestId("counter-value")).toHaveTextContent("Counter: 1");
+    // Check if displayed text updated
+    expect(screen.getByTestId("text-value")).toHaveTextContent(
+      'Current text: "Testing $inspect"'
+    );
 
-    // Check that console.log was called (by $inspect and/or $effect with $inspect.trace)
+    // Check if character count updated
+    expect(screen.getByTestId("char-count")).toHaveTextContent(
+      "Character count: 16"
+    );
+
+    // Verify basic $inspect was called
+    // We can't test this directly, but we can check that console.log was called
     expect(consoleSpy).toHaveBeenCalled();
 
-    // Restore original console.log
-    consoleSpy.mockRestore();
-  });
-
-  test("updates message when input changes", async () => {
-    const user = userEvent.setup();
-
-    // Mock console.log to verify $inspect.with is used
-    const consoleSpy = vi.spyOn(console, "log");
-
-    render(InspectDemo);
-
-    // Change the message input
-    const input = screen.getByTestId("message-input");
-    await user.clear(input);
-    await user.type(input, "New message");
-
-    // Check if message updated
-    expect(screen.getByTestId("message-value")).toHaveTextContent(
-      "Message: New message"
-    );
-
-    // Verify that console.log was called with our custom message
+    // Verify $inspect(...).with was called with our custom message
     expect(consoleSpy).toHaveBeenCalledWith(
-      expect.stringContaining("Message updated to")
+      expect.stringContaining("Text updated to:")
     );
     expect(consoleSpy).toHaveBeenCalledWith(
-      expect.stringContaining("New message")
+      expect.stringContaining("Testing $inspect")
+    );
+
+    // Verify $effect with $inspect.trace was called
+    expect(consoleSpy).toHaveBeenCalledWith(
+      expect.stringContaining("The text is now:")
+    );
+    expect(consoleSpy).toHaveBeenCalledWith(
+      expect.stringContaining("16 characters")
     );
 
     // Restore original console.log
     consoleSpy.mockRestore();
   });
 
-  test("both counter and message updates trigger the effect with $inspect.trace", async () => {
+  test("handles special characters correctly", async () => {
     const user = userEvent.setup();
-
-    // Mock console.log to verify the $effect with $inspect.trace
     const consoleSpy = vi.spyOn(console, "log");
 
     render(InspectDemo);
 
-    // Clear previous calls
-    consoleSpy.mockClear();
-
-    // Update counter
-    await user.click(screen.getByTestId("increment-button"));
-
-    // Check if the effect logged both values
-    expect(consoleSpy).toHaveBeenCalledWith(
-      expect.stringContaining("Current values")
-    );
-    expect(consoleSpy).toHaveBeenCalledWith(
-      expect.stringContaining("Counter: 1")
-    );
-
-    // Clear previous calls
-    consoleSpy.mockClear();
-
-    // Update message
-    const input = screen.getByTestId("message-input");
+    // Update with special characters
+    const input = screen.getByTestId("text-input");
     await user.clear(input);
-    await user.type(input, "Testing");
+    await user.type(input, "!@#$%^&*()");
 
-    // Check if the effect logged both values again
-    expect(consoleSpy).toHaveBeenCalledWith(
-      expect.stringContaining("Current values")
+    // Check if displayed text updated
+    expect(screen.getByTestId("text-value")).toHaveTextContent(
+      'Current text: "!@#$%^&*()"'
     );
-    expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining("Testing"));
 
-    // Restore original console.log
+    // Check if character count is correct
+    expect(screen.getByTestId("char-count")).toHaveTextContent(
+      "Character count: 10"
+    );
+
+    // Verify $inspect.with caught the special characters
+    expect(consoleSpy).toHaveBeenCalledWith(
+      expect.stringContaining("!@#$%^&*()")
+    );
+
+    consoleSpy.mockRestore();
+  });
+
+  test("handles empty input correctly", async () => {
+    const user = userEvent.setup();
+    const consoleSpy = vi.spyOn(console, "log");
+
+    render(InspectDemo);
+
+    // Clear the input
+    const input = screen.getByTestId("text-input");
+    await user.clear(input);
+
+    // Check if displayed text is empty
+    expect(screen.getByTestId("text-value")).toHaveTextContent(
+      'Current text: ""'
+    );
+
+    // Check if character count is zero
+    expect(screen.getByTestId("char-count")).toHaveTextContent(
+      "Character count: 0"
+    );
+
+    // Verify $inspect functionality caught the empty string
+    expect(consoleSpy).toHaveBeenCalledWith(
+      expect.stringContaining('Text updated to: ""')
+    );
+    expect(consoleSpy).toHaveBeenCalledWith(
+      expect.stringContaining("0 characters")
+    );
+
     consoleSpy.mockRestore();
   });
 });
