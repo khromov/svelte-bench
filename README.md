@@ -40,15 +40,10 @@ npm start
 After running the benchmark, you can visualize the results using the built-in visualization tool:
 
 ```bash
-npm run visualize
+npm run build
 ```
 
-This will start a local web server at http://localhost:3000 where you can:
-
-- Select from different benchmark runs
-- View test results
-- Examine the generated code for each test
-- See details about test success/failure
+You can now find the visualization in the `dist` directory.
 
 ## Adding New Tests
 
