@@ -1,20 +1,20 @@
 <svelte:options runes={true} />
 
 <script>
-  let colors = $state(["Red", "Green", "Blue"]);
+  let characters = $state(["Jerry", "Elaine", "Kramer"]);
   
-  function makeUppercase() {
-    colors = colors.map(color => color.toUpperCase());
+  function addGeorge() {
+    characters = [...characters, "George"];
   }
 </script>
 
 <div>
-  <ul data-testid="colors-list">
-    {#each colors as color, i}
-      <li data-testid="color-{i}">{color}</li>
+  <ul data-testid="characters-list">
+    {#each characters as character}
+      <li data-testid="character">{character}</li>
     {/each}
   </ul>
-  <button data-testid="uppercase-button" onclick={makeUppercase}>
-    Make Uppercase
+  <button data-testid="add-george-button" onclick={addGeorge}>
+    Add George
   </button>
 </div>
