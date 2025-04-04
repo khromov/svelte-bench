@@ -1,3 +1,4 @@
+import { DEFAULT_SYSTEM_PROMPT } from "../utils/prompt";
 import type { LLMProvider } from "./index";
 import { Anthropic } from "@anthropic-ai/sdk";
 
@@ -42,7 +43,7 @@ export class AnthropicProvider implements LLMProvider {
             content: [
               {
                 type: "text",
-                text: `You are an expert Svelte developer. Generate only the Svelte component code requested. Return just the code with no explanation, comments, or markdown.\n\n${prompt}`,
+                text: `${DEFAULT_SYSTEM_PROMPT}\n\n${prompt}`,
               },
             ],
           },

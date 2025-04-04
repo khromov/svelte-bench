@@ -1,3 +1,4 @@
+import { DEFAULT_SYSTEM_PROMPT } from "../utils/prompt";
 import type { LLMProvider } from "./index";
 import OpenAI from "openai";
 
@@ -38,8 +39,7 @@ export class OpenAIProvider implements LLMProvider {
         messages: [
           {
             role: "system",
-            content:
-              "You are an expert Svelte developer. Generate only the Svelte component code requested. Return just the code with no explanation, comments, or markdown.",
+            content: DEFAULT_SYSTEM_PROMPT,
           },
           { role: "user", content: prompt },
         ],
