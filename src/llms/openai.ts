@@ -7,10 +7,11 @@ export class OpenAIProvider implements LLMProvider {
   private modelId: string;
   name = "OpenAI";
   private readonly availableModels = [
-    "gpt-4o",
+    //"gpt-4o",
+    "gpt-4o-2024-11-20",
     //"o1-mini",
     //"o1-preview",
-    "o3-mini",
+    //"o3-mini",
     //"o1-mini",
   ];
 
