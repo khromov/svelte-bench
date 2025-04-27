@@ -1,6 +1,6 @@
 import { startVitest } from "vitest/node";
 import path from "path";
-import { TMP_DIR } from "./file";
+import { TMP_DIR, getTestTmpDir } from "./file";
 
 export interface TestResult {
   testName: string;
@@ -28,7 +28,7 @@ export async function runTest(testName: string): Promise<TestResult> {
   try {
     console.log(`🧪 Running tests for ${testName}...`);
 
-    const testFilePath = path.resolve(TMP_DIR, `${testName}.test.ts`);
+    const testFilePath = path.resolve(getTestTmpDir(testName), `${testName}.test.ts`);
 
     const vitest = await startVitest("test", [testFilePath], {
       watch: false,

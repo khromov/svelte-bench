@@ -1,4 +1,4 @@
-import { DEFAULT_SYSTEM_PROMPT } from "../utils/prompt";
+import { getSystemPrompt, getContextPrompt } from "../utils/prompt";
 import type { LLMProvider } from "./index";
 import { Anthropic } from "@anthropic-ai/sdk";
 
@@ -34,16 +34,21 @@ export class AnthropicProvider implements LLMProvider {
         `🤖 Generating code with Anthropic using model: ${this.modelId}...`
       );
 
+      // Get system prompt from markdown file
+      const systemPrompt = await getSystemPrompt();
+      const contextPrompt = await getContextPrompt();
+
       const completion = await this.client.messages.create({
         model: this.modelId,
         max_tokens: 4000,
+        system: systemPrompt + `--- # CONTEXT DOCUMENT\n\n You must read these CAREFULLY and adhere to these rules AT ALL TIMES. \n\n${contextPrompt}`,
         messages: [
           {
             role: "user",
             content: [
               {
                 type: "text",
-                text: `${DEFAULT_SYSTEM_PROMPT}\n\n${prompt}`,
+                text: prompt,
               },
             ],
           },

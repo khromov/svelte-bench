@@ -1,9 +1,13 @@
 import path from "path";
 import fs from "fs/promises";
 import type { LLMProvider } from "../llms";
-import { cleanTmpDir, writeToTmpFile, readFile } from "./file";
+import { cleanTmpDir, writeToTmpFile, readFile, ensureTestTmpDir, getTestTmpDir } from "./file";
 import { runTest } from "./test-runner";
 import type { TestResult } from "./test-runner";
+import { runWithConcurrencyLimit } from "./parallel";
+
+// Number of tests to run in parallel
+const CONCURRENCY_LIMIT = 10;
 
 export interface TestDefinition {
   name: string;
@@ -79,14 +83,17 @@ export async function runSingleTest(
       generatedCode = "<svelte:options runes={true} />\n\n" + generatedCode;
     }
 
+    // Ensure test-specific tmp directory exists
+    await ensureTestTmpDir(test.name);
+    
     // Write the generated code to a single file - always use "Component.svelte"
     const componentFilename = "Component.svelte";
-    await writeToTmpFile(componentFilename, generatedCode);
+    await writeToTmpFile(componentFilename, generatedCode, test.name);
 
     // Copy the test file to the tmp directory - no modifications to test files
     const testContent = await readFile(test.testPath);
     const testFilename = `${test.name}.test.ts`;
-    await writeToTmpFile(testFilename, testContent);
+    await writeToTmpFile(testFilename, testContent, test.name);
 
     // Run the test
     const testResult = await runTest(test.name);
@@ -127,7 +134,8 @@ export async function runSingleTest(
  * Run all tests with the given LLM provider
  */
 export async function runAllTests(
-  llmProvider: LLMProvider
+  llmProvider: LLMProvider,
+  concurrencyLimit: number = CONCURRENCY_LIMIT
 ): Promise<BenchmarkResult[]> {
   try {
     // Clean the tmp directory
@@ -137,19 +145,16 @@ export async function runAllTests(
     const tests = await loadTestDefinitions();
     console.log(`📋 Found ${tests.length} tests to run`);
 
-    // Run each test in sequence
-    const results: BenchmarkResult[] = [];
-
-    for (const test of tests) {
-      // Clean the tmp directory before each test
-      await cleanTmpDir();
-
+    console.log(`🔄 Running tests with concurrency limit: ${concurrencyLimit}`);
+    
+    // Create task functions for each test
+    const tasks = tests.map(test => async () => {
       console.log(`\n🧪 Running test: ${test.name}`);
-      const result = await runSingleTest(test, llmProvider);
-      results.push(result);
-    }
-
-    return results;
+      return await runSingleTest(test, llmProvider);
+    });
+    
+    // Run tasks with concurrency limit
+    return await runWithConcurrencyLimit(tasks, concurrencyLimit);
   } catch (error) {
     console.error("Error running all tests:", error);
     throw error;
