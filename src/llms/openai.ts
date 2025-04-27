@@ -1,4 +1,4 @@
-import { DEFAULT_SYSTEM_PROMPT } from "../utils/prompt";
+import { getSystemPrompt, getContextPrompt } from "../utils/prompt";
 import type { LLMProvider } from "./index";
 import OpenAI from "openai";
 
@@ -34,12 +34,20 @@ export class OpenAIProvider implements LLMProvider {
         `🤖 Generating code with OpenAI using model: ${this.modelId}...`
       );
 
+      // Get system prompt from markdown file
+      const systemPrompt = await getSystemPrompt();
+      const contextPrompt = await getContextPrompt();
+
       const completion = await this.client.chat.completions.create({
         model: this.modelId,
         messages: [
           {
-            role: "system",
-            content: DEFAULT_SYSTEM_PROMPT,
+            role: "developer",
+            content: systemPrompt,
+          },
+          { 
+            role: "developer", 
+            content: contextPrompt 
           },
           { role: "user", content: prompt },
         ],

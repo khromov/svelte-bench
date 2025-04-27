@@ -7,6 +7,8 @@ import { runAllTests, saveBenchmarkResults } from "./src/utils/test-manager";
 import type { BenchmarkResult } from "./src/utils/test-manager";
 import { ensureRequiredDirectories } from "./src/utils/ensure-dirs";
 
+let CONCURRENCY_LIMIT = 3;
+
 /**
  * Main function to run the benchmark
  */
@@ -36,8 +38,8 @@ async function runBenchmark() {
         `\n👉 Running tests with ${providerWithModel.name} (${providerWithModel.modelId})...`
       );
 
-      // Run tests with this provider
-      const results = await runAllTests(providerWithModel.provider);
+      // Run tests with this provider (10 tests in parallel)
+      const results = await runAllTests(providerWithModel.provider, CONCURRENCY_LIMIT);
       allResults.push(...results);
 
       // Clean tmp directory between providers
