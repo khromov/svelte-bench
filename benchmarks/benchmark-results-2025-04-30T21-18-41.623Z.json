@@ -1,0 +1,307 @@
+[
+  {
+    "testName": "counter",
+    "llmProvider": "Google",
+    "modelIdentifier": "gemini-2.5-pro-preview-03-25",
+    "generatedCode": "<svelte:options runes={true} />\n\n<script>\n  let count = $state(0);\n\n  function increment() {\n    count += 1;\n  }\n\n  function decrement() {\n    count -= 1;\n  }\n</script>\n\n<div class=\"counter\">\n  <button data-testid=\"decrement-button\" onclick={decrement}>-</button>\n  <span data-testid=\"count-value\">{count}</span>\n  <button data-testid=\"increment-button\" onclick={increment}>+</button>\n</div>\n\n<style>\n  .counter {\n    display: flex;\n    gap: 0.5rem;\n    align-items: center;\n  }\n  span {\n     min-width: 1rem;\n     text-align: center;\n  }\n</style>",
+    "testResult": {
+      "testName": "counter",
+      "success": true,
+      "testFiles": 1,
+      "totalTests": 4,
+      "failedTests": 0,
+      "errors": []
+    },
+    "promptPath": "/Users/k/Documents/GitHub/svelte-bench/src/tests/counter/prompt.md",
+    "timestamp": "2025-04-30T21:17:14.172Z"
+  },
+  {
+    "testName": "derived",
+    "llmProvider": "Google",
+    "modelIdentifier": "gemini-2.5-pro-preview-03-25",
+    "generatedCode": "<svelte:options runes={true} />\n\n<script>\n  let number = $state(5);\n  let doubled = $derived(number * 2);\n\n  function increment() {\n    number += 1;\n  }\n</script>\n\n<div>\n  <p data-testid=\"number-value\">Number: {number}</p>\n  <p data-testid=\"doubled-value\">Doubled: {doubled}</p>\n  <button data-testid=\"increment-button\" onclick={increment}>Increment</button>\n</div>",
+    "testResult": {
+      "testName": "derived",
+      "success": true,
+      "testFiles": 1,
+      "totalTests": 2,
+      "failedTests": 0,
+      "errors": []
+    },
+    "promptPath": "/Users/k/Documents/GitHub/svelte-bench/src/tests/derived/prompt.md",
+    "timestamp": "2025-04-30T21:17:19.081Z"
+  },
+  {
+    "testName": "derived-by",
+    "llmProvider": "Google",
+    "modelIdentifier": "gemini-2.5-pro-preview-03-25",
+    "generatedCode": "<svelte:options runes={true} />\n\n<script>\n  let text = $state('');\n\n  const stats = $derived.by(() => {\n    const trimmedText = text.trim();\n    const words = trimmedText ? trimmedText.split(/\\s+/) : [];\n    const wordCount = words.length;\n    const charCount = text.length;\n    const isLong = wordCount > 15;\n\n    return { wordCount, charCount, isLong };\n  });\n\n  function clearText() {\n    text = '';\n  }\n</script>\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" bind:value={text} placeholder=\"Enter text here...\" />\n  <button data-testid=\"clear-button\" onclick={clearText}>Clear</button>\n  <div>\n    <p data-testid=\"word-count\">Words: {stats.wordCount}</p>\n    <p data-testid=\"char-count\">Characters: {stats.charCount}</p>\n    <p data-testid=\"length-indicator\">Status: {stats.isLong ? 'Long text' : 'Short text'}</p>\n  </div>\n</div>",
+    "testResult": {
+      "testName": "derived-by",
+      "success": true,
+      "testFiles": 1,
+      "totalTests": 3,
+      "failedTests": 0,
+      "errors": []
+    },
+    "promptPath": "/Users/k/Documents/GitHub/svelte-bench/src/tests/derived-by/prompt.md",
+    "timestamp": "2025-04-30T21:17:25.675Z"
+  },
+  {
+    "testName": "each",
+    "llmProvider": "Google",
+    "modelIdentifier": "gemini-2.5-pro-preview-03-25",
+    "generatedCode": "<svelte:options runes={true} />\n\n<script>\n  let characters = $state([\"Jerry\", \"Elaine\", \"Kramer\"]);\n\n  function addGeorge() {\n    characters.push(\"George\");\n  }\n</script>\n\n<div>\n  <ul data-testid=\"characters-list\">\n    {#each characters as character (character)}\n      <li data-testid=\"character\">{character}</li>\n    {/each}\n  </ul>\n  <button data-testid=\"add-george-button\" onclick={addGeorge}>Add George</button>\n</div>",
+    "testResult": {
+      "testName": "each",
+      "success": true,
+      "testFiles": 1,
+      "totalTests": 2,
+      "failedTests": 0,
+      "errors": []
+    },
+    "promptPath": "/Users/k/Documents/GitHub/svelte-bench/src/tests/each/prompt.md",
+    "timestamp": "2025-04-30T21:17:29.682Z"
+  },
+  {
+    "testName": "effect",
+    "llmProvider": "Google",
+    "modelIdentifier": "gemini-2.5-pro-preview-03-25",
+    "generatedCode": "<svelte:options runes={true} />\n\n<script>\n  let number = $state(5);\n  let doubled = $state(0); // Initialize doubled state\n\n  // Effect to update doubled whenever number changes\n  $effect(() => {\n    doubled = number * 2;\n    // console.log(`Effect ran: number is ${number}, doubled is ${doubled}`); // Optional: for debugging/demonstration\n  });\n\n  function increment() {\n    number += 1;\n  }\n</script>\n\n<div>\n  <p data-testid=\"number-value\">Number: {number}</p>\n  <p data-testid=\"doubled-value\">Doubled: {doubled}</p>\n  <button data-testid=\"increment-button\" onclick={increment}>Increment</button>\n</div>",
+    "testResult": {
+      "testName": "effect",
+      "success": true,
+      "testFiles": 1,
+      "totalTests": 2,
+      "failedTests": 0,
+      "errors": []
+    },
+    "promptPath": "/Users/k/Documents/GitHub/svelte-bench/src/tests/effect/prompt.md",
+    "timestamp": "2025-04-30T21:17:39.021Z"
+  },
+  {
+    "testName": "hello-world",
+    "llmProvider": "Google",
+    "modelIdentifier": "gemini-2.5-pro-preview-03-25",
+    "generatedCode": "<svelte:options runes={true} />\n\n<script>\n  // Svelte 5 component logic (none needed for this example)\n</script>\n\n<div data-testid=\"greeting\" class=\"greeting\">\n  Hello, World!\n</div>\n\n<style>\n  .greeting {\n    color: blue;\n    text-align: center;\n    margin: 1rem; /* Small margin */\n  }\n</style>",
+    "testResult": {
+      "testName": "hello-world",
+      "success": true,
+      "testFiles": 1,
+      "totalTests": 2,
+      "failedTests": 0,
+      "errors": []
+    },
+    "promptPath": "/Users/k/Documents/GitHub/svelte-bench/src/tests/hello-world/prompt.md",
+    "timestamp": "2025-04-30T21:17:45.052Z"
+  },
+  {
+    "testName": "inspect",
+    "llmProvider": "Google",
+    "modelIdentifier": "gemini-2.5-pro-preview-03-25",
+    "generatedCode": "<svelte:options runes={true} />\n\n<script>\n  let text = $state(\"Hello world\");\n\n  // Basic inspection: Logs reads and writes of 'text'\n  $inspect(text);\n\n  // Inspection with custom callback: Logs only writes with a specific message\n  $inspect(text).with(value => {\n    console.log(`Custom inspect: Text changed to \"${value}\"`);\n  });\n\n  // Effect that runs when 'text' changes\n  $effect(() => {\n    // Reading 'text' makes this effect dependent on it\n    const currentLength = text.length;\n    console.log(`Effect triggered: Text length is now ${currentLength}`);\n    // Trace dependencies for this specific effect execution\n    $inspect.trace();\n  });\n</script>\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n  <p data-testid=\"text-value\">Current text: {text}</p>\n  <p data-testid=\"char-count\">Character count: {text.length}</p>\n</div>",
+    "testResult": {
+      "testName": "inspect",
+      "success": false,
+      "testFiles": 1,
+      "totalTests": 0,
+      "failedTests": 0,
+      "errors": [
+        "tmp/Component.svelte:20:4 `$inspect.trace(...)` must be the first statement of a function body\nhttps://svelte.dev/e/inspect_trace_invalid_placement"
+      ]
+    },
+    "promptPath": "/Users/k/Documents/GitHub/svelte-bench/src/tests/inspect/prompt.md",
+    "timestamp": "2025-04-30T21:17:53.219Z"
+  },
+  {
+    "testName": "props",
+    "llmProvider": "Google",
+    "modelIdentifier": "gemini-2.5-pro-preview-03-25",
+    "generatedCode": "<svelte:options runes={true} />\n\n<script>\nlet { name = \"World\", count = 0, showDetails = false } = $props();\n\nlet currentCount = $state(count);\n\nfunction increment() {\n  currentCount += 1;\n}\n</script>\n\n<div>\n  <h1 data-testid=\"name-display\">Hello, {name}!</h1>\n  <p data-testid=\"count-display\">Count: {currentCount}</p>\n  <button data-testid=\"increment-button\" onclick={increment}>Increment</button>\n\n  {#if showDetails}\n    <div data-testid=\"details\">\n      <p>Name is {name}</p>\n      <p>Initial Count prop is {count}</p>\n      <p>ShowDetails is {showDetails}</p>\n    </div>\n  {/if}\n</div>",
+    "testResult": {
+      "testName": "props",
+      "success": false,
+      "testFiles": 1,
+      "totalTests": 4,
+      "failedTests": 1,
+      "errors": [
+        "\u001b[2mexpect(\u001b[22m\u001b[31melement\u001b[39m\u001b[2m).toHaveTextContent()\u001b[22m\n\nExpected element to have text content:\n\u001b[32m  Count is 5\u001b[39m\nReceived:\n\u001b[31m  Name is Svelte Initial Count prop is 5 ShowDetails is true\u001b[39m"
+      ]
+    },
+    "promptPath": "/Users/k/Documents/GitHub/svelte-bench/src/tests/props/prompt.md",
+    "timestamp": "2025-04-30T21:18:00.071Z"
+  },
+  {
+    "testName": "snippets",
+    "llmProvider": "Google",
+    "modelIdentifier": "gemini-2.5-pro-preview-03-25",
+    "generatedCode": "<svelte:options runes={true} />\n\n<script>\n\tlet books = $state([\n\t\t\"The Lord of the Rings\",\n\t\t\"To Kill a Mockingbird\",\n\t\t\"1984\"\n\t]);\n\n\tlet { title } = $props();\n\n\t{#snippet title(bookTitle)}\n\t\t<span data-testid=\"book-title\">{bookTitle}</span>\n\t{/snippet}\n</script>\n\n<ul>\n\t{#each books as book}\n\t\t<li data-testid=\"book-item\">\n\t\t\t{@render title(book)}\n\t\t</li>\n\t{/each}\n</ul>",
+    "testResult": {
+      "testName": "snippets",
+      "success": false,
+      "testFiles": 1,
+      "totalTests": 0,
+      "failedTests": 0,
+      "errors": [
+        "tmp/Component.svelte:12:2 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+      ]
+    },
+    "promptPath": "/Users/k/Documents/GitHub/svelte-bench/src/tests/snippets/prompt.md",
+    "timestamp": "2025-04-30T21:18:04.650Z"
+  },
+  {
+    "testName": "counter",
+    "llmProvider": "Google",
+    "modelIdentifier": "gemini-2.5-flash-preview-04-17",
+    "generatedCode": "<svelte:options runes={true} />\n\n<script>\n  let count = $state(0);\n\n  function increment() {\n    count++;\n  }\n\n  function decrement() {\n    count--;\n  }\n</script>\n\n<div class=\"counter\">\n  <button data-testid=\"decrement-button\" onclick={decrement}>-</button>\n  <span data-testid=\"count-value\">{count}</span>\n  <button data-testid=\"increment-button\" onclick={increment}>+</button>\n</div>\n\n<style>\n  .counter {\n    display: flex;\n    align-items: center;\n    gap: 10px;\n    font-family: sans-serif;\n  }\n\n  .counter button {\n    padding: 5px 10px;\n    font-size: 1.2em;\n    cursor: pointer;\n  }\n\n  .counter span {\n    font-size: 1.5em;\n    min-width: 30px;\n    text-align: center;\n  }\n</style>",
+    "testResult": {
+      "testName": "counter",
+      "success": true,
+      "testFiles": 1,
+      "totalTests": 4,
+      "failedTests": 0,
+      "errors": []
+    },
+    "promptPath": "/Users/k/Documents/GitHub/svelte-bench/src/tests/counter/prompt.md",
+    "timestamp": "2025-04-30T21:18:08.459Z"
+  },
+  {
+    "testName": "derived",
+    "llmProvider": "Google",
+    "modelIdentifier": "gemini-2.5-flash-preview-04-17",
+    "generatedCode": "<svelte:options runes={true} />\n\n<script>\n  let number = $state(5);\n  let doubled = $derived(number * 2);\n\n  function increment() {\n    number++;\n  }\n</script>\n\n<div>\n  <p data-testid=\"number-value\">Number: {number}</p>\n  <p data-testid=\"doubled-value\">Doubled: {doubled}</p>\n  <button data-testid=\"increment-button\" onclick={increment}>Increment</button>\n</div>",
+    "testResult": {
+      "testName": "derived",
+      "success": true,
+      "testFiles": 1,
+      "totalTests": 2,
+      "failedTests": 0,
+      "errors": []
+    },
+    "promptPath": "/Users/k/Documents/GitHub/svelte-bench/src/tests/derived/prompt.md",
+    "timestamp": "2025-04-30T21:18:10.605Z"
+  },
+  {
+    "testName": "derived-by",
+    "llmProvider": "Google",
+    "modelIdentifier": "gemini-2.5-flash-preview-04-17",
+    "generatedCode": "<svelte:options runes={true} />\n\n<script>\n  let text = $state('');\n\n  const wordCount = $derived.by(() => {\n    if (!text) return 0;\n    // Split by whitespace and filter out empty strings\n    const words = text.trim().split(/\\s+/).filter(word => word.length > 0);\n    return words.length;\n  });\n\n  const charCount = $derived.by(() => {\n    return text.length;\n  });\n\n  const isLongText = $derived.by(() => {\n    return wordCount > 15;\n  });\n\n  function clearText() {\n    text = '';\n  }\n</script>\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n  <button data-testid=\"clear-button\" onclick={clearText}>Clear</button>\n  <div>\n    <p data-testid=\"word-count\">Words: {$derived(wordCount)}</p>\n    <p data-testid=\"char-count\">Characters: {$derived(charCount)}</p>\n    <p data-testid=\"length-indicator\">Status: {$derived(isLongText ? 'Long text' : 'Short text')}</p>\n  </div>\n</div>",
+    "testResult": {
+      "testName": "derived-by",
+      "success": false,
+      "testFiles": 1,
+      "totalTests": 0,
+      "failedTests": 0,
+      "errors": [
+        "tmp/Component.svelte:30:40 `$derived(...)` can only be used as a variable declaration initializer or a class field\nhttps://svelte.dev/e/state_invalid_placement"
+      ]
+    },
+    "promptPath": "/Users/k/Documents/GitHub/svelte-bench/src/tests/derived-by/prompt.md",
+    "timestamp": "2025-04-30T21:18:14.001Z"
+  },
+  {
+    "testName": "each",
+    "llmProvider": "Google",
+    "modelIdentifier": "gemini-2.5-flash-preview-04-17",
+    "generatedCode": "<svelte:options runes={true} />\n\n<script>\n  import { $state } from 'svelte/internal'; // Note: $state is globally available in .svelte files in Svelte 5\n\n  let characters = $state([\"Jerry\", \"Elaine\", \"Kramer\"]);\n\n  function addGeorge() {\n    characters.push(\"George\");\n  }\n</script>\n\n<div>\n  <ul data-testid=\"characters-list\">\n    {#each characters as character}\n      <li data-testid=\"character\">{character}</li>\n    {/each}\n  </ul>\n  <button data-testid=\"add-george-button\" onclick={addGeorge}>Add George</button>\n</div>",
+    "testResult": {
+      "testName": "each",
+      "success": false,
+      "testFiles": 1,
+      "totalTests": 0,
+      "failedTests": 0,
+      "errors": [
+        "tmp/Component.svelte:4:11 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
+      ]
+    },
+    "promptPath": "/Users/k/Documents/GitHub/svelte-bench/src/tests/each/prompt.md",
+    "timestamp": "2025-04-30T21:18:18.098Z"
+  },
+  {
+    "testName": "effect",
+    "llmProvider": "Google",
+    "modelIdentifier": "gemini-2.5-flash-preview-04-17",
+    "generatedCode": "<svelte:options runes={true} />\n\n<script>\n  let number = $state(5);\n  let doubled = $state(number * 2);\n\n  $effect(() => {\n    doubled = number * 2;\n  });\n\n  function increment() {\n    number++;\n  }\n</script>\n\n<div>\n  <p data-testid=\"number-value\">Number: {number}</p>\n  <p data-testid=\"doubled-value\">Doubled: {doubled}</p>\n  <button data-testid=\"increment-button\" onclick={increment}>Increment</button>\n</div>",
+    "testResult": {
+      "testName": "effect",
+      "success": true,
+      "testFiles": 1,
+      "totalTests": 2,
+      "failedTests": 0,
+      "errors": []
+    },
+    "promptPath": "/Users/k/Documents/GitHub/svelte-bench/src/tests/effect/prompt.md",
+    "timestamp": "2025-04-30T21:18:24.324Z"
+  },
+  {
+    "testName": "hello-world",
+    "llmProvider": "Google",
+    "modelIdentifier": "gemini-2.5-flash-preview-04-17",
+    "generatedCode": "<svelte:options runes={true} />\n\n<div data-testid=\"greeting\" class=\"greeting\">Hello, World!</div>\n\n<style>\n\t.greeting {\n\t\tcolor: blue;\n\t\ttext-align: center;\n\t\tmargin: 20px;\n\t}\n</style>",
+    "testResult": {
+      "testName": "hello-world",
+      "success": true,
+      "testFiles": 1,
+      "totalTests": 2,
+      "failedTests": 0,
+      "errors": []
+    },
+    "promptPath": "/Users/k/Documents/GitHub/svelte-bench/src/tests/hello-world/prompt.md",
+    "timestamp": "2025-04-30T21:18:26.169Z"
+  },
+  {
+    "testName": "inspect",
+    "llmProvider": "Google",
+    "modelIdentifier": "gemini-2.5-flash-preview-04-17",
+    "generatedCode": "<svelte:options runes={true} />\n\n<script>\n  let text = $state('Hello world');\n\n  // Basic $inspect to log the state\n  $inspect(text);\n\n  // $inspect with a custom callback on update\n  $inspect(text).with((value) => {\n    console.log('$inspect.with callback:', value);\n  });\n\n  // $inspect.trace() within an effect that depends on text\n  $effect(() => {\n    $inspect.trace('Text effect triggered');\n    // This effect simply runs when 'text' changes\n    console.log('Effect: text is now', text);\n  });\n</script>\n\n<div>\n  <h1>$inspect Rune Demo</h1>\n  <p>Check your browser's developer console to see the $inspect logs.</p>\n\n  <input data-testid=\"text-input\" type=\"text\" bind:value=\"{text}\" />\n\n  <p data-testid=\"text-value\">Current text: {text}</p>\n  <p data-testid=\"char-count\">Character count: {text.length}</p>\n</div>",
+    "testResult": {
+      "testName": "inspect",
+      "success": false,
+      "testFiles": 1,
+      "totalTests": 4,
+      "failedTests": 4,
+      "errors": [
+        "\u001b[2mexpect(\u001b[22m\u001b[31melement\u001b[39m\u001b[2m).toHaveTextContent()\u001b[22m\n\nExpected element to have text content:\n\u001b[32m  Current text: \"Hello world\"\u001b[39m\nReceived:\n\u001b[31m  Current text: Hello world\u001b[39m",
+        "\u001b[2mexpect(\u001b[22m\u001b[31melement\u001b[39m\u001b[2m).toHaveTextContent()\u001b[22m\n\nExpected element to have text content:\n\u001b[32m  Current text: \"Testing $inspect\"\u001b[39m\nReceived:\n\u001b[31m  Current text: Testing $inspect\u001b[39m",
+        "\u001b[2mexpect(\u001b[22m\u001b[31melement\u001b[39m\u001b[2m).toHaveTextContent()\u001b[22m\n\nExpected element to have text content:\n\u001b[32m  Current text: \"!@#$%^&*()\"\u001b[39m\nReceived:\n\u001b[31m  Current text: !@#$%^&*()\u001b[39m",
+        "\u001b[2mexpect(\u001b[22m\u001b[31melement\u001b[39m\u001b[2m).toHaveTextContent()\u001b[22m\n\nExpected element to have text content:\n\u001b[32m  Current text: \"\"\u001b[39m\nReceived:\n\u001b[31m  Current text:\u001b[39m"
+      ]
+    },
+    "promptPath": "/Users/k/Documents/GitHub/svelte-bench/src/tests/inspect/prompt.md",
+    "timestamp": "2025-04-30T21:18:30.871Z"
+  },
+  {
+    "testName": "props",
+    "llmProvider": "Google",
+    "modelIdentifier": "gemini-2.5-flash-preview-04-17",
+    "generatedCode": "<svelte:options runes={true} />\n\n<script>\n  let { name = 'World', count = 0, showDetails = false } = $props();\n\n  let currentCount = $state(count);\n\n  const increment = () => {\n    currentCount += 1;\n  };\n</script>\n\n<div>\n  <h1 data-testid=\"name-display\">Hello, {name}!</h1>\n  <p data-testid=\"count-display\">Count: {currentCount}</p>\n  <button data-testid=\"increment-button\" onclick={increment}>Increment</button>\n\n  {#if showDetails}\n    <div data-testid=\"details\">\n      <p>Name is {name}</p>\n      <p>Count is {count}</p>\n      <p>ShowDetails is {showDetails}</p>\n    </div>\n  {/if}\n</div>",
+    "testResult": {
+      "testName": "props",
+      "success": true,
+      "testFiles": 1,
+      "totalTests": 4,
+      "failedTests": 0,
+      "errors": []
+    },
+    "promptPath": "/Users/k/Documents/GitHub/svelte-bench/src/tests/props/prompt.md",
+    "timestamp": "2025-04-30T21:18:38.319Z"
+  },
+  {
+    "testName": "snippets",
+    "llmProvider": "Google",
+    "modelIdentifier": "gemini-2.5-flash-preview-04-17",
+    "generatedCode": "<svelte:options runes={true} />\n\n<script>\n  const books = [\n    \"The Lord of the Rings\",\n    \"To Kill a Mockingbird\",\n    \"1984\"\n  ];\n\n  let { snippet: title } = $snippets();\n</script>\n\n{#snippet title(bookTitle)}\n  <span data-testid=\"book-title\">{bookTitle}</span>\n{/snippet}\n\n<ul>\n  {#each books as book}\n    <li data-testid=\"book-item\">\n      {@render title(book)}\n    </li>\n  {/each}\n</ul>",
+    "testResult": {
+      "testName": "snippets",
+      "success": false,
+      "testFiles": 1,
+      "totalTests": 0,
+      "failedTests": 0,
+      "errors": [
+        "tmp/Component.svelte:10:27 `$snippets` is an illegal variable name. To reference a global variable called `$snippets`, use `globalThis.$snippets`\nhttps://svelte.dev/e/global_reference_invalid"
+      ]
+    },
+    "promptPath": "/Users/k/Documents/GitHub/svelte-bench/src/tests/snippets/prompt.md",
+    "timestamp": "2025-04-30T21:18:41.622Z"
+  }
+]

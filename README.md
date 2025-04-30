@@ -18,15 +18,7 @@ npm install
 cp .env.example .env
 ```
 
-Then edit the `.env` file and add your API keys:
-
-```
-# OpenAI Configuration
-OPENAI_API_KEY=your_openai_api_key_here
-
-# Anthropic Configuration
-ANTHROPIC_API_KEY=your_anthropic_api_key_here
-```
+Then edit the `.env` file and add your API keys.
 
 ## Running the Benchmark
 

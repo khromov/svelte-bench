@@ -54,6 +54,9 @@ export async function getLLMProvider(
     case "anthropic":
       const { AnthropicProvider } = await import("./anthropic");
       return new AnthropicProvider(modelId);
+    case "google":
+      const { GoogleGenAIProvider } = await import("./google");
+      return new GoogleGenAIProvider(modelId);
     default:
       throw new Error(`Unknown LLM provider: ${providerName}`);
   }
@@ -84,6 +87,17 @@ export async function getAllLLMProviders(): Promise<ProviderWithModel[]> {
     providers.push({
       provider,
       name: "Anthropic",
+      modelId,
+    });
+  }
+
+  // Google provider
+  const googleProvider = await getLLMProvider("google");
+  for (const modelId of googleProvider.getModels()) {
+    const provider = await getLLMProvider("google", modelId);
+    providers.push({
+      provider,
+      name: "Google",
       modelId,
     });
   }
