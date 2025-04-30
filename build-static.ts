@@ -3,6 +3,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import ejs from "ejs";
 import { ensureBenchmarksDir } from "./src/utils/test-manager";
+import { type HumanEvalResult } from "./src/utils/humaneval";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -65,8 +66,17 @@ interface ProviderData {
 
 /**
  * Group benchmark results by provider and model
+ * Updated to handle HumanEval results
  */
 function groupBenchmarkResults(results: any[]): ProviderData[] {
+  // Check if the results are using HumanEval format
+  const isHumanEval = results.length > 0 && "pass1" in results[0];
+
+  if (isHumanEval) {
+    return groupHumanEvalResults(results as HumanEvalResult[]);
+  }
+
+  // Default grouping for regular benchmark results
   // Group by provider
   const byProvider: Record<string, any[]> = {};
 
@@ -114,6 +124,56 @@ function groupBenchmarkResults(results: any[]): ProviderData[] {
 }
 
 /**
+ * Group HumanEval results by provider and model
+ */
+function groupHumanEvalResults(results: HumanEvalResult[]): ProviderData[] {
+  // Group by provider
+  const byProvider: Record<string, HumanEvalResult[]> = {};
+
+  results.forEach((result) => {
+    if (!byProvider[result.provider]) {
+      byProvider[result.provider] = [];
+    }
+    byProvider[result.provider].push(result);
+  });
+
+  // Sort providers alphabetically
+  const sortedProviders = Object.keys(byProvider).sort((a, b) =>
+    a.localeCompare(b)
+  );
+
+  // Build the final structure
+  const groupedResults: ProviderData[] = [];
+
+  for (const provider of sortedProviders) {
+    const providerData: ProviderData = {
+      provider,
+      models: {} as Record<string, any[]>,
+    };
+
+    // Group by model
+    byProvider[provider].forEach((result) => {
+      if (!providerData.models[result.modelId]) {
+        providerData.models[result.modelId] = [];
+      }
+      providerData.models[result.modelId].push(result);
+    });
+
+    // Sort models alphabetically
+    providerData.models = Object.entries(providerData.models)
+      .sort(([modelA], [modelB]) => modelA.localeCompare(modelB))
+      .reduce((acc, [model, results]) => {
+        acc[model] = results;
+        return acc;
+      }, {} as Record<string, any[]>);
+
+    groupedResults.push(providerData);
+  }
+
+  return groupedResults;
+}
+
+/**
  * Generate HTML content for a single benchmark result using EJS
  */
 async function generateBenchmarkHTML(
@@ -136,6 +196,9 @@ async function generateBenchmarkHTML(
   const templatePath = path.join(__dirname, "views", "index.ejs");
   const template = await fs.readFile(templatePath, "utf-8");
 
+  // Check if data is HumanEval format
+  const isHumanEval = benchmarkData.length > 0 && "pass1" in benchmarkData[0];
+
   // Render the template with our data
   const html = ejs.render(template, {
     benchmarkFiles: formattedBenchmarkFiles,
@@ -143,6 +206,7 @@ async function generateBenchmarkHTML(
     groupedResults,
     benchmarkDataB64,
     isStaticBuild: true,
+    isHumanEval: isHumanEval,
   });
 
   return html;
@@ -172,6 +236,7 @@ async function generateIndexHTML(
     benchmarkDataB64: "",
     isStaticBuild: true,
     isIndexPage: true,
+    isHumanEval: false,
   });
 
   return html;

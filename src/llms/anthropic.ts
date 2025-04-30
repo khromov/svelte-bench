@@ -26,12 +26,16 @@ export class AnthropicProvider implements LLMProvider {
   /**
    * Generate code from a prompt using Anthropic Claude
    * @param prompt The prompt to send to the LLM
+   * @param temperature Optional temperature parameter for controlling randomness (default: 0.7)
    * @returns The generated code
    */
-  async generateCode(prompt: string): Promise<string> {
+  async generateCode(
+    prompt: string,
+    temperature: number = 0.7
+  ): Promise<string> {
     try {
       console.log(
-        `🤖 Generating code with Anthropic using model: ${this.modelId}...`
+        `🤖 Generating code with Anthropic using model: ${this.modelId} (temp: ${temperature})...`
       );
 
       const completion = await this.client.messages.create({
@@ -48,7 +52,7 @@ export class AnthropicProvider implements LLMProvider {
             ],
           },
         ],
-        // temperature: 0.7,
+        temperature: temperature,
       });
 
       const generatedCode = completion.content[0]?.text || "";

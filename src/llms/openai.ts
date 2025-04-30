@@ -27,12 +27,16 @@ export class OpenAIProvider implements LLMProvider {
   /**
    * Generate code from a prompt using OpenAI
    * @param prompt The prompt to send to the LLM
+   * @param temperature Optional temperature parameter for controlling randomness (default: 0.7)
    * @returns The generated code
    */
-  async generateCode(prompt: string): Promise<string> {
+  async generateCode(
+    prompt: string,
+    temperature: number = 0.7
+  ): Promise<string> {
     try {
       console.log(
-        `🤖 Generating code with OpenAI using model: ${this.modelId}...`
+        `🤖 Generating code with OpenAI using model: ${this.modelId} (temp: ${temperature})...`
       );
 
       const completion = await this.client.chat.completions.create({
@@ -44,7 +48,7 @@ export class OpenAIProvider implements LLMProvider {
           },
           { role: "user", content: prompt },
         ],
-        // temperature: 0.7,
+        temperature: temperature,
       });
 
       const generatedCode = completion.choices[0]?.message.content || "";

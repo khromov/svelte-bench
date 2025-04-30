@@ -3,15 +3,18 @@ import "dotenv/config";
 
 import { getAllLLMProviders } from "./src/llms";
 import { cleanTmpDir } from "./src/utils/file";
-import { runAllTests, saveBenchmarkResults } from "./src/utils/test-manager";
-import type { BenchmarkResult } from "./src/utils/test-manager";
+import {
+  runAllTestsHumanEval,
+  saveBenchmarkResults,
+} from "./src/utils/test-manager";
+import type { HumanEvalResult } from "./src/utils/humaneval";
 import { ensureRequiredDirectories } from "./src/utils/ensure-dirs";
 
 /**
  * Main function to run the benchmark
  */
 async function runBenchmark() {
-  console.log("🚀 Starting SvelteBench...");
+  console.log("🚀 Starting SvelteBench with HumanEval methodology...");
 
   try {
     // Ensure required directories exist
@@ -28,16 +31,20 @@ async function runBenchmark() {
       `👉 Found ${providerModels.length} provider/model combinations`
     );
 
-    // Run all tests with all providers
-    const allResults: BenchmarkResult[] = [];
+    // Run all tests with all providers using HumanEval methodology
+    const allResults: HumanEvalResult[] = [];
+    const numSamples = 10; // Use n=10 samples per problem for HumanEval
 
     for (const providerWithModel of providerModels) {
       console.log(
         `\n👉 Running tests with ${providerWithModel.name} (${providerWithModel.modelId})...`
       );
 
-      // Run tests with this provider
-      const results = await runAllTests(providerWithModel.provider);
+      // Run tests with this provider using HumanEval methodology
+      const results = await runAllTestsHumanEval(
+        providerWithModel.provider,
+        numSamples
+      );
       allResults.push(...results);
 
       // Clean tmp directory between providers
@@ -52,7 +59,7 @@ async function runBenchmark() {
     console.log("===========================================");
 
     // Group results by test name
-    const resultsByTest: Record<string, BenchmarkResult[]> = {};
+    const resultsByTest: Record<string, HumanEvalResult[]> = {};
     for (const result of allResults) {
       if (!resultsByTest[result.testName]) {
         resultsByTest[result.testName] = [];
@@ -61,30 +68,32 @@ async function runBenchmark() {
     }
 
     let totalSuccess = 0;
+    let totalSamples = 0;
 
     // Print results by test and provider
     for (const [testName, results] of Object.entries(resultsByTest)) {
       console.log(`\nTest: ${testName}`);
 
       for (const result of results) {
-        const status = result.testResult.success ? "✅ PASS" : "❌ FAIL";
+        console.log(`  ${result.provider} (${result.modelId}):`);
         console.log(
-          `  ${status} - ${result.llmProvider} (${result.modelIdentifier})`
+          `    pass@1: ${result.pass1.toFixed(
+            4
+          )}, pass@10: ${result.pass10.toFixed(4)}`
         );
         console.log(
-          `    Tests: ${result.testResult.totalTests}, Failed: ${result.testResult.failedTests}`
+          `    Samples: ${result.numSamples}, Correct: ${result.numCorrect}`
         );
 
-        if (result.testResult.success) {
-          totalSuccess++;
-        }
+        totalSuccess += result.numCorrect;
+        totalSamples += result.numSamples;
       }
     }
 
     console.log("\n===========================================");
     console.log(
-      `Total: ${allResults.length}, Passed: ${totalSuccess}, Failed: ${
-        allResults.length - totalSuccess
+      `Total Samples: ${totalSamples}, Passed: ${totalSuccess}, Failed: ${
+        totalSamples - totalSuccess
       }`
     );
 

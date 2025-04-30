@@ -23,17 +23,24 @@ export class GoogleGenAIProvider implements LLMProvider {
   /**
    * Generate code from a prompt using Google Gemini
    * @param prompt The prompt to send to the LLM
+   * @param temperature Optional temperature parameter for controlling randomness (default: 0.7)
    * @returns The generated code
    */
-  async generateCode(prompt: string): Promise<string> {
+  async generateCode(
+    prompt: string,
+    temperature: number = 0.7
+  ): Promise<string> {
     try {
       console.log(
-        `🤖 Generating code with Google Gemini using model: ${this.modelId}...`
+        `🤖 Generating code with Google Gemini using model: ${this.modelId} (temp: ${temperature})...`
       );
 
       const response = await this.client.models.generateContent({
         model: this.modelId,
         contents: `${DEFAULT_SYSTEM_PROMPT}\n\n${prompt}`,
+        config: {
+          temperature: temperature,
+        },
       });
 
       const generatedCode = response.text;
