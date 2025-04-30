@@ -120,6 +120,11 @@
       font-weight: bold;
     }
     
+    .partial {
+      color: #c05621;
+      font-weight: bold;
+    }
+    
     .failure {
       color: #e53e3e;
       font-weight: bold;
@@ -501,7 +506,7 @@
                         <% if (typeof isHumanEval !== 'undefined' && isHumanEval) { %>
                           <th>pass@1</th>
                           <th>pass@10</th>
-                          <th>Passing samples</th>
+                          <th>Samples</th>
                         <% } else { %>
                           <th>Tests Passed</th>
                         <% } %>
@@ -515,8 +520,10 @@
                           <tr>
                             <td><%= result.testName %></td>
                             <td>
-                              <% if (result.numCorrect > 0) { %>
+                              <% if (result.numCorrect === result.numSamples) { %>
                                 <span class="success">✅ PASS</span>
+                              <% } else if (result.numCorrect > 0) { %>
+                                <span class="partial">⚠️ PARTIAL</span>
                               <% } else { %>
                                 <span class="failure">❌ FAIL</span>
                               <% } %>
@@ -776,11 +783,46 @@
             return;
           }
 
-          // Set the title
-          modalTitle.textContent = `${result.testName} - ${provider} ${model}`;
+          // Set the title with status
+          let statusText = "";
+          if (result.numCorrect === result.numSamples) {
+            statusText = "✅ PASS";
+          } else if (result.numCorrect > 0) {
+            statusText = "⚠️ PARTIAL";
+          } else {
+            statusText = "❌ FAIL";
+          }
+          
+          modalTitle.textContent = `${result.testName} - ${provider} ${model} (${statusText})`;
+          
+          // Add status class to the title
+          if (result.numCorrect === result.numSamples) {
+            modalTitle.className = "success";
+          } else if (result.numCorrect > 0) {
+            modalTitle.className = "partial";
+          } else {
+            modalTitle.className = "failure";
+          }
 
-          // Set the metrics
+          // Set the metrics with status indicator
+          let statusClass = "";
+          let statusEmoji = "";
+          
+          if (result.numCorrect === result.numSamples) {
+            statusClass = "success";
+            statusEmoji = "✅";
+          } else if (result.numCorrect > 0) {
+            statusClass = "partial";
+            statusEmoji = "⚠️";
+          } else {
+            statusClass = "failure";
+            statusEmoji = "❌";
+          }
+          
           modalMetrics.innerHTML = `
+            <div class="metric ${statusClass}">
+              <span class="metric-label">Status:</span> ${statusEmoji} ${result.numCorrect === result.numSamples ? 'PASS' : (result.numCorrect > 0 ? 'PARTIAL' : 'FAIL')}
+            </div>
             <div class="metric">
               <span class="metric-label">pass@1:</span> ${result.pass1.toFixed(4)}
             </div>
