@@ -72,12 +72,14 @@ export async function runSingleTest(
   temperature: number = 0.7
 ): Promise<BenchmarkResult> {
   try {
+    const providerName = llmProvider.name;
+
     // Read the prompt
     const prompt = await readFile(test.promptPath);
 
     // Generate code with the LLM
     console.log(
-      `🔄 Generating ${test.name} component with ${llmProvider.name} (sample ${
+      `🔄 Generating ${test.name} component with ${providerName} (sample ${
         sampleIndex + 1
       }, temp: ${temperature})...`
     );
@@ -94,19 +96,19 @@ export async function runSingleTest(
 
     // Write the generated code to a single file - always use "Component.svelte"
     const componentFilename = "Component.svelte";
-    await writeToTmpFile(componentFilename, generatedCode);
+    await writeToTmpFile(componentFilename, generatedCode, providerName);
 
     // Copy the test file to the tmp directory - no modifications to test files
     const testContent = await readFile(test.testPath);
     const testFilename = `${test.name}.test.ts`;
-    await writeToTmpFile(testFilename, testContent);
+    await writeToTmpFile(testFilename, testContent, providerName);
 
     // Run the test
-    const testResult = await runTest(test.name);
+    const testResult = await runTest(test.name, providerName);
 
     return {
       testName: test.name,
-      llmProvider: llmProvider.name,
+      llmProvider: providerName,
       modelIdentifier: llmProvider.getModelIdentifier(),
       generatedCode,
       testResult,
@@ -117,7 +119,10 @@ export async function runSingleTest(
     };
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    console.error(`Error running test ${test.name}:`, errorMessage);
+    console.error(
+      `Error running test ${test.name} with ${llmProvider.name}:`,
+      errorMessage
+    );
 
     return {
       testName: test.name,
@@ -152,6 +157,7 @@ export async function runHumanEvalTest(
   numSamples: number = 10
 ): Promise<HumanEvalResult> {
   try {
+    const providerName = llmProvider.name;
     const samples: BenchmarkResult[] = [];
 
     // Use temperature of 0.2 for pass@1 calculations
@@ -159,38 +165,76 @@ export async function runHumanEvalTest(
     // This aligns with recommendations from the original HumanEval paper
 
     // First sample with temperature 0.2 (for pass@1)
-    const firstSample = await runSingleTest(test, llmProvider, 0, 0.2);
-    samples.push(firstSample);
+    try {
+      // Clean the tmp directory before the first sample
+      await cleanTmpDir(providerName);
+
+      const firstSample = await runSingleTest(test, llmProvider, 0, 0.2);
+      samples.push(firstSample);
+    } catch (error) {
+      console.error(
+        `Error running first sample for ${test.name} with ${providerName}:`,
+        error
+      );
+      // Continue with other samples rather than failing completely
+    }
 
     // Remaining samples with temperature 0.8 (for pass@k where k>1)
     for (let i = 1; i < numSamples; i++) {
-      // Clean the tmp directory before each sample
-      await cleanTmpDir();
+      try {
+        // Clean the tmp directory before each sample
+        await cleanTmpDir(providerName);
 
-      // Run the test with the current sample index and higher temperature
-      const result = await runSingleTest(test, llmProvider, i, 0.8);
-      samples.push(result);
+        // Run the test with the current sample index and higher temperature
+        const result = await runSingleTest(test, llmProvider, i, 0.8);
+        samples.push(result);
+      } catch (error) {
+        console.error(
+          `Error running sample ${i + 1} for ${
+            test.name
+          } with ${providerName}:`,
+          error
+        );
+        // Continue with other samples rather than failing completely
+      }
     }
 
-    // Calculate pass@k metrics
-    const numCorrect = samples.filter((s) => s.testResult.success).length;
-    const pass1 = calculatePassAtK(numSamples, numCorrect, 1);
+    // Calculate pass@k metrics - only count samples that were successfully run
+    const validSamples = samples.filter((s) => s !== null && s !== undefined);
+    const numValidSamples = validSamples.length;
+    const numCorrect = validSamples.filter((s) => s.testResult.success).length;
+
+    // If we have no valid samples, return default values
+    if (numValidSamples === 0) {
+      return {
+        testName: test.name,
+        provider: providerName,
+        modelId: llmProvider.getModelIdentifier(),
+        numSamples: 0,
+        numCorrect: 0,
+        pass1: 0,
+        pass10: 0,
+        samples: [],
+      };
+    }
+
+    const pass1 = calculatePassAtK(numValidSamples, numCorrect, 1);
     const pass10 = calculatePassAtK(
-      numSamples,
+      numValidSamples,
       numCorrect,
-      Math.min(10, numSamples)
+      Math.min(10, numValidSamples)
     );
 
     // Format the results
     return {
       testName: test.name,
-      provider: llmProvider.name,
+      provider: providerName,
       modelId: llmProvider.getModelIdentifier(),
-      numSamples,
+      numSamples: numValidSamples,
       numCorrect,
       pass1,
       pass10,
-      samples: samples.map((s) => ({
+      samples: validSamples.map((s) => ({
         index: s.sampleIndex || 0,
         code: s.generatedCode,
         success: s.testResult.success,
@@ -200,26 +244,21 @@ export async function runHumanEvalTest(
     };
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    console.error(`Error running HumanEval test ${test.name}:`, errorMessage);
+    console.error(
+      `Error running HumanEval test ${test.name} with ${llmProvider.name}:`,
+      errorMessage
+    );
 
     // Return a failed result
     return {
       testName: test.name,
       provider: llmProvider.name,
       modelId: llmProvider.getModelIdentifier(),
-      numSamples,
+      numSamples: 0,
       numCorrect: 0,
       pass1: 0,
       pass10: 0,
-      samples: [
-        {
-          index: 0,
-          code: "",
-          success: false,
-          errors: [errorMessage],
-          temperature: 0.2,
-        },
-      ],
+      samples: [],
     };
   }
 }
@@ -236,45 +275,58 @@ export async function runAllTestsHumanEval(
   specificTests?: TestDefinition[]
 ): Promise<HumanEvalResult[]> {
   try {
-    // Clean the tmp directory
-    await cleanTmpDir();
+    const providerName = llmProvider.name;
+
+    // Clean the provider-specific tmp directory
+    await cleanTmpDir(providerName);
 
     // Load test definitions
     let tests: TestDefinition[];
     if (specificTests && specificTests.length > 0) {
       tests = specificTests;
-      console.log(`📋 Running ${tests.length} specific tests`);
+      console.log(
+        `📋 Running ${tests.length} specific tests for ${providerName}`
+      );
     } else {
       tests = await loadTestDefinitions();
-      console.log(`📋 Found ${tests.length} tests to run`);
+      console.log(`📋 Found ${tests.length} tests to run for ${providerName}`);
     }
 
     // Run each test in sequence
     const results: HumanEvalResult[] = [];
 
     for (const test of tests) {
-      // Clean the tmp directory before each test
-      await cleanTmpDir();
+      try {
+        // Clean the tmp directory before each test
+        await cleanTmpDir(providerName);
 
-      console.log(`\n🧪 Running test: ${test.name}`);
-      const result = await runHumanEvalTest(test, llmProvider, numSamples);
-      results.push(result);
+        console.log(`\n🧪 Running test: ${test.name} with ${providerName}`);
+        const result = await runHumanEvalTest(test, llmProvider, numSamples);
+        results.push(result);
 
-      // Log the pass@k metrics
-      console.log(
-        `📊 ${test.name} - pass@1: ${result.pass1.toFixed(
-          4
-        )}, pass@10: ${result.pass10.toFixed(4)}`
-      );
-      console.log(
-        `   Samples: ${result.numSamples}, Correct: ${result.numCorrect}`
-      );
+        // Log the pass@k metrics
+        console.log(
+          `📊 ${test.name} (${providerName}) - pass@1: ${result.pass1.toFixed(
+            4
+          )}, pass@10: ${result.pass10.toFixed(4)}`
+        );
+        console.log(
+          `   Samples: ${result.numSamples}, Correct: ${result.numCorrect}`
+        );
+      } catch (error) {
+        console.error(
+          `Error running test ${test.name} with ${providerName}:`,
+          error
+        );
+        // Continue with other tests rather than failing completely
+      }
     }
 
     return results;
   } catch (error) {
-    console.error("Error running all tests:", error);
-    throw error;
+    console.error(`Error running all tests for ${llmProvider.name}:`, error);
+    // Return an empty array rather than throwing an error
+    return [];
   }
 }
 

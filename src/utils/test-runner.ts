@@ -1,6 +1,6 @@
 import { startVitest } from "vitest/node";
 import path from "path";
-import { TMP_DIR } from "./file";
+import { getTmpDir } from "./file";
 
 export interface TestResult {
   testName: string;
@@ -14,21 +14,30 @@ export interface TestResult {
 /**
  * Run tests for a specific component
  * @param testName The name of the test
+ * @param provider The provider name (optional)
  * @returns Test results
  */
-export async function runTest(testName: string): Promise<TestResult> {
+export async function runTest(
+  testName: string,
+  provider?: string
+): Promise<TestResult> {
   // Force exit if tests get stuck
   const forceExitTimeout = setTimeout(() => {
     console.error(
-      `⚠️ TIMEOUT: Tests for ${testName} appear to be stuck. Forcing exit...`
+      `⚠️ TIMEOUT: Tests for ${testName} (${
+        provider || "unknown"
+      }) appear to be stuck. Forcing exit...`
     );
     process.exit(2);
   }, 60000); // 60 second timeout
 
   try {
-    console.log(`🧪 Running tests for ${testName}...`);
+    console.log(
+      `🧪 Running tests for ${testName}${provider ? ` (${provider})` : ""}...`
+    );
 
-    const testFilePath = path.resolve(TMP_DIR, `${testName}.test.ts`);
+    const tmpDir = getTmpDir(provider);
+    const testFilePath = path.resolve(tmpDir, `${testName}.test.ts`);
 
     const vitest = await startVitest("test", [testFilePath], {
       watch: false,
@@ -106,7 +115,12 @@ export async function runTest(testName: string): Promise<TestResult> {
 
         failedTests += moduleFailedTests.length;
       } catch (err) {
-        console.error(`Error processing module tests for ${testName}:`, err);
+        console.error(
+          `Error processing module tests for ${testName}${
+            provider ? ` (${provider})` : ""
+          }:`,
+          err
+        );
         const errorMessage = err instanceof Error ? err.message : String(err);
         allErrors.push(errorMessage);
         success = false;
@@ -122,7 +136,9 @@ export async function runTest(testName: string): Promise<TestResult> {
       errors: allErrors,
     };
 
-    console.log(`📊 Test results for ${testName}:`);
+    console.log(
+      `📊 Test results for ${testName}${provider ? ` (${provider})` : ""}:`
+    );
     console.log(`   Success: ${result.success ? "Yes ✅" : "No ❌"}`);
     console.log(`   Total Tests: ${result.totalTests}`);
     console.log(`   Failed Tests: ${result.failedTests}`);
@@ -134,7 +150,10 @@ export async function runTest(testName: string): Promise<TestResult> {
     clearTimeout(forceExitTimeout);
 
     const errorMessage = error instanceof Error ? error.message : String(error);
-    console.error(`Error running tests for ${testName}:`, errorMessage);
+    console.error(
+      `Error running tests for ${testName}${provider ? ` (${provider})` : ""}:`,
+      errorMessage
+    );
 
     return {
       testName,

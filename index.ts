@@ -21,7 +21,7 @@ async function runBenchmark() {
     // Ensure required directories exist
     await ensureRequiredDirectories();
 
-    // Clean tmp directory
+    // Clean base tmp directory
     await cleanTmpDir();
 
     // Check if we're in debug mode
@@ -120,9 +120,6 @@ async function runBenchmark() {
       }
     }
 
-    // Run all tests with all selected providers using HumanEval methodology
-    const allResults: HumanEvalResult[] = [];
-
     // Set number of samples based on debug mode
     // In debug mode: only 1 sample (pass@1 only) to speed up development
     // In normal mode: 10 samples for proper HumanEval metrics
@@ -138,22 +135,48 @@ async function runBenchmark() {
       );
     }
 
-    for (const providerWithModel of selectedProviderModels) {
-      console.log(
-        `\n👉 Running tests with ${providerWithModel.name} (${providerWithModel.modelId})...`
-      );
+    // Run all tests with all selected providers in parallel
+    console.log(
+      `\n👉 Running tests with ${selectedProviderModels.length} providers concurrently...`
+    );
 
-      // Run tests with this provider using HumanEval methodology
-      const results = await runAllTestsHumanEval(
-        providerWithModel.provider,
-        numSamples,
-        testDefinitions // Pass specific tests if in debug mode
-      );
-      allResults.push(...results);
+    // Create a promise for each provider
+    const providerPromises = selectedProviderModels.map(
+      async (providerWithModel) => {
+        try {
+          console.log(
+            `\n👉 Starting tests with ${providerWithModel.name} (${providerWithModel.modelId})...`
+          );
 
-      // Clean tmp directory between providers
-      await cleanTmpDir();
-    }
+          // Ensure provider-specific tmp directory exists and is clean
+          await cleanTmpDir(providerWithModel.name);
+
+          // Run tests with this provider using HumanEval methodology
+          const results = await runAllTestsHumanEval(
+            providerWithModel.provider,
+            numSamples,
+            testDefinitions // Pass specific tests if in debug mode
+          );
+
+          // Clean provider-specific tmp directory after tests
+          await cleanTmpDir(providerWithModel.name);
+
+          return results;
+        } catch (error) {
+          console.error(
+            `Error running tests with ${providerWithModel.name}:`,
+            error
+          );
+          return []; // Return empty array on error to avoid breaking the whole process
+        }
+      }
+    );
+
+    // Wait for all provider tests to complete
+    const allProviderResults = await Promise.all(providerPromises);
+
+    // Combine all results into a single array
+    const allResults: HumanEvalResult[] = allProviderResults.flat();
 
     // Save benchmark results
     await saveBenchmarkResults(allResults);
@@ -201,8 +224,11 @@ async function runBenchmark() {
       }`
     );
 
-    // Clean up
+    // Clean up all tmp directories
     await cleanTmpDir();
+    for (const provider of selectedProviderModels) {
+      await cleanTmpDir(provider.name);
+    }
 
     // Exit with appropriate code
     const exitCode = totalSuccess > 0 ? 0 : 1;
