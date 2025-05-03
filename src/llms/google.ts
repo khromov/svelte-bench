@@ -43,14 +43,7 @@ export class GoogleGenAIProvider implements LLMProvider {
         },
       });
 
-      const generatedCode = response.text;
-
-      // Clean up any markdown code block indicators if present
-      return generatedCode
-        .replace(/\`\`\`svelte\s*/, "")
-        .replace(/\`\`\`html\s*/, "")
-        .replace(/\`\`\`\s*$/, "")
-        .trim();
+      return response.text;
     } catch (error) {
       console.error("Error generating code with Google Gemini:", error);
       throw new Error(

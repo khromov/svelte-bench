@@ -51,14 +51,7 @@ export class OpenAIProvider implements LLMProvider {
         temperature: temperature,
       });
 
-      const generatedCode = completion.choices[0]?.message.content || "";
-
-      // Clean up any markdown code block indicators if present
-      return generatedCode
-        .replace(/\`\`\`svelte\s*/, "")
-        .replace(/\`\`\`html\s*/, "")
-        .replace(/\`\`\`\s*$/, "")
-        .trim();
+      return completion.choices[0]?.message.content || "";
     } catch (error) {
       console.error("Error generating code with OpenAI:", error);
       throw new Error(

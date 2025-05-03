@@ -5,6 +5,7 @@ import { cleanTmpDir, writeToTmpFile, readFile } from "./file";
 import { runTest } from "./test-runner";
 import type { TestResult } from "./test-runner";
 import { calculatePassAtK, type HumanEvalResult } from "./humaneval";
+import { cleanCodeMarkdown } from "./code-cleaner";
 
 export interface TestDefinition {
   name: string;
@@ -81,6 +82,9 @@ export async function runSingleTest(
       }, temp: ${temperature})...`
     );
     let generatedCode = await llmProvider.generateCode(prompt, temperature);
+
+    // Apply a second pass of cleaning to ensure all backticks are removed
+    generatedCode = cleanCodeMarkdown(generatedCode);
 
     // Check if the generated code already includes <svelte:options runes={true} />
     if (!generatedCode.includes("<svelte:options runes={true} />")) {

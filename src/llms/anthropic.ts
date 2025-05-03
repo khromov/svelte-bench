@@ -55,14 +55,7 @@ export class AnthropicProvider implements LLMProvider {
         temperature: temperature,
       });
 
-      const generatedCode = completion.content[0]?.text || "";
-
-      // Clean up any markdown code block indicators if present
-      return generatedCode
-        .replace(/\`\`\`svelte\s*/, "")
-        .replace(/\`\`\`html\s*/, "")
-        .replace(/\`\`\`\s*$/, "")
-        .trim();
+      return completion.content[0]?.text || "";
     } catch (error) {
       console.error("Error generating code with Anthropic:", error);
       throw new Error(
