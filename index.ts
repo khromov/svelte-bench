@@ -122,7 +122,21 @@ async function runBenchmark() {
 
     // Run all tests with all selected providers using HumanEval methodology
     const allResults: HumanEvalResult[] = [];
-    const numSamples = 10; // Use n=10 samples per problem for HumanEval
+
+    // Set number of samples based on debug mode
+    // In debug mode: only 1 sample (pass@1 only) to speed up development
+    // In normal mode: 10 samples for proper HumanEval metrics
+    const numSamples = isDebugMode ? 1 : 10;
+
+    if (isDebugMode) {
+      console.log(
+        `👉 DEBUG_MODE: Running with only ${numSamples} sample per test (pass@1 only)`
+      );
+    } else {
+      console.log(
+        `👉 Running with ${numSamples} samples per test (for pass@k metrics)`
+      );
+    }
 
     for (const providerWithModel of selectedProviderModels) {
       console.log(
@@ -167,9 +181,9 @@ async function runBenchmark() {
       for (const result of results) {
         console.log(`  ${result.provider} (${result.modelId}):`);
         console.log(
-          `    pass@1: ${result.pass1.toFixed(
-            4
-          )}, pass@10: ${result.pass10.toFixed(4)}`
+          `    pass@1: ${result.pass1.toFixed(4)}${
+            numSamples > 1 ? `, pass@10: ${result.pass10.toFixed(4)}` : ""
+          }`
         );
         console.log(
           `    Samples: ${result.numSamples}, Correct: ${result.numCorrect}`
