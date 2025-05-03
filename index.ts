@@ -176,43 +176,68 @@ async function runBenchmark() {
       );
     }
 
-    // Run tests with providers SEQUENTIALLY instead of in parallel to avoid concurrency issues
-    console.log(
-      `\n👉 Running tests with ${selectedProviderModels.length} providers sequentially...`
-    );
-
     const allResults: HumanEvalResult[] = [];
 
-    // Run each provider's tests sequentially
-    for (const providerWithModel of selectedProviderModels) {
-      try {
-        console.log(
-          `\n👉 Starting tests with ${providerWithModel.name} (${providerWithModel.modelId})...`
-        );
-
-        // Ensure provider-specific tmp directory exists and is clean
-        await cleanTmpDir(providerWithModel.name);
-
-        // Run tests with this provider using HumanEval methodology
-        const results = await runAllTestsHumanEval(
-          providerWithModel.provider,
-          numSamples,
-          testDefinitions, // Pass specific tests if in debug mode
-          contextContent // Pass context content if available
-        );
-
-        // Add the results to the combined array
-        allResults.push(...results);
-
-        // Clean provider-specific tmp directory after tests
-        await cleanTmpDir(providerWithModel.name);
-      } catch (error) {
-        console.error(
-          `Error running tests with ${providerWithModel.name}:`,
-          error
-        );
-        // Continue with the next provider rather than breaking the whole process
+    // Group provider models by provider name
+    const providerGroups: Record<string, typeof selectedProviderModels> = {};
+    for (const providerModel of selectedProviderModels) {
+      if (!providerGroups[providerModel.name]) {
+        providerGroups[providerModel.name] = [];
       }
+      providerGroups[providerModel.name].push(providerModel);
+    }
+
+    const providerNames = Object.keys(providerGroups);
+    console.log(
+      `\n👉 Running tests with ${providerNames.length} providers in parallel...`
+    );
+
+    // Create a promise for each PROVIDER (not model)
+    const providerPromises = providerNames.map(async (providerName) => {
+      const providerResults: HumanEvalResult[] = [];
+      const providerModels = providerGroups[providerName];
+
+      console.log(`\n👉 Starting tests with ${providerName}...`);
+
+      // Run each MODEL sequentially within this provider
+      for (const providerWithModel of providerModels) {
+        try {
+          console.log(`\n👉 Running model: ${providerWithModel.modelId}...`);
+
+          // Ensure provider-specific tmp directory exists and is clean
+          await cleanTmpDir(providerWithModel.name);
+
+          // Run tests with this provider model using HumanEval methodology
+          const results = await runAllTestsHumanEval(
+            providerWithModel.provider,
+            numSamples,
+            testDefinitions, // Pass specific tests if in debug mode
+            contextContent // Pass context content if available
+          );
+
+          // Add the results
+          providerResults.push(...results);
+
+          // Clean provider-specific tmp directory after tests
+          await cleanTmpDir(providerWithModel.name);
+        } catch (error) {
+          console.error(
+            `Error running tests with ${providerWithModel.name} (${providerWithModel.modelId}):`,
+            error
+          );
+          // Continue with the next model rather than breaking the whole process
+        }
+      }
+
+      return providerResults;
+    });
+
+    // Wait for all provider promises to complete
+    const resultsArrays = await Promise.all(providerPromises);
+
+    // Combine all results
+    for (const results of resultsArrays) {
+      allResults.push(...results);
     }
 
     // Save benchmark results with context information if available
@@ -263,8 +288,8 @@ async function runBenchmark() {
 
     // Clean up all tmp directories - carefully
     await cleanTmpDir();
-    for (const provider of selectedProviderModels) {
-      await cleanTmpDir(provider.name);
+    for (const providerName of providerNames) {
+      await cleanTmpDir(providerName);
     }
 
     // Exit with appropriate code
