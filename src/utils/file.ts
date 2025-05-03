@@ -1,5 +1,10 @@
 import fs from "fs/promises";
 import path from "path";
+import { rimraf } from "rimraf";
+
+// Maximum retry attempts for file operations
+const MAX_RETRIES = 3;
+const RETRY_DELAY = 500; // milliseconds
 
 /**
  * Get the directory for temporary files for a specific provider
@@ -29,37 +34,56 @@ export async function ensureTmpDir(provider?: string): Promise<void> {
 }
 
 /**
- * Clean the temporary directory for a specific provider
+ * Helper function to add delay between retries
+ * @param ms milliseconds to delay
+ */
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+/**
+ * Clean the temporary directory for a specific provider with retry logic
  * @param provider The provider name (optional)
  */
 export async function cleanTmpDir(provider?: string): Promise<void> {
-  try {
-    // Ensure the temp directory exists
-    await ensureTmpDir(provider);
+  let retries = 0;
+  const tmpDir = getTmpDir(provider);
 
-    const tmpDir = getTmpDir(provider);
-    const files = await fs.readdir(tmpDir);
+  while (retries < MAX_RETRIES) {
+    try {
+      // Use rimraf to recursively remove directory contents
+      // This properly handles subdirectories and permission issues better than fs.unlink
+      await rimraf(tmpDir);
 
-    await Promise.all(
-      files.map((file) =>
-        fs
-          .unlink(path.join(tmpDir, file))
-          .catch((err) => console.warn(`Failed to delete ${file}:`, err))
-      )
-    );
+      // Re-create the empty directory
+      await ensureTmpDir(provider);
 
-    console.log(`✨ Cleaned tmp directory for ${provider || "base"}`);
-  } catch (error) {
-    console.error(
-      `Error cleaning tmp directory for ${provider || "base"}:`,
-      error
-    );
-    throw error;
+      console.log(`✨ Cleaned tmp directory for ${provider || "base"}`);
+      return;
+    } catch (error) {
+      retries++;
+      console.warn(
+        `Warning: Failed to clean tmp directory for ${
+          provider || "base"
+        } (attempt ${retries}/${MAX_RETRIES}):`,
+        error
+      );
+
+      if (retries < MAX_RETRIES) {
+        // Wait a bit before retrying to allow any file locks to clear
+        await delay(RETRY_DELAY * retries);
+      } else {
+        console.error(
+          `Failed to clean tmp directory for ${
+            provider || "base"
+          } after ${MAX_RETRIES} attempts`
+        );
+        // Don't throw the error, just log it and continue
+      }
+    }
   }
 }
 
 /**
- * Write content to a file in the temporary directory for a specific provider
+ * Write content to a file in the temporary directory for a specific provider with retry logic
  * @param filename The name of the file
  * @param content The content to write
  * @param provider The provider name (optional)
@@ -69,24 +93,46 @@ export async function writeToTmpFile(
   content: string,
   provider?: string
 ): Promise<string> {
-  try {
-    await ensureTmpDir(provider);
-    const tmpDir = getTmpDir(provider);
-    const filePath = path.join(tmpDir, filename);
-    await fs.writeFile(filePath, content);
-    console.log(`📝 Wrote to ${filePath}`);
-    return filePath;
-  } catch (error) {
-    console.error(
-      `Error writing to ${filename} for ${provider || "base"}:`,
-      error
-    );
-    throw error;
+  let retries = 0;
+
+  while (retries < MAX_RETRIES) {
+    try {
+      await ensureTmpDir(provider);
+      const tmpDir = getTmpDir(provider);
+      const filePath = path.join(tmpDir, filename);
+      await fs.writeFile(filePath, content);
+      console.log(`📝 Wrote to ${filePath}`);
+      return filePath;
+    } catch (error) {
+      retries++;
+      console.warn(
+        `Warning: Failed to write to ${filename} for ${
+          provider || "base"
+        } (attempt ${retries}/${MAX_RETRIES}):`,
+        error
+      );
+
+      if (retries < MAX_RETRIES) {
+        await delay(RETRY_DELAY * retries);
+      } else {
+        console.error(
+          `Error writing to ${filename} for ${
+            provider || "base"
+          } after ${MAX_RETRIES} attempts:`,
+          error
+        );
+        throw error;
+      }
+    }
   }
+
+  throw new Error(
+    `Failed to write to ${filename} after ${MAX_RETRIES} attempts`
+  );
 }
 
 /**
- * Copy a file to the temporary directory for a specific provider
+ * Copy a file to the temporary directory for a specific provider with retry logic
  * @param sourcePath The path to the source file
  * @param destFilename The name of the destination file
  * @param provider The provider name (optional)
@@ -96,34 +142,75 @@ export async function copyToTmpDir(
   destFilename: string,
   provider?: string
 ): Promise<string> {
-  try {
-    await ensureTmpDir(provider);
-    const tmpDir = getTmpDir(provider);
-    const destPath = path.join(tmpDir, destFilename);
-    await fs.copyFile(sourcePath, destPath);
-    console.log(`📋 Copied ${sourcePath} to ${destPath}`);
-    return destPath;
-  } catch (error) {
-    console.error(
-      `Error copying ${sourcePath} for ${provider || "base"}:`,
-      error
-    );
-    throw error;
+  let retries = 0;
+
+  while (retries < MAX_RETRIES) {
+    try {
+      await ensureTmpDir(provider);
+      const tmpDir = getTmpDir(provider);
+      const destPath = path.join(tmpDir, destFilename);
+      await fs.copyFile(sourcePath, destPath);
+      console.log(`📋 Copied ${sourcePath} to ${destPath}`);
+      return destPath;
+    } catch (error) {
+      retries++;
+      console.warn(
+        `Warning: Failed to copy ${sourcePath} for ${
+          provider || "base"
+        } (attempt ${retries}/${MAX_RETRIES}):`,
+        error
+      );
+
+      if (retries < MAX_RETRIES) {
+        await delay(RETRY_DELAY * retries);
+      } else {
+        console.error(
+          `Error copying ${sourcePath} for ${
+            provider || "base"
+          } after ${MAX_RETRIES} attempts:`,
+          error
+        );
+        throw error;
+      }
+    }
   }
+
+  throw new Error(
+    `Failed to copy to ${destFilename} after ${MAX_RETRIES} attempts`
+  );
 }
 
 /**
- * Read a file from the specified path
+ * Read a file from the specified path with retry logic
  * @param filePath The path to the file
  * @returns The content of the file
  */
 export async function readFile(filePath: string): Promise<string> {
-  try {
-    return await fs.readFile(filePath, "utf-8");
-  } catch (error) {
-    console.error(`Error reading ${filePath}:`, error);
-    throw error;
+  let retries = 0;
+
+  while (retries < MAX_RETRIES) {
+    try {
+      return await fs.readFile(filePath, "utf-8");
+    } catch (error) {
+      retries++;
+      console.warn(
+        `Warning: Failed to read ${filePath} (attempt ${retries}/${MAX_RETRIES}):`,
+        error
+      );
+
+      if (retries < MAX_RETRIES) {
+        await delay(RETRY_DELAY * retries);
+      } else {
+        console.error(
+          `Error reading ${filePath} after ${MAX_RETRIES} attempts:`,
+          error
+        );
+        throw error;
+      }
+    }
   }
+
+  throw new Error(`Failed to read ${filePath} after ${MAX_RETRIES} attempts`);
 }
 
 /**

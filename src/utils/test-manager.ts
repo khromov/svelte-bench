@@ -100,16 +100,25 @@ export async function runSingleTest(
       generatedCode = "<svelte:options runes={true} />\n\n" + generatedCode;
     }
 
-    // Write the generated code to a single file - always use "Component.svelte"
+    // Use standard Component.svelte name
     const componentFilename = "Component.svelte";
     await writeToTmpFile(componentFilename, generatedCode, providerName);
 
-    // Copy the test file to the tmp directory - no modifications to test files
+    // Copy the test file
     const testContent = await readFile(test.testPath);
     const testFilename = `${test.name}.test.ts`;
     await writeToTmpFile(testFilename, testContent, providerName);
 
-    // Run the test
+    // Make sure the files are fully written before proceeding
+    const tmpDir = path.resolve(
+      process.cwd(),
+      "tmp",
+      providerName.toLowerCase()
+    );
+    await fs.access(path.join(tmpDir, componentFilename));
+    await fs.access(path.join(tmpDir, testFilename));
+
+    // Run the test with the standard test name
     const testResult = await runTest(test.name, providerName);
 
     return {
@@ -175,7 +184,7 @@ export async function runHumanEvalTest(
 
     // First sample with temperature 0.2 (for pass@1)
     try {
-      // Clean the tmp directory before the first sample
+      // Clean the tmp directory before each test (not between samples)
       await cleanTmpDir(providerName);
 
       const firstSample = await runSingleTest(
@@ -312,7 +321,7 @@ export async function runAllTestsHumanEval(
   try {
     const providerName = llmProvider.name;
 
-    // Clean the provider-specific tmp directory
+    // Clean the provider-specific tmp directory once at the beginning
     await cleanTmpDir(providerName);
 
     // Load test definitions
@@ -332,9 +341,6 @@ export async function runAllTestsHumanEval(
 
     for (const test of tests) {
       try {
-        // Clean the tmp directory before each test
-        await cleanTmpDir(providerName);
-
         console.log(`\n🧪 Running test: ${test.name} with ${providerName}`);
         const result = await runHumanEvalTest(
           test,

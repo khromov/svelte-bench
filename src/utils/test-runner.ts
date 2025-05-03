@@ -1,6 +1,7 @@
 import { startVitest } from "vitest/node";
 import path from "path";
 import { getTmpDir } from "./file";
+import fs from "fs/promises";
 
 export interface TestResult {
   testName: string;
@@ -38,6 +39,13 @@ export async function runTest(
 
     const tmpDir = getTmpDir(provider);
     const testFilePath = path.resolve(tmpDir, `${testName}.test.ts`);
+
+    // Verify the test file exists before running the test
+    try {
+      await fs.access(testFilePath);
+    } catch (error) {
+      throw new Error(`Test file not found: ${testFilePath}`);
+    }
 
     const vitest = await startVitest("test", [testFilePath], {
       watch: false,
