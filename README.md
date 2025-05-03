@@ -33,10 +33,7 @@ You can provide a context file (like Svelte documentation) to help the LLM gener
 
 ```bash
 # Run with a context file
-npm run run-tests -- --context ./path/to/context-file.txt
-
-# Or use the convenience script
-npm run run-tests:with-context ./path/to/context-file.txt
+npm run run-tests -- --context ./context/svelte.dev/llms-small.txt && npm run build
 ```
 
 The context file will be included in the prompt to the LLM, providing additional information for generating components.
