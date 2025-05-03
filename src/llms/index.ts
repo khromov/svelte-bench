@@ -81,7 +81,7 @@ export async function getAllLLMProviders(): Promise<ProviderWithModel[]> {
       modelId,
     });
   }
-  /*
+
   // Anthropic provider
   const anthropicProvider = await getLLMProvider("anthropic");
   for (const modelId of anthropicProvider.getModels()) {
@@ -93,7 +93,6 @@ export async function getAllLLMProviders(): Promise<ProviderWithModel[]> {
     });
   }
 
-
   // Google provider
   const googleProvider = await getLLMProvider("google");
   for (const modelId of googleProvider.getModels()) {
@@ -104,7 +103,6 @@ export async function getAllLLMProviders(): Promise<ProviderWithModel[]> {
       modelId,
     });
   }
-      */
 
   return providers;
 }
