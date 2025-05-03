@@ -120,6 +120,11 @@
       font-weight: bold;
     }
     
+    .partial {
+      color: #c05621;
+      font-weight: bold;
+    }
+    
     .failure {
       color: #e53e3e;
       font-weight: bold;
@@ -357,6 +362,75 @@
       font-size: 12px;
       white-space: nowrap;
     }
+    
+    /* HumanEval specific styles */
+    .samples-container {
+      margin-top: 15px;
+    }
+    
+    .sample-item {
+      margin-bottom: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+    
+    .sample-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 12px;
+      background-color: #f8f9fa;
+      cursor: pointer;
+      border-radius: 4px 4px 0 0;
+    }
+    
+    .sample-header h4 {
+      margin: 0;
+      font-size: 14px;
+    }
+    
+    .sample-content {
+      padding: 10px;
+      display: none;
+      max-height: 400px;
+      overflow: auto;
+    }
+    
+    .view-samples-button {
+      background-color: #4299e1;
+      color: white;
+      border: none;
+      padding: 4px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 13px;
+    }
+    
+    .view-samples-button:hover {
+      background-color: #3182ce;
+    }
+    
+    .humaneval-metrics {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 8px;
+      padding: 8px;
+      background-color: #f0f9ff;
+      border-radius: 4px;
+      border: 1px solid #bae6fd;
+    }
+    
+    .metric {
+      padding: 4px 8px;
+      background-color: white;
+      border-radius: 4px;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    }
+    
+    .metric-label {
+      font-weight: bold;
+      color: #0369a1;
+    }
   </style>
 </head>
 <body>
@@ -429,52 +503,110 @@
                       <tr>
                         <th>Test</th>
                         <th>Status</th>
-                        <th>Tests Passed</th>
+                        <% if (typeof isHumanEval !== 'undefined' && isHumanEval) { %>
+                          <th>pass@1</th>
+                          <th>pass@10</th>
+                          <th>Passing Samples</th>
+                        <% } else { %>
+                          <th>Tests Passed</th>
+                        <% } %>
                         <th>Errors</th>
                         <th>Actions</th>
                       </tr>
                       
-                      <% results.forEach((result, index) => { %>
-                        <tr>
-                          <td><%= result.testName %></td>
-                          <td>
-                            <% if (result.testResult.success) { %>
-                              <span class="success">✅ PASS</span>
-                            <% } else { %>
-                              <span class="failure">❌ FAIL</span>
-                            <% } %>
-                          </td>
-                          <td>
-                            <%= result.testResult.totalTests - result.testResult.failedTests %>/<%= result.testResult.totalTests %>
-                          </td>
-                          <td>
-                            <% const errorCount = result.testResult.errors ? result.testResult.errors.length : 0 %>
-                            <% if (errorCount > 0) { %>
-                              <span class="failure"><%= errorCount %></span>
-                            <% } else { %>
-                              0
-                            <% } %>
-                          </td>
-                          <td>
-                            <div class="button-group">
-                              <button class="view-code-button" 
-                                      onclick="showCodeModal('<%= providerData.provider %>', '<%= model %>', <%= index %>)">
-                                View Code
-                              </button>
-                              <a href="https://github.com/khromov/svelte-bench/blob/main/src/tests/<%= result.testName %>/prompt.md" 
-                                 target="_blank" 
-                                 class="github-button">
-                                View Prompt
-                              </a>
-                              <a href="https://github.com/khromov/svelte-bench/blob/main/src/tests/<%= result.testName %>/test.ts" 
-                                 target="_blank" 
-                                 class="github-button">
-                                View Tests
-                              </a>
-                            </div>
-                          </td>
-                        </tr>
-                      <% }); %>
+                      <% if (typeof isHumanEval !== 'undefined' && isHumanEval) { %>
+                        <!-- HumanEval Format -->
+                        <% results.forEach((result, index) => { %>
+                          <tr>
+                            <td><%= result.testName %></td>
+                            <td>
+                              <% if (result.numCorrect === result.numSamples) { %>
+                                <span class="success">✅ PASS</span>
+                              <% } else if (result.numCorrect > 0) { %>
+                                <span class="partial">⚠️ PARTIAL</span>
+                              <% } else { %>
+                                <span class="failure">❌ FAIL</span>
+                              <% } %>
+                            </td>
+                            <td><%= result.pass1.toFixed(4) %></td>
+                            <td><%= result.pass10.toFixed(4) %></td>
+                            <td><%= result.numCorrect %>/<%= result.numSamples %></td>
+                            <td>
+                              <% 
+                                const errorCount = result.samples.reduce((count, sample) => {
+                                  return count + (sample.errors ? sample.errors.length : 0);
+                                }, 0);
+                              %>
+                              <% if (errorCount > 0) { %>
+                                <span class="failure"><%= errorCount %></span>
+                              <% } else { %>
+                                0
+                              <% } %>
+                            </td>
+                            <td>
+                              <div class="button-group">
+                                <button class="view-samples-button" 
+                                        onclick="showSamplesModal('<%= providerData.provider %>', '<%= model %>', <%= index %>)">
+                                  View Samples
+                                </button>
+                                <a href="https://github.com/khromov/svelte-bench/blob/main/src/tests/<%= result.testName %>/prompt.md" 
+                                   target="_blank" 
+                                   class="github-button">
+                                  View Prompt
+                                </a>
+                                <a href="https://github.com/khromov/svelte-bench/blob/main/src/tests/<%= result.testName %>/test.ts" 
+                                   target="_blank" 
+                                   class="github-button">
+                                  View Tests
+                                </a>
+                              </div>
+                            </td>
+                          </tr>
+                        <% }); %>
+                      <% } else { %>
+                        <!-- Original Format -->
+                        <% results.forEach((result, index) => { %>
+                          <tr>
+                            <td><%= result.testName %></td>
+                            <td>
+                              <% if (result.testResult.success) { %>
+                                <span class="success">✅ PASS</span>
+                              <% } else { %>
+                                <span class="failure">❌ FAIL</span>
+                              <% } %>
+                            </td>
+                            <td>
+                              <%= result.testResult.totalTests - result.testResult.failedTests %>/<%= result.testResult.totalTests %>
+                            </td>
+                            <td>
+                              <% const errorCount = result.testResult.errors ? result.testResult.errors.length : 0 %>
+                              <% if (errorCount > 0) { %>
+                                <span class="failure"><%= errorCount %></span>
+                              <% } else { %>
+                                0
+                              <% } %>
+                            </td>
+                            <td>
+                              <div class="button-group">
+                                <button class="view-code-button" 
+                                        onclick="showCodeModal('<%= providerData.provider %>', '<%= model %>', <%= index %>)">
+                                  View Code
+                                </button>
+                                <a href="https://github.com/khromov/svelte-bench/blob/main/src/tests/<%= result.testName %>/prompt.md" 
+                                   target="_blank" 
+                                   class="github-button">
+                                  View Prompt
+                                </a>
+                                <a href="https://github.com/khromov/svelte-bench/blob/main/src/tests/<%= result.testName %>/test.ts" 
+                                   target="_blank" 
+                                   class="github-button">
+                                  View Tests
+                                </a>
+                              </div>
+                            </td>
+                          </tr>
+                        <% }); %>
+                      <% } %>
                     </table>
                   </div>
                 </div>
@@ -496,6 +628,16 @@
         <span id="close-modal" class="close">&times;</span>
         <h2 id="modal-title"></h2>
         <div class="code-container" id="code-display"></div>
+      </div>
+    </div>
+
+    <!-- Modal for HumanEval samples view -->
+    <div id="samples-modal" class="modal">
+      <div class="modal-content">
+        <span id="close-samples-modal" class="close">&times;</span>
+        <h2 id="samples-modal-title"></h2>
+        <div class="humaneval-metrics" id="samples-modal-metrics"></div>
+        <div class="samples-container" id="samples-container"></div>
       </div>
     </div>
 
@@ -612,6 +754,142 @@
           codeModal.style.display = "block";
         }
 
+        // Function to show samples modal for HumanEval results
+        function showSamplesModal(provider, model, resultIndex) {
+          const samplesModal = document.getElementById("samples-modal");
+          const samplesContainer = document.getElementById("samples-container");
+          const modalTitle = document.getElementById("samples-modal-title");
+          const modalMetrics = document.getElementById("samples-modal-metrics");
+
+          // Get the benchmark data
+          const benchmarkData = decodeBase64Data();
+
+          // Find the result in the benchmark data
+          let result = null;
+          for (const providerData of benchmarkData) {
+            if (providerData.provider === provider) {
+              for (const [modelName, results] of Object.entries(providerData.models)) {
+                if (modelName === model) {
+                  result = results[resultIndex];
+                  break;
+                }
+              }
+              if (result) break;
+            }
+          }
+
+          if (!result) {
+            console.error("Result not found");
+            return;
+          }
+
+          // Set the title with status
+          let statusText = "";
+          if (result.numCorrect === result.numSamples) {
+            statusText = "✅ PASS";
+          } else if (result.numCorrect > 0) {
+            statusText = "⚠️ PARTIAL";
+          } else {
+            statusText = "❌ FAIL";
+          }
+          
+          modalTitle.textContent = `${result.testName} - ${provider} ${model} (${statusText})`;
+          
+          // Add status class to the title
+          if (result.numCorrect === result.numSamples) {
+            modalTitle.className = "success";
+          } else if (result.numCorrect > 0) {
+            modalTitle.className = "partial";
+          } else {
+            modalTitle.className = "failure";
+          }
+
+          // Set the metrics with status indicator
+          let statusClass = "";
+          let statusEmoji = "";
+          
+          if (result.numCorrect === result.numSamples) {
+            statusClass = "success";
+            statusEmoji = "✅";
+          } else if (result.numCorrect > 0) {
+            statusClass = "partial";
+            statusEmoji = "⚠️";
+          } else {
+            statusClass = "failure";
+            statusEmoji = "❌";
+          }
+          
+          modalMetrics.innerHTML = `
+            <div class="metric ${statusClass}">
+              <span class="metric-label">Status:</span> ${statusEmoji} ${result.numCorrect === result.numSamples ? 'PASS' : (result.numCorrect > 0 ? 'PARTIAL' : 'FAIL')}
+            </div>
+            <div class="metric">
+              <span class="metric-label">pass@1:</span> ${result.pass1.toFixed(4)}
+            </div>
+            <div class="metric">
+              <span class="metric-label">pass@10:</span> ${result.pass10.toFixed(4)}
+            </div>
+            <div class="metric">
+              <span class="metric-label">Correct:</span> ${result.numCorrect}/${result.numSamples}
+            </div>
+          `;
+
+          // Clear samples container
+          samplesContainer.innerHTML = "";
+
+          // Add each sample
+          result.samples.forEach((sample) => {
+            const sampleDiv = document.createElement("div");
+            sampleDiv.className = "sample-item";
+            
+            const header = document.createElement("div");
+            header.className = "sample-header";
+            header.innerHTML = `
+              <h4>Sample ${sample.index + 1}${sample.temperature ? ` (temp: ${sample.temperature})` : ''}</h4>
+              <span class="${sample.success ? 'success' : 'failure'}">
+                ${sample.success ? '✅ PASS' : '❌ FAIL'}
+              </span>
+            `;
+            
+            // Add click event to toggle visibility
+            header.addEventListener("click", function() {
+              const content = this.nextElementSibling;
+              content.style.display = content.style.display === 'none' ? 'block' : 'none';
+            });
+            
+            const content = document.createElement("div");
+            content.className = "sample-content";
+            content.innerHTML = `<pre><code class="language-svelte">${escapeHtml(sample.code)}</code></pre>`;
+            
+            // Add errors if any
+            if (sample.errors && sample.errors.length > 0) {
+              const errorsDiv = document.createElement("div");
+              errorsDiv.className = "errors-section";
+              errorsDiv.innerHTML = `
+                <h4>Errors (${sample.errors.length})</h4>
+                <div class="error-list">
+                  ${sample.errors
+                    .map(
+                      (error) =>
+                        `<div class="error-item">
+                          <pre>${escapeHtml(error)}</pre>
+                        </div>`
+                    )
+                    .join("")}
+                </div>
+              `;
+              content.appendChild(errorsDiv);
+            }
+            
+            sampleDiv.appendChild(header);
+            sampleDiv.appendChild(content);
+            samplesContainer.appendChild(sampleDiv);
+          });
+
+          // Show the modal
+          samplesModal.style.display = "block";
+        }
+
         // Toggle provider section visibility
         function toggleProvider(providerId) {
           const providerSection = document.getElementById(`provider-${providerId}`);
@@ -702,12 +980,31 @@
             });
           }
 
+          // Close samples modal when clicking the close button
+          const closeSamplesButton = document.getElementById("close-samples-modal");
+          if (closeSamplesButton) {
+            closeSamplesButton.addEventListener("click", () => {
+              const samplesModal = document.getElementById("samples-modal");
+              samplesModal.style.display = "none";
+            });
+          }
+
           // Close modal when clicking outside the modal content
           const codeModal = document.getElementById("code-modal");
           if (codeModal) {
             codeModal.addEventListener("click", (event) => {
               if (event.target === codeModal) {
                 codeModal.style.display = "none";
+              }
+            });
+          }
+
+          // Close samples modal when clicking outside the modal content
+          const samplesModal = document.getElementById("samples-modal");
+          if (samplesModal) {
+            samplesModal.addEventListener("click", (event) => {
+              if (event.target === samplesModal) {
+                samplesModal.style.display = "none";
               }
             });
           }

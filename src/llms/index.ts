@@ -11,9 +11,10 @@ export interface LLMProvider {
   /**
    * Generate code from a prompt
    * @param prompt The prompt to send to the LLM
+   * @param temperature Optional temperature parameter for controlling randomness
    * @returns The generated code
    */
-  generateCode(prompt: string): Promise<string>;
+  generateCode(prompt: string, temperature?: number): Promise<string>;
 
   /**
    * Get all available models for this provider
