@@ -431,6 +431,53 @@
       font-weight: bold;
       color: #0369a1;
     }
+
+    /* Context info styles */
+    .context-info {
+      margin: 20px 0;
+      padding: 15px;
+      background-color: #eef6ff;
+      border-radius: 6px;
+      border: 1px solid #bfdeff;
+    }
+
+    .context-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .context-filename {
+      font-weight: bold;
+      color: #1e40af;
+    }
+
+    .toggle-context-btn {
+      background-color: #4299e1;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 13px;
+    }
+
+    .toggle-context-btn:hover {
+      background-color: #3182ce;
+    }
+
+    .context-content {
+      display: none;
+      background-color: #fff;
+      padding: 12px;
+      border-radius: 4px;
+      border: 1px solid #e2e8f0;
+      margin-top: 10px;
+      max-height: 300px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+    }
   </style>
 </head>
 <body>
@@ -477,6 +524,19 @@
             </option>
           <% }); %>
         </select>
+      </div>
+    <% } %>
+    
+    <!-- Display context information if available -->
+    <% if (typeof contextInfo !== 'undefined' && contextInfo) { %>
+      <div class="context-info">
+        <div class="context-header">
+          <h3>Context File: <%= contextInfo.filename %></h3>
+          <button class="toggle-context-btn" onclick="toggleContextContent()">Show Context</button>
+        </div>
+        <div class="context-content" id="context-content">
+          <%= contextInfo.content %>
+        </div>
       </div>
     <% } %>
     
@@ -626,6 +686,20 @@
           } catch (error) {
             console.error("Error decoding benchmark data:", error);
             return [];
+          }
+        }
+
+        // Toggle context content visibility
+        function toggleContextContent() {
+          const contextContent = document.getElementById("context-content");
+          const toggleBtn = document.querySelector(".toggle-context-btn");
+          
+          if (contextContent.style.display === "block") {
+            contextContent.style.display = "none";
+            toggleBtn.textContent = "Show Context";
+          } else {
+            contextContent.style.display = "block";
+            toggleBtn.textContent = "Hide Context";
           }
         }
 

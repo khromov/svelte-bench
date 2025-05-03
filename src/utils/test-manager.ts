@@ -22,6 +22,7 @@ export interface BenchmarkResult {
   generatedCode: string;
   testResult: TestResult;
   promptPath: string;
+  contextContent?: string;
   timestamp: string;
   sampleIndex?: number;
   temperature?: number;
@@ -69,19 +70,26 @@ export async function runSingleTest(
   test: TestDefinition,
   llmProvider: LLMProvider,
   sampleIndex: number = 0,
-  temperature: number = 0.7
+  temperature: number = 0.7,
+  contextContent?: string
 ): Promise<BenchmarkResult> {
   try {
+    const providerName = llmProvider.name;
+
     // Read the prompt
     const prompt = await readFile(test.promptPath);
 
     // Generate code with the LLM
     console.log(
-      `🔄 Generating ${test.name} component with ${llmProvider.name} (sample ${
+      `🔄 Generating ${test.name} component with ${providerName} (sample ${
         sampleIndex + 1
       }, temp: ${temperature})...`
     );
-    let generatedCode = await llmProvider.generateCode(prompt, temperature);
+    let generatedCode = await llmProvider.generateCode(
+      prompt,
+      temperature,
+      contextContent
+    );
 
     // Apply a second pass of cleaning to ensure all backticks are removed
     generatedCode = cleanCodeMarkdown(generatedCode);
@@ -92,32 +100,45 @@ export async function runSingleTest(
       generatedCode = "<svelte:options runes={true} />\n\n" + generatedCode;
     }
 
-    // Write the generated code to a single file - always use "Component.svelte"
+    // Use standard Component.svelte name
     const componentFilename = "Component.svelte";
-    await writeToTmpFile(componentFilename, generatedCode);
+    await writeToTmpFile(componentFilename, generatedCode, providerName);
 
-    // Copy the test file to the tmp directory - no modifications to test files
+    // Copy the test file
     const testContent = await readFile(test.testPath);
     const testFilename = `${test.name}.test.ts`;
-    await writeToTmpFile(testFilename, testContent);
+    await writeToTmpFile(testFilename, testContent, providerName);
 
-    // Run the test
-    const testResult = await runTest(test.name);
+    // Make sure the files are fully written before proceeding
+    const tmpDir = path.resolve(
+      process.cwd(),
+      "tmp",
+      providerName.toLowerCase()
+    );
+    await fs.access(path.join(tmpDir, componentFilename));
+    await fs.access(path.join(tmpDir, testFilename));
+
+    // Run the test with the standard test name
+    const testResult = await runTest(test.name, providerName);
 
     return {
       testName: test.name,
-      llmProvider: llmProvider.name,
+      llmProvider: providerName,
       modelIdentifier: llmProvider.getModelIdentifier(),
       generatedCode,
       testResult,
       promptPath: test.promptPath,
+      contextContent,
       timestamp: new Date().toISOString(),
       sampleIndex,
       temperature,
     };
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    console.error(`Error running test ${test.name}:`, errorMessage);
+    console.error(
+      `Error running test ${test.name} with ${llmProvider.name}:`,
+      errorMessage
+    );
 
     return {
       testName: test.name,
@@ -133,6 +154,7 @@ export async function runSingleTest(
         errors: [errorMessage],
       },
       promptPath: test.promptPath,
+      contextContent,
       timestamp: new Date().toISOString(),
       sampleIndex,
       temperature,
@@ -149,9 +171,11 @@ export async function runSingleTest(
 export async function runHumanEvalTest(
   test: TestDefinition,
   llmProvider: LLMProvider,
-  numSamples: number = 10
+  numSamples: number = 10,
+  contextContent?: string
 ): Promise<HumanEvalResult> {
   try {
+    const providerName = llmProvider.name;
     const samples: BenchmarkResult[] = [];
 
     // Use temperature of 0.2 for pass@1 calculations
@@ -159,38 +183,96 @@ export async function runHumanEvalTest(
     // This aligns with recommendations from the original HumanEval paper
 
     // First sample with temperature 0.2 (for pass@1)
-    const firstSample = await runSingleTest(test, llmProvider, 0, 0.2);
-    samples.push(firstSample);
+    try {
+      // Clean the tmp directory before each test (not between samples)
+      await cleanTmpDir(providerName);
+
+      const firstSample = await runSingleTest(
+        test,
+        llmProvider,
+        0,
+        0.2,
+        contextContent
+      );
+      samples.push(firstSample);
+    } catch (error) {
+      console.error(
+        `Error running first sample for ${test.name} with ${providerName}:`,
+        error
+      );
+      // Continue with other samples rather than failing completely
+    }
 
     // Remaining samples with temperature 0.8 (for pass@k where k>1)
     for (let i = 1; i < numSamples; i++) {
-      // Clean the tmp directory before each sample
-      await cleanTmpDir();
+      try {
+        // Clean the tmp directory before each sample
+        await cleanTmpDir(providerName);
 
-      // Run the test with the current sample index and higher temperature
-      const result = await runSingleTest(test, llmProvider, i, 0.8);
-      samples.push(result);
+        // Run the test with the current sample index and higher temperature
+        const result = await runSingleTest(
+          test,
+          llmProvider,
+          i,
+          0.8,
+          contextContent
+        );
+        samples.push(result);
+      } catch (error) {
+        console.error(
+          `Error running sample ${i + 1} for ${
+            test.name
+          } with ${providerName}:`,
+          error
+        );
+        // Continue with other samples rather than failing completely
+      }
     }
 
-    // Calculate pass@k metrics
-    const numCorrect = samples.filter((s) => s.testResult.success).length;
-    const pass1 = calculatePassAtK(numSamples, numCorrect, 1);
+    // Calculate pass@k metrics - only count samples that were successfully run
+    const validSamples = samples.filter((s) => s !== null && s !== undefined);
+    const numValidSamples = validSamples.length;
+    const numCorrect = validSamples.filter((s) => s.testResult.success).length;
+
+    // If we have no valid samples, return default values
+    if (numValidSamples === 0) {
+      return {
+        testName: test.name,
+        provider: providerName,
+        modelId: llmProvider.getModelIdentifier(),
+        numSamples: 0,
+        numCorrect: 0,
+        pass1: 0,
+        pass10: 0,
+        context: {
+          used: !!contextContent,
+          content: contextContent,
+        },
+        samples: [],
+      };
+    }
+
+    const pass1 = calculatePassAtK(numValidSamples, numCorrect, 1);
     const pass10 = calculatePassAtK(
-      numSamples,
+      numValidSamples,
       numCorrect,
-      Math.min(10, numSamples)
+      Math.min(10, numValidSamples)
     );
 
     // Format the results
     return {
       testName: test.name,
-      provider: llmProvider.name,
+      provider: providerName,
       modelId: llmProvider.getModelIdentifier(),
-      numSamples,
+      numSamples: numValidSamples,
       numCorrect,
       pass1,
       pass10,
-      samples: samples.map((s) => ({
+      context: {
+        used: !!contextContent,
+        content: contextContent,
+      },
+      samples: validSamples.map((s) => ({
         index: s.sampleIndex || 0,
         code: s.generatedCode,
         success: s.testResult.success,
@@ -200,26 +282,25 @@ export async function runHumanEvalTest(
     };
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    console.error(`Error running HumanEval test ${test.name}:`, errorMessage);
+    console.error(
+      `Error running HumanEval test ${test.name} with ${llmProvider.name}:`,
+      errorMessage
+    );
 
     // Return a failed result
     return {
       testName: test.name,
       provider: llmProvider.name,
       modelId: llmProvider.getModelIdentifier(),
-      numSamples,
+      numSamples: 0,
       numCorrect: 0,
       pass1: 0,
       pass10: 0,
-      samples: [
-        {
-          index: 0,
-          code: "",
-          success: false,
-          errors: [errorMessage],
-          temperature: 0.2,
-        },
-      ],
+      context: {
+        used: !!contextContent,
+        content: contextContent,
+      },
+      samples: [],
     };
   }
 }
@@ -229,52 +310,69 @@ export async function runHumanEvalTest(
  * @param llmProvider The LLM provider to use
  * @param numSamples Number of samples to generate for each test (default: 10)
  * @param specificTests Optional array of test definitions to run (default: all tests)
+ * @param contextContent Optional context content to include in prompts
  */
 export async function runAllTestsHumanEval(
   llmProvider: LLMProvider,
   numSamples: number = 10,
-  specificTests?: TestDefinition[]
+  specificTests?: TestDefinition[],
+  contextContent?: string
 ): Promise<HumanEvalResult[]> {
   try {
-    // Clean the tmp directory
-    await cleanTmpDir();
+    const providerName = llmProvider.name;
+
+    // Clean the provider-specific tmp directory once at the beginning
+    await cleanTmpDir(providerName);
 
     // Load test definitions
     let tests: TestDefinition[];
     if (specificTests && specificTests.length > 0) {
       tests = specificTests;
-      console.log(`📋 Running ${tests.length} specific tests`);
+      console.log(
+        `📋 Running ${tests.length} specific tests for ${providerName}`
+      );
     } else {
       tests = await loadTestDefinitions();
-      console.log(`📋 Found ${tests.length} tests to run`);
+      console.log(`📋 Found ${tests.length} tests to run for ${providerName}`);
     }
 
     // Run each test in sequence
     const results: HumanEvalResult[] = [];
 
     for (const test of tests) {
-      // Clean the tmp directory before each test
-      await cleanTmpDir();
+      try {
+        console.log(`\n🧪 Running test: ${test.name} with ${providerName}`);
+        const result = await runHumanEvalTest(
+          test,
+          llmProvider,
+          numSamples,
+          contextContent
+        );
+        results.push(result);
 
-      console.log(`\n🧪 Running test: ${test.name}`);
-      const result = await runHumanEvalTest(test, llmProvider, numSamples);
-      results.push(result);
-
-      // Log the pass@k metrics
-      console.log(
-        `📊 ${test.name} - pass@1: ${result.pass1.toFixed(
-          4
-        )}, pass@10: ${result.pass10.toFixed(4)}`
-      );
-      console.log(
-        `   Samples: ${result.numSamples}, Correct: ${result.numCorrect}`
-      );
+        // Log the pass@k metrics
+        console.log(
+          `📊 ${test.name} (${providerName}) - pass@1: ${result.pass1.toFixed(
+            4
+          )}, pass@10: ${result.pass10.toFixed(4)}`
+        );
+        console.log(
+          `   Samples: ${result.numSamples}, Correct: ${result.numCorrect}`
+        );
+      } catch (error) {
+        console.error(
+          `Error running test ${test.name} with ${providerName}:`,
+          error
+        );
+        // Continue with other tests rather than failing completely
+      }
     }
 
     return results;
   } catch (error) {
-    console.error("Error running all tests:", error);
-    throw error;
+    console.error(`Error running all tests for ${llmProvider.name}:`, error);
+    // Return an empty array rather than throwing an error
+    return [];
   }
 }
 
@@ -295,17 +393,34 @@ export async function ensureBenchmarksDir(): Promise<void> {
  * Save benchmark results to a file
  */
 export async function saveBenchmarkResults(
-  results: HumanEvalResult[]
+  results: HumanEvalResult[],
+  contextFile?: string,
+  contextContent?: string
 ): Promise<string> {
   try {
     // Ensure the benchmarks directory exists
     await ensureBenchmarksDir();
 
     const timestamp = new Date().toISOString().replace(/:/g, "-");
-    const filename = `benchmark-results-${timestamp}.json`;
+    const filenamePrefix = contextFile
+      ? `benchmark-results-with-context-`
+      : `benchmark-results-`;
+    const filename = `${filenamePrefix}${timestamp}.json`;
     const filePath = path.resolve(process.cwd(), "benchmarks", filename);
 
-    await fs.writeFile(filePath, JSON.stringify(results, null, 2));
+    // Add context information to the results if it's not already there
+    const resultsWithContext = results.map((result) => {
+      if (!result.context) {
+        result.context = {
+          used: !!contextContent,
+          filename: contextFile,
+          content: contextContent,
+        };
+      }
+      return result;
+    });
+
+    await fs.writeFile(filePath, JSON.stringify(resultsWithContext, null, 2));
     console.log(`📊 Saved benchmark results to ${filePath}`);
 
     return filePath;

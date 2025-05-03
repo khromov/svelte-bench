@@ -2,7 +2,7 @@
 import "dotenv/config";
 
 import { getAllLLMProviders } from "./src/llms";
-import { cleanTmpDir } from "./src/utils/file";
+import { cleanTmpDir, loadContextFile } from "./src/utils/file";
 import {
   runAllTestsHumanEval,
   saveBenchmarkResults,
@@ -10,6 +10,30 @@ import {
 } from "./src/utils/test-manager";
 import type { HumanEvalResult } from "./src/utils/humaneval";
 import { ensureRequiredDirectories } from "./src/utils/ensure-dirs";
+import path from "path";
+
+/**
+ * Parse command line arguments
+ * @returns Parsed command line arguments
+ */
+function parseCommandLineArgs(): {
+  contextFile?: string;
+} {
+  const args = process.argv.slice(2);
+  let contextFile: string | undefined;
+
+  // Parse arguments
+  for (let i = 0; i < args.length; i++) {
+    if (args[i] === "--context" && i + 1 < args.length) {
+      contextFile = args[i + 1];
+      i++; // Skip the next argument as it's the value for --context
+    }
+  }
+
+  return {
+    contextFile,
+  };
+}
 
 /**
  * Main function to run the benchmark
@@ -18,10 +42,27 @@ async function runBenchmark() {
   console.log("🚀 Starting SvelteBench with HumanEval methodology...");
 
   try {
+    // Parse command line arguments
+    const { contextFile } = parseCommandLineArgs();
+
+    // Load context file if specified
+    let contextContent = "";
+    if (contextFile) {
+      try {
+        // Resolve path relative to the current working directory
+        const contextFilePath = path.resolve(process.cwd(), contextFile);
+        contextContent = await loadContextFile(contextFilePath);
+        console.log(`👉 Using context file: ${contextFilePath}`);
+      } catch (error) {
+        console.error(`Error loading context file: ${error}`);
+        process.exit(1);
+      }
+    }
+
     // Ensure required directories exist
     await ensureRequiredDirectories();
 
-    // Clean tmp directory
+    // Clean base tmp directory
     await cleanTmpDir();
 
     // Check if we're in debug mode
@@ -120,9 +161,6 @@ async function runBenchmark() {
       }
     }
 
-    // Run all tests with all selected providers using HumanEval methodology
-    const allResults: HumanEvalResult[] = [];
-
     // Set number of samples based on debug mode
     // In debug mode: only 1 sample (pass@1 only) to speed up development
     // In normal mode: 10 samples for proper HumanEval metrics
@@ -138,25 +176,72 @@ async function runBenchmark() {
       );
     }
 
-    for (const providerWithModel of selectedProviderModels) {
-      console.log(
-        `\n👉 Running tests with ${providerWithModel.name} (${providerWithModel.modelId})...`
-      );
+    const allResults: HumanEvalResult[] = [];
 
-      // Run tests with this provider using HumanEval methodology
-      const results = await runAllTestsHumanEval(
-        providerWithModel.provider,
-        numSamples,
-        testDefinitions // Pass specific tests if in debug mode
-      );
-      allResults.push(...results);
-
-      // Clean tmp directory between providers
-      await cleanTmpDir();
+    // Group provider models by provider name
+    const providerGroups: Record<string, typeof selectedProviderModels> = {};
+    for (const providerModel of selectedProviderModels) {
+      if (!providerGroups[providerModel.name]) {
+        providerGroups[providerModel.name] = [];
+      }
+      providerGroups[providerModel.name].push(providerModel);
     }
 
-    // Save benchmark results
-    await saveBenchmarkResults(allResults);
+    const providerNames = Object.keys(providerGroups);
+    console.log(
+      `\n👉 Running tests with ${providerNames.length} providers in parallel...`
+    );
+
+    // Create a promise for each PROVIDER (not model)
+    const providerPromises = providerNames.map(async (providerName) => {
+      const providerResults: HumanEvalResult[] = [];
+      const providerModels = providerGroups[providerName];
+
+      console.log(`\n👉 Starting tests with ${providerName}...`);
+
+      // Run each MODEL sequentially within this provider
+      for (const providerWithModel of providerModels) {
+        try {
+          console.log(`\n👉 Running model: ${providerWithModel.modelId}...`);
+
+          // Ensure provider-specific tmp directory exists and is clean
+          await cleanTmpDir(providerWithModel.name);
+
+          // Run tests with this provider model using HumanEval methodology
+          const results = await runAllTestsHumanEval(
+            providerWithModel.provider,
+            numSamples,
+            testDefinitions, // Pass specific tests if in debug mode
+            contextContent // Pass context content if available
+          );
+
+          // Add the results
+          providerResults.push(...results);
+
+          // Clean provider-specific tmp directory after tests
+          await cleanTmpDir(providerWithModel.name);
+        } catch (error) {
+          console.error(
+            `Error running tests with ${providerWithModel.name} (${providerWithModel.modelId}):`,
+            error
+          );
+          // Continue with the next model rather than breaking the whole process
+        }
+      }
+
+      return providerResults;
+    });
+
+    // Wait for all provider promises to complete
+    const resultsArrays = await Promise.all(providerPromises);
+
+    // Combine all results
+    for (const results of resultsArrays) {
+      allResults.push(...results);
+    }
+
+    // Save benchmark results with context information if available
+    await saveBenchmarkResults(allResults, contextFile, contextContent);
 
     // Print summary
     console.log(`\n📊 ${isDebugMode ? "Debug" : "Benchmark"} Summary:`);
@@ -201,8 +286,11 @@ async function runBenchmark() {
       }`
     );
 
-    // Clean up
+    // Clean up all tmp directories - carefully
     await cleanTmpDir();
+    for (const providerName of providerNames) {
+      await cleanTmpDir(providerName);
+    }
 
     // Exit with appropriate code
     const exitCode = totalSuccess > 0 ? 0 : 1;
