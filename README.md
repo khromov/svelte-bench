@@ -27,6 +27,19 @@ Then edit the `.env` file and add your API keys.
 npm start
 ```
 
+### Debug Mode
+
+For faster development, you can enable debug mode in your `.env` file:
+
+```
+DEBUG_MODE=true
+DEBUG_PROVIDER=anthropic
+DEBUG_MODEL=claude-3-7-sonnet-20250219
+DEBUG_TEST=counter
+```
+
+Debug mode runs only one sample with one provider/model combination, making it much faster for testing during development.
+
 ### Running with Context
 
 You can provide a context file (like Svelte documentation) to help the LLM generate better components:
