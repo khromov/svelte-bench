@@ -1,4 +1,7 @@
-import { DEFAULT_SYSTEM_PROMPT } from "../utils/prompt";
+import {
+  DEFAULT_SYSTEM_PROMPT,
+  DEFAULT_SYSTEM_PROMPT_WITH_CONTEXT,
+} from "../utils/prompt";
 import type { LLMProvider } from "./index";
 import { GoogleGenAI } from "@google/genai";
 
@@ -24,20 +27,30 @@ export class GoogleGenAIProvider implements LLMProvider {
    * Generate code from a prompt using Google Gemini
    * @param prompt The prompt to send to the LLM
    * @param temperature Optional temperature parameter for controlling randomness (default: 0.7)
+   * @param contextContent Optional context content to include in prompts
    * @returns The generated code
    */
   async generateCode(
     prompt: string,
-    temperature: number = 0.7
+    temperature: number = 0.7,
+    contextContent?: string
   ): Promise<string> {
     try {
       console.log(
         `🤖 Generating code with Google Gemini using model: ${this.modelId} (temp: ${temperature})...`
       );
 
+      const systemPrompt = contextContent
+        ? DEFAULT_SYSTEM_PROMPT_WITH_CONTEXT
+        : DEFAULT_SYSTEM_PROMPT;
+
+      const promptWithContext = contextContent
+        ? `${systemPrompt}\n\n${contextContent}\n\n${prompt}`
+        : `${systemPrompt}\n\n${prompt}`;
+
       const response = await this.client.models.generateContent({
         model: this.modelId,
-        contents: `${DEFAULT_SYSTEM_PROMPT}\n\n${prompt}`,
+        contents: promptWithContext,
         config: {
           temperature: temperature,
         },

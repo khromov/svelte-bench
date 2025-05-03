@@ -1,4 +1,7 @@
-import { DEFAULT_SYSTEM_PROMPT } from "../utils/prompt";
+import {
+  DEFAULT_SYSTEM_PROMPT,
+  DEFAULT_SYSTEM_PROMPT_WITH_CONTEXT,
+} from "../utils/prompt";
 import type { LLMProvider } from "./index";
 import OpenAI from "openai";
 
@@ -25,26 +28,47 @@ export class OpenAIProvider implements LLMProvider {
    * Generate code from a prompt using OpenAI
    * @param prompt The prompt to send to the LLM
    * @param temperature Optional temperature parameter for controlling randomness (default: 0.7)
+   * @param contextContent Optional context content to include in prompts
    * @returns The generated code
    */
   async generateCode(
     prompt: string,
-    temperature: number = 0.7
+    temperature: number = 0.7,
+    contextContent?: string
   ): Promise<string> {
     try {
       console.log(
         `🤖 Generating code with OpenAI using model: ${this.modelId} (temp: ${temperature})...`
       );
 
+      const systemPrompt = contextContent
+        ? DEFAULT_SYSTEM_PROMPT_WITH_CONTEXT
+        : DEFAULT_SYSTEM_PROMPT;
+
+      const messages = [
+        {
+          role: "system",
+          content: systemPrompt,
+        },
+      ];
+
+      // Add context message if available
+      if (contextContent) {
+        messages.push({
+          role: "user",
+          content: contextContent,
+        });
+      }
+
+      // Add the main prompt
+      messages.push({
+        role: "user",
+        content: prompt,
+      });
+
       const completion = await this.client.chat.completions.create({
         model: this.modelId,
-        messages: [
-          {
-            role: "system",
-            content: DEFAULT_SYSTEM_PROMPT,
-          },
-          { role: "user", content: prompt },
-        ],
+        messages: messages,
         temperature:
           this.modelId.startsWith("o4") || this.modelId.startsWith("o3")
             ? undefined

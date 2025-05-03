@@ -27,6 +27,20 @@ Then edit the `.env` file and add your API keys.
 npm start
 ```
 
+### Running with Context
+
+You can provide a context file (like Svelte documentation) to help the LLM generate better components:
+
+```bash
+# Run with a context file
+npm run run-tests -- --context ./path/to/context-file.txt
+
+# Or use the convenience script
+npm run run-tests:with-context ./path/to/context-file.txt
+```
+
+The context file will be included in the prompt to the LLM, providing additional information for generating components.
+
 ## Visualizing Results
 
 After running the benchmark, you can visualize the results using the built-in visualization tool:
@@ -56,3 +70,5 @@ src/tests/your-test/
 ## Benchmark Results
 
 After running the benchmark, results are saved to a JSON file in the `benchmarks` directory. The file is named `benchmark-results-{timestamp}.json`.
+
+When running with a context file, the results filename will include "with-context" in the name: `benchmark-results-with-context-{timestamp}.json`.

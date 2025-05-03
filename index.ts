@@ -2,7 +2,7 @@
 import "dotenv/config";
 
 import { getAllLLMProviders } from "./src/llms";
-import { cleanTmpDir } from "./src/utils/file";
+import { cleanTmpDir, loadContextFile } from "./src/utils/file";
 import {
   runAllTestsHumanEval,
   saveBenchmarkResults,
@@ -10,6 +10,30 @@ import {
 } from "./src/utils/test-manager";
 import type { HumanEvalResult } from "./src/utils/humaneval";
 import { ensureRequiredDirectories } from "./src/utils/ensure-dirs";
+import path from "path";
+
+/**
+ * Parse command line arguments
+ * @returns Parsed command line arguments
+ */
+function parseCommandLineArgs(): {
+  contextFile?: string;
+} {
+  const args = process.argv.slice(2);
+  let contextFile: string | undefined;
+
+  // Parse arguments
+  for (let i = 0; i < args.length; i++) {
+    if (args[i] === "--context" && i + 1 < args.length) {
+      contextFile = args[i + 1];
+      i++; // Skip the next argument as it's the value for --context
+    }
+  }
+
+  return {
+    contextFile,
+  };
+}
 
 /**
  * Main function to run the benchmark
@@ -18,6 +42,23 @@ async function runBenchmark() {
   console.log("🚀 Starting SvelteBench with HumanEval methodology...");
 
   try {
+    // Parse command line arguments
+    const { contextFile } = parseCommandLineArgs();
+
+    // Load context file if specified
+    let contextContent = "";
+    if (contextFile) {
+      try {
+        // Resolve path relative to the current working directory
+        const contextFilePath = path.resolve(process.cwd(), contextFile);
+        contextContent = await loadContextFile(contextFilePath);
+        console.log(`👉 Using context file: ${contextFilePath}`);
+      } catch (error) {
+        console.error(`Error loading context file: ${error}`);
+        process.exit(1);
+      }
+    }
+
     // Ensure required directories exist
     await ensureRequiredDirectories();
 
@@ -155,7 +196,8 @@ async function runBenchmark() {
           const results = await runAllTestsHumanEval(
             providerWithModel.provider,
             numSamples,
-            testDefinitions // Pass specific tests if in debug mode
+            testDefinitions, // Pass specific tests if in debug mode
+            contextContent // Pass context content if available
           );
 
           // Clean provider-specific tmp directory after tests
@@ -178,8 +220,8 @@ async function runBenchmark() {
     // Combine all results into a single array
     const allResults: HumanEvalResult[] = allProviderResults.flat();
 
-    // Save benchmark results
-    await saveBenchmarkResults(allResults);
+    // Save benchmark results with context information if available
+    await saveBenchmarkResults(allResults, contextFile, contextContent);
 
     // Print summary
     console.log(`\n📊 ${isDebugMode ? "Debug" : "Benchmark"} Summary:`);

@@ -125,3 +125,29 @@ export async function readFile(filePath: string): Promise<string> {
     throw error;
   }
 }
+
+/**
+ * Load context from a file
+ * @param filePath The path to the context file
+ * @returns The context content as a string
+ */
+export async function loadContextFile(filePath: string): Promise<string> {
+  try {
+    if (!filePath) return "";
+
+    // Check if the file exists
+    await fs.access(filePath);
+
+    // Read the file
+    const contextContent = await fs.readFile(filePath, "utf-8");
+    console.log(`📄 Loaded context file from ${filePath}`);
+    return contextContent;
+  } catch (error) {
+    console.error(`Error loading context file ${filePath}:`, error);
+    throw new Error(
+      `Failed to load context file: ${
+        error instanceof Error ? error.message : String(error)
+      }`
+    );
+  }
+}

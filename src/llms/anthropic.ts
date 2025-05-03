@@ -1,4 +1,7 @@
-import { DEFAULT_SYSTEM_PROMPT } from "../utils/prompt";
+import {
+  DEFAULT_SYSTEM_PROMPT,
+  DEFAULT_SYSTEM_PROMPT_WITH_CONTEXT,
+} from "../utils/prompt";
 import type { LLMProvider } from "./index";
 import { Anthropic } from "@anthropic-ai/sdk";
 
@@ -27,16 +30,26 @@ export class AnthropicProvider implements LLMProvider {
    * Generate code from a prompt using Anthropic Claude
    * @param prompt The prompt to send to the LLM
    * @param temperature Optional temperature parameter for controlling randomness (default: 0.7)
+   * @param contextContent Optional context content to include in prompts
    * @returns The generated code
    */
   async generateCode(
     prompt: string,
-    temperature: number = 0.7
+    temperature: number = 0.7,
+    contextContent?: string
   ): Promise<string> {
     try {
       console.log(
         `🤖 Generating code with Anthropic using model: ${this.modelId} (temp: ${temperature})...`
       );
+
+      const systemPrompt = contextContent
+        ? DEFAULT_SYSTEM_PROMPT_WITH_CONTEXT
+        : DEFAULT_SYSTEM_PROMPT;
+
+      const promptWithContext = contextContent
+        ? `${systemPrompt}\n\n${contextContent}\n\n${prompt}`
+        : `${systemPrompt}\n\n${prompt}`;
 
       const completion = await this.client.messages.create({
         model: this.modelId,
@@ -47,7 +60,7 @@ export class AnthropicProvider implements LLMProvider {
             content: [
               {
                 type: "text",
-                text: `${DEFAULT_SYSTEM_PROMPT}\n\n${prompt}`,
+                text: promptWithContext,
               },
             ],
           },

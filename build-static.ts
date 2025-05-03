@@ -133,6 +133,18 @@ async function generateBenchmarkHTML(
     path: file.path,
   }));
 
+  // Check if context information is present in the results
+  const hasContext = benchmarkData.some(
+    (result) => result.context && result.context.used
+  );
+
+  const contextInfo = hasContext
+    ? {
+        filename: benchmarkData[0]?.context?.filename || "",
+        content: benchmarkData[0]?.context?.content || "",
+      }
+    : null;
+
   // Load the EJS template
   const templatePath = path.join(__dirname, "views", "index.ejs");
   const template = await fs.readFile(templatePath, "utf-8");
@@ -143,6 +155,7 @@ async function generateBenchmarkHTML(
     selectedFile: fileName,
     groupedResults,
     benchmarkDataB64,
+    contextInfo,
     isStaticBuild: true,
   });
 

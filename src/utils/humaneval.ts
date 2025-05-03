@@ -47,6 +47,11 @@ export interface HumanEvalResult {
   numCorrect: number;
   pass1: number;
   pass10: number;
+  context?: {
+    used: boolean;
+    filename?: string;
+    content?: string;
+  };
   samples: {
     index: number;
     code: string;
