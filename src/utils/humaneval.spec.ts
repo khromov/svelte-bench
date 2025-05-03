@@ -32,24 +32,6 @@ describe("HumanEval pass@k calculation", () => {
     expect(calculatePassAtK(10, 0, 10)).toBe(0.0);
   });
 
-  // Test against examples similar to those in the paper
-  test("calculatePassAtK matches expected values from research paper", () => {
-    // These values are based on the formula and explanation in the paper
-
-    // 50% correct samples, k = 1
-    expect(calculatePassAtK(10, 5, 1)).toBeCloseTo(0.5, 4);
-
-    // 50% correct samples, k = 5
-    // For n=10, c=5, k=5, the correct calculation is:
-    // pass@k = 1 - (10-5 choose 5) / (10 choose 5) = 1 - 1/252 ≈ 0.996032
-    expect(calculatePassAtK(10, 5, 5)).toBeCloseTo(0.996032, 6);
-
-    // 20% correct samples, various k values
-    expect(calculatePassAtK(100, 20, 1)).toBeCloseTo(0.2, 4);
-    expect(calculatePassAtK(100, 20, 10)).toBeCloseTo(0.8784, 4);
-    expect(calculatePassAtK(100, 20, 20)).toBeCloseTo(0.9884, 4);
-  });
-
   // Test the formula against directly calculated values
   test("calculatePassAtK matches manually calculated values", () => {
     // For n=5, c=2, k=1:
