@@ -12,6 +12,8 @@ export interface TestDefinition {
   testPath: string;
 }
 
+// We still need BenchmarkResult for the runSingleTest function
+// which is used by runHumanEvalTest
 export interface BenchmarkResult {
   testName: string;
   llmProvider: string;
@@ -20,8 +22,8 @@ export interface BenchmarkResult {
   testResult: TestResult;
   promptPath: string;
   timestamp: string;
-  sampleIndex?: number; // Added for HumanEval
-  temperature?: number; // Added for temperature tracking
+  sampleIndex?: number;
+  temperature?: number;
 }
 
 /**
@@ -263,39 +265,6 @@ export async function runAllTestsHumanEval(
 }
 
 /**
- * Run all tests with the given LLM provider
- */
-export async function runAllTests(
-  llmProvider: LLMProvider
-): Promise<BenchmarkResult[]> {
-  try {
-    // Clean the tmp directory
-    await cleanTmpDir();
-
-    // Load all test definitions
-    const tests = await loadTestDefinitions();
-    console.log(`📋 Found ${tests.length} tests to run`);
-
-    // Run each test in sequence
-    const results: BenchmarkResult[] = [];
-
-    for (const test of tests) {
-      // Clean the tmp directory before each test
-      await cleanTmpDir();
-
-      console.log(`\n🧪 Running test: ${test.name}`);
-      const result = await runSingleTest(test, llmProvider);
-      results.push(result);
-    }
-
-    return results;
-  } catch (error) {
-    console.error("Error running all tests:", error);
-    throw error;
-  }
-}
-
-/**
  * Ensure the benchmarks directory exists
  */
 export async function ensureBenchmarksDir(): Promise<void> {
@@ -312,7 +281,7 @@ export async function ensureBenchmarksDir(): Promise<void> {
  * Save benchmark results to a file
  */
 export async function saveBenchmarkResults(
-  results: BenchmarkResult[] | HumanEvalResult[]
+  results: HumanEvalResult[]
 ): Promise<string> {
   try {
     // Ensure the benchmarks directory exists
