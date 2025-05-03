@@ -226,18 +226,28 @@ export async function runHumanEvalTest(
 
 /**
  * Run all tests with the given LLM provider using HumanEval methodology
+ * @param llmProvider The LLM provider to use
+ * @param numSamples Number of samples to generate for each test (default: 10)
+ * @param specificTests Optional array of test definitions to run (default: all tests)
  */
 export async function runAllTestsHumanEval(
   llmProvider: LLMProvider,
-  numSamples: number = 10
+  numSamples: number = 10,
+  specificTests?: TestDefinition[]
 ): Promise<HumanEvalResult[]> {
   try {
     // Clean the tmp directory
     await cleanTmpDir();
 
-    // Load all test definitions
-    const tests = await loadTestDefinitions();
-    console.log(`📋 Found ${tests.length} tests to run`);
+    // Load test definitions
+    let tests: TestDefinition[];
+    if (specificTests && specificTests.length > 0) {
+      tests = specificTests;
+      console.log(`📋 Running ${tests.length} specific tests`);
+    } else {
+      tests = await loadTestDefinitions();
+      console.log(`📋 Found ${tests.length} tests to run`);
+    }
 
     // Run each test in sequence
     const results: HumanEvalResult[] = [];
