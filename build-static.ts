@@ -66,67 +66,8 @@ interface ProviderData {
 
 /**
  * Group benchmark results by provider and model
- * Updated to handle HumanEval results
  */
-function groupBenchmarkResults(results: any[]): ProviderData[] {
-  // Check if the results are using HumanEval format
-  const isHumanEval = results.length > 0 && "pass1" in results[0];
-
-  if (isHumanEval) {
-    return groupHumanEvalResults(results as HumanEvalResult[]);
-  }
-
-  // Default grouping for regular benchmark results
-  // Group by provider
-  const byProvider: Record<string, any[]> = {};
-
-  results.forEach((result) => {
-    if (!byProvider[result.llmProvider]) {
-      byProvider[result.llmProvider] = [];
-    }
-    byProvider[result.llmProvider].push(result);
-  });
-
-  // Sort providers alphabetically
-  const sortedProviders = Object.keys(byProvider).sort((a, b) =>
-    a.localeCompare(b)
-  );
-
-  // Build the final structure
-  const groupedResults: ProviderData[] = [];
-
-  for (const provider of sortedProviders) {
-    const providerData: ProviderData = {
-      provider,
-      models: {} as Record<string, any[]>,
-    };
-
-    // Group by model
-    byProvider[provider].forEach((result) => {
-      if (!providerData.models[result.modelIdentifier]) {
-        providerData.models[result.modelIdentifier] = [];
-      }
-      providerData.models[result.modelIdentifier].push(result);
-    });
-
-    // Sort models alphabetically
-    providerData.models = Object.entries(providerData.models)
-      .sort(([modelA], [modelB]) => modelA.localeCompare(modelB))
-      .reduce((acc, [model, results]) => {
-        acc[model] = results;
-        return acc;
-      }, {} as Record<string, any[]>);
-
-    groupedResults.push(providerData);
-  }
-
-  return groupedResults;
-}
-
-/**
- * Group HumanEval results by provider and model
- */
-function groupHumanEvalResults(results: HumanEvalResult[]): ProviderData[] {
+function groupBenchmarkResults(results: HumanEvalResult[]): ProviderData[] {
   // Group by provider
   const byProvider: Record<string, HumanEvalResult[]> = {};
 
@@ -177,7 +118,7 @@ function groupHumanEvalResults(results: HumanEvalResult[]): ProviderData[] {
  * Generate HTML content for a single benchmark result using EJS
  */
 async function generateBenchmarkHTML(
-  benchmarkData: any[],
+  benchmarkData: HumanEvalResult[],
   fileName: string,
   benchmarkFiles: Array<{ name: string; path: string; mtime: number }>
 ): Promise<string> {
@@ -196,9 +137,6 @@ async function generateBenchmarkHTML(
   const templatePath = path.join(__dirname, "views", "index.ejs");
   const template = await fs.readFile(templatePath, "utf-8");
 
-  // Check if data is HumanEval format
-  const isHumanEval = benchmarkData.length > 0 && "pass1" in benchmarkData[0];
-
   // Render the template with our data
   const html = ejs.render(template, {
     benchmarkFiles: formattedBenchmarkFiles,
@@ -206,7 +144,6 @@ async function generateBenchmarkHTML(
     groupedResults,
     benchmarkDataB64,
     isStaticBuild: true,
-    isHumanEval: isHumanEval,
   });
 
   return html;
@@ -236,7 +173,6 @@ async function generateIndexHTML(
     benchmarkDataB64: "",
     isStaticBuild: true,
     isIndexPage: true,
-    isHumanEval: false,
   });
 
   return html;

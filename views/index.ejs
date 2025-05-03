@@ -503,110 +503,61 @@
                       <tr>
                         <th>Test</th>
                         <th>Status</th>
-                        <% if (typeof isHumanEval !== 'undefined' && isHumanEval) { %>
-                          <th>pass@1</th>
-                          <th>pass@10</th>
-                          <th>Passing Samples</th>
-                        <% } else { %>
-                          <th>Tests Passed</th>
-                        <% } %>
+                        <th>pass@1</th>
+                        <th>pass@10</th>
+                        <th>Passing Samples</th>
                         <th>Errors</th>
                         <th>Actions</th>
                       </tr>
                       
-                      <% if (typeof isHumanEval !== 'undefined' && isHumanEval) { %>
-                        <!-- HumanEval Format -->
-                        <% results.forEach((result, index) => { %>
-                          <tr>
-                            <td><%= result.testName %></td>
-                            <td>
-                              <% if (result.numCorrect === result.numSamples) { %>
-                                <span class="success">✅ PASS</span>
-                              <% } else if (result.numCorrect > 0) { %>
-                                <span class="partial">⚠️ PARTIAL</span>
-                              <% } else { %>
-                                <span class="failure">❌ FAIL</span>
-                              <% } %>
-                            </td>
-                            <td><%= result.pass1.toFixed(4) %></td>
-                            <td><%= result.pass10.toFixed(4) %></td>
-                            <td><%= result.numCorrect %>/<%= result.numSamples %></td>
-                            <td>
-                              <% 
-                                const errorCount = result.samples.reduce((count, sample) => {
-                                  return count + (sample.errors ? sample.errors.length : 0);
-                                }, 0);
-                              %>
-                              <% if (errorCount > 0) { %>
-                                <span class="failure"><%= errorCount %></span>
-                              <% } else { %>
-                                0
-                              <% } %>
-                            </td>
-                            <td>
-                              <div class="button-group">
-                                <button class="view-samples-button" 
-                                        onclick="showSamplesModal('<%= providerData.provider %>', '<%= model %>', <%= index %>)">
-                                  View Samples
-                                </button>
-                                <a href="https://github.com/khromov/svelte-bench/blob/main/src/tests/<%= result.testName %>/prompt.md" 
-                                   target="_blank" 
-                                   class="github-button">
-                                  View Prompt
-                                </a>
-                                <a href="https://github.com/khromov/svelte-bench/blob/main/src/tests/<%= result.testName %>/test.ts" 
-                                   target="_blank" 
-                                   class="github-button">
-                                  View Tests
-                                </a>
-                              </div>
-                            </td>
-                          </tr>
-                        <% }); %>
-                      <% } else { %>
-                        <!-- Original Format -->
-                        <% results.forEach((result, index) => { %>
-                          <tr>
-                            <td><%= result.testName %></td>
-                            <td>
-                              <% if (result.testResult.success) { %>
-                                <span class="success">✅ PASS</span>
-                              <% } else { %>
-                                <span class="failure">❌ FAIL</span>
-                              <% } %>
-                            </td>
-                            <td>
-                              <%= result.testResult.totalTests - result.testResult.failedTests %>/<%= result.testResult.totalTests %>
-                            </td>
-                            <td>
-                              <% const errorCount = result.testResult.errors ? result.testResult.errors.length : 0 %>
-                              <% if (errorCount > 0) { %>
-                                <span class="failure"><%= errorCount %></span>
-                              <% } else { %>
-                                0
-                              <% } %>
-                            </td>
-                            <td>
-                              <div class="button-group">
-                                <button class="view-code-button" 
-                                        onclick="showCodeModal('<%= providerData.provider %>', '<%= model %>', <%= index %>)">
-                                  View Code
-                                </button>
-                                <a href="https://github.com/khromov/svelte-bench/blob/main/src/tests/<%= result.testName %>/prompt.md" 
-                                   target="_blank" 
-                                   class="github-button">
-                                  View Prompt
-                                </a>
-                                <a href="https://github.com/khromov/svelte-bench/blob/main/src/tests/<%= result.testName %>/test.ts" 
-                                   target="_blank" 
-                                   class="github-button">
-                                  View Tests
-                                </a>
-                              </div>
-                            </td>
-                          </tr>
-                        <% }); %>
-                      <% } %>
+                      <!-- HumanEval Format -->
+                      <% results.forEach((result, index) => { %>
+                        <tr>
+                          <td><%= result.testName %></td>
+                          <td>
+                            <% if (result.numCorrect === result.numSamples) { %>
+                              <span class="success">✅ PASS</span>
+                            <% } else if (result.numCorrect > 0) { %>
+                              <span class="partial">⚠️ PARTIAL</span>
+                            <% } else { %>
+                              <span class="failure">❌ FAIL</span>
+                            <% } %>
+                          </td>
+                          <td><%= result.pass1.toFixed(4) %></td>
+                          <td><%= result.pass10.toFixed(4) %></td>
+                          <td><%= result.numCorrect %>/<%= result.numSamples %></td>
+                          <td>
+                            <% 
+                              const errorCount = result.samples.reduce((count, sample) => {
+                                return count + (sample.errors ? sample.errors.length : 0);
+                              }, 0);
+                            %>
+                            <% if (errorCount > 0) { %>
+                              <span class="failure"><%= errorCount %></span>
+                            <% } else { %>
+                              0
+                            <% } %>
+                          </td>
+                          <td>
+                            <div class="button-group">
+                              <button class="view-samples-button" 
+                                      onclick="showSamplesModal('<%= providerData.provider %>', '<%= model %>', <%= index %>)">
+                                View Samples
+                              </button>
+                              <a href="https://github.com/khromov/svelte-bench/blob/main/src/tests/<%= result.testName %>/prompt.md" 
+                                 target="_blank" 
+                                 class="github-button">
+                                View Prompt
+                              </a>
+                              <a href="https://github.com/khromov/svelte-bench/blob/main/src/tests/<%= result.testName %>/test.ts" 
+                                 target="_blank" 
+                                 class="github-button">
+                                View Tests
+                              </a>
+                            </div>
+                          </td>
+                        </tr>
+                      <% }); %>
                     </table>
                   </div>
                 </div>
@@ -672,86 +623,6 @@
             console.error("Error decoding benchmark data:", error);
             return [];
           }
-        }
-
-        // Function to show code modal
-        function showCodeModal(provider, model, resultIndex) {
-          const codeModal = document.getElementById("code-modal");
-          const codeDisplay = document.getElementById("code-display");
-          const modalTitle = document.getElementById("modal-title");
-
-          // Get the benchmark data
-          const benchmarkData = decodeBase64Data();
-
-          // Find the result in the benchmark data
-          let result = null;
-          for (const providerData of benchmarkData) {
-            if (providerData.provider === provider) {
-              for (const [modelName, results] of Object.entries(providerData.models)) {
-                if (modelName === model) {
-                  result = results[resultIndex];
-                  break;
-                }
-              }
-              if (result) break;
-            }
-          }
-
-          if (!result) {
-            console.error("Result not found");
-            return;
-          }
-
-          // Set the title and code content
-          modalTitle.textContent = `${result.testName} (${
-            result.testResult.success ? "PASS" : "FAIL"
-          }) - ${result.llmProvider} ${result.modelIdentifier}`;
-
-          // Format the code with syntax highlighting
-          codeDisplay.innerHTML = `<pre><code class="language-svelte">${escapeHtml(
-            result.generatedCode
-          )}</code></pre>`;
-
-          // Add test results details
-          const testDetails = document.createElement("div");
-          testDetails.className = "test-details";
-
-          // Create errors section if there are errors
-          let errorsHtml = "";
-          if (result.testResult.errors && result.testResult.errors.length > 0) {
-            errorsHtml = `
-              <div class="errors-section">
-                <h4>Errors (${result.testResult.errors.length})</h4>
-                <div class="error-list">
-                  ${result.testResult.errors
-                    .map(
-                      (error) =>
-                        `<div class="error-item">
-                      <pre>${escapeHtml(error)}</pre>
-                    </div>`
-                    )
-                    .join("")}
-                </div>
-              </div>
-            `;
-          }
-
-          testDetails.innerHTML = `
-            <h3>Test Results</h3>
-            <p>LLM Provider: ${result.llmProvider || "N/A"}</p>
-            <p>Model: ${result.modelIdentifier || "N/A"}</p>
-            ${errorsHtml}
-            <p>Total Tests: ${result.testResult.totalTests}</p>
-            <p>Passed: ${
-              result.testResult.totalTests - result.testResult.failedTests
-            }</p>
-            <p>Failed: ${result.testResult.failedTests}</p>
-            <p>Generated at: ${new Date(result.timestamp).toLocaleString()}</p>
-          `;
-          codeDisplay.appendChild(testDetails);
-
-          // Show the modal
-          codeModal.style.display = "block";
         }
 
         // Function to show samples modal for HumanEval results
@@ -971,31 +842,12 @@
 
         // Initialize the page
         document.addEventListener("DOMContentLoaded", () => {
-          // Close modal when clicking the close button
-          const closeButton = document.getElementById("close-modal");
-          if (closeButton) {
-            closeButton.addEventListener("click", () => {
-              const codeModal = document.getElementById("code-modal");
-              codeModal.style.display = "none";
-            });
-          }
-
           // Close samples modal when clicking the close button
           const closeSamplesButton = document.getElementById("close-samples-modal");
           if (closeSamplesButton) {
             closeSamplesButton.addEventListener("click", () => {
               const samplesModal = document.getElementById("samples-modal");
               samplesModal.style.display = "none";
-            });
-          }
-
-          // Close modal when clicking outside the modal content
-          const codeModal = document.getElementById("code-modal");
-          if (codeModal) {
-            codeModal.addEventListener("click", (event) => {
-              if (event.target === codeModal) {
-                codeModal.style.display = "none";
-              }
             });
           }
 
