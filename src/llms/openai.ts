@@ -7,12 +7,9 @@ export class OpenAIProvider implements LLMProvider {
   private modelId: string;
   name = "OpenAI";
   private readonly availableModels = [
-    //"gpt-4o",
-    "gpt-4o-2024-11-20",
-    //"o1-mini",
-    //"o1-preview",
-    //"o3-mini",
-    //"o1-mini",
+    "o4-mini-2025-04-16",
+    "o3-mini-2025-01-31",
+    "gpt-4o-2024-08-06",
   ];
 
   constructor(modelId?: string) {
@@ -48,7 +45,10 @@ export class OpenAIProvider implements LLMProvider {
           },
           { role: "user", content: prompt },
         ],
-        temperature: temperature,
+        temperature:
+          this.modelId.startsWith("o4") || this.modelId.startsWith("o3")
+            ? undefined
+            : temperature, // o4, o3 models don't support temperature
       });
 
       return completion.choices[0]?.message.content || "";
