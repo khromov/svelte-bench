@@ -36,12 +36,14 @@ async function getBenchmarkFiles(): Promise<string[]> {
   const benchmarksDir = path.resolve(process.cwd(), "benchmarks");
   const files = await fs.readdir(benchmarksDir);
 
-  // Filter for JSON files only and exclude the merged file itself
+  // Filter for JSON files only, exclude the merged file itself,
+  // and importantly, exclude files with "with-context" in the name
   return files
     .filter(
       (file) =>
         file.endsWith(".json") &&
         file.includes("benchmark-results") &&
+        !file.includes("with-context") &&
         file !== "benchmark-results-merged.json"
     )
     .map((file) => path.join(benchmarksDir, file));
@@ -69,13 +71,17 @@ async function findLatestResultsForEachModel(): Promise<
   const benchmarkFiles = await getBenchmarkFiles();
   const latestFiles = new Map<string, LatestFileInfo>();
 
+  console.log(
+    `🔍 Found ${benchmarkFiles.length} eligible benchmark files (excluding with-context files)`
+  );
+
   for (const filePath of benchmarkFiles) {
     const filename = path.basename(filePath);
     const timestamp = extractTimestamp(filename);
 
     // Skip files where we can't extract a timestamp
     if (!timestamp) {
-      console.warn(`Skipping file with unparseable timestamp: ${filename}`);
+      console.warn(`⚠️ Skipping file with unparseable timestamp: ${filename}`);
       continue;
     }
 

@@ -192,6 +192,25 @@ async function generateIndexHTML(
 }
 
 /**
+ * Check if the merged benchmark results file exists
+ */
+async function checkForMergedResultsFile(): Promise<string | null> {
+  const mergedFilePath = path.resolve(
+    process.cwd(),
+    "benchmarks",
+    "benchmark-results-merged.json"
+  );
+
+  try {
+    await fs.access(mergedFilePath);
+    return mergedFilePath;
+  } catch (error) {
+    // File doesn't exist or isn't accessible
+    return null;
+  }
+}
+
+/**
  * Main function to build all the static HTML files
  */
 async function buildStaticFiles(): Promise<void> {
@@ -240,6 +259,36 @@ async function buildStaticFiles(): Promise<void> {
       await fs.writeFile(htmlFilePath, html);
 
       console.log(`📝 Created ${htmlFileName}`);
+    }
+
+    // Check for merged results file and process it
+    const mergedFilePath = await checkForMergedResultsFile();
+    if (mergedFilePath) {
+      console.log(`🔄 Processing merged results file...`);
+
+      // Load the merged benchmark data
+      const mergedBenchmarkData = await loadBenchmarkData(mergedFilePath);
+
+      // Generate HTML for merged results
+      const mergedHtml = await generateBenchmarkHTML(
+        mergedBenchmarkData,
+        "benchmark-results-merged.json",
+        benchmarkFiles
+      );
+
+      // Write HTML file for merged results
+      const mergedHtmlFilePath = path.resolve(
+        process.cwd(),
+        "benchmarks",
+        "benchmark-results-merged.html"
+      );
+      await fs.writeFile(mergedHtmlFilePath, mergedHtml);
+
+      console.log(`📝 Created benchmark-results-merged.html`);
+    } else {
+      console.log(
+        `ℹ️ No merged results file found. Run 'npm run merge' to create one.`
+      );
     }
 
     console.log("✅ Static HTML build complete!");
