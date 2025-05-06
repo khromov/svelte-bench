@@ -132,6 +132,8 @@ async function runBenchmark() {
       );
     }
 
+    const debugTest = process.env.DEBUG_TEST;
+
     // Load test definitions based on debug mode
     let testDefinitions = undefined;
     if (isDebugMode) {
@@ -140,8 +142,6 @@ async function runBenchmark() {
       if (allTests.length === 0) {
         throw new Error("No tests found");
       }
-
-      const debugTest = process.env.DEBUG_TEST;
 
       if (debugTest) {
         const matchingTest = allTests.find((test) => test.name === debugTest);
@@ -159,8 +159,8 @@ async function runBenchmark() {
       }
     }
 
-    // Set number of samples (always use 10 samples for proper HumanEval metrics)
-    const numSamples = 10;
+    // Set number of samples (use 10 samples by default unless a specific test was requested)
+    const numSamples = debugTest ? 1 : 10;
 
     console.log(
       `👉 Running with ${numSamples} samples per test (for pass@k metrics)`
