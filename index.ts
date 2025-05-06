@@ -149,32 +149,22 @@ async function runBenchmark() {
           testDefinitions = [matchingTest];
           console.log(`👉 Selected test: ${matchingTest.name}`);
         } else {
-          console.warn(
-            `⚠️ Test "${debugTest}" not found, using first test: ${allTests[0].name}`
-          );
-          testDefinitions = [allTests[0]];
+          console.warn(`⚠️ Test "${debugTest}" not found, using all tests`);
+          testDefinitions = undefined; // Use all tests
         }
       } else {
-        // No test specified, use first test
-        testDefinitions = [allTests[0]];
-        console.log(`👉 Selected test: ${allTests[0].name}`);
+        // No test specified, use all tests
+        testDefinitions = undefined;
+        console.log(`👉 Using all available tests`);
       }
     }
 
-    // Set number of samples based on debug mode
-    // In debug mode: only 1 sample (pass@1 only) to speed up development
-    // In normal mode: 10 samples for proper HumanEval metrics
-    const numSamples = isDebugMode ? 1 : 10;
+    // Set number of samples (always use 10 samples for proper HumanEval metrics)
+    const numSamples = 10;
 
-    if (isDebugMode) {
-      console.log(
-        `👉 DEBUG_MODE: Running with only ${numSamples} sample per test (pass@1 only)`
-      );
-    } else {
-      console.log(
-        `👉 Running with ${numSamples} samples per test (for pass@k metrics)`
-      );
-    }
+    console.log(
+      `👉 Running with ${numSamples} samples per test (for pass@k metrics)`
+    );
 
     const allResults: HumanEvalResult[] = [];
 

@@ -38,7 +38,7 @@ DEBUG_MODEL=claude-3-7-sonnet-20250219
 DEBUG_TEST=counter
 ```
 
-Debug mode runs only one sample with one provider/model combination, making it much faster for testing during development.
+Debug mode runs only one provider/model combination, making it much faster for testing during development.
 
 ### Running with Context
 
