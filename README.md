@@ -1,6 +1,6 @@
 # SvelteBench
 
-An LLM benchmark for Svelte 5 based on the HumanEval methodology.
+An LLM benchmark for Svelte 5 based on the OpenAI methodology from OpenAIs paper "Evaluating Large Language Models Trained on Code", using a similar structure to the HumanEval dataset.
 
 **Work in progress**
 
