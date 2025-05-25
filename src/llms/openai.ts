@@ -10,11 +10,10 @@ export class OpenAIProvider implements LLMProvider {
   private modelId: string;
   name = "OpenAI";
   private readonly availableModels = [
-    "chatgpt-4o-latest",
-    "gpt-4.1-2025-04-14",
-    "gpt-4.1-mini-2025-04-14",
-    "gpt-4.1-nano-2025-04-14",
-    "o4-mini-2025-04-16",
+    "chatgpt-4o-latest", //
+    "gpt-4.1-2025-04-14", //
+    "gpt-4.1-mini-2025-04-14", //
+    "gpt-4.1-nano-2025-04-14", //
     "o3-2025-04-16",
     "o1-pro-2025-03-19",
     // ---
