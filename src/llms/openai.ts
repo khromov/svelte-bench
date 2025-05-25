@@ -52,6 +52,46 @@ export class OpenAIProvider implements LLMProvider {
       const systemPrompt = contextContent
         ? DEFAULT_SYSTEM_PROMPT_WITH_CONTEXT
         : DEFAULT_SYSTEM_PROMPT;
+
+      // Special handling for o1-pro model which requires responses endpoint
+      if (this.modelId.startsWith("o1-pro")) {
+        console.log("Using responses endpoint for o1-pro model");
+
+        const combinedPrompt = contextContent
+          ? `${systemPrompt}\n\n${contextContent}\n\n${prompt}`
+          : `${systemPrompt}\n\n${prompt}`;
+
+        const response = await this.client.responses.create({
+          model: this.modelId,
+          input: [
+            {
+              role: "developer",
+              content: [
+                {
+                  type: "input_text",
+                  text: combinedPrompt,
+                },
+              ],
+            },
+          ],
+          text: {
+            format: {
+              type: "text",
+            },
+          },
+          reasoning: {
+            effort: "medium",
+          },
+          tools: [],
+          store: false,
+        });
+
+        console.log("we received a response:", response);
+
+        return response.output?.content?.[0]?.text || "";
+      }
+
+      // Standard chat completions for other models
       const messages: ChatCompletionMessageParam[] = [
         {
           role: "system",
