@@ -86,9 +86,9 @@ export class OpenAIProvider implements LLMProvider {
           store: false,
         });
 
-        console.log("we received a response:", response);
+        console.log("we received a response:", response.output_text);
 
-        return response.output?.content?.[0]?.text || "";
+        return response.output_text || "";
       }
 
       // Standard chat completions for other models
