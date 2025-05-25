@@ -220,10 +220,18 @@ async function runBenchmark() {
           // Ensure provider-specific tmp directory exists and is clean
           await cleanTmpDir(providerWithModel.name);
 
+          // Determine number of samples for this model
+          // Use only 1 sample for expensive o1-pro models
+          const modelNumSamples = providerWithModel.modelId.startsWith("o1-pro") ? 1 : numSamples;
+          
+          if (modelNumSamples !== numSamples) {
+            console.log(`  ⚠️  Using ${modelNumSamples} sample${modelNumSamples > 1 ? 's' : ''} for expensive model`);
+          }
+
           // Run tests with this provider model using HumanEval methodology
           const results = await runAllTestsHumanEval(
             providerWithModel.provider,
-            numSamples,
+            modelNumSamples,
             testDefinitions, // Pass specific tests if in debug mode
             contextContent // Pass context content if available
           );
@@ -280,7 +288,7 @@ async function runBenchmark() {
         console.log(`  ${result.provider} (${result.modelId}):`);
         console.log(
           `    pass@1: ${result.pass1.toFixed(4)}${
-            numSamples > 1 ? `, pass@10: ${result.pass10.toFixed(4)}` : ""
+            result.numSamples > 1 ? `, pass@10: ${result.pass10.toFixed(4)}` : ""
           }`
         );
         console.log(
