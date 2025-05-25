@@ -103,23 +103,42 @@ async function runBenchmark() {
         } else {
           selectedProviderModels = matchingProviders;
 
-          // Filter by model if specified
+          // Filter by model(s) if specified
           if (debugModel) {
-            const matchingProviderModel = matchingProviders.find(
-              (pm) => pm.modelId.toLowerCase() === debugModel.toLowerCase()
-            );
+            // Parse comma-separated list of models
+            const requestedModels = debugModel
+              .split(",")
+              .map((m) => m.trim())
+              .filter((m) => m.length > 0);
 
-            if (matchingProviderModel) {
-              selectedProviderModels = [matchingProviderModel];
-            } else {
-              console.warn(
-                `⚠️ Model "${debugModel}" not found for provider "${debugProvider}", using first model: ${matchingProviders[0].modelId}`
+            if (requestedModels.length > 0) {
+              const matchingModels = matchingProviders.filter((pm) =>
+                requestedModels.some(
+                  (requestedModel) =>
+                    pm.modelId.toLowerCase() === requestedModel.toLowerCase()
+                )
               );
-              selectedProviderModels = [matchingProviders[0]];
+
+              if (matchingModels.length > 0) {
+                selectedProviderModels = matchingModels;
+                console.log(
+                  `👉 Selected models: ${matchingModels
+                    .map((m) => m.modelId)
+                    .join(", ")}`
+                );
+              } else {
+                console.warn(
+                  `⚠️ None of the requested models "${debugModel}" found for provider "${debugProvider}"`
+                );
+                throw new Error(
+                  `No matching models found for provider "${debugProvider}"`
+                );
+              }
             }
           } else {
-            // No model specified, use first model for the provider
-            selectedProviderModels = [matchingProviders[0]];
+            throw new Error(
+              `No model specified for provider "${debugProvider}". Use DEBUG_MODEL to specify models.`
+            );
           }
         }
       } else {
@@ -128,7 +147,11 @@ async function runBenchmark() {
       }
 
       console.log(
-        `👉 Selected provider: ${selectedProviderModels[0].name} (${selectedProviderModels[0].modelId})`
+        `👉 Selected provider: ${selectedProviderModels[0].name} (${
+          selectedProviderModels.length === 1
+            ? selectedProviderModels[0].modelId
+            : `${selectedProviderModels.length} models`
+        })`
       );
     }
 

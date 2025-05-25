@@ -40,6 +40,18 @@ DEBUG_TEST=counter
 
 Debug mode runs only one provider/model combination, making it much faster for testing during development.
 
+#### Running Multiple Models in Debug Mode
+
+You can now specify multiple models to test in debug mode by providing a comma-separated list:
+
+```
+DEBUG_MODE=true
+DEBUG_PROVIDER=anthropic
+DEBUG_MODEL=claude-3-7-sonnet-20250219,claude-opus-4-20250514,claude-sonnet-4-20250514
+```
+
+This will run tests with all three models sequentially while still staying within the same provider.
+
 ### Running with Context
 
 You can provide a context file (like Svelte documentation) to help the LLM generate better components:
