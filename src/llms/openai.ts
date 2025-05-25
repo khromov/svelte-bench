@@ -4,6 +4,7 @@ import {
 } from "../utils/prompt";
 import type { LLMProvider } from "./index";
 import OpenAI from "openai";
+import type { ChatCompletionMessageParam } from "openai/resources/chat/completions";
 
 export class OpenAIProvider implements LLMProvider {
   private client: OpenAI;
@@ -14,7 +15,7 @@ export class OpenAIProvider implements LLMProvider {
     "gpt-4.1-2025-04-14", //
     "gpt-4.1-mini-2025-04-14", //
     "gpt-4.1-nano-2025-04-14", //
-    "o3-2025-04-16",
+    "o3-2025-04-16", //
     "o1-pro-2025-03-19",
     // ---
     "o4-mini-2025-04-16",
@@ -51,8 +52,7 @@ export class OpenAIProvider implements LLMProvider {
       const systemPrompt = contextContent
         ? DEFAULT_SYSTEM_PROMPT_WITH_CONTEXT
         : DEFAULT_SYSTEM_PROMPT;
-
-      const messages = [
+      const messages: ChatCompletionMessageParam[] = [
         {
           role: "system",
           content: systemPrompt,
