@@ -17,6 +17,7 @@ export class OpenAIProvider implements LLMProvider {
     "o4-mini-2025-04-16",
     "o3-2025-04-16",
     "o1-pro-2025-03-19",
+    // ---
     "o4-mini-2025-04-16",
     "o3-mini-2025-01-31",
     "gpt-4o-2024-08-06",
