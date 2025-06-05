@@ -631,10 +631,6 @@
 </head>
 <body>
   <h1>SvelteBench Visualization</h1>
-
-  <p>
-    <i>Note: OpenAI thinking models (o3, o4) do not support temperature adjustments. o1-pro models use "medium" reasoning effort setting.</i>
-  </p>
   
   <% if (typeof isIndexPage !== 'undefined' && isIndexPage === true) { %>
     <!-- Index page showing list of all benchmark results -->
@@ -654,7 +650,6 @@
         <!-- Featured merged results -->
         <div class="featured-result">
           <div class="featured-header">
-            <span class="featured-badge">Recommended</span>
             <h2 class="featured-title">Latest Merged Results</h2>
           </div>
           <p class="featured-description">
@@ -665,7 +660,7 @@
               📊 View Results
             </a>
             <a href="<%= mergedFile.name %>" download class="featured-link secondary">
-              📄 Download JSON
+              📄 JSON
             </a>
           </div>
         </div>
@@ -676,7 +671,7 @@
         <div class="other-results-section">
           <div class="collapsible-header" onclick="toggleOtherResults()">
             <h2>
-              Other Results 
+              Raw Results 
               <span class="other-results-count">(<%= otherFiles.length %> files)</span>
             </h2>
             <span class="collapsible-icon">▶</span>
@@ -706,6 +701,25 @@
           <p>Run the benchmark first using <code>npm start</code></p>
         </div>
       <% } %>
+
+      <script>
+        // Toggle other results section visibility
+        function toggleOtherResults() {
+          const content = document.getElementById("other-results-content");
+          const header = document.querySelector(".collapsible-header");
+          const icon = document.querySelector(".collapsible-icon");
+          
+          if (content.classList.contains("expanded")) {
+            content.classList.remove("expanded");
+            header.classList.remove("expanded");
+            icon.textContent = "▶";
+          } else {
+            content.classList.add("expanded");
+            header.classList.add("expanded");
+            icon.textContent = "▼";
+          }
+        }
+      </script>
     <% } %>
   <% } else { %>
     <!-- Regular benchmark result page -->
