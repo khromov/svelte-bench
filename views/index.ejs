@@ -500,6 +500,133 @@
       overflow-y: auto;
       white-space: pre-wrap;
     }
+
+    /* Featured merged results styles */
+    .featured-result {
+      margin-bottom: 30px;
+      padding: 20px;
+      border: 2px solid #10b981;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #ecfdf5 0%, #f0fdf4 100%);
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+    }
+
+    .featured-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+
+    .featured-badge {
+      background-color: #10b981;
+      color: white;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .featured-title {
+      font-size: 20px;
+      font-weight: bold;
+      color: #065f46;
+      margin: 0;
+    }
+
+    .featured-description {
+      color: #047857;
+      margin-bottom: 15px;
+      font-size: 14px;
+    }
+
+    .featured-links {
+      display: flex;
+      gap: 10px;
+    }
+
+    .featured-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 20px;
+      background-color: #10b981;
+      color: white;
+      text-decoration: none;
+      border-radius: 6px;
+      font-weight: 500;
+      transition: all 0.2s;
+      box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);
+    }
+
+    .featured-link:hover {
+      background-color: #059669;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3);
+    }
+
+    .featured-link.secondary {
+      background-color: #6b7280;
+      box-shadow: 0 2px 4px rgba(107, 114, 128, 0.2);
+    }
+
+    .featured-link.secondary:hover {
+      background-color: #4b5563;
+      box-shadow: 0 4px 8px rgba(107, 114, 128, 0.3);
+    }
+
+    /* Other results section */
+    .other-results-section {
+      margin-top: 40px;
+    }
+
+    .collapsible-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px;
+      background-color: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    .collapsible-header:hover {
+      background-color: #f1f5f9;
+    }
+
+    .collapsible-header h2 {
+      margin: 0;
+      color: #475569;
+    }
+
+    .collapsible-content {
+      display: none;
+      padding: 20px 0;
+    }
+
+    .collapsible-content.expanded {
+      display: block;
+    }
+
+    .collapsible-icon {
+      font-size: 18px;
+      color: #6b7280;
+      transition: transform 0.2s;
+    }
+
+    .collapsible-header.expanded .collapsible-icon {
+      transform: rotate(90deg);
+    }
+
+    .other-results-count {
+      color: #6b7280;
+      font-size: 14px;
+      font-weight: normal;
+    }
   </style>
 </head>
 <body>
@@ -517,18 +644,68 @@
         <p>Run the benchmark first using <code>npm start</code></p>
       </div>
     <% } else { %>
-      <ul class="benchmark-list">
-        <% benchmarkFiles.forEach(file => { %>
-          <li class="benchmark-item">
-            <div class="benchmark-row">
-              <a href="<%= file.name.replace('.json', '.html') %>" class="benchmark-link">
-                <%= file.name.replace('.json', '') %>
-              </a>
-              <a href="<%= file.name %>" download class="json-link">JSON</a>
-            </div>
-          </li>
-        <% }); %>
-      </ul>
+      <% 
+        // Separate merged file from other files
+        const mergedFile = benchmarkFiles.find(file => file.name.includes('merged'));
+        const otherFiles = benchmarkFiles.filter(file => !file.name.includes('merged'));
+      %>
+      
+      <% if (mergedFile) { %>
+        <!-- Featured merged results -->
+        <div class="featured-result">
+          <div class="featured-header">
+            <span class="featured-badge">Recommended</span>
+            <h2 class="featured-title">Latest Merged Results</h2>
+          </div>
+          <p class="featured-description">
+            This file contains the most recent results from each model, automatically merged for easy comparison.
+          </p>
+          <div class="featured-links">
+            <a href="<%= mergedFile.name.replace('.json', '.html') %>" class="featured-link">
+              📊 View Results
+            </a>
+            <a href="<%= mergedFile.name %>" download class="featured-link secondary">
+              📄 Download JSON
+            </a>
+          </div>
+        </div>
+      <% } %>
+
+      <% if (otherFiles.length > 0) { %>
+        <!-- Other results section -->
+        <div class="other-results-section">
+          <div class="collapsible-header" onclick="toggleOtherResults()">
+            <h2>
+              Other Results 
+              <span class="other-results-count">(<%= otherFiles.length %> files)</span>
+            </h2>
+            <span class="collapsible-icon">▶</span>
+          </div>
+          
+          <div class="collapsible-content" id="other-results-content">
+            <ul class="benchmark-list">
+              <% otherFiles.forEach(file => { %>
+                <li class="benchmark-item">
+                  <div class="benchmark-row">
+                    <a href="<%= file.name.replace('.json', '.html') %>" class="benchmark-link">
+                      <%= file.name.replace('.json', '') %>
+                    </a>
+                    <a href="<%= file.name %>" download class="json-link">JSON</a>
+                  </div>
+                </li>
+              <% }); %>
+            </ul>
+          </div>
+        </div>
+      <% } %>
+
+      <% if (!mergedFile && otherFiles.length === 0) { %>
+        <!-- This shouldn't happen, but just in case -->
+        <div class="no-results">
+          <h2>No valid benchmark results found</h2>
+          <p>Run the benchmark first using <code>npm start</code></p>
+        </div>
+      <% } %>
     <% } %>
   <% } else { %>
     <!-- Regular benchmark result page -->
@@ -722,6 +899,23 @@
           } else {
             contextContent.style.display = "block";
             toggleBtn.textContent = "Hide Context";
+          }
+        }
+
+        // Toggle other results section visibility
+        function toggleOtherResults() {
+          const content = document.getElementById("other-results-content");
+          const header = document.querySelector(".collapsible-header");
+          const icon = document.querySelector(".collapsible-icon");
+          
+          if (content.classList.contains("expanded")) {
+            content.classList.remove("expanded");
+            header.classList.remove("expanded");
+            icon.textContent = "▶";
+          } else {
+            content.classList.add("expanded");
+            header.classList.add("expanded");
+            icon.textContent = "▼";
           }
         }
 
