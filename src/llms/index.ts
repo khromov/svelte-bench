@@ -63,6 +63,9 @@ export async function getLLMProvider(
     case "google":
       const { GoogleGenAIProvider } = await import("./google");
       return new GoogleGenAIProvider(modelId);
+    case "openrouter":
+      const { OpenRouterProvider } = await import("./openrouter");
+      return new OpenRouterProvider(modelId);
     default:
       throw new Error(`Unknown LLM provider: ${providerName}`);
   }
@@ -76,7 +79,6 @@ export async function getAllLLMProviders(): Promise<ProviderWithModel[]> {
   const providers: ProviderWithModel[] = [];
 
   // OpenAI provider
-
   const openaiProvider = await getLLMProvider("openai");
   for (const modelId of openaiProvider.getModels()) {
     const provider = await getLLMProvider("openai", modelId);
@@ -105,6 +107,17 @@ export async function getAllLLMProviders(): Promise<ProviderWithModel[]> {
     providers.push({
       provider,
       name: "Google",
+      modelId,
+    });
+  }
+
+  // OpenRouter provider
+  const openrouterProvider = await getLLMProvider("openrouter");
+  for (const modelId of openrouterProvider.getModels()) {
+    const provider = await getLLMProvider("openrouter", modelId);
+    providers.push({
+      provider,
+      name: "OpenRouter",
       modelId,
     });
   }

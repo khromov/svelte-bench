@@ -8,6 +8,15 @@ An LLM benchmark for Svelte 5 based on the OpenAI methodology from OpenAIs paper
 
 SvelteBench evaluates LLM-generated Svelte components by testing them against predefined test suites. It works by sending prompts to LLMs, generating Svelte components, and verifying their functionality through automated tests.
 
+## Supported Providers
+
+SvelteBench supports multiple LLM providers:
+
+- **OpenAI** - GPT-4, GPT-4o, o1, o3, o4 models
+- **Anthropic** - Claude 3.5, Claude 4 models
+- **Google** - Gemini 2.5 models
+- **OpenRouter** - Access to multiple providers through a single API
+
 ## Setup
 
 ```bash
@@ -18,7 +27,25 @@ npm install
 cp .env.example .env
 ```
 
-Then edit the `.env` file and add your API keys.
+Then edit the `.env` file and add your API keys:
+
+```bash
+# OpenAI (optional)
+OPENAI_API_KEY=your_openai_api_key_here
+
+# Anthropic (optional)
+ANTHROPIC_API_KEY=your_anthropic_api_key_here
+
+# Google Gemini (optional)
+GEMINI_API_KEY=your_gemini_api_key_here
+
+# OpenRouter (optional)
+OPENROUTER_API_KEY=your_openrouter_api_key_here
+OPENROUTER_SITE_URL=https://github.com/khromov/svelte-bench  # Optional
+OPENROUTER_SITE_NAME=SvelteBench  # Optional
+```
+
+You only need to configure the providers you want to test with.
 
 ## Running the Benchmark
 
