@@ -14,7 +14,7 @@ export class OpenRouterProvider implements LLMProvider {
     "mistralai/devstral-small", // x
     "mistralai/mistral-medium-3", // x
     "deepseek/deepseek-r1-0528", // x
-    "qwen/qwen3-30b-a3b",
+    "qwen/qwen3-30b-a3b", // x
     "meta-llama/llama-4-maverick",
     "meta-llama/llama-4-scout",
     "x-ai/grok-3-mini-beta",
@@ -57,7 +57,9 @@ export class OpenRouterProvider implements LLMProvider {
   ): Promise<string> {
     try {
       console.log(
-        `🤖 Generating code with OpenRouter using model: ${this.modelId} (temp: ${temperature ?? 'default'})...`
+        `🤖 Generating code with OpenRouter using model: ${
+          this.modelId
+        } (temp: ${temperature ?? "default"})...`
       );
 
       const systemPrompt = contextContent
@@ -96,7 +98,9 @@ export class OpenRouterProvider implements LLMProvider {
         requestOptions.temperature = temperature;
       }
 
-      const completion = await this.client.chat.completions.create(requestOptions);
+      const completion = await this.client.chat.completions.create(
+        requestOptions
+      );
 
       return completion.choices[0]?.message.content || "";
     } catch (error) {
