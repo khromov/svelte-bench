@@ -66,6 +66,9 @@ export async function getLLMProvider(
     case "openrouter":
       const { OpenRouterProvider } = await import("./openrouter");
       return new OpenRouterProvider(modelId);
+    case "ollama":
+      const { OllamaProvider } = await import("./ollama");
+      return new OllamaProvider(modelId);
     default:
       throw new Error(`Unknown LLM provider: ${providerName}`);
   }
@@ -118,6 +121,17 @@ export async function getAllLLMProviders(): Promise<ProviderWithModel[]> {
     providers.push({
       provider,
       name: "OpenRouter",
+      modelId,
+    });
+  }
+
+  // Ollama provider
+  const ollamaProvider = await getLLMProvider("ollama");
+  for (const modelId of ollamaProvider.getModels()) {
+    const provider = await getLLMProvider("ollama", modelId);
+    providers.push({
+      provider,
+      name: "Ollama",
       modelId,
     });
   }

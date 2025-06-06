@@ -54,9 +54,11 @@ You only need to configure the providers you want to test with.
 npm start
 ```
 
+**NOTE: This will run all providers and models that are available!**
+
 ### Debug Mode
 
-For faster development, you can enable debug mode in your `.env` file:
+For faster development, or to run just one provider/model, you can enable debug mode in your `.env` file:
 
 ```
 DEBUG_MODE=true
