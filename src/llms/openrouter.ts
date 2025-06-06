@@ -17,7 +17,7 @@ export class OpenRouterProvider implements LLMProvider {
     "qwen/qwen3-30b-a3b", // x
     "meta-llama/llama-4-maverick", // x
     "meta-llama/llama-4-scout", // x
-    "x-ai/grok-3-mini-beta",
+    "x-ai/grok-3-mini-beta", // x
     "x-ai/grok-3-beta",
   ];
 
