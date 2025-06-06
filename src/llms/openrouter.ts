@@ -12,10 +12,11 @@ export class OpenRouterProvider implements LLMProvider {
   name = "OpenRouter";
   private readonly availableModels = [
     "mistralai/devstral-small", // x
-    "mistralai/mistral-medium-3",
+    "mistralai/mistral-medium-3", // x
     "deepseek/deepseek-r1-0528", // x
     "qwen/qwen3-30b-a3b",
     "meta-llama/llama-4-maverick",
+    "meta-llama/llama-4-scout",
     "x-ai/grok-3-mini-beta",
     "x-ai/grok-3-beta",
   ];
