@@ -11,6 +11,7 @@ export class GoogleGenAIProvider implements LLMProvider {
   name = "Google";
   private readonly availableModels = [
     "gemini-2.5-pro-preview-06-05", // newest model
+    "gemma-3-27b-it",
     "gemini-2.5-pro-preview-05-06",
     "gemini-2.5-pro-preview-03-25",
     "gemini-2.5-flash-preview-04-17",
@@ -39,7 +40,9 @@ export class GoogleGenAIProvider implements LLMProvider {
   ): Promise<string> {
     try {
       console.log(
-        `🤖 Generating code with Google Gemini using model: ${this.modelId} (temp: ${temperature ?? 'default'})...`
+        `🤖 Generating code with Google Gemini using model: ${
+          this.modelId
+        } (temp: ${temperature ?? "default"})...`
       );
 
       const systemPrompt = contextContent
