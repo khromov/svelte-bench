@@ -1,9 +1,23 @@
+import { Agent } from "undici";
 import {
   DEFAULT_SYSTEM_PROMPT,
   DEFAULT_SYSTEM_PROMPT_WITH_CONTEXT,
 } from "../utils/prompt";
 import type { LLMProvider } from "./index";
 import { Ollama, type ChatRequest } from "ollama";
+
+// https://github.com/ollama/ollama-js/issues/103
+const noTimeoutFetch = (
+  input: string | URL | globalThis.Request,
+  init?: RequestInit
+) => {
+  const someInit = init || {};
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return fetch(input, {
+    ...someInit,
+    dispatcher: new Agent({ headersTimeout: 2700000 }) as any,
+  });
+};
 
 export class OllamaProvider implements LLMProvider {
   private client: Ollama;
@@ -17,7 +31,7 @@ export class OllamaProvider implements LLMProvider {
     // Get Ollama host from environment variable or use default
     const host = process.env.OLLAMA_HOST || "http://127.0.0.1:11434";
 
-    this.client = new Ollama({ host });
+    this.client = new Ollama({ host, fetch: noTimeoutFetch });
     this.modelId = modelId || this.availableModels[0];
   }
 
