@@ -10,7 +10,7 @@ export class OllamaProvider implements LLMProvider {
   private modelId: string;
   name = "Ollama";
   private readonly availableModels = [
-    "huggingface.co/bartowski/open-thoughts_OpenThinker3-7B-GGUF:latest",
+    "hf.co/bartowski/open-thoughts_OpenThinker3-7B-GGUF:Q8_0",
   ];
 
   constructor(modelId?: string) {
