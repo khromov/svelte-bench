@@ -37,12 +37,12 @@ export class AnthropicProvider implements LLMProvider {
    */
   async generateCode(
     prompt: string,
-    temperature: number = 0.7,
+    temperature?: number,
     contextContent?: string
   ): Promise<string> {
     try {
       console.log(
-        `🤖 Generating code with Anthropic using model: ${this.modelId} (temp: ${temperature})...`
+        `🤖 Generating code with Anthropic using model: ${this.modelId} (temp: ${temperature ?? 'default'})...`
       );
 
       const systemPrompt = contextContent
@@ -53,7 +53,7 @@ export class AnthropicProvider implements LLMProvider {
         ? `${systemPrompt}\n\n${contextContent}\n\n${prompt}`
         : `${systemPrompt}\n\n${prompt}`;
 
-      const completion = await this.client.messages.create({
+      const requestOptions: any = {
         model: this.modelId,
         max_tokens: 4000,
         messages: [
@@ -67,8 +67,14 @@ export class AnthropicProvider implements LLMProvider {
             ],
           },
         ],
-        temperature: temperature,
-      });
+      };
+
+      // Only add temperature if it's defined
+      if (temperature !== undefined) {
+        requestOptions.temperature = temperature;
+      }
+
+      const completion = await this.client.messages.create(requestOptions);
 
       return completion.content[0]?.text || "";
     } catch (error) {

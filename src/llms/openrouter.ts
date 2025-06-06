@@ -52,12 +52,12 @@ export class OpenRouterProvider implements LLMProvider {
    */
   async generateCode(
     prompt: string,
-    temperature: number = 0.7,
+    temperature?: number,
     contextContent?: string
   ): Promise<string> {
     try {
       console.log(
-        `🤖 Generating code with OpenRouter using model: ${this.modelId} (temp: ${temperature})...`
+        `🤖 Generating code with OpenRouter using model: ${this.modelId} (temp: ${temperature ?? 'default'})...`
       );
 
       const systemPrompt = contextContent
@@ -86,11 +86,17 @@ export class OpenRouterProvider implements LLMProvider {
         content: prompt,
       });
 
-      const completion = await this.client.chat.completions.create({
+      const requestOptions: any = {
         model: this.modelId,
         messages: messages,
-        temperature: temperature,
-      });
+      };
+
+      // Only add temperature if it's defined
+      if (temperature !== undefined) {
+        requestOptions.temperature = temperature;
+      }
+
+      const completion = await this.client.chat.completions.create(requestOptions);
 
       return completion.choices[0]?.message.content || "";
     } catch (error) {

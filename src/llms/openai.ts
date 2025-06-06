@@ -41,12 +41,12 @@ export class OpenAIProvider implements LLMProvider {
    */
   async generateCode(
     prompt: string,
-    temperature: number = 0.7,
+    temperature?: number,
     contextContent?: string
   ): Promise<string> {
     try {
       console.log(
-        `🤖 Generating code with OpenAI using model: ${this.modelId} (temp: ${temperature})...`
+        `🤖 Generating code with OpenAI using model: ${this.modelId} (temp: ${temperature ?? 'default'})...`
       );
 
       const systemPrompt = contextContent
@@ -113,14 +113,19 @@ export class OpenAIProvider implements LLMProvider {
         content: prompt,
       });
 
-      const completion = await this.client.chat.completions.create({
+      const requestOptions: any = {
         model: this.modelId,
         messages: messages,
-        temperature:
-          this.modelId.startsWith("o4") || this.modelId.startsWith("o3")
-            ? undefined
-            : temperature, // o4, o3 models don't support temperature
-      });
+      };
+
+      // Only add temperature if it's defined and the model supports it
+      if (temperature !== undefined && 
+          !this.modelId.startsWith("o4") && 
+          !this.modelId.startsWith("o3")) {
+        requestOptions.temperature = temperature;
+      }
+
+      const completion = await this.client.chat.completions.create(requestOptions);
 
       return completion.choices[0]?.message.content || "";
     } catch (error) {

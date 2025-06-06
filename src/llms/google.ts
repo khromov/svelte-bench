@@ -34,12 +34,12 @@ export class GoogleGenAIProvider implements LLMProvider {
    */
   async generateCode(
     prompt: string,
-    temperature: number = 0.7,
+    temperature?: number,
     contextContent?: string
   ): Promise<string> {
     try {
       console.log(
-        `🤖 Generating code with Google Gemini using model: ${this.modelId} (temp: ${temperature})...`
+        `🤖 Generating code with Google Gemini using model: ${this.modelId} (temp: ${temperature ?? 'default'})...`
       );
 
       const systemPrompt = contextContent
@@ -50,13 +50,19 @@ export class GoogleGenAIProvider implements LLMProvider {
         ? `${systemPrompt}\n\n${contextContent}\n\n${prompt}`
         : `${systemPrompt}\n\n${prompt}`;
 
-      const response = await this.client.models.generateContent({
+      const requestOptions: any = {
         model: this.modelId,
         contents: promptWithContext,
-        config: {
+      };
+
+      // Only add temperature config if it's defined
+      if (temperature !== undefined) {
+        requestOptions.config = {
           temperature: temperature,
-        },
-      });
+        };
+      }
+
+      const response = await this.client.models.generateContent(requestOptions);
 
       return response.text;
     } catch (error) {

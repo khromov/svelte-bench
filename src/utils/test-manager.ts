@@ -70,7 +70,7 @@ export async function runSingleTest(
   test: TestDefinition,
   llmProvider: LLMProvider,
   sampleIndex: number = 0,
-  temperature: number = 0.7,
+  temperature?: number,
   contextContent?: string
 ): Promise<BenchmarkResult> {
   try {
@@ -83,7 +83,7 @@ export async function runSingleTest(
     console.log(
       `🔄 Generating ${test.name} component with ${providerName} (sample ${
         sampleIndex + 1
-      }, temp: ${temperature})...`
+      }, temp: ${temperature ?? 'default'})...`
     );
     let generatedCode = await llmProvider.generateCode(
       prompt,
@@ -178,11 +178,11 @@ export async function runHumanEvalTest(
     const providerName = llmProvider.name;
     const samples: BenchmarkResult[] = [];
 
-    // Use temperature of 0.2 for pass@1 calculations
-    // and temperature of 0.8 for the rest of the samples
-    // This aligns with recommendations from the original HumanEval paper
+    // Use temperature of 0 for pass@1 calculations
+    // and default temperature for the rest of the samples
+    // This ensures deterministic results for the first sample
 
-    // First sample with temperature 0.2 (for pass@1)
+    // First sample with temperature 0 (for pass@1)
     try {
       // Clean the tmp directory before each test (not between samples)
       await cleanTmpDir(providerName);
@@ -191,7 +191,7 @@ export async function runHumanEvalTest(
         test,
         llmProvider,
         0,
-        0.2,
+        0,
         contextContent
       );
       samples.push(firstSample);
@@ -203,18 +203,18 @@ export async function runHumanEvalTest(
       // Continue with other samples rather than failing completely
     }
 
-    // Remaining samples with temperature 0.8 (for pass@k where k>1)
+    // Remaining samples with default temperature (for pass@k where k>1)
     for (let i = 1; i < numSamples; i++) {
       try {
         // Clean the tmp directory before each sample
         await cleanTmpDir(providerName);
 
-        // Run the test with the current sample index and higher temperature
+        // Run the test with the current sample index and default temperature
         const result = await runSingleTest(
           test,
           llmProvider,
           i,
-          0.8,
+          undefined,
           contextContent
         );
         samples.push(result);
