@@ -15,8 +15,8 @@ export class OpenRouterProvider implements LLMProvider {
     "mistralai/mistral-medium-3", // x
     "deepseek/deepseek-r1-0528", // x
     "qwen/qwen3-30b-a3b", // x
-    "meta-llama/llama-4-maverick",
-    "meta-llama/llama-4-scout",
+    "meta-llama/llama-4-maverick", // x
+    "meta-llama/llama-4-scout", // x
     "x-ai/grok-3-mini-beta",
     "x-ai/grok-3-beta",
   ];
