@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SvelteBench Visualization</title>
   <style>
     :root {
@@ -977,6 +979,326 @@
       font-weight: 500;
       margin-left: 8px;
     }
+
+    /* Table scroll wrapper for mobile */
+    .table-scroll-wrapper {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      margin: 0 -24px;
+      padding: 0 24px;
+    }
+
+    /* Desktop: No horizontal scroll */
+    @media (min-width: 769px) {
+      .table-scroll-wrapper {
+        overflow-x: visible;
+        margin: 0;
+        padding: 0;
+      }
+    }
+
+    /* Mobile: Enable horizontal scroll and set minimum table width */
+    @media (max-width: 768px) {
+      .table-scroll-wrapper {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .results-table {
+        min-width: 700px; /* Ensure table doesn't get crushed */
+        margin-bottom: 16px;
+      }
+
+      .results-table th,
+      .results-table td {
+        padding: 12px 16px;
+        font-size: 14px;
+      }
+
+      .results-table th {
+        font-size: 12px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .table-scroll-wrapper {
+        margin: 0 -16px;
+        padding: 0 16px;
+      }
+
+      .results-table {
+        min-width: 600px; /* Minimum width for mobile */
+        font-size: 13px;
+      }
+
+      .results-table th,
+      .results-table td {
+        padding: 10px 12px;
+        font-size: 13px;
+      }
+
+      .results-table th {
+        font-size: 11px;
+      }
+
+      /* Adjust button sizing for mobile tables */
+      .table-scroll-wrapper .view-code-button,
+      .table-scroll-wrapper .view-samples-button,
+      .table-scroll-wrapper .github-button {
+        padding: 6px 10px;
+        font-size: 12px;
+        gap: 3px;
+      }
+
+      .table-scroll-wrapper .button-group {
+        gap: 4px;
+      }
+    }
+
+    /* Mobile Responsive Design */
+    @media (max-width: 768px) {
+      /* Tablet and below adjustments */
+      body {
+        padding: 24px 16px;
+        font-size: 15px;
+      }
+
+      h1 {
+        font-size: 36px;
+        margin-bottom: 24px;
+      }
+
+      h2 {
+        font-size: 24px;
+      }
+
+      h3 {
+        font-size: 18px;
+      }
+
+      .provider-section {
+        margin-bottom: 20px;
+      }
+
+      .provider-header {
+        padding: 20px 20px;
+      }
+
+      .provider-content {
+        padding: 12px 20px 20px;
+      }
+
+      .model-header {
+        padding: 16px 20px;
+      }
+
+      .model-content {
+        padding: 20px;
+      }
+
+      .controls {
+        padding: 16px;
+        margin-bottom: 24px;
+      }
+
+      .featured-result {
+        padding: 28px 24px;
+        margin-bottom: 32px;
+      }
+
+      .featured-title {
+        font-size: 28px;
+      }
+
+      .featured-links {
+        gap: 12px;
+      }
+
+      .featured-link {
+        padding: 14px 20px;
+        font-size: 15px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      /* Mobile-specific adjustments */
+      body {
+        padding: 16px 12px;
+        font-size: 14px;
+      }
+
+      h1 {
+        font-size: 28px;
+        margin-bottom: 20px;
+      }
+
+      h2 {
+        font-size: 20px;
+      }
+
+      h3 {
+        font-size: 16px;
+      }
+
+      .provider-header {
+        padding: 16px;
+      }
+
+      .provider-content {
+        padding: 8px 16px 16px;
+      }
+
+      .model-header {
+        padding: 14px 16px;
+      }
+
+      .model-content {
+        padding: 16px;
+      }
+
+      .controls {
+        padding: 12px;
+        margin-bottom: 20px;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+      }
+
+      .expand-all-btn, .collapse-all-btn {
+        width: 100%;
+        text-align: center;
+      }
+
+      .featured-result {
+        padding: 20px 16px;
+        margin-bottom: 24px;
+      }
+
+      .featured-title {
+        font-size: 24px;
+      }
+
+      .featured-description {
+        font-size: 15px;
+      }
+
+      .featured-links {
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .featured-link {
+        padding: 12px 16px;
+        font-size: 14px;
+        text-align: center;
+      }
+
+      .collapsible-header {
+        padding: 16px;
+      }
+
+      .back-link {
+        margin-bottom: 20px;
+        padding: 10px 16px;
+      }
+
+      .context-info {
+        margin: 20px 0;
+        padding: 16px;
+      }
+
+      .context-filename {
+        font-size: 16px;
+      }
+
+      /* Mobile-specific modal improvements */
+      .modal-content {
+        width: 95%;
+        margin: 2% auto;
+        padding: 20px;
+        max-height: 90vh;
+        overflow-y: auto;
+      }
+
+      .samples-container {
+        margin-top: 16px;
+      }
+
+      .sample-header {
+        padding: 12px 16px;
+      }
+
+      .sample-content {
+        padding: 16px;
+        max-height: 300px;
+      }
+
+      .humaneval-metrics {
+        padding: 16px;
+        gap: 12px;
+      }
+
+      .metric {
+        padding: 10px 12px;
+        min-width: 100px;
+      }
+
+      /* Touch-friendly benchmark list */
+      .benchmark-item {
+        padding: 16px 20px;
+        margin-bottom: 12px;
+      }
+
+      .benchmark-link {
+        font-size: 16px;
+      }
+
+      .json-link {
+        padding: 8px 12px;
+        font-size: 13px;
+      }
+
+      /* Improve collapse icons for touch */
+      .collapse-icon {
+        width: 32px;
+        height: 32px;
+        font-size: 18px;
+      }
+
+      .sample-expand-icon {
+        width: 28px;
+        height: 28px;
+        font-size: 16px;
+      }
+
+      /* Status badges mobile optimization */
+      .success, .partial, .failure {
+        padding: 4px 8px;
+        font-size: 12px;
+      }
+    }
+
+    /* Additional touch improvements for very small screens */
+    @media (max-width: 320px) {
+      .results-table {
+        min-width: 550px;
+      }
+
+      .table-scroll-wrapper .view-code-button,
+      .table-scroll-wrapper .view-samples-button,
+      .table-scroll-wrapper .github-button {
+        padding: 5px 8px;
+        font-size: 11px;
+      }
+
+      .featured-result {
+        padding: 16px 12px;
+      }
+
+      .featured-title {
+        font-size: 20px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -1130,7 +1452,8 @@
                   </div>
                   
                   <div class="model-content">
-                    <table class="results-table">
+                    <div class="table-scroll-wrapper">
+                      <table class="results-table">
                       <tr>
                         <th>Test</th>
                         <th>Status</th>
@@ -1190,6 +1513,7 @@
                         </tr>
                       <% }); %>
                     </table>
+                    </div>
                   </div>
                 </div>
               <% }); %>
