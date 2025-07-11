@@ -19,6 +19,7 @@ export class OpenRouterProvider implements LLMProvider {
     "meta-llama/llama-4-scout", // x
     "x-ai/grok-3-mini-beta", // x
     "x-ai/grok-3-beta",
+    "x-ai/grok-4",
   ];
 
   constructor(modelId?: string) {
