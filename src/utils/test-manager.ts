@@ -6,6 +6,7 @@ import { runTest } from "./test-runner";
 import type { TestResult } from "./test-runner";
 import { calculatePassAtK, type HumanEvalResult } from "./humaneval";
 import { cleanCodeMarkdown } from "./code-cleaner";
+import { withRetry } from "./retry-wrapper";
 
 export interface TestDefinition {
   name: string;
@@ -85,10 +86,15 @@ export async function runSingleTest(
         sampleIndex + 1
       }, temp: ${temperature ?? 'default'})...`
     );
-    let generatedCode = await llmProvider.generateCode(
-      prompt,
-      temperature,
-      contextContent
+    let generatedCode = await withRetry(
+      () => llmProvider.generateCode(prompt, temperature, contextContent),
+      {
+        onRetry: (error, attempt) => {
+          console.warn(
+            `⚠️  Retry attempt ${attempt} for ${test.name} with ${providerName} after error: ${error.message}`
+          );
+        },
+      }
     );
 
     // Apply a second pass of cleaning to ensure all backticks are removed
