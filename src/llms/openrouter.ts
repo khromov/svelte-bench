@@ -20,6 +20,7 @@ export class OpenRouterProvider implements LLMProvider {
     "x-ai/grok-3-mini-beta", // x
     "x-ai/grok-3-beta",
     "x-ai/grok-4",
+    "moonshotai/kimi-k2"
   ];
 
   constructor(modelId?: string) {
