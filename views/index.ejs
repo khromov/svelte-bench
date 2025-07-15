@@ -1055,6 +1055,234 @@
       }
     }
 
+    /* Top models list styles */
+    .top-models-section {
+      margin: 32px 0;
+      padding: 32px;
+      background: var(--surface);
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--border-light);
+      box-shadow: var(--shadow-lg);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .top-models-section::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--success) 0%, var(--accent-blue) 100%);
+    }
+
+    .top-models-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .top-models-title {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin: 0;
+      letter-spacing: -0.01em;
+    }
+
+    .top-models-badge {
+      background: linear-gradient(135deg, var(--success) 0%, var(--accent-blue) 100%);
+      color: white;
+      padding: 6px 14px;
+      border-radius: 16px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .top-models-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      margin-bottom: 12px;
+      font-size: 15px;
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      border: 1px solid var(--border-light);
+      background: var(--surface);
+    }
+
+    .top-models-table th,
+    .top-models-table td {
+      padding: 14px 18px;
+      text-align: left;
+      border-bottom: 1px solid var(--border-light);
+    }
+
+    .top-models-table th {
+      background: var(--surface-secondary);
+      font-weight: 600;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-secondary);
+      border-bottom: 1px solid var(--border-medium);
+    }
+
+    .top-models-table tbody tr {
+      transition: all 0.2s ease;
+    }
+
+    .top-models-table tbody tr:hover {
+      background: var(--surface-secondary);
+    }
+
+    .top-models-table tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    .rank {
+      font-weight: 700;
+      font-size: 18px;
+      color: var(--text-primary);
+      text-align: center;
+    }
+
+    .rank-1 {
+      color: #FFD700;
+      text-shadow: 0 0 8px rgba(255, 215, 0, 0.4);
+    }
+
+    .rank-2 {
+      color: #C0C0C0;
+      text-shadow: 0 0 8px rgba(192, 192, 192, 0.4);
+    }
+
+    .rank-3 {
+      color: #CD7F32;
+      text-shadow: 0 0 8px rgba(205, 127, 50, 0.4);
+    }
+
+    .score-bar-container {
+      position: relative;
+      width: 100%;
+      height: 28px;
+      background: var(--surface-secondary);
+      border-radius: 14px;
+      overflow: hidden;
+      border: 1px solid var(--border-light);
+    }
+
+    .score-bar {
+      position: absolute;
+      left: 0;
+      top: 0;
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent-blue) 0%, var(--success) 100%);
+      border-radius: 14px;
+      transition: width 0.5s ease;
+    }
+
+    .score-text {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-weight: 600;
+      font-size: 14px;
+      color: white;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    }
+
+    .model-name {
+      font-weight: 600;
+      color: var(--text-primary);
+      font-size: 16px;
+    }
+
+    .provider-name {
+      color: var(--text-secondary);
+      font-size: 14px;
+      margin-left: 8px;
+    }
+
+    @media (max-width: 768px) {
+      .top-models-section {
+        padding: 24px 20px;
+        margin: 24px 0;
+      }
+
+      .top-models-title {
+        font-size: 24px;
+      }
+
+      .top-models-table {
+        font-size: 14px;
+      }
+
+      .top-models-table th,
+      .top-models-table td {
+        padding: 12px 14px;
+      }
+
+      .model-name {
+        font-size: 15px;
+      }
+
+      .rank {
+        font-size: 16px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .top-models-section {
+        padding: 20px 16px;
+        margin: 20px 0;
+      }
+
+      .top-models-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+      }
+
+      .top-models-title {
+        font-size: 20px;
+      }
+
+      .top-models-table {
+        font-size: 13px;
+      }
+
+      .top-models-table th,
+      .top-models-table td {
+        padding: 10px 12px;
+      }
+
+      .model-name {
+        font-size: 14px;
+      }
+
+      .provider-name {
+        font-size: 13px;
+        display: block;
+        margin-left: 0;
+        margin-top: 4px;
+      }
+
+      .score-bar-container {
+        height: 24px;
+      }
+
+      .score-text {
+        font-size: 13px;
+      }
+    }
+
     /* Mobile Responsive Design */
     @media (max-width: 768px) {
       /* Tablet and below adjustments */
@@ -1426,6 +1654,81 @@
         <div class="context-content" id="context-content">
           <%= contextInfo.content %>
         </div>
+      </div>
+    <% } %>
+    
+    <%
+    // Check if this is the merged results file and calculate top models
+    let topModelsList = [];
+    if (selectedFile && selectedFile.includes('merged') && groupedResults.length > 0) {
+      const modelScores = new Map();
+      
+      // Iterate through all providers and models
+      groupedResults.forEach(providerData => {
+        Object.entries(providerData.models).forEach(([modelName, results]) => {
+          // Calculate average pass@1 for this model
+          let totalPass1 = 0;
+          let testCount = 0;
+          
+          results.forEach(result => {
+            totalPass1 += result.pass1;
+            testCount++;
+          });
+          
+          if (testCount > 0) {
+            const avgPass1 = totalPass1 / testCount;
+            modelScores.set(`${providerData.provider}|${modelName}`, {
+              provider: providerData.provider,
+              model: modelName,
+              averagePass1: avgPass1,
+              score: avgPass1 * 100 // Convert to percentage
+            });
+          }
+        });
+      });
+      
+      // Sort models by average pass@1 in descending order
+      topModelsList = Array.from(modelScores.values())
+        .sort((a, b) => b.averagePass1 - a.averagePass1);
+    }
+    %>
+    
+    <% if (topModelsList.length > 0) { %>
+      <!-- Top models section for merged results -->
+      <div class="top-models-section">
+        <div class="top-models-header">
+          <h2 class="top-models-title">🏆 Top Models Leaderboard</h2>
+          <span class="top-models-badge">Average pass@1</span>
+        </div>
+        
+        <table class="top-models-table">
+          <thead>
+            <tr>
+              <th style="width: 60px; text-align: center;">Rank</th>
+              <th>Model</th>
+              <th style="width: 200px;">Score</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% topModelsList.forEach((model, index) => { %>
+              <tr>
+                <td style="text-align: center;">
+                  <span class="rank rank-<%= index + 1 %>"><%= index + 1 %></span>
+                </td>
+                <td>
+                  <span class="model-name"><%= model.model %></span>
+                  <span class="provider-name">(<%= model.provider %>)</span>
+                </td>
+                <td>
+                  <div class="score-bar-container">
+                    <div class="score-bar" style="width: <%= model.score %>%"></div>
+                    <span class="score-text"><%= model.score.toFixed(1) %>%</span>
+                  </div>
+                </td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
       </div>
     <% } %>
     
