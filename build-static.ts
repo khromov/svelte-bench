@@ -149,7 +149,7 @@ async function generateBenchmarkHTML(
   const templatePath = path.join(__dirname, "views", "index.ejs");
   const template = await fs.readFile(templatePath, "utf-8");
 
-  // Render the template with our data
+  // Render the template with our data - include filename option for includes
   const html = ejs.render(template, {
     benchmarkFiles: formattedBenchmarkFiles,
     selectedFile: fileName,
@@ -157,6 +157,8 @@ async function generateBenchmarkHTML(
     benchmarkDataB64,
     contextInfo,
     isStaticBuild: true,
+  }, {
+    filename: templatePath, // This tells EJS where to resolve includes from
   });
 
   return html;
@@ -186,6 +188,8 @@ async function generateIndexHTML(
     benchmarkDataB64: "",
     isStaticBuild: true,
     isIndexPage: true,
+  }, {
+    filename: templatePath, // This tells EJS where to resolve includes from
   });
 
   return html;
