@@ -12,6 +12,8 @@
       --accent-blue: #007aff;
       --accent-blue-hover: #0056cc;
       --success: #28cd41;
+      --success-light: #52d669;
+      --success-dark: #1fa533;
       --success-bg: #f0fdf4;
       --warning: #ff9500;
       --warning-bg: #fffbf0;
@@ -834,7 +836,7 @@
       left: 0;
       right: 0;
       height: 4px;
-      background: linear-gradient(90deg, var(--accent-blue) 0%, var(--success) 100%);
+      background: linear-gradient(90deg, var(--success) 0%, var(--success-light) 100%);
     }
 
     .featured-header {
@@ -845,7 +847,7 @@
     }
 
     .featured-badge {
-      background: linear-gradient(135deg, var(--accent-blue) 0%, var(--success) 100%);
+      background: linear-gradient(135deg, var(--success) 0%, var(--success-light) 100%);
       color: white;
       padding: 8px 16px;
       border-radius: 20px;
@@ -1068,7 +1070,7 @@
       left: 0;
       right: 0;
       height: 4px;
-      background: linear-gradient(90deg, var(--success) 0%, var(--accent-blue) 100%);
+      background: linear-gradient(90deg, var(--success) 0%, var(--success-light) 100%);
     }
 
     .top-models-header {
@@ -1087,7 +1089,7 @@
     }
 
     .top-models-badge {
-      background: linear-gradient(135deg, var(--success) 0%, var(--accent-blue) 100%);
+      background: linear-gradient(135deg, var(--success) 0%, var(--success-light) 100%);
       color: white;
       padding: 6px 14px;
       border-radius: 16px;
@@ -1176,7 +1178,7 @@
       left: 0;
       top: 0;
       height: 100%;
-      background: linear-gradient(90deg, var(--accent-blue) 0%, var(--success) 100%);
+      background: linear-gradient(90deg, var(--success-dark) 0%, var(--success) 100%);
       border-radius: 14px;
       transition: width 0.5s ease;
     }
@@ -1202,6 +1204,46 @@
       color: var(--text-secondary);
       font-size: 14px;
       margin-left: 8px;
+    }
+
+    /* Expand/collapse button for top models */
+    .top-models-expand-container {
+      margin-top: 16px;
+      text-align: center;
+    }
+
+    .top-models-expand-btn {
+      background: var(--surface-secondary);
+      border: 1px solid var(--border-medium);
+      border-radius: var(--radius-sm);
+      padding: 10px 20px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-primary);
+      transition: all 0.2s ease;
+      font-family: inherit;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .top-models-expand-btn:hover {
+      background: var(--surface-tertiary);
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .top-models-expand-btn.expanded .expand-icon {
+      transform: rotate(180deg);
+    }
+
+    .expand-icon {
+      transition: transform 0.3s ease;
+    }
+
+    .hidden-model {
+      display: none;
     }
 
     @media (max-width: 768px) {

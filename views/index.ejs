@@ -186,9 +186,9 @@
               <th style="width: 200px;">Score</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody id="top-models-tbody">
             <% topModelsList.forEach((model, index) => { %>
-              <tr>
+              <tr class="top-model-row <%= index >= 5 ? 'hidden-model' : '' %>" data-rank="<%= index + 1 %>">
                 <td style="text-align: center;">
                   <span class="rank rank-<%= index + 1 %>"><%= index + 1 %></span>
                 </td>
@@ -206,6 +206,15 @@
             <% }); %>
           </tbody>
         </table>
+        
+        <% if (topModelsList.length > 5) { %>
+          <div class="top-models-expand-container">
+            <button class="top-models-expand-btn" onclick="toggleTopModels()">
+              <span class="expand-text">Show All <%= topModelsList.length %> Models</span>
+              <span class="expand-icon">▼</span>
+            </button>
+          </div>
+        <% } %>
       </div>
     <% } %>
     
@@ -357,6 +366,32 @@
           } catch (error) {
             console.error("Error decoding benchmark data:", error);
             return [];
+          }
+        }
+
+        // Toggle top models visibility
+        function toggleTopModels() {
+          const hiddenRows = document.querySelectorAll('.hidden-model');
+          const expandBtn = document.querySelector('.top-models-expand-btn');
+          const expandText = expandBtn.querySelector('.expand-text');
+          const expandIcon = expandBtn.querySelector('.expand-icon');
+          
+          if (hiddenRows.length > 0 && hiddenRows[0].style.display !== 'table-row') {
+            // Show all models
+            hiddenRows.forEach(row => {
+              row.style.display = 'table-row';
+            });
+            expandText.textContent = 'Show Top 5 Models';
+            expandIcon.textContent = '▲';
+            expandBtn.classList.add('expanded');
+          } else {
+            // Hide models beyond top 5
+            hiddenRows.forEach(row => {
+              row.style.display = 'none';
+            });
+            expandText.textContent = `Show All ${document.querySelectorAll('.top-model-row').length} Models`;
+            expandIcon.textContent = '▼';
+            expandBtn.classList.remove('expanded');
           }
         }
 
@@ -628,6 +663,12 @@
 
         // Initialize the page
         document.addEventListener("DOMContentLoaded", () => {
+          // Hide models beyond top 5 on initial load
+          const hiddenModels = document.querySelectorAll('.hidden-model');
+          hiddenModels.forEach(row => {
+            row.style.display = 'none';
+          });
+
           // Close samples modal when clicking the close button
           const closeSamplesButton = document.getElementById("close-samples-modal");
           if (closeSamplesButton) {

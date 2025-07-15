@@ -21,7 +21,7 @@ export class OpenRouterProvider implements LLMProvider {
     "x-ai/grok-3-beta",
     "x-ai/grok-4",
     "moonshotai/kimi-k2",
-    "moonshotai/kimi-dev-72b:free"
+    "moonshotai/kimi-dev-72b"
   ];
 
   constructor(modelId?: string) {
