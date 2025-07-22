@@ -21,7 +21,9 @@ export class OpenRouterProvider implements LLMProvider {
     "x-ai/grok-3-beta",
     "x-ai/grok-4",
     "moonshotai/kimi-k2",
-    "moonshotai/kimi-dev-72b"
+    "moonshotai/kimi-dev-72b",
+    "qwen/qwen3-235b-a22b-07-25",
+    "google/gemma-3n-e4b-it",
   ];
 
   constructor(modelId?: string) {
@@ -56,13 +58,13 @@ export class OpenRouterProvider implements LLMProvider {
   async generateCode(
     prompt: string,
     temperature?: number,
-    contextContent?: string
+    contextContent?: string,
   ): Promise<string> {
     try {
       console.log(
         `🤖 Generating code with OpenRouter using model: ${
           this.modelId
-        } (temp: ${temperature ?? "default"})...`
+        } (temp: ${temperature ?? "default"})...`,
       );
 
       const systemPrompt = contextContent
@@ -101,9 +103,8 @@ export class OpenRouterProvider implements LLMProvider {
         requestOptions.temperature = temperature;
       }
 
-      const completion = await this.client.chat.completions.create(
-        requestOptions
-      );
+      const completion =
+        await this.client.chat.completions.create(requestOptions);
 
       return completion.choices[0]?.message.content || "";
     } catch (error) {
@@ -111,7 +112,7 @@ export class OpenRouterProvider implements LLMProvider {
       throw new Error(
         `Failed to generate code: ${
           error instanceof Error ? error.message : String(error)
-        }`
+        }`,
       );
     }
   }
