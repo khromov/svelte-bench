@@ -25,6 +25,7 @@ export class OpenRouterProvider implements LLMProvider {
     "qwen/qwen3-235b-a22b-07-25",
     "google/gemma-3n-e4b-it",
     "qwen/qwen3-coder",
+    "mistralai/devstral-medium",
   ];
 
   constructor(modelId?: string) {
