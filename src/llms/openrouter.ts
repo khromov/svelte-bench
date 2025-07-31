@@ -30,6 +30,7 @@ export class OpenRouterProvider implements LLMProvider {
     "qwen/qwen3-235b-a22b-thinking-2507",
     "z-ai/glm-4.5",
     "z-ai/glm-4.5-air",
+    "qwen/qwen3-30b-a3b-instruct-2507",
   ];
 
   constructor(modelId?: string) {
