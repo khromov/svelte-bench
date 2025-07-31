@@ -31,6 +31,9 @@ export class OpenRouterProvider implements LLMProvider {
     "z-ai/glm-4.5",
     "z-ai/glm-4.5-air",
     "qwen/qwen3-30b-a3b-instruct-2507",
+    "openrouter/horizon-alpha",
+    "x-ai/grok-3",
+    "x-ai/grok-3-mini",
   ];
 
   constructor(modelId?: string) {
