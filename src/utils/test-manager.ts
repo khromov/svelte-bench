@@ -95,6 +95,7 @@ export async function runSingleTest(
         
         // Check if the cleaned code is empty or only whitespace
         if (!cleanedCode.trim()) {
+          console.warn(`⚠️ Generated code is empty after cleaning for ${test.name} with ${providerName}. Raw code was:`, rawCode);
           throw new Error("Generated code is empty after cleaning. This indicates an empty response from the LLM provider.");
         }
         
