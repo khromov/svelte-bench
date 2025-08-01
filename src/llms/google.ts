@@ -15,6 +15,9 @@ export class GoogleGenAIProvider implements LLMProvider {
     "gemini-2.5-pro-preview-05-06",
     "gemini-2.5-pro-preview-03-25",
     "gemini-2.5-flash-preview-04-17",
+    "gemini-2.5-flash",
+    "gemini-2.5-flash-lite",
+    "gemini-2.5-pro",
   ];
 
   constructor(modelId?: string) {
@@ -36,13 +39,13 @@ export class GoogleGenAIProvider implements LLMProvider {
   async generateCode(
     prompt: string,
     temperature?: number,
-    contextContent?: string
+    contextContent?: string,
   ): Promise<string> {
     try {
       console.log(
         `🤖 Generating code with Google Gemini using model: ${
           this.modelId
-        } (temp: ${temperature ?? "default"})...`
+        } (temp: ${temperature ?? "default"})...`,
       );
 
       const systemPrompt = contextContent
@@ -73,7 +76,7 @@ export class GoogleGenAIProvider implements LLMProvider {
       throw new Error(
         `Failed to generate code: ${
           error instanceof Error ? error.message : String(error)
-        }`
+        }`,
       );
     }
   }
