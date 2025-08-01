@@ -87,7 +87,20 @@ export async function runSingleTest(
       }, temp: ${temperature ?? 'default'})...`
     );
     let generatedCode = await withRetry(
-      () => llmProvider.generateCode(prompt, temperature, contextContent),
+      async () => {
+        const rawCode = await llmProvider.generateCode(prompt, temperature, contextContent);
+        
+        // Apply cleaning to remove markdown code blocks
+        const cleanedCode = cleanCodeMarkdown(rawCode);
+        
+        // Check if the cleaned code is empty or only whitespace
+        if (!cleanedCode.trim()) {
+          console.warn(`⚠️ Generated code is empty after cleaning for ${test.name} with ${providerName}. Raw code was:`, rawCode);
+          throw new Error("Generated code is empty after cleaning. This indicates an empty response from the LLM provider.");
+        }
+        
+        return cleanedCode;
+      },
       {
         onRetry: (error, attempt) => {
           console.warn(
@@ -96,9 +109,6 @@ export async function runSingleTest(
         },
       }
     );
-
-    // Apply a second pass of cleaning to ensure all backticks are removed
-    generatedCode = cleanCodeMarkdown(generatedCode);
 
     // Check if the generated code already includes <svelte:options runes={true} />
     if (!generatedCode.includes("<svelte:options runes={true} />")) {
