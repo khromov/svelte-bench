@@ -66,6 +66,12 @@ export class OpenRouterProvider implements LLMProvider {
     temperature?: number,
     contextContent?: string,
   ): Promise<string> {
+    // Create AbortController with 5-minute timeout
+    const abortController = new AbortController();
+    const timeoutId = setTimeout(() => {
+      abortController.abort();
+    }, 5 * 60 * 1000); // 5 minutes
+
     try {
       console.log(
         `🤖 Generating code with OpenRouter using model: ${
@@ -109,11 +115,24 @@ export class OpenRouterProvider implements LLMProvider {
         requestOptions.temperature = temperature;
       }
 
-      const completion =
-        await this.client.chat.completions.create(requestOptions);
+      const completion = await this.client.chat.completions.create(requestOptions, {
+        signal: abortController.signal, // Add abort signal
+      });
+
+      // Clear timeout on successful completion
+      clearTimeout(timeoutId);
 
       return completion.choices[0]?.message.content || "";
     } catch (error) {
+      // Clear timeout on error
+      clearTimeout(timeoutId);
+      
+      // Check if the error is due to abort (timeout)
+      if (error instanceof Error && error.name === 'AbortError') {
+        console.error(`OpenRouter API call timed out after 5 minutes for model: ${this.modelId}`);
+        throw new Error(`Request timed out after 5 minutes: ${this.modelId}`);
+      }
+      
       console.error("Error generating code with OpenRouter:", error);
       throw new Error(
         `Failed to generate code: ${
