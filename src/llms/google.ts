@@ -70,7 +70,7 @@ export class GoogleGenAIProvider implements LLMProvider {
 
       const response = await this.client.models.generateContent(requestOptions);
 
-      return response.text;
+      return response.text || "";
     } catch (error) {
       console.error("Error generating code with Google Gemini:", error);
       throw new Error(

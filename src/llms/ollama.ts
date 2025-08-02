@@ -15,8 +15,8 @@ const noTimeoutFetch = (
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return fetch(input, {
     ...someInit,
-    dispatcher: new Agent({ headersTimeout: 2700000 }) as any,
-  });
+    dispatcher: new Agent({ headersTimeout: 2700000 }),
+  } as any);
 };
 
 export class OllamaProvider implements LLMProvider {
