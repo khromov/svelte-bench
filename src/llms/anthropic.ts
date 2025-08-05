@@ -10,6 +10,7 @@ export class AnthropicProvider implements LLMProvider {
   private modelId: string;
   name = "Anthropic";
   private readonly availableModels = [
+    "claude-opus-4-1-20250805",
     "claude-opus-4-20250514",
     "claude-sonnet-4-20250514",
     "claude-3-7-sonnet-20250219",
@@ -42,7 +43,9 @@ export class AnthropicProvider implements LLMProvider {
   ): Promise<string> {
     try {
       console.log(
-        `🤖 Generating code with Anthropic using model: ${this.modelId} (temp: ${temperature ?? 'default'})...`
+        `🤖 Generating code with Anthropic using model: ${
+          this.modelId
+        } (temp: ${temperature ?? "default"})...`
       );
 
       const systemPrompt = contextContent
@@ -76,7 +79,9 @@ export class AnthropicProvider implements LLMProvider {
 
       const completion = await this.client.messages.create(requestOptions);
 
-      return completion.content[0]?.text || "";
+      return completion.content[0]?.type === "text"
+        ? completion.content[0].text
+        : "";
     } catch (error) {
       console.error("Error generating code with Anthropic:", error);
       throw new Error(
