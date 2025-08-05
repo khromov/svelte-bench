@@ -69,6 +69,9 @@ export async function getLLMProvider(
     case "ollama":
       const { OllamaProvider } = await import("./ollama");
       return new OllamaProvider(modelId);
+    case "zai":
+      const { ZAIProvider } = await import("./zai");
+      return new ZAIProvider(modelId);
     default:
       throw new Error(`Unknown LLM provider: ${providerName}`);
   }
@@ -132,6 +135,17 @@ export async function getAllLLMProviders(): Promise<ProviderWithModel[]> {
     providers.push({
       provider,
       name: "Ollama",
+      modelId,
+    });
+  }
+
+  // Z.AI provider
+  const zaiProvider = await getLLMProvider("zai");
+  for (const modelId of zaiProvider.getModels()) {
+    const provider = await getLLMProvider("zai", modelId);
+    providers.push({
+      provider,
+      name: "zai",
       modelId,
     });
   }
