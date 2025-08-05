@@ -70,9 +70,6 @@ export async function getLLMProvider(
       const { OllamaProvider } = await import("./ollama");
       return new OllamaProvider(modelId);
     case "zai":
-      console.warn(
-        "Z.AI provider is experimental and may not work as expected. Please report any issues."
-      );
       const { ZAIProvider } = await import("./zai");
       return new ZAIProvider(modelId);
     default:

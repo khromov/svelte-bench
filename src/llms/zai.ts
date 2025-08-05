@@ -9,8 +9,8 @@ export class ZAIProvider implements LLMProvider {
   private modelId: string;
   name = "zai";
   private readonly availableModels = [
-    "glm-4.5",
-    "glm-4.5-air", 
+    "glm-4.5", // x
+    "glm-4.5-air",  // x
     "glm-4.5-x",
     "glm-4.5-airx",
     "glm-4.5-flash",
