@@ -76,7 +76,7 @@ export class AnthropicProvider implements LLMProvider {
 
       const completion = await this.client.messages.create(requestOptions);
 
-      return completion.content[0]?.text || "";
+      return completion.content[0]?.type === "text" ? completion.content[0].text : "";
     } catch (error) {
       console.error("Error generating code with Anthropic:", error);
       throw new Error(
