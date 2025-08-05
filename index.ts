@@ -97,9 +97,10 @@ async function runBenchmark() {
         );
 
         if (matchingProviders.length === 0) {
-          console.warn(
-            `⚠️ Provider "${debugProvider}" not found, using first provider: ${providerModels[0].name}`
+          console.error(
+            `❌ Provider "${debugProvider}" not found. Available providers: ${[...new Set(providerModels.map(pm => pm.name))].join(', ')}`
           );
+          process.exit(1);
         } else {
           selectedProviderModels = matchingProviders;
 

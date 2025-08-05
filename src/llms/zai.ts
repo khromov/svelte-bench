@@ -7,7 +7,7 @@ import type { LLMProvider } from "./index";
 export class ZAIProvider implements LLMProvider {
   private apiKey: string;
   private modelId: string;
-  name = "Z.AI";
+  name = "zai";
   private readonly availableModels = [
     "glm-4.5",
     "glm-4.5-air", 
