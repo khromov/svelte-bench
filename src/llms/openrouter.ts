@@ -36,6 +36,9 @@ export class OpenRouterProvider implements LLMProvider {
     "x-ai/grok-3-mini",
     "mistralai/codestral-2508",
     "openrouter/horizon-beta",
+    "openai/gpt-oss-120b",
+    "openai/gpt-oss-20b",
+    "anthropic/claude-opus-4.1",
   ];
 
   constructor(modelId?: string) {
