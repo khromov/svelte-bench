@@ -34,6 +34,11 @@ export class OpenRouterProvider implements LLMProvider {
     "openrouter/horizon-alpha",
     "x-ai/grok-3",
     "x-ai/grok-3-mini",
+    "mistralai/codestral-2508",
+    "openrouter/horizon-beta",
+    "openai/gpt-oss-120b",
+    "openai/gpt-oss-20b",
+    "anthropic/claude-opus-4.1",
   ];
 
   constructor(modelId?: string) {
@@ -72,9 +77,12 @@ export class OpenRouterProvider implements LLMProvider {
   ): Promise<string> {
     // Create AbortController with 5-minute timeout
     const abortController = new AbortController();
-    const timeoutId = setTimeout(() => {
-      abortController.abort();
-    }, 5 * 60 * 1000); // 5 minutes
+    const timeoutId = setTimeout(
+      () => {
+        abortController.abort();
+      },
+      5 * 60 * 1000,
+    ); // 5 minutes
 
     try {
       console.log(
@@ -119,9 +127,12 @@ export class OpenRouterProvider implements LLMProvider {
         requestOptions.temperature = temperature;
       }
 
-      const completion = await this.client.chat.completions.create(requestOptions, {
-        signal: abortController.signal, // Add abort signal
-      });
+      const completion = await this.client.chat.completions.create(
+        requestOptions,
+        {
+          signal: abortController.signal, // Add abort signal
+        },
+      );
 
       // Clear timeout on successful completion
       clearTimeout(timeoutId);
@@ -130,13 +141,15 @@ export class OpenRouterProvider implements LLMProvider {
     } catch (error) {
       // Clear timeout on error
       clearTimeout(timeoutId);
-      
+
       // Check if the error is due to abort (timeout)
-      if (error instanceof Error && error.name === 'AbortError') {
-        console.error(`OpenRouter API call timed out after 5 minutes for model: ${this.modelId}`);
+      if (error instanceof Error && error.name === "AbortError") {
+        console.error(
+          `OpenRouter API call timed out after 5 minutes for model: ${this.modelId}`,
+        );
         throw new Error(`Request timed out after 5 minutes: ${this.modelId}`);
       }
-      
+
       console.error("Error generating code with OpenRouter:", error);
       throw new Error(
         `Failed to generate code: ${
