@@ -35,6 +35,28 @@ export class OpenAIProvider implements LLMProvider {
   }
 
   /**
+   * Extract reasoning effort from model name if present
+   * @param modelName The model name that may contain reasoning effort suffix
+   * @returns Object with clean model name and optional reasoning effort
+   */
+  private extractReasoningEffort(modelName: string): {
+    model: string;
+    reasoningEffort?: "low" | "medium" | "high";
+  } {
+    const reasoningPattern = /-reasoning-(low|medium|high)$/;
+    const match = modelName.match(reasoningPattern);
+    
+    if (match) {
+      return {
+        model: modelName.replace(reasoningPattern, ""),
+        reasoningEffort: match[1] as "low" | "medium" | "high",
+      };
+    }
+    
+    return { model: modelName };
+  }
+
+  /**
    * Generate code from a prompt using OpenAI
    * @param prompt The prompt to send to the LLM
    * @param temperature Optional temperature parameter for controlling randomness (default: 0.7)
@@ -47,8 +69,11 @@ export class OpenAIProvider implements LLMProvider {
     contextContent?: string
   ): Promise<string> {
     try {
+      // Extract reasoning effort from model name if present
+      const { model: cleanModelId, reasoningEffort } = this.extractReasoningEffort(this.modelId);
+      
       console.log(
-        `🤖 Generating code with OpenAI using model: ${this.modelId} (temp: ${temperature ?? 'default'})...`
+        `🤖 Generating code with OpenAI using model: ${cleanModelId}${reasoningEffort ? ` (reasoning: ${reasoningEffort})` : ''} (temp: ${temperature ?? 'default'})...`
       );
 
       const systemPrompt = contextContent
@@ -56,23 +81,29 @@ export class OpenAIProvider implements LLMProvider {
         : DEFAULT_SYSTEM_PROMPT;
 
       // Special handling for o1-pro model
-      if (this.modelId.startsWith("o1-pro")) {
+      if (cleanModelId.startsWith("o1-pro")) {
         console.log("Using o1-pro model");
 
         const combinedPrompt = contextContent
           ? `${systemPrompt}\n\n${contextContent}\n\n${prompt}`
           : `${systemPrompt}\n\n${prompt}`;
 
-        const completion = await this.client.chat.completions.create({
-          model: this.modelId,
-          // reasoning_effort: "medium",
+        const requestOptions: any = {
+          model: cleanModelId,
           messages: [
             {
               role: "user",
               content: combinedPrompt,
             },
           ],
-        });
+        };
+
+        // Add reasoning effort if specified
+        if (reasoningEffort) {
+          requestOptions.reasoning_effort = reasoningEffort;
+        }
+
+        const completion = await this.client.chat.completions.create(requestOptions);
 
         console.log("we received a response:", completion.choices[0]?.message.content);
 
@@ -102,15 +133,20 @@ export class OpenAIProvider implements LLMProvider {
       });
 
       const requestOptions: any = {
-        model: this.modelId,
+        model: cleanModelId,
         messages: messages,
       };
 
       // Only add temperature if it's defined and the model supports it
       if (temperature !== undefined && 
-          !this.modelId.startsWith("o4") && 
-          !this.modelId.startsWith("o3")) {
+          !cleanModelId.startsWith("o4") && 
+          !cleanModelId.startsWith("o3")) {
         requestOptions.temperature = temperature;
+      }
+
+      // Add reasoning effort if specified (for models that support it)
+      if (reasoningEffort) {
+        requestOptions.reasoning_effort = reasoningEffort;
       }
 
       const completion = await this.client.chat.completions.create(requestOptions);
