@@ -4,7 +4,11 @@ import {
 } from "../utils/prompt";
 import type { LLMProvider } from "./index";
 import OpenAI from "openai";
-import type { ChatCompletionMessageParam } from "openai/resources/chat/completions";
+import type { 
+  ChatCompletionMessageParam, 
+  ChatCompletionCreateParamsNonStreaming 
+} from "openai/resources/chat/completions";
+import type { ReasoningEffort } from "openai/resources/shared";
 
 export class OpenAIProvider implements LLMProvider {
   private client: OpenAI;
@@ -40,15 +44,15 @@ export class OpenAIProvider implements LLMProvider {
    */
   private extractReasoningEffort(modelName: string): {
     model: string;
-    reasoningEffort?: "low" | "medium" | "high";
+    reasoningEffort?: Exclude<ReasoningEffort, null>;
   } {
-    const reasoningPattern = /-reasoning-(low|medium|high)$/;
+    const reasoningPattern = /-reasoning-(minimal|low|medium|high)$/;
     const match = modelName.match(reasoningPattern);
     
     if (match) {
       return {
         model: modelName.replace(reasoningPattern, ""),
-        reasoningEffort: match[1] as "low" | "medium" | "high",
+        reasoningEffort: match[1] as Exclude<ReasoningEffort, null>,
       };
     }
     
@@ -116,7 +120,7 @@ export class OpenAIProvider implements LLMProvider {
         content: prompt,
       });
 
-      const requestOptions: any = {
+      const requestOptions: ChatCompletionCreateParamsNonStreaming = {
         model: cleanModelId,
         messages: messages,
       };
