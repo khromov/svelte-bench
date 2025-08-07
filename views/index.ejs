@@ -100,9 +100,6 @@
     <% } %>
   <% } else { %>
     <!-- Regular benchmark result page -->
-    <p>
-      <i>Note: Certain OpenAI thinking models (o3, o4) and gpt-5 do not support temperature adjustments (only default value of 1 is supported). Models with "-reasoning-" suffix (e.g., gpt-5-2025-08-07-reasoning-medium) will use the specified reasoning effort setting.</i>
-    </p>
     
     <% if (typeof isStaticBuild !== 'undefined' && isStaticBuild === true) { %>
       <!-- Static build version -->
@@ -236,6 +233,17 @@
         <% } %>
       </div>
     <% } %>
+    
+    <!-- Notes and Errata sections -->
+    <div class="notes-box">
+      <p>
+        <i><strong>Note:</strong> Certain OpenAI thinking models (o3, o4) and gpt-5 do not support temperature adjustments (only default value of 1 is supported). Models with "-reasoning-" suffix (e.g., gpt-5-2025-08-07-reasoning-medium) will use the specified reasoning effort setting.</i>
+      </p>
+      
+      <p>
+        <i><strong>Errata:</strong> The "inspect" test has known correctness issues but is retained in the benchmark suite to maintain consistency and fairness in scoring across all evaluated models.</i>
+      </p>
+    </div>
     
     <div class="controls">
       <button class="expand-all-btn" onclick="expandAll()">Expand All</button>

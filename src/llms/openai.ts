@@ -25,7 +25,11 @@ export class OpenAIProvider implements LLMProvider {
     "o3-mini-2025-01-31",
     "gpt-4o-2024-08-06",
     'gpt-5-2025-08-07',
-    'gpt-5-2025-08-07-reasoning-medium'
+    'gpt-5-2025-08-07-reasoning-medium',
+    'gpt-5-mini-2025-08-07',
+    'gpt-5-mini-2025-08-07-reasoning-medium',
+    'gpt-5-nano-2025-08-07',
+    'gpt-5-nano-2025-08-07-reasoning-medium'
   ];
 
   constructor(modelId?: string) {
