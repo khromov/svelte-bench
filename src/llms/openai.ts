@@ -21,6 +21,8 @@ export class OpenAIProvider implements LLMProvider {
     "o4-mini-2025-04-16",
     "o3-mini-2025-01-31",
     "gpt-4o-2024-08-06",
+    'gpt-5-2025-08-07',
+    'gpt-5-2025-08-07-reasoning-medium'
   ];
 
   constructor(modelId?: string) {
@@ -53,42 +55,28 @@ export class OpenAIProvider implements LLMProvider {
         ? DEFAULT_SYSTEM_PROMPT_WITH_CONTEXT
         : DEFAULT_SYSTEM_PROMPT;
 
-      // Special handling for o1-pro model which requires responses endpoint
+      // Special handling for o1-pro model
       if (this.modelId.startsWith("o1-pro")) {
-        console.log("Using responses endpoint for o1-pro model");
+        console.log("Using o1-pro model");
 
         const combinedPrompt = contextContent
           ? `${systemPrompt}\n\n${contextContent}\n\n${prompt}`
           : `${systemPrompt}\n\n${prompt}`;
 
-        const response = await this.client.responses.create({
+        const completion = await this.client.chat.completions.create({
           model: this.modelId,
-          input: [
+          // reasoning_effort: "medium",
+          messages: [
             {
-              role: "developer",
-              content: [
-                {
-                  type: "input_text",
-                  text: combinedPrompt,
-                },
-              ],
+              role: "user",
+              content: combinedPrompt,
             },
           ],
-          text: {
-            format: {
-              type: "text",
-            },
-          },
-          reasoning: {
-            effort: "medium",
-          },
-          tools: [],
-          store: false,
         });
 
-        console.log("we received a response:", response.output_text);
+        console.log("we received a response:", completion.choices[0]?.message.content);
 
-        return response.output_text || "";
+        return completion.choices[0]?.message.content || "";
       }
 
       // Standard chat completions for other models
