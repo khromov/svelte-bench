@@ -4,7 +4,11 @@ import {
 } from "../utils/prompt";
 import type { LLMProvider } from "./index";
 import OpenAI from "openai";
-import type { ChatCompletionMessageParam } from "openai/resources/chat/completions";
+import type { 
+  ChatCompletionMessageParam, 
+  ChatCompletionCreateParamsNonStreaming 
+} from "openai/resources/chat/completions";
+import type { ReasoningEffort } from "openai/resources/shared";
 
 export class OpenAIProvider implements LLMProvider {
   private client: OpenAI;
@@ -16,11 +20,12 @@ export class OpenAIProvider implements LLMProvider {
     "gpt-4.1-mini-2025-04-14", //
     "gpt-4.1-nano-2025-04-14", //
     "o3-2025-04-16", //
-    "o1-pro-2025-03-19",
     // ---
     "o4-mini-2025-04-16",
     "o3-mini-2025-01-31",
     "gpt-4o-2024-08-06",
+    'gpt-5-2025-08-07',
+    'gpt-5-2025-08-07-reasoning-medium'
   ];
 
   constructor(modelId?: string) {
@@ -30,6 +35,28 @@ export class OpenAIProvider implements LLMProvider {
     }
     this.client = new OpenAI({ apiKey });
     this.modelId = modelId || this.availableModels[0];
+  }
+
+  /**
+   * Extract reasoning effort from model name if present
+   * @param modelName The model name that may contain reasoning effort suffix
+   * @returns Object with clean model name and optional reasoning effort
+   */
+  private extractReasoningEffort(modelName: string): {
+    model: string;
+    reasoningEffort?: Exclude<ReasoningEffort, null>;
+  } {
+    const reasoningPattern = /-reasoning-(minimal|low|medium|high)$/;
+    const match = modelName.match(reasoningPattern);
+    
+    if (match) {
+      return {
+        model: modelName.replace(reasoningPattern, ""),
+        reasoningEffort: match[1] as Exclude<ReasoningEffort, null>,
+      };
+    }
+    
+    return { model: modelName };
   }
 
   /**
@@ -45,53 +72,33 @@ export class OpenAIProvider implements LLMProvider {
     contextContent?: string
   ): Promise<string> {
     try {
-      console.log(
-        `🤖 Generating code with OpenAI using model: ${this.modelId} (temp: ${temperature ?? 'default'})...`
-      );
+      // Extract reasoning effort from model name if present
+      const { model: cleanModelId, reasoningEffort } = this.extractReasoningEffort(this.modelId);
+      
+      // Check if the model supports temperature
+      const supportsTemperature = !cleanModelId.startsWith("o4") && 
+                                  !cleanModelId.startsWith("o3") && 
+                                  !cleanModelId.startsWith("gpt-5");
+      
+      // Build the log message
+      let logMessage = `🤖 Generating code with OpenAI using model: ${cleanModelId}`;
+      if (reasoningEffort) {
+        logMessage += ` (reasoning: ${reasoningEffort})`;
+      }
+      if (supportsTemperature && temperature !== undefined) {
+        logMessage += ` (temp: ${temperature})`;
+      } else if (supportsTemperature) {
+        logMessage += ` (temp: default)`;
+      }
+      logMessage += `...`;
+      
+      console.log(logMessage);
 
       const systemPrompt = contextContent
         ? DEFAULT_SYSTEM_PROMPT_WITH_CONTEXT
         : DEFAULT_SYSTEM_PROMPT;
 
-      // Special handling for o1-pro model which requires responses endpoint
-      if (this.modelId.startsWith("o1-pro")) {
-        console.log("Using responses endpoint for o1-pro model");
-
-        const combinedPrompt = contextContent
-          ? `${systemPrompt}\n\n${contextContent}\n\n${prompt}`
-          : `${systemPrompt}\n\n${prompt}`;
-
-        const response = await this.client.responses.create({
-          model: this.modelId,
-          input: [
-            {
-              role: "developer",
-              content: [
-                {
-                  type: "input_text",
-                  text: combinedPrompt,
-                },
-              ],
-            },
-          ],
-          text: {
-            format: {
-              type: "text",
-            },
-          },
-          reasoning: {
-            effort: "medium",
-          },
-          tools: [],
-          store: false,
-        });
-
-        console.log("we received a response:", response.output_text);
-
-        return response.output_text || "";
-      }
-
-      // Standard chat completions for other models
+      // Standard chat completions
       const messages: ChatCompletionMessageParam[] = [
         {
           role: "system",
@@ -113,16 +120,19 @@ export class OpenAIProvider implements LLMProvider {
         content: prompt,
       });
 
-      const requestOptions: any = {
-        model: this.modelId,
+      const requestOptions: ChatCompletionCreateParamsNonStreaming = {
+        model: cleanModelId,
         messages: messages,
       };
 
       // Only add temperature if it's defined and the model supports it
-      if (temperature !== undefined && 
-          !this.modelId.startsWith("o4") && 
-          !this.modelId.startsWith("o3")) {
+      if (temperature !== undefined && supportsTemperature) {
         requestOptions.temperature = temperature;
+      }
+
+      // Add reasoning effort if specified (for models that support it)
+      if (reasoningEffort) {
+        requestOptions.reasoning_effort = reasoningEffort;
       }
 
       const completion = await this.client.chat.completions.create(requestOptions);
