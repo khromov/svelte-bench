@@ -178,6 +178,18 @@
           <span class="top-models-badge">Average pass@1 scores</span>
         </div>
         
+        <!-- Search bar for models -->
+        <div class="model-search-container">
+          <input 
+            type="text" 
+            id="model-search-input" 
+            class="model-search-input" 
+            placeholder="Search models..." 
+            autocomplete="off"
+          />
+          <span class="search-icon">🔍</span>
+        </div>
+        
         <table class="top-models-table">
           <thead>
             <tr>
@@ -188,7 +200,10 @@
           </thead>
           <tbody id="top-models-tbody">
             <% topModelsList.forEach((model, index) => { %>
-              <tr class="top-model-row <%= index >= 5 ? 'hidden-model' : '' %>" data-rank="<%= index + 1 %>">
+              <tr class="top-model-row <%= index >= 5 ? 'hidden-model' : '' %>" 
+                  data-rank="<%= index + 1 %>"
+                  data-model-name="<%= model.model.toLowerCase() %>"
+                  data-provider-name="<%= model.provider.toLowerCase() %>">
                 <td style="text-align: center;">
                   <span class="rank rank-<%= index + 1 %>"><%= index + 1 %></span>
                 </td>
@@ -207,8 +222,12 @@
           </tbody>
         </table>
         
+        <div class="search-no-results" id="search-no-results" style="display: none;">
+          <p>No models found matching your search.</p>
+        </div>
+        
         <% if (topModelsList.length > 5) { %>
-          <div class="top-models-expand-container">
+          <div class="top-models-expand-container" id="expand-button-container">
             <button class="top-models-expand-btn" onclick="toggleTopModels()">
               <span class="expand-text">Show All <%= topModelsList.length %> Models</span>
               <span class="expand-icon">▼</span>
@@ -661,13 +680,99 @@
           });
         }
 
+        // Model search functionality
+        function initializeModelSearch() {
+          const searchInput = document.getElementById('model-search-input');
+          const expandButton = document.getElementById('expand-button-container');
+          const noResultsDiv = document.getElementById('search-no-results');
+          
+          if (!searchInput) return;
+          
+          // Check for search query param on load
+          const urlParams = new URLSearchParams(window.location.search);
+          const searchQuery = urlParams.get('search');
+          if (searchQuery) {
+            searchInput.value = searchQuery;
+            performSearch(searchQuery);
+          }
+          
+          // Add search event listener
+          searchInput.addEventListener('input', (e) => {
+            const query = e.target.value.trim();
+            performSearch(query);
+            
+            // Update URL with search query
+            const url = new URL(window.location);
+            if (query) {
+              url.searchParams.set('search', query);
+            } else {
+              url.searchParams.delete('search');
+            }
+            window.history.replaceState({}, '', url);
+          });
+          
+          function performSearch(query) {
+            const rows = document.querySelectorAll('.top-model-row');
+            let visibleCount = 0;
+            
+            if (query === '') {
+              // Reset to default state
+              rows.forEach((row, index) => {
+                row.style.display = index < 5 ? 'table-row' : 'none';
+                if (index < 5) visibleCount++;
+              });
+              
+              // Show expand button again
+              if (expandButton) {
+                expandButton.style.display = 'block';
+                const expandBtn = expandButton.querySelector('.top-models-expand-btn');
+                const expandText = expandBtn.querySelector('.expand-text');
+                const expandIcon = expandBtn.querySelector('.expand-icon');
+                expandText.textContent = `Show All ${rows.length} Models`;
+                expandIcon.textContent = '▼';
+                expandBtn.classList.remove('expanded');
+              }
+              
+              noResultsDiv.style.display = 'none';
+            } else {
+              // Show all models when searching
+              const lowerQuery = query.toLowerCase();
+              
+              rows.forEach((row) => {
+                const modelName = row.getAttribute('data-model-name');
+                const providerName = row.getAttribute('data-provider-name');
+                const matches = modelName.includes(lowerQuery) || providerName.includes(lowerQuery);
+                
+                row.style.display = matches ? 'table-row' : 'none';
+                if (matches) visibleCount++;
+              });
+              
+              // Hide expand button when searching
+              if (expandButton) {
+                expandButton.style.display = 'none';
+              }
+              
+              // Show no results message if needed
+              noResultsDiv.style.display = visibleCount === 0 ? 'block' : 'none';
+            }
+          }
+        }
+
         // Initialize the page
         document.addEventListener("DOMContentLoaded", () => {
-          // Hide models beyond top 5 on initial load
-          const hiddenModels = document.querySelectorAll('.hidden-model');
-          hiddenModels.forEach(row => {
-            row.style.display = 'none';
-          });
+          // Initialize model search
+          initializeModelSearch();
+          
+          // Hide models beyond top 5 on initial load (unless there's a search query)
+          const urlParams = new URLSearchParams(window.location.search);
+          const hasSearchQuery = urlParams.get('search');
+          
+          if (!hasSearchQuery) {
+            const hiddenModels = document.querySelectorAll('.hidden-model');
+            hiddenModels.forEach(row => {
+              row.style.display = 'none';
+            });
+          }
 
           // Close samples modal when clicking the close button
           const closeSamplesButton = document.getElementById("close-samples-modal");
