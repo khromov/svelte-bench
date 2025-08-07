@@ -71,9 +71,24 @@ export class OpenAIProvider implements LLMProvider {
       // Extract reasoning effort from model name if present
       const { model: cleanModelId, reasoningEffort } = this.extractReasoningEffort(this.modelId);
       
-      console.log(
-        `🤖 Generating code with OpenAI using model: ${cleanModelId}${reasoningEffort ? ` (reasoning: ${reasoningEffort})` : ''} (temp: ${temperature ?? 'default'})...`
-      );
+      // Check if the model supports temperature
+      const supportsTemperature = !cleanModelId.startsWith("o4") && 
+                                  !cleanModelId.startsWith("o3") && 
+                                  !cleanModelId.startsWith("gpt-5");
+      
+      // Build the log message
+      let logMessage = `🤖 Generating code with OpenAI using model: ${cleanModelId}`;
+      if (reasoningEffort) {
+        logMessage += ` (reasoning: ${reasoningEffort})`;
+      }
+      if (supportsTemperature && temperature !== undefined) {
+        logMessage += ` (temp: ${temperature})`;
+      } else if (supportsTemperature) {
+        logMessage += ` (temp: default)`;
+      }
+      logMessage += `...`;
+      
+      console.log(logMessage);
 
       const systemPrompt = contextContent
         ? DEFAULT_SYSTEM_PROMPT_WITH_CONTEXT
@@ -107,9 +122,7 @@ export class OpenAIProvider implements LLMProvider {
       };
 
       // Only add temperature if it's defined and the model supports it
-      if (temperature !== undefined && 
-          !cleanModelId.startsWith("o4") && 
-          !cleanModelId.startsWith("o3")) {
+      if (temperature !== undefined && supportsTemperature) {
         requestOptions.temperature = temperature;
       }
 
