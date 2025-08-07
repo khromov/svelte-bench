@@ -16,7 +16,6 @@ export class OpenAIProvider implements LLMProvider {
     "gpt-4.1-mini-2025-04-14", //
     "gpt-4.1-nano-2025-04-14", //
     "o3-2025-04-16", //
-    "o1-pro-2025-03-19",
     // ---
     "o4-mini-2025-04-16",
     "o3-mini-2025-01-31",
@@ -80,37 +79,7 @@ export class OpenAIProvider implements LLMProvider {
         ? DEFAULT_SYSTEM_PROMPT_WITH_CONTEXT
         : DEFAULT_SYSTEM_PROMPT;
 
-      // Special handling for o1-pro model
-      if (cleanModelId.startsWith("o1-pro")) {
-        console.log("Using o1-pro model");
-
-        const combinedPrompt = contextContent
-          ? `${systemPrompt}\n\n${contextContent}\n\n${prompt}`
-          : `${systemPrompt}\n\n${prompt}`;
-
-        const requestOptions: any = {
-          model: cleanModelId,
-          messages: [
-            {
-              role: "user",
-              content: combinedPrompt,
-            },
-          ],
-        };
-
-        // Add reasoning effort if specified
-        if (reasoningEffort) {
-          requestOptions.reasoning_effort = reasoningEffort;
-        }
-
-        const completion = await this.client.chat.completions.create(requestOptions);
-
-        console.log("we received a response:", completion.choices[0]?.message.content);
-
-        return completion.choices[0]?.message.content || "";
-      }
-
-      // Standard chat completions for other models
+      // Standard chat completions
       const messages: ChatCompletionMessageParam[] = [
         {
           role: "system",
