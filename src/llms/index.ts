@@ -18,7 +18,7 @@ export interface LLMProvider {
   generateCode(
     prompt: string,
     temperature?: number,
-    contextContent?: string
+    contextContent?: string,
   ): Promise<string>;
 
   /**
@@ -51,7 +51,7 @@ export interface ProviderWithModel {
  */
 export async function getLLMProvider(
   providerName: string,
-  modelId?: string
+  modelId?: string,
 ): Promise<LLMProvider> {
   switch (providerName.toLowerCase()) {
     case "openai":
@@ -139,13 +139,13 @@ export async function getAllLLMProviders(): Promise<ProviderWithModel[]> {
     });
   }
 
-  // Z.AI provider
+  // Z.ai provider
   const zaiProvider = await getLLMProvider("zai");
   for (const modelId of zaiProvider.getModels()) {
     const provider = await getLLMProvider("zai", modelId);
     providers.push({
       provider,
-      name: "zai",
+      name: "Z.ai",
       modelId,
     });
   }
