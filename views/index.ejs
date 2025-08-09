@@ -7,10 +7,6 @@
   <%- include('styles') %>
 </head>
 <body>
-  <!-- Dark mode toggle button -->
-  <button class="dark-mode-toggle" onclick="toggleDarkMode()" title="Toggle dark mode">
-    <span id="dark-mode-icon">🌙</span>
-  </button>
 
   <h1>SvelteBench Visualization</h1>
   
@@ -102,47 +98,7 @@
           }
         }
 
-        // Dark mode functionality (for index page)
-        function initializeDarkMode() {
-          // Check for saved theme preference or default to system preference
-          const savedTheme = localStorage.getItem('theme');
-          const systemPreference = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-          const theme = savedTheme || systemPreference;
-          
-          // Apply theme
-          document.documentElement.setAttribute('data-theme', theme);
-          updateDarkModeIcon(theme);
-          
-          // Listen for system theme changes
-          window.matchMedia('(prefers-color-scheme: dark)').addListener((e) => {
-            if (!localStorage.getItem('theme')) {
-              const newTheme = e.matches ? 'dark' : 'light';
-              document.documentElement.setAttribute('data-theme', newTheme);
-              updateDarkModeIcon(newTheme);
-            }
-          });
-        }
-
-        function toggleDarkMode() {
-          const currentTheme = document.documentElement.getAttribute('data-theme');
-          const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-          
-          document.documentElement.setAttribute('data-theme', newTheme);
-          localStorage.setItem('theme', newTheme);
-          updateDarkModeIcon(newTheme);
-        }
-
-        function updateDarkModeIcon(theme) {
-          const icon = document.getElementById('dark-mode-icon');
-          if (icon) {
-            icon.textContent = theme === 'dark' ? '☀️' : '🌙';
-          }
-        }
-
-        // Initialize dark mode on page load
-        document.addEventListener("DOMContentLoaded", () => {
-          initializeDarkMode();
-        });
+        // No dark mode toggle - automatically uses device preference via CSS
       </script>
     <% } %>
   <% } else { %>
@@ -813,47 +769,10 @@
           }
         }
 
-        // Dark mode functionality
-        function initializeDarkMode() {
-          // Check for saved theme preference or default to system preference
-          const savedTheme = localStorage.getItem('theme');
-          const systemPreference = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-          const theme = savedTheme || systemPreference;
-          
-          // Apply theme
-          document.documentElement.setAttribute('data-theme', theme);
-          updateDarkModeIcon(theme);
-          
-          // Listen for system theme changes
-          window.matchMedia('(prefers-color-scheme: dark)').addListener((e) => {
-            if (!localStorage.getItem('theme')) {
-              const newTheme = e.matches ? 'dark' : 'light';
-              document.documentElement.setAttribute('data-theme', newTheme);
-              updateDarkModeIcon(newTheme);
-            }
-          });
-        }
-
-        function toggleDarkMode() {
-          const currentTheme = document.documentElement.getAttribute('data-theme');
-          const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-          
-          document.documentElement.setAttribute('data-theme', newTheme);
-          localStorage.setItem('theme', newTheme);
-          updateDarkModeIcon(newTheme);
-        }
-
-        function updateDarkModeIcon(theme) {
-          const icon = document.getElementById('dark-mode-icon');
-          if (icon) {
-            icon.textContent = theme === 'dark' ? '☀️' : '🌙';
-          }
-        }
+        // No dark mode toggle - automatically uses device preference via CSS
 
         // Initialize the page
         document.addEventListener("DOMContentLoaded", () => {
-          // Initialize dark mode
-          initializeDarkMode();
           // Initialize model search
           initializeModelSearch();
           
