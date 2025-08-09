@@ -1,7 +1,7 @@
 import path from "path";
 import fs from "fs/promises";
 import type { LLMProvider } from "../llms";
-import { cleanTmpDir, writeToTmpFile, readFile } from "./file";
+import { cleanTmpDir, writeToTmpFile, readFile, saveCheckpoint, loadCheckpoint, removeCheckpoint } from "./file";
 import { runTest } from "./test-runner";
 import type { TestResult } from "./test-runner";
 import { calculatePassAtK, type HumanEvalResult } from "./humaneval";
@@ -12,6 +12,16 @@ export interface TestDefinition {
   name: string;
   promptPath: string;
   testPath: string;
+}
+
+export interface CheckpointData {
+  modelId: string;
+  provider: string;
+  completedResults: HumanEvalResult[];
+  currentTestIndex: number;
+  contextContent?: string;
+  numSamples: number;
+  timestamp: string;
 }
 
 // We still need BenchmarkResult for the runSingleTest function
@@ -323,6 +333,7 @@ export async function runHumanEvalTest(
 
 /**
  * Run all tests with the given LLM provider using HumanEval methodology
+ * Supports automatic resuming from checkpoints
  * @param llmProvider The LLM provider to use
  * @param numSamples Number of samples to generate for each test (default: 10)
  * @param specificTests Optional array of test definitions to run (default: all tests)
@@ -336,9 +347,7 @@ export async function runAllTestsHumanEval(
 ): Promise<HumanEvalResult[]> {
   try {
     const providerName = llmProvider.name;
-
-    // Clean the provider-specific tmp directory once at the beginning
-    await cleanTmpDir(providerName);
+    const modelId = llmProvider.getModelIdentifier();
 
     // Load test definitions
     let tests: TestDefinition[];
@@ -352,12 +361,33 @@ export async function runAllTestsHumanEval(
       console.log(`📋 Found ${tests.length} tests to run for ${providerName}`);
     }
 
-    // Run each test in sequence
-    const results: HumanEvalResult[] = [];
+    // Check for existing checkpoint
+    const checkpoint = await loadCheckpoint(providerName, modelId);
+    let results: HumanEvalResult[] = [];
+    let startIndex = 0;
 
-    for (const test of tests) {
+    if (checkpoint) {
+      console.log(`🔄 Resuming from checkpoint at test ${checkpoint.currentTestIndex + 1}/${tests.length}`);
+      results = checkpoint.completedResults || [];
+      startIndex = checkpoint.currentTestIndex + 1;
+      
+      // Verify checkpoint context matches current run
+      if (checkpoint.contextContent !== contextContent || checkpoint.numSamples !== numSamples) {
+        console.warn(`⚠️ Checkpoint context/samples mismatch - starting fresh`);
+        results = [];
+        startIndex = 0;
+      }
+    } else {
+      // Clean the provider-specific tmp directory once at the beginning for new runs
+      await cleanTmpDir(providerName);
+    }
+
+    // Run remaining tests from checkpoint or start
+    for (let i = startIndex; i < tests.length; i++) {
+      const test = tests[i];
+      
       try {
-        console.log(`\n🧪 Running test: ${test.name} with ${providerName}`);
+        console.log(`\n🧪 Running test: ${test.name} with ${providerName} (${i + 1}/${tests.length})`);
         const result = await runHumanEvalTest(
           test,
           llmProvider,
@@ -375,6 +405,19 @@ export async function runAllTestsHumanEval(
         console.log(
           `   Samples: ${result.numSamples}, Correct: ${result.numCorrect}`
         );
+
+        // Save checkpoint after each test completion
+        const checkpointData: CheckpointData = {
+          modelId,
+          provider: providerName,
+          completedResults: results,
+          currentTestIndex: i,
+          contextContent,
+          numSamples,
+          timestamp: new Date().toISOString(),
+        };
+        await saveCheckpoint(providerName, modelId, checkpointData);
+
       } catch (error) {
         console.error(
           `Error running test ${test.name} with ${providerName}:`,
@@ -397,10 +440,25 @@ export async function runAllTestsHumanEval(
           samples: [],
         };
         results.push(failedResult);
+
+        // Save checkpoint even for failed tests to track progress
+        const checkpointData: CheckpointData = {
+          modelId,
+          provider: providerName,
+          completedResults: results,
+          currentTestIndex: i,
+          contextContent,
+          numSamples,
+          timestamp: new Date().toISOString(),
+        };
+        await saveCheckpoint(providerName, modelId, checkpointData);
         
         // Continue with other tests rather than failing completely
       }
     }
+
+    // Clean up checkpoint after successful completion
+    await removeCheckpoint(providerName, modelId);
 
     return results;
   } catch (error) {

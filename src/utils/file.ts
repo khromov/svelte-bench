@@ -238,3 +238,78 @@ export async function loadContextFile(filePath: string): Promise<string> {
     );
   }
 }
+
+/**
+ * Get the checkpoint file path for a specific provider and model
+ * @param provider The provider name
+ * @param modelId The model identifier
+ * @returns The checkpoint file path
+ */
+export function getCheckpointPath(provider: string, modelId: string): string {
+  const tmpDir = getTmpDir(provider);
+  const safeModelId = modelId.replace(/[^a-zA-Z0-9\-_]/g, '-');
+  return path.join(tmpDir, `checkpoint-${safeModelId}.json`);
+}
+
+/**
+ * Save checkpoint data to file
+ * @param provider The provider name
+ * @param modelId The model identifier  
+ * @param checkpointData The checkpoint data to save
+ */
+export async function saveCheckpoint(
+  provider: string,
+  modelId: string,
+  checkpointData: any
+): Promise<void> {
+  try {
+    await ensureTmpDir(provider);
+    const checkpointPath = getCheckpointPath(provider, modelId);
+    await fs.writeFile(checkpointPath, JSON.stringify(checkpointData, null, 2));
+    console.log(`💾 Saved checkpoint for ${provider}/${modelId}`);
+  } catch (error) {
+    console.error(`Error saving checkpoint for ${provider}/${modelId}:`, error);
+    // Don't throw - checkpoint saving should not fail the test run
+  }
+}
+
+/**
+ * Load checkpoint data from file
+ * @param provider The provider name
+ * @param modelId The model identifier
+ * @returns The checkpoint data or null if not found
+ */
+export async function loadCheckpoint(
+  provider: string,
+  modelId: string
+): Promise<any | null> {
+  try {
+    const checkpointPath = getCheckpointPath(provider, modelId);
+    await fs.access(checkpointPath);
+    const data = await fs.readFile(checkpointPath, "utf-8");
+    const checkpoint = JSON.parse(data);
+    console.log(`🔄 Loaded checkpoint for ${provider}/${modelId}`);
+    return checkpoint;
+  } catch (error) {
+    // File doesn't exist or can't be read - this is expected for new runs
+    return null;
+  }
+}
+
+/**
+ * Remove checkpoint file for a specific provider and model
+ * @param provider The provider name
+ * @param modelId The model identifier
+ */
+export async function removeCheckpoint(
+  provider: string,
+  modelId: string
+): Promise<void> {
+  try {
+    const checkpointPath = getCheckpointPath(provider, modelId);
+    await fs.unlink(checkpointPath);
+    console.log(`🗑️ Removed checkpoint for ${provider}/${modelId}`);
+  } catch (error) {
+    // File might not exist - this is fine
+  }
+}
