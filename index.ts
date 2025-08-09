@@ -240,6 +240,18 @@ async function runBenchmark() {
           // Add the results
           providerResults.push(...results);
 
+          // Save individual model results immediately to prevent loss if later models fail
+          if (results.length > 0) {
+            try {
+              const modelFilename = `${providerWithModel.name}-${providerWithModel.modelId}`;
+              await saveBenchmarkResults(results, contextFile, contextContent, modelFilename);
+              console.log(`💾 Saved individual results for ${providerWithModel.modelId}`);
+            } catch (saveError) {
+              console.error(`⚠️  Failed to save individual results for ${providerWithModel.modelId}:`, saveError);
+              // Don't fail the entire run, just log and continue
+            }
+          }
+
           // Clean provider-specific tmp directory after tests
           await cleanTmpDir(providerWithModel.name);
         } catch (error) {
@@ -262,8 +274,17 @@ async function runBenchmark() {
       allResults.push(...results);
     }
 
-    // Save benchmark results with context information if available
-    await saveBenchmarkResults(allResults, contextFile, contextContent);
+    // Save combined benchmark results with context information if available
+    // This provides a single file with all results for easy comparison
+    if (allResults.length > 0) {
+      try {
+        await saveBenchmarkResults(allResults, contextFile, contextContent);
+        console.log(`💾 Saved combined results for all models`);
+      } catch (saveError) {
+        console.error(`⚠️  Failed to save combined results:`, saveError);
+        // Don't fail the run, individual model results were already saved
+      }
+    }
 
     // Print summary
     console.log(`\n📊 ${isDebugMode ? "Debug" : "Benchmark"} Summary:`);

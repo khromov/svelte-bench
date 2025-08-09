@@ -380,6 +380,24 @@ export async function runAllTestsHumanEval(
           `Error running test ${test.name} with ${providerName}:`,
           error
         );
+        
+        // Add a failed result to maintain consistency in output
+        const failedResult: HumanEvalResult = {
+          testName: test.name,
+          provider: providerName,
+          modelId: llmProvider.getModelIdentifier(),
+          numSamples: 0,
+          numCorrect: 0,
+          pass1: 0,
+          pass10: 0,
+          context: {
+            used: !!contextContent,
+            content: contextContent,
+          },
+          samples: [],
+        };
+        results.push(failedResult);
+        
         // Continue with other tests rather than failing completely
       }
     }
@@ -411,16 +429,28 @@ export async function ensureBenchmarksDir(): Promise<void> {
 export async function saveBenchmarkResults(
   results: HumanEvalResult[],
   contextFile?: string,
-  contextContent?: string
+  contextContent?: string,
+  customFilenamePrefix?: string
 ): Promise<string> {
   try {
     // Ensure the benchmarks directory exists
     await ensureBenchmarksDir();
 
     const timestamp = new Date().toISOString().replace(/:/g, "-");
-    const filenamePrefix = contextFile
-      ? `benchmark-results-with-context-`
-      : `benchmark-results-`;
+    let filenamePrefix: string;
+    
+    if (customFilenamePrefix) {
+      // Clean the custom filename prefix to be filesystem-safe
+      const cleanPrefix = customFilenamePrefix.replace(/[^a-zA-Z0-9\-_]/g, '-');
+      filenamePrefix = contextFile
+        ? `benchmark-results-with-context-${cleanPrefix}-`
+        : `benchmark-results-${cleanPrefix}-`;
+    } else {
+      filenamePrefix = contextFile
+        ? `benchmark-results-with-context-`
+        : `benchmark-results-`;
+    }
+    
     const filename = `${filenamePrefix}${timestamp}.json`;
     const filePath = path.resolve(process.cwd(), "benchmarks", filename);
 
