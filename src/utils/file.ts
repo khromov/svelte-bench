@@ -7,13 +7,26 @@ const MAX_RETRIES = 3;
 const RETRY_DELAY = 500; // milliseconds
 
 /**
- * Get the directory for temporary files for a specific provider
+ * Get the directory for temporary sample files for a specific provider
  * @param provider The provider name (optional)
- * @returns The path to the temporary directory
+ * @returns The path to the temporary samples directory
  */
 export function getTmpDir(provider?: string): string {
   const baseDir = path.resolve(process.cwd(), "tmp");
-  return provider ? path.join(baseDir, provider.toLowerCase()) : baseDir;
+  if (provider) {
+    return path.join(baseDir, "samples", provider.toLowerCase());
+  }
+  return baseDir;
+}
+
+/**
+ * Get the directory for checkpoint files for a specific provider
+ * @param provider The provider name
+ * @returns The path to the checkpoint directory
+ */
+export function getCheckpointDir(provider: string): string {
+  const baseDir = path.resolve(process.cwd(), "tmp");
+  return path.join(baseDir, "checkpoint", provider.toLowerCase());
 }
 
 /**
@@ -34,13 +47,70 @@ export async function ensureTmpDir(provider?: string): Promise<void> {
 }
 
 /**
+ * Ensure the checkpoint directory exists for a specific provider
+ * @param provider The provider name
+ */
+export async function ensureCheckpointDir(provider: string): Promise<void> {
+  try {
+    const checkpointDir = getCheckpointDir(provider);
+    await fs.mkdir(checkpointDir, { recursive: true });
+  } catch (error) {
+    console.error(
+      `Error creating checkpoint directory for ${provider}:`,
+      error
+    );
+    throw error;
+  }
+}
+
+/**
  * Helper function to add delay between retries
  * @param ms milliseconds to delay
  */
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 /**
- * Clean the temporary directory for a specific provider with retry logic
+ * Clean the checkpoint directory for a specific provider with retry logic
+ * This is used when starting a new run to clear previous checkpoints
+ * @param provider The provider name
+ */
+export async function cleanCheckpointDir(provider: string): Promise<void> {
+  let retries = 0;
+  const checkpointDir = getCheckpointDir(provider);
+
+  while (retries < MAX_RETRIES) {
+    try {
+      // Use rimraf to recursively remove directory contents
+      await rimraf(checkpointDir);
+
+      // Re-create the empty directory
+      await ensureCheckpointDir(provider);
+
+      console.log(`✨ Cleaned checkpoint directory for ${provider}`);
+      return;
+    } catch (error) {
+      retries++;
+      console.warn(
+        `Warning: Failed to clean checkpoint directory for ${provider} (attempt ${retries}/${MAX_RETRIES}):`,
+        error
+      );
+
+      if (retries < MAX_RETRIES) {
+        // Wait a bit before retrying to allow any file locks to clear
+        await delay(RETRY_DELAY * retries);
+      } else {
+        console.error(
+          `Failed to clean checkpoint directory for ${provider} after ${MAX_RETRIES} attempts`
+        );
+        // Don't throw the error, just log it and continue
+      }
+    }
+  }
+}
+
+/**
+ * Clean the samples directory for a specific provider with retry logic
+ * This is used during test execution to clear old sample files
  * @param provider The provider name (optional)
  */
 export async function cleanTmpDir(provider?: string): Promise<void> {
@@ -56,12 +126,12 @@ export async function cleanTmpDir(provider?: string): Promise<void> {
       // Re-create the empty directory
       await ensureTmpDir(provider);
 
-      console.log(`✨ Cleaned tmp directory for ${provider || "base"}`);
+      console.log(`✨ Cleaned samples directory for ${provider || "base"}`);
       return;
     } catch (error) {
       retries++;
       console.warn(
-        `Warning: Failed to clean tmp directory for ${
+        `Warning: Failed to clean samples directory for ${
           provider || "base"
         } (attempt ${retries}/${MAX_RETRIES}):`,
         error
@@ -72,7 +142,7 @@ export async function cleanTmpDir(provider?: string): Promise<void> {
         await delay(RETRY_DELAY * retries);
       } else {
         console.error(
-          `Failed to clean tmp directory for ${
+          `Failed to clean samples directory for ${
             provider || "base"
           } after ${MAX_RETRIES} attempts`
         );
@@ -246,9 +316,9 @@ export async function loadContextFile(filePath: string): Promise<string> {
  * @returns The checkpoint file path
  */
 export function getCheckpointPath(provider: string, modelId: string): string {
-  const tmpDir = getTmpDir(provider);
+  const checkpointDir = getCheckpointDir(provider);
   const safeModelId = modelId.replace(/[^a-zA-Z0-9\-_]/g, '-');
-  return path.join(tmpDir, `checkpoint-${safeModelId}.json`);
+  return path.join(checkpointDir, `checkpoint-${safeModelId}.json`);
 }
 
 /**
@@ -263,7 +333,7 @@ export async function saveCheckpoint(
   checkpointData: any
 ): Promise<void> {
   try {
-    await ensureTmpDir(provider);
+    await ensureCheckpointDir(provider);
     const checkpointPath = getCheckpointPath(provider, modelId);
     await fs.writeFile(checkpointPath, JSON.stringify(checkpointData, null, 2));
     console.log(`💾 Saved checkpoint for ${provider}/${modelId}`);

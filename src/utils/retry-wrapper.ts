@@ -7,7 +7,7 @@ export interface RetryOptions {
 }
 
 const DEFAULT_OPTIONS: Required<RetryOptions> = {
-  maxAttempts: parseInt(process.env.RETRY_MAX_ATTEMPTS || "100", 10),
+  maxAttempts: parseInt(process.env.RETRY_MAX_ATTEMPTS || "5", 10),
   initialDelayMs: parseInt(process.env.RETRY_INITIAL_DELAY_MS || "1000", 10),
   maxDelayMs: parseInt(process.env.RETRY_MAX_DELAY_MS || "30000", 10),
   backoffFactor: parseFloat(process.env.RETRY_BACKOFF_FACTOR || "2"),

@@ -13,6 +13,8 @@ export async function ensureRequiredDirectories(): Promise<void> {
   // Base directories
   const baseDirectories = [
     path.resolve(process.cwd(), "tmp"),
+    path.resolve(process.cwd(), "tmp", "samples"),
+    path.resolve(process.cwd(), "tmp", "checkpoint"),
     path.resolve(process.cwd(), "benchmarks"),
   ];
 
@@ -32,14 +34,22 @@ export async function ensureRequiredDirectories(): Promise<void> {
     // Get unique provider names
     const providerNames = [...new Set(providerModels.map((pm) => pm.name))];
 
-    // Create a tmp directory for each provider
+    // Create sample and checkpoint directories for each provider
     for (const provider of providerNames) {
-      const providerDir = path.resolve(
+      const sampleDir = path.resolve(
         process.cwd(),
         "tmp",
+        "samples",
         provider.toLowerCase()
       );
-      await fs.mkdir(providerDir, { recursive: true });
+      const checkpointDir = path.resolve(
+        process.cwd(),
+        "tmp",
+        "checkpoint",
+        provider.toLowerCase()
+      );
+      await fs.mkdir(sampleDir, { recursive: true });
+      await fs.mkdir(checkpointDir, { recursive: true });
     }
   } catch (error) {
     console.error("Error creating provider-specific directories:", error);

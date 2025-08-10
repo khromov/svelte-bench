@@ -1,7 +1,7 @@
 import path from "path";
 import fs from "fs/promises";
 import type { LLMProvider } from "../llms";
-import { cleanTmpDir, writeToTmpFile, readFile, saveCheckpoint, loadCheckpoint, removeCheckpoint } from "./file";
+import { cleanTmpDir, cleanCheckpointDir, writeToTmpFile, readFile, saveCheckpoint, loadCheckpoint, removeCheckpoint } from "./file";
 import { runTest } from "./test-runner";
 import type { TestResult } from "./test-runner";
 import { calculatePassAtK, type HumanEvalResult } from "./humaneval";
@@ -19,6 +19,8 @@ export interface CheckpointData {
   provider: string;
   completedResults: HumanEvalResult[];
   currentTestIndex: number;
+  currentSampleIndex: number;
+  currentTestSamples: BenchmarkResult[];
   contextContent?: string;
   numSamples: number;
   timestamp: string;
@@ -139,6 +141,7 @@ export async function runSingleTest(
     const tmpDir = path.resolve(
       process.cwd(),
       "tmp",
+      "samples",
       providerName.toLowerCase()
     );
     await fs.access(path.join(tmpDir, componentFilename));
@@ -190,6 +193,7 @@ export async function runSingleTest(
 
 /**
  * HumanEval implementation: Generate multiple samples for a single test
+ * with sample-level checkpointing and resumption support
  *
  * This follows the HumanEval methodology by generating n samples with
  * appropriate temperature settings for each sample.
@@ -198,60 +202,95 @@ export async function runHumanEvalTest(
   test: TestDefinition,
   llmProvider: LLMProvider,
   numSamples: number = 10,
-  contextContent?: string
+  contextContent?: string,
+  providerName?: string,
+  modelId?: string,
+  testIndex?: number,
+  completedResults?: HumanEvalResult[],
+  existingSamples: BenchmarkResult[] = [],
+  startSampleIndex: number = 0
 ): Promise<HumanEvalResult> {
   try {
-    const providerName = llmProvider.name;
-    const samples: BenchmarkResult[] = [];
+    const actualProviderName = providerName || llmProvider.name;
+    const actualModelId = modelId || llmProvider.getModelIdentifier();
+    const samples: BenchmarkResult[] = [...existingSamples];
 
-    // Use temperature of 0 for pass@1 calculations
-    // and default temperature for the rest of the samples
-    // This ensures deterministic results for the first sample
-
-    // First sample with temperature 0 (for pass@1)
-    try {
-      // Clean the tmp directory before each test (not between samples)
-      await cleanTmpDir(providerName);
-
-      const firstSample = await runSingleTest(
-        test,
-        llmProvider,
-        0,
-        0,
-        contextContent
-      );
-      samples.push(firstSample);
-    } catch (error) {
-      console.error(
-        `Error running first sample for ${test.name} with ${providerName}:`,
-        error
-      );
-      // Continue with other samples rather than failing completely
-    }
-
-    // Remaining samples with default temperature (for pass@k where k>1)
-    for (let i = 1; i < numSamples; i++) {
+    // Run samples starting from startSampleIndex with checkpointing after each API call
+    for (let i = startSampleIndex; i < numSamples; i++) {
       try {
         // Clean the tmp directory before each sample
-        await cleanTmpDir(providerName);
+        await cleanTmpDir(actualProviderName);
 
-        // Run the test with the current sample index and default temperature
+        // Determine temperature: 0 for first sample, undefined for others
+        const temperature = i === 0 ? 0 : undefined;
+
+        console.log(`🔄 Running sample ${i + 1}/${numSamples} for ${test.name} with ${actualProviderName}...`);
+        
+        // Run the test with the current sample index and appropriate temperature
         const result = await runSingleTest(
           test,
           llmProvider,
           i,
-          undefined,
+          temperature,
           contextContent
         );
-        samples.push(result);
+        
+        // Only add to samples if the API call was successful (has generated code)
+        if (result.generatedCode.trim() !== "") {
+          samples.push(result);
+          console.log(`✅ Completed sample ${i + 1}/${numSamples} for ${test.name}`);
+        } else {
+          console.log(`⚠️ API failure for sample ${i + 1}/${numSamples} for ${test.name} - not adding to results`);
+        }
+
+        // Save checkpoint after each API call (successful or not)
+        if (testIndex !== undefined && completedResults !== undefined) {
+          const checkpointData: CheckpointData = {
+            modelId: actualModelId,
+            provider: actualProviderName,
+            completedResults,
+            currentTestIndex: testIndex,
+            currentSampleIndex: i,
+            currentTestSamples: samples,
+            contextContent,
+            numSamples,
+            timestamp: new Date().toISOString(),
+          };
+          await saveCheckpoint(actualProviderName, actualModelId, checkpointData);
+          console.log(`💾 Saved checkpoint after sample ${i + 1}/${numSamples}`);
+        }
+
       } catch (error) {
         console.error(
-          `Error running sample ${i + 1} for ${
-            test.name
-          } with ${providerName}:`,
+          `Error running sample ${i + 1} for ${test.name} with ${actualProviderName}:`,
           error
         );
-        // Continue with other samples rather than failing completely
+        
+        // Save checkpoint even for failed samples to track progress
+        if (testIndex !== undefined && completedResults !== undefined) {
+          const checkpointData: CheckpointData = {
+            modelId: actualModelId,
+            provider: actualProviderName,
+            completedResults,
+            currentTestIndex: testIndex,
+            currentSampleIndex: i,
+            currentTestSamples: samples,
+            contextContent,
+            numSamples,
+            timestamp: new Date().toISOString(),
+          };
+          await saveCheckpoint(actualProviderName, actualModelId, checkpointData);
+          console.log(`💾 Saved checkpoint after failed sample ${i + 1}/${numSamples}`);
+        }
+        
+        // If this was due to retry exhaustion, abort the entire run
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        if (errorMessage.includes('Failed after')) {
+          console.error(`❌ Aborting run after exhausting retries for ${test.name}`);
+          throw error;
+        }
+        
+        // Continue with other samples for other types of errors
       }
     }
 
@@ -264,8 +303,8 @@ export async function runHumanEvalTest(
     if (numValidSamples === 0) {
       return {
         testName: test.name,
-        provider: providerName,
-        modelId: llmProvider.getModelIdentifier(),
+        provider: actualProviderName,
+        modelId: actualModelId,
         numSamples: 0,
         numCorrect: 0,
         pass1: 0,
@@ -288,8 +327,8 @@ export async function runHumanEvalTest(
     // Format the results
     return {
       testName: test.name,
-      provider: providerName,
-      modelId: llmProvider.getModelIdentifier(),
+      provider: actualProviderName,
+      modelId: actualModelId,
       numSamples: numValidSamples,
       numCorrect,
       pass1,
@@ -316,8 +355,8 @@ export async function runHumanEvalTest(
     // Return a failed result
     return {
       testName: test.name,
-      provider: llmProvider.name,
-      modelId: llmProvider.getModelIdentifier(),
+      provider: providerName || llmProvider.name,
+      modelId: modelId || llmProvider.getModelIdentifier(),
       numSamples: 0,
       numCorrect: 0,
       pass1: 0,
@@ -364,54 +403,91 @@ export async function runAllTestsHumanEval(
     // Check for existing checkpoint
     const checkpoint = await loadCheckpoint(providerName, modelId);
     let results: HumanEvalResult[] = [];
-    let startIndex = 0;
+    let startTestIndex = 0;
+    let startSampleIndex = 0;
+    let currentTestSamples: BenchmarkResult[] = [];
 
     if (checkpoint) {
-      console.log(`🔄 Resuming from checkpoint at test ${checkpoint.currentTestIndex + 1}/${tests.length}`);
+      console.log(`🔄 Found checkpoint for ${providerName}/${modelId}`);
+      console.log(`🔄 Resuming from checkpoint at test ${checkpoint.currentTestIndex + 1}/${tests.length}, sample ${checkpoint.currentSampleIndex + 1}`);
       results = checkpoint.completedResults || [];
-      startIndex = checkpoint.currentTestIndex + 1;
+      startTestIndex = checkpoint.currentTestIndex;
+      startSampleIndex = checkpoint.currentSampleIndex + 1; // Resume from next sample
+      currentTestSamples = checkpoint.currentTestSamples || [];
+      
+      // If we finished all samples for the current test, move to next test
+      if (startSampleIndex >= numSamples) {
+        startTestIndex = checkpoint.currentTestIndex + 1;
+        startSampleIndex = 0;
+        currentTestSamples = [];
+      }
       
       // Verify checkpoint context matches current run
       if (checkpoint.contextContent !== contextContent || checkpoint.numSamples !== numSamples) {
         console.warn(`⚠️ Checkpoint context/samples mismatch - starting fresh`);
         results = [];
-        startIndex = 0;
+        startTestIndex = 0;
+        startSampleIndex = 0;
+        currentTestSamples = [];
+        // Clear checkpoints for fresh start
+        await cleanCheckpointDir(providerName);
       }
+      // No cleaning when resuming from valid checkpoint
     } else {
-      // Clean the provider-specific tmp directory once at the beginning for new runs
-      await cleanTmpDir(providerName);
+      // Clear checkpoints at the beginning for new runs (but leave samples intact)
+      await cleanCheckpointDir(providerName);
     }
 
     // Run remaining tests from checkpoint or start
-    for (let i = startIndex; i < tests.length; i++) {
+    for (let i = startTestIndex; i < tests.length; i++) {
       const test = tests[i];
       
       try {
         console.log(`\n🧪 Running test: ${test.name} with ${providerName} (${i + 1}/${tests.length})`);
+        
+        // Determine starting sample index (0 for new tests, checkpoint value for resumed tests)
+        const sampleStartIndex = (i === startTestIndex) ? startSampleIndex : 0;
+        const existingSamples = (i === startTestIndex) ? currentTestSamples : [];
+        
+        // Run the test with sample-level checkpointing
         const result = await runHumanEvalTest(
           test,
           llmProvider,
           numSamples,
-          contextContent
+          contextContent,
+          providerName,
+          modelId,
+          i,
+          results,
+          existingSamples,
+          sampleStartIndex
         );
-        results.push(result);
+        
+        // Only add result if it has valid samples (not just API failures)
+        if (result.numSamples > 0) {
+          results.push(result);
 
-        // Log the pass@k metrics
-        console.log(
-          `📊 ${test.name} (${providerName}) - pass@1: ${result.pass1.toFixed(
-            4
-          )}, pass@10: ${result.pass10.toFixed(4)}`
-        );
-        console.log(
-          `   Samples: ${result.numSamples}, Correct: ${result.numCorrect}`
-        );
+          // Log the pass@k metrics
+          console.log(
+            `📊 ${test.name} (${providerName}) - pass@1: ${result.pass1.toFixed(
+              4
+            )}, pass@10: ${result.pass10.toFixed(4)}`
+          );
+          console.log(
+            `   Samples: ${result.numSamples}, Correct: ${result.numCorrect}`
+          );
+        } else {
+          console.log(`⚠️ Skipping ${test.name} - no successful API calls, not adding to final results`);
+        }
 
-        // Save checkpoint after each test completion
+        // Save checkpoint after each test completion (reset sample tracking)
         const checkpointData: CheckpointData = {
           modelId,
           provider: providerName,
           completedResults: results,
           currentTestIndex: i,
+          currentSampleIndex: numSamples, // Mark all samples as completed
+          currentTestSamples: [],
           contextContent,
           numSamples,
           timestamp: new Date().toISOString(),
@@ -424,29 +500,37 @@ export async function runAllTestsHumanEval(
           error
         );
         
-        // Add a failed result to maintain consistency in output
-        const failedResult: HumanEvalResult = {
-          testName: test.name,
-          provider: providerName,
-          modelId: llmProvider.getModelIdentifier(),
-          numSamples: 0,
-          numCorrect: 0,
-          pass1: 0,
-          pass10: 0,
-          context: {
-            used: !!contextContent,
-            content: contextContent,
-          },
-          samples: [],
-        };
-        results.push(failedResult);
-
-        // Save checkpoint even for failed tests to track progress
+        // If this was due to retry exhaustion, abort the entire run
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        if (errorMessage.includes('Failed after')) {
+          console.error(`❌ Aborting entire run due to repeated API failures`);
+          
+          // Save final checkpoint before aborting
+          const checkpointData: CheckpointData = {
+            modelId,
+            provider: providerName,
+            completedResults: results,
+            currentTestIndex: i,
+            currentSampleIndex: 0,
+            currentTestSamples: [],
+            contextContent,
+            numSamples,
+            timestamp: new Date().toISOString(),
+          };
+          await saveCheckpoint(providerName, modelId, checkpointData);
+          
+          // Don't continue with other tests, abort
+          throw error;
+        }
+        
+        // Save checkpoint for non-fatal errors and continue
         const checkpointData: CheckpointData = {
           modelId,
           provider: providerName,
           completedResults: results,
           currentTestIndex: i,
+          currentSampleIndex: numSamples, // Mark test as completed (even if failed)
+          currentTestSamples: [],
           contextContent,
           numSamples,
           timestamp: new Date().toISOString(),
