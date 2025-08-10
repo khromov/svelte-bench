@@ -10,7 +10,7 @@ export class ZAIProvider implements LLMProvider {
   name = "zai";
   private readonly availableModels = [
     "glm-4.5", // x
-    "glm-4.5-air",  // x
+    "glm-4.5-air", // x
     "glm-4.5-x",
     "glm-4.5-airx",
     "glm-4.5-flash",
@@ -27,7 +27,7 @@ export class ZAIProvider implements LLMProvider {
   }
 
   /**
-   * Generate code from a prompt using Z.AI
+   * Generate code from a prompt using Z.ai
    * @param prompt The prompt to send to the LLM
    * @param temperature Optional temperature parameter for controlling randomness (default: 0.7)
    * @param contextContent Optional context content to include in prompts
@@ -36,11 +36,11 @@ export class ZAIProvider implements LLMProvider {
   async generateCode(
     prompt: string,
     temperature?: number,
-    contextContent?: string
+    contextContent?: string,
   ): Promise<string> {
     try {
       console.log(
-        `🤖 Generating code with Z.AI using model: ${this.modelId} (temp: ${temperature ?? 'default'})...`
+        `🤖 Generating code with Z.ai using model: ${this.modelId} (temp: ${temperature ?? "default"})...`,
       );
 
       const systemPrompt = contextContent
@@ -78,28 +78,33 @@ export class ZAIProvider implements LLMProvider {
         requestBody.temperature = temperature;
       }
 
-      const response = await fetch("https://open.bigmodel.cn/api/paas/v4/chat/completions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${this.apiKey}`,
+      const response = await fetch(
+        "https://open.bigmodel.cn/api/paas/v4/chat/completions",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${this.apiKey}`,
+          },
+          body: JSON.stringify(requestBody),
         },
-        body: JSON.stringify(requestBody),
-      });
+      );
 
       if (!response.ok) {
-        throw new Error(`Z.AI API request failed: ${response.status} ${response.statusText}`);
+        throw new Error(
+          `Z.ai API request failed: ${response.status} ${response.statusText}`,
+        );
       }
 
       const data = await response.json();
-      
+
       return data.choices?.[0]?.message?.content || "";
     } catch (error) {
-      console.error("Error generating code with Z.AI:", error);
+      console.error("Error generating code with Z.ai:", error);
       throw new Error(
         `Failed to generate code: ${
           error instanceof Error ? error.message : String(error)
-        }`
+        }`,
       );
     }
   }

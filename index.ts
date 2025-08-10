@@ -62,8 +62,7 @@ async function runBenchmark() {
     // Ensure required directories exist
     await ensureRequiredDirectories();
 
-    // Clean base tmp directory
-    await cleanTmpDir();
+    // Note: We don't clean sample directories at startup anymore - only checkpoints are cleared
 
     // Check if we're in debug mode
     const isDebugMode = process.env.DEBUG_MODE === "true";
@@ -218,8 +217,7 @@ async function runBenchmark() {
         try {
           console.log(`\n👉 Running model: ${providerWithModel.modelId}...`);
 
-          // Ensure provider-specific tmp directory exists and is clean
-          await cleanTmpDir(providerWithModel.name);
+          // Note: Sample directory cleaning is handled by test-manager.ts during test execution
 
           // Determine number of samples for this model
           // Use only 1 sample for expensive o1-pro models
@@ -240,8 +238,18 @@ async function runBenchmark() {
           // Add the results
           providerResults.push(...results);
 
-          // Clean provider-specific tmp directory after tests
-          await cleanTmpDir(providerWithModel.name);
+          // Save individual model results immediately to prevent loss if later models fail
+          if (results.length > 0) {
+            try {
+              await saveBenchmarkResults(results, contextFile, contextContent);
+              console.log(`💾 Saved individual results for ${providerWithModel.modelId}`);
+            } catch (saveError) {
+              console.error(`⚠️  Failed to save individual results for ${providerWithModel.modelId}:`, saveError);
+              // Don't fail the entire run, just log and continue
+            }
+          }
+
+          // Note: Sample directories are cleaned during test execution, not here
         } catch (error) {
           console.error(
             `Error running tests with ${providerWithModel.name} (${providerWithModel.modelId}):`,
@@ -262,8 +270,6 @@ async function runBenchmark() {
       allResults.push(...results);
     }
 
-    // Save benchmark results with context information if available
-    await saveBenchmarkResults(allResults, contextFile, contextContent);
 
     // Print summary
     console.log(`\n📊 ${isDebugMode ? "Debug" : "Benchmark"} Summary:`);
@@ -308,11 +314,7 @@ async function runBenchmark() {
       }`
     );
 
-    // Clean up all tmp directories - carefully
-    await cleanTmpDir();
-    for (const providerName of providerNames) {
-      await cleanTmpDir(providerName);
-    }
+    // Note: We no longer clean sample directories at the end - they're preserved for inspection
 
     // Exit with appropriate code
     const exitCode = totalSuccess > 0 ? 0 : 1;

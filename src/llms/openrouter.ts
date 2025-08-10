@@ -39,6 +39,8 @@ export class OpenRouterProvider implements LLMProvider {
     "openai/gpt-oss-120b",
     "openai/gpt-oss-20b",
     "anthropic/claude-opus-4.1",
+    "ai21/jamba-mini-1.7",
+    "ai21/jamba-large-1.7",
   ];
 
   constructor(modelId?: string) {
