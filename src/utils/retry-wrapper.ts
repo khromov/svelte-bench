@@ -38,13 +38,17 @@ export async function withRetry<T>(
 
       opts.onRetry(lastError, attempt);
 
-      const delayMs = Math.min(
+      const baseDelayMs = Math.min(
         opts.initialDelayMs * Math.pow(opts.backoffFactor, attempt - 1),
         opts.maxDelayMs
       );
 
-      console.log(`⏳ Waiting ${delayMs}ms before retry...`);
-      await new Promise((resolve) => setTimeout(resolve, delayMs));
+      // Add random jitter between 10-250ms to prevent thundering herd
+      const jitterMs = Math.floor(Math.random() * 241) + 10; // 10-250ms
+      const totalDelayMs = baseDelayMs + jitterMs;
+
+      console.log(`⏳ Waiting ${totalDelayMs}ms before retry...`);
+      await new Promise((resolve) => setTimeout(resolve, totalDelayMs));
     }
   }
 

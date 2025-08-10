@@ -58,9 +58,14 @@ describe("retry-wrapper", () => {
     
     expect(mockFn).toHaveBeenCalledTimes(3);
     
-    // Check delays are approximately correct (with some tolerance)
-    expect(delays[1]).toBeGreaterThanOrEqual(90); // ~100ms
-    expect(delays[2]).toBeGreaterThanOrEqual(180); // ~200ms
+    // Check delays are approximately correct (with jitter tolerance)
+    // Base delays: 100ms, 200ms + jitter (10-250ms each)
+    // delays[1] = time from start to 2nd attempt (after first delay)
+    // delays[2] = time from start to 3rd attempt (after first + second delays)
+    expect(delays[1]).toBeGreaterThanOrEqual(110); // ~100ms + min jitter
+    expect(delays[1]).toBeLessThanOrEqual(350);    // ~100ms + max jitter
+    expect(delays[2]).toBeGreaterThanOrEqual(320); // ~(100+200)ms + min jitter  
+    expect(delays[2]).toBeLessThanOrEqual(600);    // ~(100+200)ms + max jitter
   });
 
   it("should call onRetry callback", async () => {
@@ -80,5 +85,36 @@ describe("retry-wrapper", () => {
       expect.objectContaining({ message: "First failure" }),
       1
     );
+  });
+
+  it("should add jitter between 10-250ms to delay", async () => {
+    const delays: number[] = [];
+    const startTimes: number[] = [];
+    let attemptCount = 0;
+    
+    const mockFn = vi.fn().mockImplementation(() => {
+      if (attemptCount === 0) {
+        startTimes.push(Date.now());
+        attemptCount++;
+        throw new Error("Test error");
+      } else {
+        delays.push(Date.now() - startTimes[0]);
+        throw new Error("Test error");
+      }
+    });
+    
+    await withRetry(mockFn, {
+      maxAttempts: 2,
+      initialDelayMs: 100, // Base delay
+      backoffFactor: 1,    // No exponential backoff for easier testing
+      maxDelayMs: 1000,
+    }).catch(() => {}); // Ignore the error
+    
+    expect(mockFn).toHaveBeenCalledTimes(2);
+    
+    // The actual delay should be base (100ms) + jitter (10-250ms)
+    // So total should be between 110ms and 350ms
+    expect(delays[0]).toBeGreaterThanOrEqual(110);
+    expect(delays[0]).toBeLessThanOrEqual(350);
   });
 });
