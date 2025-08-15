@@ -9,16 +9,6 @@ export class AnthropicProvider implements LLMProvider {
   private client: Anthropic;
   private modelId: string;
   name = "Anthropic";
-  private readonly availableModels = [
-    "claude-opus-4-1-20250805",
-    "claude-opus-4-20250514",
-    "claude-sonnet-4-20250514",
-    "claude-3-7-sonnet-20250219",
-    // "claude-3-5-sonnet-20241022", // 3.5 v2
-    // "claude-3-5-sonnet-20240620", // 3.5
-    "claude-3-5-haiku-20241022",
-    //  "claude-3-opus-20240229", <- no point testing old models
-  ];
 
   constructor(modelId?: string) {
     const apiKey = process.env.ANTHROPIC_API_KEY;
@@ -26,7 +16,8 @@ export class AnthropicProvider implements LLMProvider {
       throw new Error("ANTHROPIC_API_KEY environment variable is required");
     }
     this.client = new Anthropic({ apiKey });
-    this.modelId = modelId || this.availableModels[0];
+    // Default to claude-3-5-sonnet if no model specified
+    this.modelId = modelId || "claude-3-5-sonnet-20241022";
   }
 
   /**
@@ -97,7 +88,8 @@ export class AnthropicProvider implements LLMProvider {
    * @returns Array of model identifiers
    */
   getModels(): string[] {
-    return [...this.availableModels];
+    // Return empty array since models are now dynamically validated
+    return [];
   }
 
   /**

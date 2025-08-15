@@ -1,7 +1,7 @@
 // Load environment variables from .env file
 import "dotenv/config";
 
-import { getAllLLMProviders } from "./src/llms";
+import { getAllLLMProviders, getLLMProvider } from "./src/llms";
 import { cleanTmpDir, loadContextFile } from "./src/utils/file";
 import {
   runAllTestsHumanEval,
@@ -10,6 +10,7 @@ import {
 } from "./src/utils/test-manager";
 import type { HumanEvalResult } from "./src/utils/humaneval";
 import { ensureRequiredDirectories } from "./src/utils/ensure-dirs";
+import { validateModels } from "./src/utils/model-validator";
 import path from "path";
 
 /**
@@ -67,20 +68,8 @@ async function runBenchmark() {
     // Check if we're in debug mode
     const isDebugMode = process.env.DEBUG_MODE === "true";
 
-    // Get all available LLM providers and models
-    console.log("👉 Discovering available LLM providers and models...");
-    const providerModels = await getAllLLMProviders();
-
-    if (providerModels.length === 0) {
-      throw new Error("No LLM provider/model combinations found");
-    }
-
-    console.log(
-      `👉 Found ${providerModels.length} provider/model combinations`
-    );
-
-    // Filter providers in debug mode
-    let selectedProviderModels = providerModels;
+    // Initialize provider models array
+    let selectedProviderModels: any[] = [];
 
     if (isDebugMode) {
       console.log("🐛 Running in DEBUG_MODE");
@@ -89,61 +78,44 @@ async function runBenchmark() {
       const debugProvider = process.env.DEBUG_PROVIDER;
       const debugModel = process.env.DEBUG_MODEL;
 
-      // Filter by provider if specified
-      if (debugProvider) {
-        const matchingProviders = providerModels.filter(
-          (pm) => pm.name.toLowerCase() === debugProvider.toLowerCase()
+      if (!debugProvider) {
+        throw new Error("DEBUG_PROVIDER must be specified in debug mode");
+      }
+
+      if (!debugModel) {
+        throw new Error(
+          `No model specified for provider "${debugProvider}". Use DEBUG_MODEL to specify models.`
         );
+      }
 
-        if (matchingProviders.length === 0) {
-          console.error(
-            `❌ Provider "${debugProvider}" not found. Available providers: ${[...new Set(providerModels.map(pm => pm.name))].join(', ')}`
-          );
-          process.exit(1);
-        } else {
-          selectedProviderModels = matchingProviders;
+      // Parse comma-separated list of models
+      const requestedModels = debugModel
+        .split(",")
+        .map((m) => m.trim())
+        .filter((m) => m.length > 0);
 
-          // Filter by model(s) if specified
-          if (debugModel) {
-            // Parse comma-separated list of models
-            const requestedModels = debugModel
-              .split(",")
-              .map((m) => m.trim())
-              .filter((m) => m.length > 0);
+      if (requestedModels.length === 0) {
+        throw new Error("DEBUG_MODEL must contain at least one model");
+      }
 
-            if (requestedModels.length > 0) {
-              const matchingModels = matchingProviders.filter((pm) =>
-                requestedModels.some(
-                  (requestedModel) =>
-                    pm.modelId.toLowerCase() === requestedModel.toLowerCase()
-                )
-              );
+      // Validate models
+      console.log(`👉 Validating models for provider ${debugProvider}...`);
+      const validModels = await validateModels(debugProvider, requestedModels);
 
-              if (matchingModels.length > 0) {
-                selectedProviderModels = matchingModels;
-                console.log(
-                  `👉 Selected models: ${matchingModels
-                    .map((m) => m.modelId)
-                    .join(", ")}`
-                );
-              } else {
-                console.warn(
-                  `⚠️ None of the requested models "${debugModel}" found for provider "${debugProvider}"`
-                );
-                throw new Error(
-                  `No matching models found for provider "${debugProvider}"`
-                );
-              }
-            }
-          } else {
-            throw new Error(
-              `No model specified for provider "${debugProvider}". Use DEBUG_MODEL to specify models.`
-            );
-          }
-        }
-      } else {
-        // No provider specified, use first provider/model
-        selectedProviderModels = [providerModels[0]];
+      if (validModels.length === 0) {
+        throw new Error(
+          `None of the requested models are valid for provider "${debugProvider}". Models tested: ${requestedModels.join(", ")}`
+        );
+      }
+
+      // Create provider instances for valid models
+      for (const modelId of validModels) {
+        const provider = await getLLMProvider(debugProvider, modelId);
+        selectedProviderModels.push({
+          provider,
+          name: debugProvider.charAt(0).toUpperCase() + debugProvider.slice(1),
+          modelId,
+        });
       }
 
       console.log(
@@ -153,6 +125,21 @@ async function runBenchmark() {
             : `${selectedProviderModels.length} models`
         })`
       );
+    } else {
+      // Non-debug mode: Get all available LLM providers and models
+      console.log("👉 Discovering available LLM providers and models...");
+      const providerModels = await getAllLLMProviders();
+
+      if (providerModels.length === 0) {
+        console.warn("⚠️ No pre-configured models found. Please use DEBUG_MODE with specific models.");
+        throw new Error("No LLM provider/model combinations found. Use DEBUG_MODE to specify models.");
+      }
+
+      console.log(
+        `👉 Found ${providerModels.length} provider/model combinations`
+      );
+
+      selectedProviderModels = providerModels;
     }
 
     const debugTest = process.env.DEBUG_TEST;

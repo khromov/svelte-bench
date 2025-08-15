@@ -9,16 +9,6 @@ export class GoogleGenAIProvider implements LLMProvider {
   private client: GoogleGenAI;
   private modelId: string;
   name = "Google";
-  private readonly availableModels = [
-    "gemini-2.5-pro-preview-06-05", // newest model
-    "gemma-3-27b-it",
-    "gemini-2.5-pro-preview-05-06",
-    "gemini-2.5-pro-preview-03-25",
-    "gemini-2.5-flash-preview-04-17",
-    "gemini-2.5-flash",
-    "gemini-2.5-flash-lite",
-    "gemini-2.5-pro",
-  ];
 
   constructor(modelId?: string) {
     const apiKey = process.env.GEMINI_API_KEY;
@@ -26,7 +16,8 @@ export class GoogleGenAIProvider implements LLMProvider {
       throw new Error("GEMINI_API_KEY environment variable is required");
     }
     this.client = new GoogleGenAI({ apiKey });
-    this.modelId = modelId || this.availableModels[0];
+    // Default to gemini-2.0-flash-exp if no model specified
+    this.modelId = modelId || "gemini-2.0-flash-exp";
   }
 
   /**
@@ -86,7 +77,8 @@ export class GoogleGenAIProvider implements LLMProvider {
    * @returns Array of model identifiers
    */
   getModels(): string[] {
-    return [...this.availableModels];
+    // Return empty array since models are now dynamically validated
+    return [];
   }
 
   /**

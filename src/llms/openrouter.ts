@@ -10,40 +10,6 @@ export class OpenRouterProvider implements LLMProvider {
   private client: OpenAI;
   private modelId: string;
   name = "OpenRouter";
-  private readonly availableModels = [
-    "mistralai/devstral-small", // x
-    "mistralai/mistral-medium-3", // x
-    "deepseek/deepseek-r1-0528", // x
-    "qwen/qwen3-30b-a3b", // x
-    "meta-llama/llama-4-maverick", // x
-    "meta-llama/llama-4-scout", // x
-    "x-ai/grok-3-mini-beta", // x
-    "x-ai/grok-3-beta",
-    "x-ai/grok-4",
-    "moonshotai/kimi-k2",
-    "moonshotai/kimi-dev-72b",
-    "qwen/qwen3-235b-a22b-07-25",
-    "google/gemma-3n-e4b-it",
-    "qwen/qwen3-coder",
-    "mistralai/devstral-medium",
-    "z-ai/glm-4-32b",
-    "qwen/qwen3-235b-a22b-thinking-2507",
-    "z-ai/glm-4.5",
-    "z-ai/glm-4.5-air",
-    "qwen/qwen3-30b-a3b-instruct-2507",
-    "openrouter/horizon-alpha",
-    "x-ai/grok-3",
-    "x-ai/grok-3-mini",
-    "mistralai/codestral-2508",
-    "openrouter/horizon-beta",
-    "openai/gpt-oss-120b",
-    "openai/gpt-oss-20b",
-    "anthropic/claude-opus-4.1",
-    "ai21/jamba-mini-1.7",
-    "ai21/jamba-large-1.7",
-    "baidu/ernie-4.5-21b-a3b",
-    "mistralai/mistral-medium-3.1",
-  ];
 
   constructor(modelId?: string) {
     const apiKey = process.env.OPENROUTER_API_KEY;
@@ -64,7 +30,8 @@ export class OpenRouterProvider implements LLMProvider {
       },
     });
 
-    this.modelId = modelId || this.availableModels[0];
+    // Default to a commonly available model if no model specified
+    this.modelId = modelId || "openai/gpt-4o";
   }
 
   /**
@@ -168,7 +135,8 @@ export class OpenRouterProvider implements LLMProvider {
    * @returns Array of model identifiers
    */
   getModels(): string[] {
-    return [...this.availableModels];
+    // Return empty array since models are now dynamically validated
+    return [];
   }
 
   /**
