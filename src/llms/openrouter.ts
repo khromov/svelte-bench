@@ -41,6 +41,8 @@ export class OpenRouterProvider implements LLMProvider {
     "anthropic/claude-opus-4.1",
     "ai21/jamba-mini-1.7",
     "ai21/jamba-large-1.7",
+    "baidu/ernie-4.5-21b-a3b",
+    "mistralai/mistral-medium-3.1",
   ];
 
   constructor(modelId?: string) {
