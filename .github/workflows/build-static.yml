@@ -11,21 +11,24 @@ permissions:
   id-token: write
 
 concurrency:
-  group: "pages"
-  cancel-in-progress: false
+  group: pages
+  cancel-in-progress: true
 
 jobs:
   build-and-deploy:
+    runs-on: ubuntu-latest
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          persist-credentials: false
 
-      - name: Setup pnpm (latest)
+      - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
           version: latest
@@ -33,22 +36,31 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "24"
-          cache: "pnpm"
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
 
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+      # Silence/enable required native builds (seen as "Ignored build scripts: esbuild")
+      - name: Approve pnpm builds
+        run: pnpm approve-builds esbuild
+
+      - name: Install deps
+        run: pnpm install --frozen-lockfile --prefer-offline
 
       - name: Build static files
+        env:
+          NODE_ENV: production
         run: pnpm run build
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
-      - name: Upload artifact
+      - name: Upload pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: benchmarks
+          name: github-pages
+          retention-days: 1
 
       - name: Deploy to GitHub Pages
         id: deployment
