@@ -19,8 +19,8 @@ SvelteBench is an LLM benchmark tool for Svelte 5 components based on the HumanE
 
 SvelteBench supports two execution modes:
 
-- **Sequential (default)**: Tests run one at a time with full checkpointing and resumption support. Provides detailed progress output and is more reliable for long-running benchmarks.
-- **Parallel**: Tests run simultaneously for faster execution. Uses optimized output formatting to reduce verbosity. Set `PARALLEL_EXECUTION=true` to enable.
+- **Sequential (default)**: Tests run one at a time, with samples generated sequentially. Full sample-level checkpointing and resumption support. Provides detailed progress output and is more reliable for long-running benchmarks.
+- **Parallel**: Tests run one at a time, but samples within each test are generated in parallel for faster execution. Full sample-level checkpointing and resumption support with optimized output formatting. Set `PARALLEL_EXECUTION=true` to enable.
 
 ## Common Commands
 
