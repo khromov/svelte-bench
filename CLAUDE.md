@@ -10,41 +10,58 @@ SvelteBench is an LLM benchmark tool for Svelte 5 components based on the HumanE
 - `index.ts` - Main benchmark orchestrator that manages the full test cycle
 - `src/llms/` - Provider abstraction layer supporting OpenAI, Anthropic, Google, and OpenRouter
 - `src/tests/` - Test definitions with `prompt.md` and `test.ts` pairs
-- `src/utils/test-manager.ts` - HumanEval test execution logic
+- `src/utils/test-manager.ts` - Sequential HumanEval test execution logic (default)
+- `src/utils/parallel-test-manager.ts` - Parallel HumanEval test execution logic (optional)
 - `src/utils/test-runner.ts` - Vitest integration for component testing
-- `tmp/` - Runtime directory for generated components (provider-specific subdirs)
+- `tmp/` - Runtime directory for generated components (unique subdirs per test/sample)
+
+## Execution Modes
+
+SvelteBench supports two execution modes:
+
+- **Sequential (default)**: Tests run one at a time with full checkpointing and resumption support. Provides detailed progress output and is more reliable for long-running benchmarks.
+- **Parallel**: Tests run simultaneously for faster execution. Uses optimized output formatting to reduce verbosity. Set `PARALLEL_EXECUTION=true` to enable.
 
 ## Common Commands
 
 ```bash
-# Run full benchmark
-npm start
+# Run full benchmark (sequential execution)
+pnpm start
+
+# Run with parallel execution (faster but more verbose)
+PARALLEL_EXECUTION=true pnpm start
 
 # Run only tests (without building visualization)
-npm run run-tests
+pnpm run run-tests
 
 # Run with context file (Svelte docs)
-npm run run-tests -- --context ./context/svelte.dev/llms-small.txt
+pnpm run run-tests -- --context ./context/svelte.dev/llms-small.txt
+
+# Run with both parallel execution and context
+PARALLEL_EXECUTION=true pnpm run run-tests -- --context ./context/svelte.dev/llms-small.txt
 
 # Run specific test with vitest
-npm test
+pnpm test
 
 # Build visualization from results
-npm run build
+pnpm run build
 
 # Verify benchmark results
-npm run verify
+pnpm run verify
 ```
 
-## Debug Mode
+## Environment Variables
 
-Set environment variables for faster development testing:
+Set environment variables to control execution behavior:
 
 ```bash
+# Debug mode for faster development testing
 DEBUG_MODE=true
-DEBUG_PROVIDER=anthropic
-DEBUG_MODEL=claude-3-7-sonnet-20250219
-DEBUG_TEST=counter
+DEBUG_PROVIDER=openrouter
+DEBUG_MODEL=openai/gpt-oss-20b:free
+
+# Enable parallel execution for faster benchmark runs
+PARALLEL_EXECUTION=true
 ```
 
 Multiple models can be specified: `DEBUG_MODEL=model1,model2,model3`
@@ -61,7 +78,7 @@ The benchmark generates components in `tmp/{provider}/` directories and runs tes
 
 Copy `.env.example` to `.env` and configure API keys for desired providers:
 - `OPENAI_API_KEY` - For GPT models
-- `ANTHROPIC_API_KEY` - For Claude models  
+- `ANTHROPIC_API_KEY` - For Claude models
 - `GEMINI_API_KEY` - For Gemini models
 - `OPENROUTER_API_KEY` - For OpenRouter access
 

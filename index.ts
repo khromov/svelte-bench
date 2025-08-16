@@ -4,9 +4,12 @@ import "dotenv/config";
 import { getAllLLMProviders, getLLMProvider } from "./src/llms";
 import { cleanTmpDir, loadContextFile } from "./src/utils/file";
 import {
-  runAllTestsHumanEval,
+  runAllTestsHumanEval as runAllTestsHumanEvalParallel,
   saveBenchmarkResults,
   loadTestDefinitions,
+} from "./src/utils/parallel-test-manager";
+import {
+  runAllTestsHumanEval as runAllTestsHumanEvalSequential,
 } from "./src/utils/test-manager";
 import type { HumanEvalResult } from "./src/utils/humaneval";
 import { ensureRequiredDirectories } from "./src/utils/ensure-dirs";
@@ -40,11 +43,15 @@ function parseCommandLineArgs(): {
  * Main function to run the benchmark
  */
 async function runBenchmark() {
-  console.log("🚀 Starting SvelteBench with HumanEval methodology...");
-
   try {
     // Parse command line arguments
     const { contextFile } = parseCommandLineArgs();
+    
+    // Check for parallel execution environment variable
+    const parallel = process.env.PARALLEL_EXECUTION === "true";
+    
+    const executionMode = parallel ? "PARALLEL EXECUTION" : "SEQUENTIAL EXECUTION";
+    console.log(`🚀 Starting SvelteBench with HumanEval methodology (${executionMode})...`);
 
     // Load context file if specified
     let contextContent = "";
@@ -178,33 +185,16 @@ async function runBenchmark() {
 
     const allResults: HumanEvalResult[] = [];
 
-    // Group provider models by provider name
-    const providerGroups: Record<string, typeof selectedProviderModels> = {};
-    for (const providerModel of selectedProviderModels) {
-      if (!providerGroups[providerModel.name]) {
-        providerGroups[providerModel.name] = [];
-      }
-      providerGroups[providerModel.name].push(providerModel);
-    }
+    if (parallel) {
+      // Run all provider/model combinations in parallel
+      console.log(
+        `\n👉 Running tests with ${selectedProviderModels.length} provider/model combinations in parallel...`
+      );
 
-    const providerNames = Object.keys(providerGroups);
-    console.log(
-      `\n👉 Running tests with ${providerNames.length} providers in parallel...`
-    );
-
-    // Create a promise for each PROVIDER (not model)
-    const providerPromises = providerNames.map(async (providerName) => {
-      const providerResults: HumanEvalResult[] = [];
-      const providerModels = providerGroups[providerName];
-
-      console.log(`\n👉 Starting tests with ${providerName}...`);
-
-      // Run each MODEL sequentially within this provider
-      for (const providerWithModel of providerModels) {
+      // Create a promise for each provider/model combination
+      const providerPromises = selectedProviderModels.map(async (providerWithModel) => {
         try {
-          console.log(`\n👉 Running model: ${providerWithModel.modelId}...`);
-
-          // Note: Sample directory cleaning is handled by test-manager.ts during test execution
+          console.log(`\n👉 Starting tests with ${providerWithModel.name} (${providerWithModel.modelId})...`);
 
           // Determine number of samples for this model
           // Use only 1 sample for expensive o1-pro models
@@ -214,16 +204,13 @@ async function runBenchmark() {
             console.log(`  ⚠️  Using ${modelNumSamples} sample${modelNumSamples > 1 ? 's' : ''} for expensive model`);
           }
 
-          // Run tests with this provider model using HumanEval methodology
-          const results = await runAllTestsHumanEval(
+          // Run tests with this provider model using parallel HumanEval methodology
+          const results = await runAllTestsHumanEvalParallel(
             providerWithModel.provider,
             modelNumSamples,
             testDefinitions, // Pass specific tests if in debug mode
             contextContent // Pass context content if available
           );
-
-          // Add the results
-          providerResults.push(...results);
 
           // Save individual model results immediately to prevent loss if later models fail
           if (results.length > 0) {
@@ -236,25 +223,71 @@ async function runBenchmark() {
             }
           }
 
-          // Note: Sample directories are cleaned during test execution, not here
+          return results;
         } catch (error) {
           console.error(
             `Error running tests with ${providerWithModel.name} (${providerWithModel.modelId}):`,
             error
           );
-          // Continue with the next model rather than breaking the whole process
+          // Return empty results rather than throwing
+          return [];
+        }
+      });
+
+      // Wait for all provider promises to complete
+      const resultsArrays = await Promise.all(providerPromises);
+
+      // Combine all results
+      for (const results of resultsArrays) {
+        allResults.push(...results);
+      }
+    } else {
+      // Run provider/model combinations sequentially
+      console.log(
+        `\n👉 Running tests with ${selectedProviderModels.length} provider/model combinations sequentially...`
+      );
+
+      for (const providerWithModel of selectedProviderModels) {
+        try {
+          console.log(`\n👉 Starting tests with ${providerWithModel.name} (${providerWithModel.modelId})...`);
+
+          // Determine number of samples for this model
+          // Use only 1 sample for expensive o1-pro models
+          const modelNumSamples = providerWithModel.modelId.startsWith("o1-pro") ? 1 : numSamples;
+          
+          if (modelNumSamples !== numSamples) {
+            console.log(`  ⚠️  Using ${modelNumSamples} sample${modelNumSamples > 1 ? 's' : ''} for expensive model`);
+          }
+
+          // Run tests with this provider model using sequential HumanEval methodology
+          const results = await runAllTestsHumanEvalSequential(
+            providerWithModel.provider,
+            modelNumSamples,
+            testDefinitions, // Pass specific tests if in debug mode
+            contextContent // Pass context content if available
+          );
+
+          // Add results to combined array
+          allResults.push(...results);
+
+          // Save individual model results immediately to prevent loss if later models fail
+          if (results.length > 0) {
+            try {
+              await saveBenchmarkResults(results, contextFile, contextContent);
+              console.log(`💾 Saved individual results for ${providerWithModel.modelId}`);
+            } catch (saveError) {
+              console.error(`⚠️  Failed to save individual results for ${providerWithModel.modelId}:`, saveError);
+              // Don't fail the entire run, just log and continue
+            }
+          }
+        } catch (error) {
+          console.error(
+            `Error running tests with ${providerWithModel.name} (${providerWithModel.modelId}):`,
+            error
+          );
+          // Continue with next provider instead of failing completely
         }
       }
-
-      return providerResults;
-    });
-
-    // Wait for all provider promises to complete
-    const resultsArrays = await Promise.all(providerPromises);
-
-    // Combine all results
-    for (const results of resultsArrays) {
-      allResults.push(...results);
     }
 
 
