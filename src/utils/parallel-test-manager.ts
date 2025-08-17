@@ -78,7 +78,7 @@ export async function loadTestDefinitions(): Promise<TestDefinition[]> {
  * Get a unique directory for a test/sample combination to avoid conflicts
  */
 function getUniqueTestDir(providerName: string, testName: string, sampleIndex: number): string {
-  const uniqueId = crypto.randomBytes(4).toString('hex');
+  const uniqueId = crypto.randomBytes(8).toString('hex');
   return path.resolve(
     process.cwd(),
     "tmp",
