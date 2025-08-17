@@ -161,7 +161,8 @@ async function runSingleTestSample(
     );
 
     // Add runes if not present
-    if (!generatedCode.includes("<svelte:options runes={true} />")) {
+    const runesRegex = /<svelte:options\b[^>]*\brunes\s*=\s*\{\s*true\s*\}[^>]*\/?>/i;
+    if (!runesRegex.test(generatedCode)) {
       generatedCode = "<svelte:options runes={true} />\n\n" + generatedCode;
     }
 
