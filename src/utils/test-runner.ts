@@ -16,11 +16,13 @@ export interface TestResult {
  * Run tests for a specific component
  * @param testName The name of the test
  * @param provider The provider name (optional)
+ * @param testDir Optional specific directory for test files (for parallel execution)
  * @returns Test results
  */
 export async function runTest(
   testName: string,
-  provider?: string
+  provider?: string,
+  testDir?: string
 ): Promise<TestResult> {
   // Create timeout error message
   const timeoutMessage = `Test timeout: ${testName} (${
@@ -51,7 +53,7 @@ export async function runTest(
       `🧪 Running tests for ${testName}${provider ? ` (${provider})` : ""}...`
     );
 
-    const tmpDir = getTmpDir(provider);
+    const tmpDir = testDir || getTmpDir(provider);
     const testFilePath = path.resolve(tmpDir, `${testName}.test.ts`);
 
     // Verify the test file exists before running the test
