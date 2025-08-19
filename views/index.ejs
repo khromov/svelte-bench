@@ -786,6 +786,13 @@
           const hash = window.location.hash;
           if (hash.startsWith('#model-')) {
             expandAll();
+            // Re-trigger navigation after sections expand
+            setTimeout(() => {
+              const element = document.querySelector(hash);
+              if (element) {
+                element.scrollIntoView();
+              }
+            }, 100);
           }
         }
 
