@@ -215,7 +215,9 @@
                   <span class="rank rank-<%= index + 1 %>"><%= index + 1 %></span>
                 </td>
                 <td>
-                  <span class="model-name"><%= model.model %></span>
+                  <a href="#model-<%= model.provider.replace(/\s+/g, '-').toLowerCase() %>-<%= model.model.replace(/\s+/g, '-').toLowerCase() %>" class="model-name-link">
+                    <span class="model-name"><%= model.model %></span>
+                  </a>
                   <span class="provider-name">(<%= model.provider %>)</span>
                 </td>
                 <td>
@@ -659,6 +661,7 @@
           // Prevent the click from bubbling up to parent elements
           event.stopPropagation();
         }
+
         
         // Expand all sections
         function expandAll() {
@@ -778,6 +781,14 @@
 
         // No dark mode toggle - automatically uses device preference via CSS
 
+        // Handle hash navigation by expanding all sections first
+        function handleHashNavigation() {
+          const hash = window.location.hash;
+          if (hash.startsWith('#model-')) {
+            expandAll();
+          }
+        }
+
         // Initialize the page
         document.addEventListener("DOMContentLoaded", () => {
           // Initialize model search
@@ -793,6 +804,12 @@
               row.style.display = 'none';
             });
           }
+
+          // Handle hash navigation on page load
+          handleHashNavigation();
+
+          // Listen for hash changes
+          window.addEventListener('hashchange', handleHashNavigation);
 
           // Close samples modal when clicking the close button
           const closeSamplesButton = document.getElementById("close-samples-modal");
