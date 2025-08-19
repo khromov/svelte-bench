@@ -788,12 +788,14 @@
             expandAll();
             // Re-trigger navigation after sections expand
             setTimeout(() => {
-              const element = document.querySelector(hash);
+              // Remove the # and use getElementById to avoid CSS selector issues with dots
+              const elementId = hash.substring(1);
+              const element = document.getElementById(elementId);
               if (element) {
                 console.log('Scrolling to', element);
                 element.scrollIntoView();
               }
-            }, 250);
+            }, 100);
           }
         }
 
