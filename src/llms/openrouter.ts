@@ -93,17 +93,53 @@ export class OpenRouterProvider implements LLMProvider {
         messages: messages,
       };
 
+      // Add provider routing preferences if configured
+      const openrouterProvider = process.env.OPENROUTER_PROVIDER;
+      if (openrouterProvider && openrouterProvider.toLowerCase() !== 'auto') {
+        requestOptions.provider = { only: [openrouterProvider] };
+      } else {
+        // Apply quantization filtering for precision requirements
+        requestOptions.provider = this.buildProviderConfig();
+      }
+
       // Only add temperature if it's defined
       if (temperature !== undefined) {
         requestOptions.temperature = temperature;
       }
 
-      const completion = await this.client.chat.completions.create(
-        requestOptions,
-        {
-          signal: abortController.signal, // Add abort signal
-        },
-      );
+      let completion;
+      try {
+        completion = await this.client.chat.completions.create(
+          requestOptions,
+          {
+            signal: abortController.signal, // Add abort signal
+          },
+        );
+      } catch (quantizationError) {
+        // If no providers match the quantization requirements, fall back to default
+        if (this.isQuantizationError(quantizationError)) {
+          console.warn(
+            "⚠️  WARNING: NO MODELS FOUND WITH REQUIRED PRECISION (bf16+). FALLING BACK TO DEFAULT MODEL WITHOUT QUANTIZATION FILTERING.",
+          );
+          
+          // Retry without quantization filtering
+          const fallbackOptions = { ...requestOptions };
+          if (openrouterProvider && openrouterProvider.toLowerCase() !== 'auto') {
+            fallbackOptions.provider = { only: [openrouterProvider] };
+          } else {
+            delete fallbackOptions.provider;
+          }
+          
+          completion = await this.client.chat.completions.create(
+            fallbackOptions,
+            {
+              signal: abortController.signal,
+            },
+          );
+        } else {
+          throw quantizationError;
+        }
+      }
 
       // Clear timeout on successful completion
       clearTimeout(timeoutId);
@@ -145,5 +181,39 @@ export class OpenRouterProvider implements LLMProvider {
    */
   getModelIdentifier(): string {
     return this.modelId;
+  }
+
+  /**
+   * Build provider configuration with quantization filtering
+   * @returns Provider configuration object
+   */
+  private buildProviderConfig(): any {
+    // Disallow low precision quantizations, allow unknown for flexibility
+    const disallowedQuantizations = ['fp4', 'fp6', 'fp8', 'int4', 'int8'];
+    
+    return {
+      disallow_quantizations: disallowedQuantizations,
+      // Allow unknown quantization to handle cases where precision is not specified
+      allow_fallbacks: true
+    };
+  }
+
+  /**
+   * Check if an error is related to quantization/provider filtering
+   * @param error The error to check
+   * @returns True if the error is related to quantization filtering
+   */
+  private isQuantizationError(error: any): boolean {
+    if (!(error instanceof Error)) return false;
+    
+    const errorMessage = error.message.toLowerCase();
+    return (
+      errorMessage.includes('no providers') ||
+      errorMessage.includes('quantization') ||
+      errorMessage.includes('provider') ||
+      errorMessage.includes('precision') ||
+      errorMessage.includes('not available') ||
+      errorMessage.includes('no models found')
+    );
   }
 }
