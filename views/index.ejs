@@ -90,6 +90,19 @@
       <% } %>
 
       <script>
+        // Toggle accordion function for shadcn-style accordions
+        function toggleAccordion(trigger) {
+          const content = trigger.nextElementSibling;
+          const isOpen = trigger.getAttribute('data-state') === 'open';
+
+          if (isOpen) {
+            trigger.setAttribute('data-state', 'closed');
+            content.setAttribute('data-state', 'closed');
+          } else {
+            trigger.setAttribute('data-state', 'open');
+            content.setAttribute('data-state', 'open');
+          }
+        }
 
         // No dark mode toggle - automatically uses device preference via CSS
       </script>
@@ -106,7 +119,7 @@
           </svg>
           GitHub
         </a>
-        <a href="index.html" class="btn btn-primary">View All Results →</a>
+        <a href="index.html" class="btn btn-primary">View Raw Results →</a>
       </div>
     <% } else { %>
       <!-- Server version with dropdown -->
@@ -381,7 +394,7 @@
         <span id="close-samples-modal" class="close">&times;</span>
         <h2 id="samples-modal-title"></h2>
         <div class="humaneval-metrics" id="samples-modal-metrics"></div>
-        <div class="samples-container" id="samples-container"></div>
+        <div class="accordion samples-container" id="samples-container"></div>
       </div>
     </div>
 
@@ -559,10 +572,11 @@
           // Add each sample
           result.samples.forEach((sample, idx) => {
             const sampleDiv = document.createElement("div");
-            sampleDiv.className = "sample-item";
+            sampleDiv.className = "accordion-item";
 
-            const header = document.createElement("div");
-            header.className = "sample-header";
+            const header = document.createElement("button");
+            header.className = "accordion-trigger";
+            header.setAttribute("data-state", "closed");
 
             // Temperature text - handle undefined temperature
             let tempText = '';
@@ -573,32 +587,29 @@
             }
 
             header.innerHTML = `
-              <h4>Sample ${sample.index + 1}${tempText}</h4>
-              <div class="sample-header-right">
+              <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <h4 style="margin: 0; font-size: 1rem; font-weight: 600;">Sample ${sample.index + 1}${tempText}</h4>
                 <span class="badge ${sample.success ? 'badge-success' : 'badge-error'}">
                   ${sample.success ? 'PASS' : 'FAIL'}
                 </span>
-                <span class="sample-expand-icon">▼</span>
               </div>
+              <svg class="chevron-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6,9 12,15 18,9"></polyline>
+              </svg>
             `;
 
-            // Add click event to toggle visibility
+            // Add click event to toggle visibility using the same function as main accordions
             header.addEventListener("click", function() {
-              const sampleItem = this.parentElement;
-              const content = this.nextElementSibling;
-
-              if (content.style.display === 'none' || content.style.display === '') {
-                content.style.display = 'block';
-                sampleItem.classList.add('expanded');
-              } else {
-                content.style.display = 'none';
-                sampleItem.classList.remove('expanded');
-              }
+              toggleAccordion(this);
             });
 
             const content = document.createElement("div");
-            content.className = "sample-content";
-            content.innerHTML = `<pre><code class="language-svelte">${escapeHtml(sample.code)}</code></pre>`;
+            content.className = "accordion-content";
+            content.setAttribute("data-state", "closed");
+
+            const contentInner = document.createElement("div");
+            contentInner.className = "accordion-content-inner";
+            contentInner.innerHTML = `<pre><code class="language-svelte">${escapeHtml(sample.code)}</code></pre>`;
 
             // Add errors if any
             if (sample.errors && sample.errors.length > 0) {
@@ -617,9 +628,10 @@
                     .join("")}
                 </div>
               `;
-              content.appendChild(errorsDiv);
+              contentInner.appendChild(errorsDiv);
             }
 
+            content.appendChild(contentInner);
             sampleDiv.appendChild(header);
             sampleDiv.appendChild(content);
             samplesContainer.appendChild(sampleDiv);
