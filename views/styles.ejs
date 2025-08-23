@@ -50,9 +50,55 @@
       --radius-xl: calc(var(--radius) + 8px);
     }
 
-    /* Dark mode variables */
+    /* Dark mode variables - manual override and system preference */
+    [data-theme="dark"] {
+      --background: hsl(222.2 84% 4.9%);
+      --foreground: hsl(210 40% 98%);
+      --card: hsl(222.2 84% 4.9%);
+      --card-foreground: hsl(210 40% 98%);
+      --popover: hsl(222.2 84% 4.9%);
+      --popover-foreground: hsl(210 40% 98%);
+      --primary: rgb(250, 103, 66);
+      --primary-foreground: hsl(222.2 84% 4.9%);
+      --secondary: hsl(217.2 32.6% 17.5%);
+      --secondary-foreground: hsl(210 40% 98%);
+      --muted: hsl(217.2 32.6% 17.5%);
+      --muted-foreground: hsl(215 20.2% 65.1%);
+      --accent: hsl(217.2 32.6% 17.5%);
+      --accent-foreground: hsl(210 40% 98%);
+      --destructive: hsl(0 62.8% 30.6%);
+      --destructive-foreground: hsl(210 40% 98%);
+      --border: hsl(217.2 32.6% 17.5%);
+      --input: hsl(217.2 32.6% 17.5%);
+      --ring: rgb(250, 103, 66);
+      --success: hsl(142.1 70.6% 45.3%);
+      --success-foreground: hsl(210 40% 98%);
+      --warning: hsl(38.3 92.1% 50.2%);
+      --warning-foreground: hsl(222.2 84% 4.9%);
+
+      /* Legacy mappings for compatibility */
+      --surface: var(--card);
+      --surface-secondary: var(--muted);
+      --surface-tertiary: var(--accent);
+      --border-light: var(--border);
+      --border-medium: var(--border);
+      --text-primary: var(--foreground);
+      --text-secondary: var(--muted-foreground);
+      --text-tertiary: var(--muted-foreground);
+      --accent-blue: var(--primary);
+      --accent-blue-hover: rgb(230, 83, 46);
+      --success-bg: hsl(142.1 70.6% 15%);
+      --warning-bg: hsl(38.3 92.1% 15%);
+      --error: var(--destructive);
+      --error-bg: hsl(0 62.8% 15%);
+      --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+      --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.4);
+      --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.4), 0 4px 6px -4px rgb(0 0 0 / 0.4);
+    }
+
+    /* System preference dark mode */
     @media (prefers-color-scheme: dark) {
-      :root {
+      :root[data-theme="system"], :root:not([data-theme]) {
         --background: hsl(222.2 84% 4.9%);
         --foreground: hsl(210 40% 98%);
         --card: hsl(222.2 84% 4.9%);
@@ -313,20 +359,38 @@
     }
 
     /* Dark mode pastel badges */
+    [data-theme="dark"] .badge-success {
+      background: hsl(142.1 70.6% 15%);
+      color: hsl(142.1 70.6% 70%);
+      border: 1px solid hsl(142.1 70.6% 25%);
+    }
+
+    [data-theme="dark"] .badge-warning {
+      background: hsl(38.3 92.1% 15%);
+      color: hsl(38.3 92.1% 70%);
+      border: 1px solid hsl(38.3 92.1% 25%);
+    }
+
+    [data-theme="dark"] .badge-error {
+      background: hsl(0 84.2% 15%);
+      color: hsl(0 84.2% 70%);
+      border: 1px solid hsl(0 84.2% 25%);
+    }
+
     @media (prefers-color-scheme: dark) {
-      .badge-success {
+      :root[data-theme="system"] .badge-success, :root:not([data-theme]) .badge-success {
         background: hsl(142.1 70.6% 15%);
         color: hsl(142.1 70.6% 70%);
         border: 1px solid hsl(142.1 70.6% 25%);
       }
 
-      .badge-warning {
+      :root[data-theme="system"] .badge-warning, :root:not([data-theme]) .badge-warning {
         background: hsl(38.3 92.1% 15%);
         color: hsl(38.3 92.1% 70%);
         border: 1px solid hsl(38.3 92.1% 25%);
       }
 
-      .badge-error {
+      :root[data-theme="system"] .badge-error, :root:not([data-theme]) .badge-error {
         background: hsl(0 84.2% 15%);
         color: hsl(0 84.2% 70%);
         border: 1px solid hsl(0 84.2% 25%);
@@ -2223,5 +2287,60 @@
         font-size: 1rem;
       }
     }
+
+    /* Theme toggle button - inline version */
+    .theme-toggle-inline {
+      position: relative;
+      min-width: 2.5rem;
+      padding: 1rem 1rem;
+      font-size: 0;
+    }
+
+    .theme-toggle-inline svg {
+      width: 1rem;
+      height: 1rem;
+      transition: all 0.3s ease;
+    }
+
+    /* Theme toggle icon animations */
+    .theme-toggle-inline .sun-icon,
+    .theme-toggle-inline .moon-icon,
+    .theme-toggle-inline .system-icon {
+      position: absolute;
+      transition: all 0.3s ease;
+      opacity: 0;
+      transform: rotate(180deg);
+    }
+
+    /* Default state: system */
+    .theme-toggle-inline .system-icon {
+      opacity: 1;
+      transform: rotate(0deg);
+    }
+
+    /* Light theme state */
+    [data-theme="light"] .theme-toggle-inline .system-icon,
+    [data-theme="light"] .theme-toggle-inline .moon-icon {
+      opacity: 0;
+      transform: rotate(180deg);
+    }
+
+    [data-theme="light"] .theme-toggle-inline .sun-icon {
+      opacity: 1;
+      transform: rotate(0deg);
+    }
+
+    /* Dark theme state */
+    [data-theme="dark"] .theme-toggle-inline .system-icon,
+    [data-theme="dark"] .theme-toggle-inline .sun-icon {
+      opacity: 0;
+      transform: rotate(180deg);
+    }
+
+    [data-theme="dark"] .theme-toggle-inline .moon-icon {
+      opacity: 1;
+      transform: rotate(0deg);
+    }
+
 
   </style>

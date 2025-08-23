@@ -4,6 +4,15 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SvelteBench Visualization</title>
+  
+  <!-- Prevent flash of wrong theme -->
+  <script>
+    (function() {
+      const savedTheme = localStorage.getItem('theme') || 'system';
+      document.documentElement.setAttribute('data-theme', savedTheme);
+    })();
+  </script>
+  
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -104,10 +113,11 @@
           }
         }
 
-        // No dark mode toggle - automatically uses device preference via CSS
-
         // Back to top functionality
         document.addEventListener('DOMContentLoaded', function() {
+          // Initialize theme toggle
+          initializeThemeToggle();
+          
           const backToTopBtn = document.getElementById('back-to-top');
           const topModelsSection = document.querySelector('.top-models-section');
           
@@ -164,6 +174,30 @@
           GitHub
         </a>
         <a href="index.html" class="btn btn-primary">View Raw Results →</a>
+        
+        <!-- Theme toggle button -->
+        <button id="theme-toggle" class="btn btn-outline theme-toggle-inline" title="Toggle theme (System)">
+          <svg class="system-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+            <path d="M8 4v16"></path>
+            <path d="M16 4v16"></path>
+            <circle cx="12" cy="12" r="2"></circle>
+          </svg>
+          <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+          </svg>
+          <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+        </button>
       </div>
     <% } else { %>
       <!-- Server version with dropdown -->
@@ -710,6 +744,75 @@
           });
         }
 
+        // Theme toggle functionality with three states: system, light, dark
+        function initializeThemeToggle() {
+          const themeToggle = document.getElementById('theme-toggle');
+          if (!themeToggle) return;
+
+          // Get saved theme (defaults to 'system' if nothing saved)
+          const savedTheme = localStorage.getItem('theme') || 'system';
+          
+          // Set initial theme without causing flash
+          setTheme(savedTheme);
+          
+          // Update button title based on current theme
+          function updateButtonTitle(theme) {
+            const titles = {
+              'system': 'Toggle theme (System)',
+              'light': 'Toggle theme (Light)',
+              'dark': 'Toggle theme (Dark)'
+            };
+            themeToggle.title = titles[theme] || titles['system'];
+          }
+
+          // Set theme and update button
+          function setTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            updateButtonTitle(theme);
+          }
+
+          // Three-state toggle: system -> light -> dark -> system
+          function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme') || 'system';
+            let nextTheme;
+            
+            switch(currentTheme) {
+              case 'system':
+                nextTheme = 'light';
+                break;
+              case 'light':
+                nextTheme = 'dark';
+                break;
+              case 'dark':
+                nextTheme = 'system';
+                break;
+              default:
+                nextTheme = 'system';
+            }
+            
+            setTheme(nextTheme);
+            localStorage.setItem('theme', nextTheme);
+          }
+
+          // Add click event listener
+          themeToggle.addEventListener('click', toggleTheme);
+
+          // Listen for system theme changes (only affects system mode)
+          window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+            // Only update if we're in system mode
+            if (document.documentElement.getAttribute('data-theme') === 'system') {
+              // Force a repaint by briefly removing and re-adding the attribute
+              document.documentElement.removeAttribute('data-theme');
+              requestAnimationFrame(() => {
+                document.documentElement.setAttribute('data-theme', 'system');
+              });
+            }
+          });
+
+          // Initial setup
+          updateButtonTitle(savedTheme);
+        }
+
         // Model search functionality
         function initializeModelSearch() {
           const searchInput = document.getElementById('model-search-input');
@@ -788,8 +891,6 @@
           }
         }
 
-        // No dark mode toggle - automatically uses device preference via CSS
-
         // Handle hash navigation by expanding all sections first
         function handleHashNavigation() {
           const hash = window.location.hash;
@@ -804,12 +905,15 @@
                 console.log('Scrolling to', element);
                 element.scrollIntoView();
               }
-            }, 100);
+            }, 300);
           }
         }
 
         // Initialize the page
         document.addEventListener("DOMContentLoaded", () => {
+          // Initialize theme toggle
+          initializeThemeToggle();
+          
           // Initialize model search
           initializeModelSearch();
 
@@ -889,6 +993,7 @@
         });
       </script>
   <% } %>
+
 
   <!-- Back to top button -->
   <button id="back-to-top" class="back-to-top" title="Back to top">
