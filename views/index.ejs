@@ -105,6 +105,50 @@
         }
 
         // No dark mode toggle - automatically uses device preference via CSS
+
+        // Back to top functionality
+        document.addEventListener('DOMContentLoaded', function() {
+          const backToTopBtn = document.getElementById('back-to-top');
+          const topModelsSection = document.querySelector('.top-models-section');
+          
+          if (backToTopBtn) {
+            // Show/hide button based on scroll position
+            function handleScroll() {
+              if (topModelsSection) {
+                const topModelsSectionRect = topModelsSection.getBoundingClientRect();
+                const isTopModelsSectionVisible = topModelsSectionRect.bottom > 0;
+                
+                if (!isTopModelsSectionVisible) {
+                  backToTopBtn.classList.add('visible');
+                } else {
+                  backToTopBtn.classList.remove('visible');
+                }
+              } else {
+                // Fallback: show after scrolling 400px if no top models section
+                if (window.scrollY > 400) {
+                  backToTopBtn.classList.add('visible');
+                } else {
+                  backToTopBtn.classList.remove('visible');
+                }
+              }
+            }
+
+            // Smooth scroll to top
+            function scrollToTop() {
+              window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+              });
+            }
+
+            // Event listeners
+            window.addEventListener('scroll', handleScroll);
+            backToTopBtn.addEventListener('click', scrollToTop);
+
+            // Initial check
+            handleScroll();
+          }
+        });
       </script>
     <% } %>
   <% } else { %>
@@ -807,8 +851,50 @@
 
           // Initialize all sections as expanded
           expandAll();
+
+          // Back to top functionality
+          const backToTopBtn = document.getElementById('back-to-top');
+          const topModelsSection = document.querySelector('.top-models-section');
+          
+          if (backToTopBtn) {
+            // Show/hide button based on scroll position
+            function handleScroll() {
+              if (topModelsSection) {
+                const topModelsSectionRect = topModelsSection.getBoundingClientRect();
+                const isTopModelsSectionVisible = topModelsSectionRect.bottom > 0;
+                
+                if (!isTopModelsSectionVisible) {
+                  backToTopBtn.classList.add('visible');
+                } else {
+                  backToTopBtn.classList.remove('visible');
+                }
+              }
+            }
+
+            // Smooth scroll to top
+            function scrollToTop() {
+              window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+              });
+            }
+
+            // Event listeners
+            window.addEventListener('scroll', handleScroll);
+            backToTopBtn.addEventListener('click', scrollToTop);
+
+            // Initial check
+            handleScroll();
+          }
         });
       </script>
   <% } %>
+
+  <!-- Back to top button -->
+  <button id="back-to-top" class="back-to-top" title="Back to top">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="18,15 12,9 6,15"></polyline>
+    </svg>
+  </button>
 </body>
 </html>
