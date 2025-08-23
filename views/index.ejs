@@ -4,12 +4,15 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SvelteBench Visualization</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet">
   <%- include('styles') %>
 </head>
 <body>
 
   <h1>SvelteBench Visualization</h1>
-  
+
   <% if (typeof isIndexPage !== 'undefined' && isIndexPage === true) { %>
     <!-- Index page showing list of all benchmark results -->
     <% if (benchmarkFiles.length === 0) { %>
@@ -18,56 +21,62 @@
         <p>Run the benchmark first using <code>npm start</code></p>
       </div>
     <% } else { %>
-      <% 
+      <%
         // Separate merged file from other files
         const mergedFile = benchmarkFiles.find(file => file.name.includes('merged'));
         const otherFiles = benchmarkFiles.filter(file => !file.name.includes('merged'));
       %>
-      
+
       <% if (mergedFile) { %>
         <!-- Featured merged results -->
-        <div class="featured-result">
-          <div class="featured-header">
-            <h2 class="featured-title">Latest Merged Results</h2>
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Latest Merged Results</h2>
+            <p class="card-description">
+              This file contains the most recent results from each model, automatically merged for easy comparison.
+            </p>
           </div>
-          <p class="featured-description">
-            This file contains the most recent results from each model, automatically merged for easy comparison.
-          </p>
-          <div class="featured-links">
-            <a href="<%= mergedFile.name.replace('.json', '.html') %>" class="featured-link">
-              📊 View Results
-            </a>
-            <a href="<%= mergedFile.name %>" download class="featured-link secondary">
-              📄 JSON
-            </a>
+          <div class="card-footer">
+            <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+              <a href="<%= mergedFile.name.replace('.json', '.html') %>" class="btn btn-primary">
+                View Results
+              </a>
+              <a href="<%= mergedFile.name %>" download class="btn btn-outline">
+                Download JSON
+              </a>
+            </div>
           </div>
         </div>
       <% } %>
 
       <% if (otherFiles.length > 0) { %>
         <!-- Other results section -->
-        <div class="other-results-section">
-          <div class="collapsible-header" onclick="toggleOtherResults()">
-            <h2>
-              Raw Results 
-              <span class="other-results-count">(<%= otherFiles.length %> files)</span>
-            </h2>
-            <span class="collapsible-icon">▶</span>
-          </div>
-          
-          <div class="collapsible-content" id="other-results-content">
-            <ul class="benchmark-list">
-              <% otherFiles.forEach(file => { %>
-                <li class="benchmark-item">
-                  <div class="benchmark-row">
-                    <a href="<%= file.name.replace('.json', '.html') %>" class="benchmark-link">
-                      <%= file.name.replace('.json', '') %>
-                    </a>
-                    <a href="<%= file.name %>" download class="json-link">JSON</a>
-                  </div>
-                </li>
-              <% }); %>
-            </ul>
+        <div class="accordion" style="margin-top: 2rem;">
+          <div class="accordion-item card">
+            <button class="accordion-trigger" onclick="toggleAccordion(this)" data-state="closed">
+              <h2 style="margin: 0; font-size: 1.25rem; font-weight: 600;">
+                Raw Results
+                <span class="badge badge-secondary" style="margin-left: 0.5rem;"><%= otherFiles.length %> files</span>
+              </h2>
+              <svg class="chevron-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6,9 12,15 18,9"></polyline>
+              </svg>
+            </button>
+
+            <div class="accordion-content" data-state="closed">
+              <div class="accordion-content-inner">
+                <div class="benchmark-list" style="display: flex; flex-direction: column; gap: 0.75rem;">
+                  <% otherFiles.forEach(file => { %>
+                    <div class="benchmark-item" style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; border: 1px solid var(--border); border-radius: var(--radius); background: var(--card);">
+                      <a href="<%= file.name.replace('.json', '.html') %>" class="benchmark-link" style="color: var(--foreground); text-decoration: none; font-weight: 500;">
+                        <%= file.name.replace('.json', '') %>
+                      </a>
+                      <a href="<%= file.name %>" download class="btn btn-outline btn-sm">Download</a>
+                    </div>
+                  <% }); %>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       <% } %>
@@ -81,38 +90,23 @@
       <% } %>
 
       <script>
-        // Toggle other results section visibility
-        function toggleOtherResults() {
-          const content = document.getElementById("other-results-content");
-          const header = document.querySelector(".collapsible-header");
-          const icon = document.querySelector(".collapsible-icon");
-          
-          if (content.classList.contains("expanded")) {
-            content.classList.remove("expanded");
-            header.classList.remove("expanded");
-            icon.textContent = "▶";
-          } else {
-            content.classList.add("expanded");
-            header.classList.add("expanded");
-            icon.textContent = "▼";
-          }
-        }
 
         // No dark mode toggle - automatically uses device preference via CSS
       </script>
     <% } %>
   <% } else { %>
     <!-- Regular benchmark result page -->
-    
+
     <% if (typeof isStaticBuild !== 'undefined' && isStaticBuild === true) { %>
       <!-- Static build version -->
-      <div class="navigation-links">
-        <a href="https://github.com/khromov/svelte-bench" target="_blank" class="github-repo-button">
+      <div class="navigation-links" style="display: flex; gap: 0.75rem; margin-bottom: 2rem;">
+        <a href="https://github.com/khromov/svelte-bench" target="_blank" class="btn btn-outline">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
             <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
           </svg>
+          GitHub
         </a>
-        <a href="index.html" class="back-link">View raw results →</a>
+        <a href="index.html" class="btn btn-primary">View All Results →</a>
       </div>
     <% } else { %>
       <!-- Server version with dropdown -->
@@ -127,38 +121,38 @@
         </select>
       </div>
     <% } %>
-    
+
     <!-- Display context information if available -->
     <% if (typeof contextInfo !== 'undefined' && contextInfo) { %>
       <div class="context-info">
         <div class="context-header">
           <h3>Context File: <%= contextInfo.filename %></h3>
-          <button class="toggle-context-btn" onclick="toggleContextContent()">Show Context</button>
+          <button class="btn btn-primary" onclick="toggleContextContent()">Show Context</button>
         </div>
         <div class="context-content" id="context-content">
           <%= contextInfo.content %>
         </div>
       </div>
     <% } %>
-    
+
     <%
     // Check if this is the merged results file and calculate top models
     let topModelsList = [];
     if (selectedFile && selectedFile.includes('merged') && groupedResults.length > 0) {
       const modelScores = new Map();
-      
+
       // Iterate through all providers and models
       groupedResults.forEach(providerData => {
         Object.entries(providerData.models).forEach(([modelName, results]) => {
           // Calculate average pass@1 for this model
           let totalPass1 = 0;
           let testCount = 0;
-          
+
           results.forEach(result => {
             totalPass1 += result.pass1;
             testCount++;
           });
-          
+
           if (testCount > 0) {
             const avgPass1 = totalPass1 / testCount;
             modelScores.set(`${providerData.provider}|${modelName}`, {
@@ -170,33 +164,37 @@
           }
         });
       });
-      
+
       // Sort models by average pass@1 in descending order
       topModelsList = Array.from(modelScores.values())
         .sort((a, b) => b.averagePass1 - a.averagePass1);
     }
     %>
-    
+
     <% if (topModelsList.length > 0) { %>
       <!-- Top models section for merged results -->
       <div class="top-models-section">
         <div class="top-models-header">
-          <h2 class="top-models-title">🏆 Top Models Leaderboard</h2>
+          <h2 class="top-models-title">Top Models Leaderboard</h2>
           <span class="top-models-badge">Average pass@1 scores</span>
         </div>
-        
+
         <!-- Search bar for models -->
         <div class="model-search-container">
-          <input 
-            type="text" 
-            id="model-search-input" 
-            class="model-search-input" 
-            placeholder="Search models..." 
+          <input
+            type="text"
+            id="model-search-input"
+            class="input"
+            placeholder="Search models..."
             autocomplete="off"
+            style="padding-left: 2.5rem;"
           />
-          <span class="search-icon">🔍</span>
+          <svg class="search-icon" style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: var(--muted-foreground);" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <path d="m21 21-4.35-4.35"></path>
+          </svg>
         </div>
-        
+
         <table class="top-models-table">
           <thead>
             <tr>
@@ -207,7 +205,7 @@
           </thead>
           <tbody id="top-models-tbody">
             <% topModelsList.forEach((model, index) => { %>
-              <tr class="top-model-row <%= index >= 5 ? 'hidden-model' : '' %>" 
+              <tr class="top-model-row <%= index >= 5 ? 'hidden-model' : '' %>"
                   data-rank="<%= index + 1 %>"
                   data-model-name="<%= model.model.toLowerCase() %>"
                   data-provider-name="<%= model.provider.toLowerCase() %>">
@@ -221,67 +219,76 @@
                   <span class="provider-name">(<%= model.provider %>)</span>
                 </td>
                 <td>
-                  <div class="score-bar-container">
-                    <div class="score-bar" style="width: <%= model.score %>%"></div>
-                    <span class="score-text <%= model.score < 65 ? 'score-text-dark' : '' %>"><%= model.score.toFixed(1) %>%</span>
+                  <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <span style="font-size: 0.875rem; font-weight: 600; color: var(--foreground); min-width: 3rem;"><%= model.score.toFixed(1) %>%</span>
+                    <div class="progress" style="flex: 1;">
+                      <div class="progress-indicator" style="transform: translateX(-<%= 100 - model.score %>%)"></div>
+                    </div>
                   </div>
                 </td>
               </tr>
             <% }); %>
           </tbody>
         </table>
-        
+
         <div class="search-no-results" id="search-no-results" style="display: none;">
           <p>No models found matching your search.</p>
         </div>
-        
+
         <% if (topModelsList.length > 5) { %>
-          <div class="top-models-expand-container" id="expand-button-container">
-            <button class="top-models-expand-btn" onclick="toggleTopModels()">
+          <div class="top-models-expand-container" id="expand-button-container" style="text-align: center; margin-top: 1rem;">
+            <button class="btn btn-secondary" onclick="toggleTopModels()">
               <span class="expand-text">Show All <%= topModelsList.length %> Models</span>
-              <span class="expand-icon">▼</span>
+              <span class="expand-icon" style="margin-left: 0.5rem;">↓</span>
             </button>
           </div>
         <% } %>
       </div>
     <% } %>
-    
+
     <!-- Notes and Errata sections -->
     <div class="notes-box">
       <p>
         <i><strong>Note:</strong> Certain OpenAI thinking models (o3, o4) and gpt-5 do not support temperature adjustments (only default value of 1 is supported). Models with "-reasoning-" suffix (e.g., gpt-5-2025-08-07-reasoning-medium) will use the specified reasoning effort setting.</i>
       </p>
-      
+
       <p>
         <i><strong>Errata:</strong> The "inspect" test has known correctness issues but is retained in the benchmark suite to maintain consistency and fairness in scoring across all evaluated models.</i>
       </p>
     </div>
-    
-    <div class="controls">
-      <button class="expand-all-btn" onclick="expandAll()">Expand All</button>
-      <button class="collapse-all-btn" onclick="collapseAll()">Collapse All</button>
+
+    <div class="controls" style="display: flex; gap: 0.5rem; padding: 1rem; background: var(--card); border-radius: var(--radius-md); border: 1px solid var(--border); margin-bottom: 1.5rem;">
+      <button class="btn btn-outline" onclick="expandAll()">Expand All</button>
+      <button class="btn btn-outline" onclick="collapseAll()">Collapse All</button>
     </div>
-    
+
     <% if (groupedResults.length > 0) { %>
-      <div class="grouped-results">
+      <div class="accordion grouped-results">
         <% groupedResults.forEach(providerData => { %>
-          <div class="provider-section" id="provider-<%= providerData.provider.replace(/\s+/g, '-').toLowerCase() %>">
-            <div class="provider-header" onclick="toggleProvider('<%= providerData.provider.replace(/\s+/g, '-').toLowerCase() %>')">
-              <h2><%= providerData.provider %></h2>
-              <span class="collapse-icon">▼</span>
-            </div>
-            
-            <div class="provider-content">
-              <% Object.entries(providerData.models).forEach(([model, results]) => { %>
-                <div class="model-section" id="model-<%= providerData.provider.replace(/\s+/g, '-').toLowerCase() %>-<%= model.replace(/\s+/g, '-').toLowerCase() %>">
-                  <div class="model-header" onclick="toggleModel('<%= providerData.provider.replace(/\s+/g, '-').toLowerCase() %>', '<%= model.replace(/\s+/g, '-').toLowerCase() %>')">
-                    <h3><%= model %></h3>
-                    <span class="collapse-icon">▼</span>
-                  </div>
-                  
-                  <div class="model-content">
-                    <div class="table-scroll-wrapper">
-                      <table class="results-table">
+          <div class="accordion-item card provider-section" id="provider-<%= providerData.provider.replace(/\s+/g, '-').toLowerCase() %>">
+            <button class="accordion-trigger" onclick="toggleAccordion(this)" data-state="open">
+              <h2 style="margin: 0; font-size: 1.5rem; font-weight: 600;"><%= providerData.provider %></h2>
+              <svg class="chevron-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6,9 12,15 18,9"></polyline>
+              </svg>
+            </button>
+
+            <div class="accordion-content" data-state="open">
+              <div class="accordion-content-inner">
+                <div class="accordion" style="margin-top: 0.5rem;">
+                  <% Object.entries(providerData.models).forEach(([model, results]) => { %>
+                    <div class="accordion-item" id="model-<%= providerData.provider.replace(/\s+/g, '-').toLowerCase() %>-<%= model.replace(/\s+/g, '-').toLowerCase() %>">
+                      <button class="accordion-trigger" onclick="toggleAccordion(this)" data-state="open">
+                        <h3 style="margin: 0; font-size: 1.125rem; font-weight: 600;"><%= model %></h3>
+                        <svg class="chevron-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <polyline points="6,9 12,15 18,9"></polyline>
+                        </svg>
+                      </button>
+
+                      <div class="accordion-content" data-state="open">
+                        <div class="accordion-content-inner">
+                          <div class="table-scroll-wrapper">
+                            <table class="results-table">
                       <tr>
                         <th>Test</th>
                         <th>Status</th>
@@ -291,25 +298,25 @@
                         <th>Errors</th>
                         <th>Actions</th>
                       </tr>
-                      
+
                       <!-- HumanEval Format -->
                       <% results.forEach((result, index) => { %>
                         <tr>
                           <td><%= result.testName %></td>
                           <td>
                             <% if (result.numCorrect === result.numSamples) { %>
-                              <span class="success">✅ PASS</span>
+                              <span class="badge badge-success">PASS</span>
                             <% } else if (result.numCorrect > 0) { %>
-                              <span class="partial">⚠️ PARTIAL</span>
+                              <span class="badge badge-warning">PARTIAL</span>
                             <% } else { %>
-                              <span class="failure">❌ FAIL</span>
+                              <span class="badge badge-error">FAIL</span>
                             <% } %>
                           </td>
                           <td><%= result.pass1.toFixed(4) %></td>
                           <td><%= result.pass10.toFixed(4) %></td>
                           <td><%= result.numCorrect %>/<%= result.numSamples %></td>
                           <td>
-                            <% 
+                            <%
                               const errorCount = result.samples.reduce((count, sample) => {
                                 return count + (sample.errors ? sample.errors.length : 0);
                               }, 0);
@@ -321,30 +328,33 @@
                             <% } %>
                           </td>
                           <td>
-                            <div class="button-group">
-                              <button class="view-samples-button" 
+                            <div class="button-group" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                              <button class="btn btn-primary btn-sm"
                                       onclick="showSamplesModal('<%= providerData.provider %>', '<%= model %>', <%= index %>)">
                                 View Samples
                               </button>
-                              <a href="https://github.com/khromov/svelte-bench/blob/main/src/tests/<%= result.testName %>/prompt.md" 
-                                 target="_blank" 
-                                 class="github-button">
+                              <a href="https://github.com/khromov/svelte-bench/blob/main/src/tests/<%= result.testName %>/prompt.md"
+                                 target="_blank"
+                                 class="btn btn-outline btn-sm">
                                 View Prompt
                               </a>
-                              <a href="https://github.com/khromov/svelte-bench/blob/main/src/tests/<%= result.testName %>/test.ts" 
-                                 target="_blank" 
-                                 class="github-button">
+                              <a href="https://github.com/khromov/svelte-bench/blob/main/src/tests/<%= result.testName %>/test.ts"
+                                 target="_blank"
+                                 class="btn btn-outline btn-sm">
                                 View Tests
                               </a>
                             </div>
                           </td>
                         </tr>
-                      <% }); %>
-                    </table>
+                            <% }); %>
+                          </table>
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                  </div>
+                  <% }); %>
                 </div>
-              <% }); %>
+              </div>
             </div>
           </div>
         <% }); %>
@@ -355,7 +365,7 @@
         <p>Run the benchmark first using <code>npm start</code></p>
       </div>
     <% } %>
-    
+
     <!-- Modal for code view -->
     <div id="code-modal" class="modal">
       <div class="modal-content">
@@ -389,6 +399,20 @@
             .replace(/'/g, "&#039;");
         }
 
+        // Toggle accordion function for shadcn-style accordions
+        function toggleAccordion(trigger) {
+          const content = trigger.nextElementSibling;
+          const isOpen = trigger.getAttribute('data-state') === 'open';
+
+          if (isOpen) {
+            trigger.setAttribute('data-state', 'closed');
+            content.setAttribute('data-state', 'closed');
+          } else {
+            trigger.setAttribute('data-state', 'open');
+            content.setAttribute('data-state', 'open');
+          }
+        }
+
         // Function to decode base64 data
         function decodeBase64Data() {
           const encodedData = document
@@ -411,17 +435,17 @@
         // Toggle top models visibility
         function toggleTopModels() {
           const hiddenRows = document.querySelectorAll('.hidden-model');
-          const expandBtn = document.querySelector('.top-models-expand-btn');
+          const expandBtn = document.querySelector('.btn[onclick="toggleTopModels()"]');
           const expandText = expandBtn.querySelector('.expand-text');
           const expandIcon = expandBtn.querySelector('.expand-icon');
-          
+
           if (hiddenRows.length > 0 && hiddenRows[0].style.display !== 'table-row') {
             // Show all models
             hiddenRows.forEach(row => {
               row.style.display = 'table-row';
             });
             expandText.textContent = 'Show Top 5 Models';
-            expandIcon.textContent = '▲';
+            expandIcon.textContent = '↑';
             expandBtn.classList.add('expanded');
           } else {
             // Hide models beyond top 5
@@ -429,7 +453,7 @@
               row.style.display = 'none';
             });
             expandText.textContent = `Show All ${document.querySelectorAll('.top-model-row').length} Models`;
-            expandIcon.textContent = '▼';
+            expandIcon.textContent = '↓';
             expandBtn.classList.remove('expanded');
           }
         }
@@ -438,7 +462,7 @@
         function toggleContextContent() {
           const contextContent = document.getElementById("context-content");
           const toggleBtn = document.querySelector(".toggle-context-btn");
-          
+
           if (contextContent.style.display === "block") {
             contextContent.style.display = "none";
             toggleBtn.textContent = "Show Context";
@@ -448,22 +472,6 @@
           }
         }
 
-        // Toggle other results section visibility
-        function toggleOtherResults() {
-          const content = document.getElementById("other-results-content");
-          const header = document.querySelector(".collapsible-header");
-          const icon = document.querySelector(".collapsible-icon");
-          
-          if (content.classList.contains("expanded")) {
-            content.classList.remove("expanded");
-            header.classList.remove("expanded");
-            icon.textContent = "▶";
-          } else {
-            content.classList.add("expanded");
-            header.classList.add("expanded");
-            icon.textContent = "▼";
-          }
-        }
 
         // Function to show samples modal for HumanEval results
         function showSamplesModal(provider, model, resultIndex) {
@@ -497,15 +505,15 @@
           // Set the title with status
           let statusText = "";
           if (result.numCorrect === result.numSamples) {
-            statusText = "✅ PASS";
+            statusText = "PASS";
           } else if (result.numCorrect > 0) {
-            statusText = "⚠️ PARTIAL";
+            statusText = "PARTIAL";
           } else {
-            statusText = "❌ FAIL";
+            statusText = "FAIL";
           }
-          
+
           modalTitle.textContent = `${result.testName} - ${provider} ${model} (${statusText})`;
-          
+
           // Add status class to the title
           if (result.numCorrect === result.numSamples) {
             modalTitle.className = "success";
@@ -517,22 +525,22 @@
 
           // Set the metrics with status indicator
           let statusClass = "";
-          let statusEmoji = "";
-          
+          let badgeClass = "";
+
           if (result.numCorrect === result.numSamples) {
             statusClass = "success";
-            statusEmoji = "✅";
+            badgeClass = "badge-success";
           } else if (result.numCorrect > 0) {
             statusClass = "partial";
-            statusEmoji = "⚠️";
+            badgeClass = "badge-warning";
           } else {
             statusClass = "failure";
-            statusEmoji = "❌";
+            badgeClass = "badge-error";
           }
-          
+
           modalMetrics.innerHTML = `
             <div class="metric ${statusClass}">
-              <span class="metric-label">Status:</span> ${statusEmoji} ${result.numCorrect === result.numSamples ? 'PASS' : (result.numCorrect > 0 ? 'PARTIAL' : 'FAIL')}
+              <span class="metric-label">Status:</span> <span class="badge ${badgeClass}">${result.numCorrect === result.numSamples ? 'PASS' : (result.numCorrect > 0 ? 'PARTIAL' : 'FAIL')}</span>
             </div>
             <div class="metric">
               <span class="metric-label">pass@1:</span> ${result.pass1.toFixed(4)}
@@ -552,10 +560,10 @@
           result.samples.forEach((sample, idx) => {
             const sampleDiv = document.createElement("div");
             sampleDiv.className = "sample-item";
-            
+
             const header = document.createElement("div");
             header.className = "sample-header";
-            
+
             // Temperature text - handle undefined temperature
             let tempText = '';
             if (sample.temperature !== undefined) {
@@ -563,22 +571,22 @@
             } else {
               tempText = ' (default temp)';
             }
-            
+
             header.innerHTML = `
               <h4>Sample ${sample.index + 1}${tempText}</h4>
               <div class="sample-header-right">
-                <span class="${sample.success ? 'success' : 'failure'}">
-                  ${sample.success ? '✅ PASS' : '❌ FAIL'}
+                <span class="badge ${sample.success ? 'badge-success' : 'badge-error'}">
+                  ${sample.success ? 'PASS' : 'FAIL'}
                 </span>
-                <span class="sample-expand-icon">▶</span>
+                <span class="sample-expand-icon">→</span>
               </div>
             `;
-            
+
             // Add click event to toggle visibility
             header.addEventListener("click", function() {
               const sampleItem = this.parentElement;
               const content = this.nextElementSibling;
-              
+
               if (content.style.display === 'none' || content.style.display === '') {
                 content.style.display = 'block';
                 sampleItem.classList.add('expanded');
@@ -587,11 +595,11 @@
                 sampleItem.classList.remove('expanded');
               }
             });
-            
+
             const content = document.createElement("div");
             content.className = "sample-content";
             content.innerHTML = `<pre><code class="language-svelte">${escapeHtml(sample.code)}</code></pre>`;
-            
+
             // Add errors if any
             if (sample.errors && sample.errors.length > 0) {
               const errorsDiv = document.createElement("div");
@@ -611,7 +619,7 @@
               `;
               content.appendChild(errorsDiv);
             }
-            
+
             sampleDiv.appendChild(header);
             sampleDiv.appendChild(content);
             samplesContainer.appendChild(sampleDiv);
@@ -621,83 +629,28 @@
           samplesModal.style.display = "block";
         }
 
-        // Toggle provider section visibility
-        function toggleProvider(providerId) {
-          const providerSection = document.getElementById(`provider-${providerId}`);
-          const providerContent = providerSection.querySelector('.provider-content');
-          const collapseIcon = providerSection.querySelector('.provider-header .collapse-icon');
-          
-          if (providerContent.style.display === 'none') {
-            // Expand
-            providerContent.style.display = 'block';
-            collapseIcon.textContent = '▼';
-            providerSection.classList.remove('collapsed');
-          } else {
-            // Collapse
-            providerContent.style.display = 'none';
-            collapseIcon.textContent = '►';
-            providerSection.classList.add('collapsed');
-          }
-        }
-        
-        // Toggle model section visibility
-        function toggleModel(providerId, modelId) {
-          const modelSection = document.getElementById(`model-${providerId}-${modelId}`);
-          const modelContent = modelSection.querySelector('.model-content');
-          const collapseIcon = modelSection.querySelector('.model-header .collapse-icon');
-          
-          if (modelContent.style.display === 'none') {
-            // Expand
-            modelContent.style.display = 'block';
-            collapseIcon.textContent = '▼';
-            modelSection.classList.remove('collapsed');
-          } else {
-            // Collapse
-            modelContent.style.display = 'none';
-            collapseIcon.textContent = '►';
-            modelSection.classList.add('collapsed');
-          }
-          
-          // Prevent the click from bubbling up to parent elements
-          event.stopPropagation();
-        }
 
-        
+
+
         // Expand all sections
         function expandAll() {
-          const providerSections = document.querySelectorAll('.provider-section');
-          providerSections.forEach(providerSection => {
-            const providerId = providerSection.id.replace('provider-', '');
-            const providerContent = providerSection.querySelector('.provider-content');
-            const providerCollapseIcon = providerSection.querySelector('.provider-header .collapse-icon');
-            
-            providerContent.style.display = 'block';
-            providerCollapseIcon.textContent = '▼';
-            providerSection.classList.remove('collapsed');
-            
-            const modelSections = providerSection.querySelectorAll('.model-section');
-            modelSections.forEach(modelSection => {
-              const modelContent = modelSection.querySelector('.model-content');
-              const modelCollapseIcon = modelSection.querySelector('.model-header .collapse-icon');
-              
-              modelContent.style.display = 'block';
-              modelCollapseIcon.textContent = '▼';
-              modelSection.classList.remove('collapsed');
-            });
+          // Expand all accordion items
+          const accordionTriggers = document.querySelectorAll('.accordion-trigger');
+          accordionTriggers.forEach(trigger => {
+            const content = trigger.nextElementSibling;
+            trigger.setAttribute('data-state', 'open');
+            content.setAttribute('data-state', 'open');
           });
         }
-        
+
         // Collapse all sections
         function collapseAll() {
-          const providerSections = document.querySelectorAll('.provider-section');
-          providerSections.forEach(providerSection => {
-            const providerId = providerSection.id.replace('provider-', '');
-            const providerContent = providerSection.querySelector('.provider-content');
-            const providerCollapseIcon = providerSection.querySelector('.provider-header .collapse-icon');
-            
-            providerContent.style.display = 'none';
-            providerCollapseIcon.textContent = '►';
-            providerSection.classList.add('collapsed');
+          // Collapse all accordion items
+          const accordionTriggers = document.querySelectorAll('.accordion-trigger');
+          accordionTriggers.forEach(trigger => {
+            const content = trigger.nextElementSibling;
+            trigger.setAttribute('data-state', 'closed');
+            content.setAttribute('data-state', 'closed');
           });
         }
 
@@ -706,9 +659,9 @@
           const searchInput = document.getElementById('model-search-input');
           const expandButton = document.getElementById('expand-button-container');
           const noResultsDiv = document.getElementById('search-no-results');
-          
+
           if (!searchInput) return;
-          
+
           // Check for search query param on load
           const urlParams = new URLSearchParams(window.location.search);
           const searchQuery = urlParams.get('search');
@@ -716,12 +669,12 @@
             searchInput.value = searchQuery;
             performSearch(searchQuery);
           }
-          
+
           // Add search event listener
           searchInput.addEventListener('input', (e) => {
             const query = e.target.value.trim();
             performSearch(query);
-            
+
             // Update URL with search query
             const url = new URL(window.location);
             if (query) {
@@ -731,48 +684,48 @@
             }
             window.history.replaceState({}, '', url);
           });
-          
+
           function performSearch(query) {
             const rows = document.querySelectorAll('.top-model-row');
             let visibleCount = 0;
-            
+
             if (query === '') {
               // Reset to default state
               rows.forEach((row, index) => {
                 row.style.display = index < 5 ? 'table-row' : 'none';
                 if (index < 5) visibleCount++;
               });
-              
+
               // Show expand button again
               if (expandButton) {
                 expandButton.style.display = 'block';
-                const expandBtn = expandButton.querySelector('.top-models-expand-btn');
+                const expandBtn = expandButton.querySelector('.btn[onclick="toggleTopModels()"]');
                 const expandText = expandBtn.querySelector('.expand-text');
                 const expandIcon = expandBtn.querySelector('.expand-icon');
                 expandText.textContent = `Show All ${rows.length} Models`;
-                expandIcon.textContent = '▼';
+                expandIcon.textContent = '↓';
                 expandBtn.classList.remove('expanded');
               }
-              
+
               noResultsDiv.style.display = 'none';
             } else {
               // Show all models when searching
               const lowerQuery = query.toLowerCase();
-              
+
               rows.forEach((row) => {
                 const modelName = row.getAttribute('data-model-name');
                 const providerName = row.getAttribute('data-provider-name');
                 const matches = modelName.includes(lowerQuery) || providerName.includes(lowerQuery);
-                
+
                 row.style.display = matches ? 'table-row' : 'none';
                 if (matches) visibleCount++;
               });
-              
+
               // Hide expand button when searching
               if (expandButton) {
                 expandButton.style.display = 'none';
               }
-              
+
               // Show no results message if needed
               noResultsDiv.style.display = visibleCount === 0 ? 'block' : 'none';
             }
@@ -803,11 +756,11 @@
         document.addEventListener("DOMContentLoaded", () => {
           // Initialize model search
           initializeModelSearch();
-          
+
           // Hide models beyond top 5 on initial load (unless there's a search query)
           const urlParams = new URLSearchParams(window.location.search);
           const hasSearchQuery = urlParams.get('search');
-          
+
           if (!hasSearchQuery) {
             const hiddenModels = document.querySelectorAll('.hidden-model');
             hiddenModels.forEach(row => {
@@ -839,7 +792,7 @@
               }
             });
           }
-          
+
           // Initialize all sections as expanded
           expandAll();
         });
