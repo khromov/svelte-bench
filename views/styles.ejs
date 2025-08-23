@@ -7,7 +7,7 @@
       --card-foreground: hsl(222.2 84% 4.9%);
       --popover: hsl(0 0% 100%);
       --popover-foreground: hsl(222.2 84% 4.9%);
-      --primary: hsl(221.2 83.2% 53.3%);
+      --primary: rgb(250, 103, 66);
       --primary-foreground: hsl(210 40% 98%);
       --secondary: hsl(210 40% 96%);
       --secondary-foreground: hsl(222.2 84% 4.9%);
@@ -19,7 +19,7 @@
       --destructive-foreground: hsl(210 40% 98%);
       --border: hsl(214.3 31.8% 91.4%);
       --input: hsl(214.3 31.8% 91.4%);
-      --ring: hsl(221.2 83.2% 53.3%);
+      --ring: rgb(250, 103, 66);
       --success: hsl(142.1 76.2% 36.3%);
       --success-foreground: hsl(210 40% 98%);
       --warning: hsl(38.3 92.1% 50.2%);
@@ -36,7 +36,7 @@
       --text-secondary: var(--muted-foreground);
       --text-tertiary: var(--muted-foreground);
       --accent-blue: var(--primary);
-      --accent-blue-hover: hsl(221.2 83.2% 48.3%);
+      --accent-blue-hover: rgb(230, 83, 46);
       --success-bg: hsl(142.1 76.2% 95%);
       --warning-bg: hsl(38.3 92.1% 95%);
       --error: var(--destructive);
@@ -59,7 +59,7 @@
         --card-foreground: hsl(210 40% 98%);
         --popover: hsl(222.2 84% 4.9%);
         --popover-foreground: hsl(210 40% 98%);
-        --primary: hsl(217.2 91.2% 59.8%);
+        --primary: rgb(250, 103, 66);
         --primary-foreground: hsl(222.2 84% 4.9%);
         --secondary: hsl(217.2 32.6% 17.5%);
         --secondary-foreground: hsl(210 40% 98%);
@@ -71,7 +71,7 @@
         --destructive-foreground: hsl(210 40% 98%);
         --border: hsl(217.2 32.6% 17.5%);
         --input: hsl(217.2 32.6% 17.5%);
-        --ring: hsl(217.2 91.2% 59.8%);
+        --ring: rgb(250, 103, 66);
         --success: hsl(142.1 70.6% 45.3%);
         --success-foreground: hsl(210 40% 98%);
         --warning: hsl(38.3 92.1% 50.2%);
@@ -87,7 +87,7 @@
         --text-secondary: var(--muted-foreground);
         --text-tertiary: var(--muted-foreground);
         --accent-blue: var(--primary);
-        --accent-blue-hover: hsl(217.2 91.2% 54.8%);
+        --accent-blue-hover: rgb(230, 83, 46);
         --success-bg: hsl(142.1 70.6% 15%);
         --warning-bg: hsl(38.3 92.1% 15%);
         --error: var(--destructive);
@@ -154,12 +154,14 @@
     
     /* Button variants */
     .btn-primary {
-      background: var(--primary);
-      color: var(--primary-foreground);
+      background: var(--background);
+      color: var(--primary);
+      border: 1px solid var(--primary);
     }
     
     .btn-primary:hover {
-      background: var(--accent-blue-hover);
+      background: var(--primary);
+      color: var(--primary-foreground);
     }
     
     .btn-secondary {
@@ -462,6 +464,7 @@
     
     .accordion-content-inner {
       padding: 0 1rem;
+      margin-top: 0.75rem;
     }
     
     /* Utility classes for shadcn-style components */
@@ -802,9 +805,9 @@
     }
     
     .view-code-button, .view-samples-button {
-      background: var(--accent-blue);
-      color: white;
-      border: none;
+      background: var(--background);
+      color: var(--primary);
+      border: 1px solid var(--primary);
       padding: 6px 10px;
       border-radius: var(--radius-sm);
       cursor: pointer;
@@ -820,7 +823,8 @@
     }
     
     .view-code-button:hover, .view-samples-button:hover {
-      background: var(--accent-blue-hover);
+      background: var(--primary);
+      color: var(--primary-foreground);
       transform: translateY(-1px);
       box-shadow: var(--shadow-md);
     }
@@ -1185,7 +1189,7 @@
     }
     
     .sample-item.expanded .sample-expand-icon {
-      transform: rotate(90deg);
+      transform: rotate(180deg);
       color: var(--text-primary);
     }
     
@@ -1273,9 +1277,9 @@
     }
 
     .toggle-context-btn {
-      background: var(--accent-blue);
-      color: white;
-      border: none;
+      background: var(--background);
+      color: var(--primary);
+      border: 1px solid var(--primary);
       padding: 10px 16px;
       border-radius: var(--radius-sm);
       cursor: pointer;
@@ -1286,7 +1290,8 @@
     }
 
     .toggle-context-btn:hover {
-      background: var(--accent-blue-hover);
+      background: var(--primary);
+      color: var(--primary-foreground);
       transform: translateY(-1px);
       box-shadow: var(--shadow-md);
     }
@@ -1373,8 +1378,9 @@
       align-items: center;
       gap: 10px;
       padding: 16px 24px;
-      background: var(--accent-blue);
-      color: white;
+      background: var(--background);
+      color: var(--primary);
+      border: 1px solid var(--primary);
       text-decoration: none;
       border-radius: var(--radius-md);
       font-weight: 600;
@@ -1384,7 +1390,8 @@
     }
 
     .featured-link:hover {
-      background: var(--accent-blue-hover);
+      background: var(--primary);
+      color: var(--primary-foreground);
       transform: translateY(-2px);
       box-shadow: var(--shadow-lg);
     }
