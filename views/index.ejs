@@ -798,8 +798,9 @@
             backToTopBtn.classList.add('modal-hidden');
           }
 
-          // Lock page scroll
-          document.body.style.overflow = 'hidden';
+          // Lock page scroll completely
+          document.body.classList.add('modal-open');
+          document.documentElement.classList.add('modal-open');
 
               // Show the modal
               samplesModal.style.display = "block";
@@ -813,8 +814,9 @@
                 samplesModal.style.display = "none";
               }
               
-              // Unlock page scroll
-              document.body.style.overflow = '';
+              // Unlock page scroll completely
+              document.body.classList.remove('modal-open');
+              document.documentElement.classList.remove('modal-open');
               
               // Show back-to-top button again
               if (backToTopBtn) {

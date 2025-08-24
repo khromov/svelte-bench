@@ -947,6 +947,11 @@
       color: var(--error);
     }
 
+    /* Lighter error text in dark mode for better legibility */
+    [data-theme="dark"] .error-item pre {
+      color: hsl(0 70% 70%);
+    }
+
     .view-code-button, .view-samples-button {
       background: var(--background);
       color: var(--primary);
@@ -1105,6 +1110,15 @@
       opacity: 0 !important;
       visibility: hidden !important;
       transform: translateY(10px) !important;
+    }
+
+    /* Prevent scrolling when modal is open */
+    body.modal-open,
+    html.modal-open {
+      overflow: hidden !important;
+      position: fixed !important;
+      width: 100% !important;
+      height: 100% !important;
     }
 
     .code-container {
@@ -1779,6 +1793,11 @@
       text-transform: uppercase;
       letter-spacing: 0.8px;
       box-shadow: var(--shadow-sm);
+    }
+
+    /* Black text in light mode for better contrast */
+    [data-theme="light"] .top-models-badge {
+      color: black;
     }
 
     .top-models-table {
