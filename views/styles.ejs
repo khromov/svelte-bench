@@ -1,4 +1,36 @@
 <style>
+    /* ============================================
+     * GLOBAL STYLES & RESETS
+     * ============================================ */
+    
+    /* Global reset and box model */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* Fast theme transitions */
+    *,
+    *::before,
+    *::after {
+      transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    /* Global overflow prevention */
+    html, body {
+      overflow-x: hidden;
+      max-width: 100vw;
+    }
+
+    /* Typography defaults */
+    body {
+      font-family: "Geist", ui-sans-serif, system-ui, sans-serif;
+      line-height: 1.6;
+      color: var(--foreground);
+      background: var(--background);
+    }
+
     :root {
       /* shadcn-inspired color system */
       --background: hsl(0 0% 100%);
@@ -153,6 +185,42 @@
     html {
       scroll-behavior: smooth;
     }
+
+    /* ============================================
+     * UTILITY CLASSES
+     * ============================================ */
+    
+    /* Display utilities */
+    .hidden { display: none !important; }
+    .visible { display: block !important; }
+    
+    /* Flexbox utilities */
+    .flex { display: flex; }
+    .flex-col { flex-direction: column; }
+    .flex-wrap { flex-wrap: wrap; }
+    .items-center { align-items: center; }
+    .justify-center { justify-content: center; }
+    .justify-between { justify-content: space-between; }
+    
+    /* Spacing utilities */
+    .gap-2 { gap: 0.5rem; }
+    .gap-4 { gap: 1rem; }
+    .p-2 { padding: 0.5rem; }
+    .p-4 { padding: 1rem; }
+    .mb-4 { margin-bottom: 1rem; }
+    
+    /* Text utilities */
+    .text-center { text-align: center; }
+    .font-bold { font-weight: 700; }
+    .text-sm { font-size: 0.875rem; }
+    
+    /* Border utilities */
+    .rounded { border-radius: var(--radius); }
+    .rounded-lg { border-radius: var(--radius-lg); }
+    
+    /* Width utilities */
+    .w-full { width: 100%; }
+    .max-w-full { max-width: 100%; }
 
     body {
       font-family: "Geist", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
@@ -446,10 +514,9 @@
 
     .progress-indicator {
       height: 100%;
-      width: 100%;
-      flex: 1;
+      width: 0%;
       background: var(--primary);
-      transition: transform 0.3s ease-in-out;
+      transition: width 0.3s ease-in-out;
       border-radius: 9999px;
     }
 
@@ -880,6 +947,11 @@
       color: var(--error);
     }
 
+    /* Lighter error text in dark mode for better legibility */
+    [data-theme="dark"] .error-item pre {
+      color: hsl(0 70% 70%);
+    }
+
     .view-code-button, .view-samples-button {
       background: var(--background);
       color: var(--primary);
@@ -958,10 +1030,17 @@
       top: 0;
       width: 100%;
       height: 100%;
-      overflow: auto;
-      background-color: rgba(0, 0, 0, 0.3);
+      background-color: rgba(0, 0, 0, 0.4);
       backdrop-filter: blur(8px);
       animation: fadeIn 0.3s ease;
+      padding: 2rem;
+      box-sizing: border-box;
+    }
+
+    .modal[style*="block"] {
+      display: flex !important;
+      align-items: center;
+      justify-content: center;
     }
 
     @keyframes fadeIn {
@@ -971,60 +1050,88 @@
 
     .modal-content {
       background: var(--surface);
-      margin: 5% auto;
-      padding: 32px;
       border: none;
-      width: 90%;
+      width: 100%;
       max-width: 1200px;
+      height: 85vh;
+      max-height: 85vh;
       border-radius: var(--radius-xl);
       box-shadow: var(--shadow-lg);
       animation: slideUp 0.3s ease;
       position: relative;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
     }
 
     @keyframes slideUp {
       from {
         opacity: 0;
-        transform: translateY(20px);
+        transform: translateY(30px) scale(0.95);
       }
       to {
         opacity: 1;
-        transform: translateY(0);
+        transform: translateY(0) scale(1);
       }
     }
 
-    .close {
-      color: var(--text-secondary);
-      position: absolute;
-      top: 24px;
-      right: 24px;
-      font-size: 24px;
-      font-weight: normal;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      background: var(--surface-secondary);
-      transition: all 0.2s ease;
+    /* Modal layout structure */
+    .modal-header {
+      padding: 2rem 2rem 1rem 2rem;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
     }
 
-    .close:hover {
-      color: var(--text-primary);
-      background: var(--surface-tertiary);
-      transform: scale(1.1);
+    .modal-body {
+      flex: 1;
+      padding: 1rem 2rem;
+      overflow-y: auto;
+      overflow-x: hidden;
+      min-height: 0; /* Important for flexbox scrolling */
+    }
+
+    .modal-footer {
+      padding: 1rem 2rem 2rem 2rem;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .modal-close-btn {
+      width: 100%;
+      padding: 0.75rem 1.5rem;
+      font-size: 1rem;
+      font-weight: 600;
+    }
+
+    /* Hide back-to-top button when modal is active */
+    .back-to-top.modal-hidden {
+      opacity: 0 !important;
+      visibility: hidden !important;
+      transform: translateY(10px) !important;
+    }
+
+    /* Prevent scrolling when modal is open */
+    body.modal-open,
+    html.modal-open {
+      overflow: hidden !important;
+      position: fixed !important;
+      width: 100% !important;
+      height: 100% !important;
     }
 
     .code-container {
       background: var(--surface-secondary);
       padding: 20px;
       border-radius: var(--radius-md);
-      overflow: auto;
+      overflow-x: auto;
+      overflow-y: auto;
       margin-top: 20px;
       border: 1px solid var(--border-light);
       font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+      max-width: 100%;
+      box-sizing: border-box;
     }
 
     .code-container pre {
@@ -1227,24 +1334,28 @@
     }
 
     .humaneval-metrics {
-      display: flex;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
       gap: 16px;
       margin-bottom: 16px;
       padding: 20px;
       background: var(--surface-secondary);
       border-radius: var(--radius-md);
       border: 1px solid var(--border-light);
-      flex-wrap: wrap;
     }
 
     .metric {
-      padding: 12px 16px;
+      padding: 16px 12px;
       background: var(--surface);
       border-radius: var(--radius-sm);
       box-shadow: var(--shadow-sm);
       border: 1px solid var(--border-light);
-      min-width: 120px;
       text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 80px;
     }
 
     .metric-label {
@@ -1507,8 +1618,9 @@
       }
 
       .results-table {
-        min-width: 700px; /* Ensure table doesn't get crushed */
+        min-width: auto; /* Allow table to shrink on mobile */
         margin-bottom: 16px;
+        width: 100%;
       }
 
       .results-table th,
@@ -1529,8 +1641,9 @@
       }
 
       .results-table {
-        min-width: 600px; /* Minimum width for mobile */
+        min-width: auto; /* Allow table to shrink on very small mobile */
         font-size: 13px;
+        width: 100%;
       }
 
       .results-table th,
@@ -1680,6 +1793,11 @@
       text-transform: uppercase;
       letter-spacing: 0.8px;
       box-shadow: var(--shadow-sm);
+    }
+
+    /* Black text in light mode for better contrast */
+    [data-theme="light"] .top-models-badge {
+      color: black;
     }
 
     .top-models-table {
@@ -1964,6 +2082,53 @@
       .score-text {
         font-size: 13px;
       }
+
+      /* Adjust table column widths for mobile */
+      .top-models-table th:first-child,
+      .top-models-table td:first-child {
+        width: 50px;
+        min-width: 50px;
+      }
+
+      .top-models-table th:last-child,
+      .top-models-table td:last-child {
+        width: 120px;
+        min-width: 120px;
+      }
+
+      /* Ensure table fits on small screens */
+      .top-models-section {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      /* Make navigation and controls more compact */
+      .navigation-links {
+        flex-wrap: wrap;
+        gap: 0.5rem !important;
+      }
+
+      .controls {
+        flex-wrap: wrap;
+        gap: 0.5rem !important;
+        padding: 0.75rem !important;
+      }
+
+      .btn {
+        font-size: 0.875rem;
+        padding: 0.5rem 0.75rem;
+      }
+
+      /* Additional mobile overflow prevention */
+      .table-scroll-wrapper {
+        max-width: 100vw;
+        overflow-x: auto;
+      }
+
+      /* Hide less important table columns on mobile */
+      .mobile-hide {
+        display: none !important;
+      }
     }
 
     /* Mobile Responsive Design */
@@ -2133,16 +2298,44 @@
       }
 
       /* Mobile-specific modal improvements */
-      .modal-content {
-        width: 95%;
-        margin: 2% auto;
-        padding: 20px;
-        max-height: 90vh;
-        overflow-y: auto;
+      .modal {
+        padding: 1rem;
       }
 
+      .modal-content {
+        height: 90vh;
+        max-height: 90vh;
+      }
+
+      .modal-header {
+        padding: 1.5rem 1.5rem 1rem 1.5rem;
+      }
+
+      .modal-body {
+        padding: 0.5rem 1.5rem;
+      }
+
+      .modal-footer {
+        padding: 1rem 1.5rem 1.5rem 1.5rem;
+      }
+
+      /* Prevent horizontal overflow in modal content on mobile */
       .samples-container {
+        width: 100%;
+        overflow-x: hidden;
         margin-top: 16px;
+      }
+
+      .code-container {
+        padding: 12px;
+        font-size: 13px;
+        line-height: 1.4;
+      }
+
+      .code-container pre {
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
       }
 
       .sample-header {
@@ -2157,11 +2350,17 @@
       .humaneval-metrics {
         padding: 16px;
         gap: 12px;
+        grid-template-columns: repeat(2, 1fr);
       }
 
       .metric {
-        padding: 10px 12px;
-        min-width: 100px;
+        padding: 12px 8px;
+        min-height: 70px;
+        font-size: 14px;
+      }
+
+      .metric-label {
+        font-size: 11px;
       }
 
       /* Touch-friendly benchmark list */
@@ -2299,47 +2498,20 @@
     .theme-toggle-inline svg {
       width: 1rem;
       height: 1rem;
-      transition: all 0.3s ease;
-    }
-
-    /* Theme toggle icon animations */
-    .theme-toggle-inline .sun-icon,
-    .theme-toggle-inline .moon-icon,
-    .theme-toggle-inline .system-icon {
       position: absolute;
-      transition: all 0.3s ease;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      transition: opacity 0.15s ease, transform 0.15s ease;
+    }
+
+    /* Icons are controlled by JavaScript for instant switching */
+    .theme-toggle-inline .sun-icon {
+      opacity: 1; /* Default light mode shows sun */
+    }
+
+    .theme-toggle-inline .moon-icon {
       opacity: 0;
-      transform: rotate(180deg);
-    }
-
-    /* Default state: system */
-    .theme-toggle-inline .system-icon {
-      opacity: 1;
-      transform: rotate(0deg);
-    }
-
-    /* Light theme state */
-    [data-theme="light"] .theme-toggle-inline .system-icon,
-    [data-theme="light"] .theme-toggle-inline .moon-icon {
-      opacity: 0;
-      transform: rotate(180deg);
-    }
-
-    [data-theme="light"] .theme-toggle-inline .sun-icon {
-      opacity: 1;
-      transform: rotate(0deg);
-    }
-
-    /* Dark theme state */
-    [data-theme="dark"] .theme-toggle-inline .system-icon,
-    [data-theme="dark"] .theme-toggle-inline .sun-icon {
-      opacity: 0;
-      transform: rotate(180deg);
-    }
-
-    [data-theme="dark"] .theme-toggle-inline .moon-icon {
-      opacity: 1;
-      transform: rotate(0deg);
     }
 
 

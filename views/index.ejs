@@ -8,8 +8,28 @@
   <!-- Prevent flash of wrong theme -->
   <script>
     (function() {
-      const savedTheme = localStorage.getItem('theme') || 'system';
-      document.documentElement.setAttribute('data-theme', savedTheme);
+      const savedTheme = localStorage.getItem('theme');
+      if (savedTheme) {
+        document.documentElement.setAttribute('data-theme', savedTheme);
+      } else {
+        // Respect device preference on first load
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const defaultTheme = prefersDark ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', defaultTheme);
+        localStorage.setItem('theme', defaultTheme);
+      }
+      
+      // Also listen for system theme changes and update if no manual preference
+      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(e) {
+        // Only update theme if user has not manually set a preference
+        if (!localStorage.getItem('themeIsManual')) {
+          const newTheme = e.matches ? 'dark' : 'light';
+          document.documentElement.setAttribute('data-theme', newTheme);
+          localStorage.setItem('theme', newTheme);
+        }
+      });
+      // To set a manual theme preference elsewhere in your code, use:
+      // localStorage.setItem('theme', THEME_VALUE); localStorage.setItem('themeIsManual', 'true');
     })();
   </script>
   
@@ -116,7 +136,9 @@
         // Back to top functionality
         document.addEventListener('DOMContentLoaded', function() {
           // Initialize theme toggle
-          initializeThemeToggle();
+          if (typeof ThemeManager !== 'undefined') {
+            ThemeManager.init();
+          }
           
           const backToTopBtn = document.getElementById('back-to-top');
           const topModelsSection = document.querySelector('.top-models-section');
@@ -176,13 +198,7 @@
         <a href="index.html" class="btn btn-primary">View Raw Results →</a>
         
         <!-- Theme toggle button -->
-        <button id="theme-toggle" class="btn btn-outline theme-toggle-inline" title="Toggle theme (System)">
-          <svg class="system-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="2" y="4" width="20" height="16" rx="2"></rect>
-            <path d="M8 4v16"></path>
-            <path d="M16 4v16"></path>
-            <circle cx="12" cy="12" r="2"></circle>
-          </svg>
+        <button id="theme-toggle" class="btn btn-outline theme-toggle-inline" title="Toggle theme">
           <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="12" cy="12" r="5"></circle>
             <line x1="12" y1="1" x2="12" y2="3"></line>
@@ -313,7 +329,7 @@
                   <div style="display: flex; align-items: center; gap: 0.75rem;">
                     <span style="font-size: 0.875rem; font-weight: 600; color: var(--foreground); min-width: 3rem;"><%= model.score.toFixed(1) %>%</span>
                     <div class="progress" style="flex: 1;">
-                      <div class="progress-indicator" style="transform: translateX(-<%= 100 - model.score %>%)"></div>
+                      <div class="progress-indicator" style="width: <%= model.score %>%; transform: translateX(0);"></div>
                     </div>
                   </div>
                 </td>
@@ -384,9 +400,9 @@
                         <th>Test</th>
                         <th>Status</th>
                         <th>pass@1</th>
-                        <th>pass@10</th>
-                        <th>Passing Samples</th>
-                        <th>Errors</th>
+                        <th class="mobile-hide">pass@10</th>
+                        <th class="mobile-hide">Passing Samples</th>
+                        <th class="mobile-hide">Errors</th>
                         <th>Actions</th>
                       </tr>
 
@@ -404,9 +420,9 @@
                             <% } %>
                           </td>
                           <td><%= result.pass1.toFixed(4) %></td>
-                          <td><%= result.pass10.toFixed(4) %></td>
-                          <td><%= result.numCorrect %>/<%= result.numSamples %></td>
-                          <td>
+                          <td class="mobile-hide"><%= result.pass10.toFixed(4) %></td>
+                          <td class="mobile-hide"><%= result.numCorrect %>/<%= result.numSamples %></td>
+                          <td class="mobile-hide">
                             <%
                               const errorCount = result.samples.reduce((count, sample) => {
                                 return count + (sample.errors ? sample.errors.length : 0);
@@ -420,18 +436,17 @@
                           </td>
                           <td>
                             <div class="button-group" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-                              <button class="btn btn-primary btn-sm"
-                                      onclick="showSamplesModal('<%= providerData.provider %>', '<%= model %>', <%= index %>)">
+                                      onclick="showSamplesModal('<%= providerData.provider %>', '<%= model %>', <%= index %>);">
                                 View Samples
                               </button>
                               <a href="https://github.com/khromov/svelte-bench/blob/main/src/tests/<%= result.testName %>/prompt.md"
                                  target="_blank"
-                                 class="btn btn-outline btn-sm">
+                                 class="btn btn-outline btn-sm mobile-hide">
                                 View Prompt
                               </a>
                               <a href="https://github.com/khromov/svelte-bench/blob/main/src/tests/<%= result.testName %>/test.ts"
                                  target="_blank"
-                                 class="btn btn-outline btn-sm">
+                                 class="btn btn-outline btn-sm mobile-hide">
                                 View Tests
                               </a>
                             </div>
@@ -469,10 +484,16 @@
     <!-- Modal for HumanEval samples view -->
     <div id="samples-modal" class="modal">
       <div class="modal-content">
-        <span id="close-samples-modal" class="close">&times;</span>
-        <h2 id="samples-modal-title"></h2>
-        <div class="humaneval-metrics" id="samples-modal-metrics"></div>
-        <div class="accordion samples-container" id="samples-container"></div>
+        <div class="modal-header">
+          <h2 id="samples-modal-title"></h2>
+          <div class="humaneval-metrics" id="samples-modal-metrics"></div>
+        </div>
+        <div class="modal-body">
+          <div class="accordion samples-container" id="samples-container"></div>
+        </div>
+        <div class="modal-footer">
+          <button id="close-samples-modal" class="btn btn-primary modal-close-btn">Close</button>
+        </div>
       </div>
     </div>
 
@@ -480,99 +501,162 @@
     <div id="benchmark-data" style="display: none;" data-json="<%= benchmarkDataB64 %>"></div>
 
       <script>
-        // Function to escape HTML for safe display
-        function escapeHtml(unsafe) {
-          return unsafe
-            .replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;")
-            .replace(/"/g, "&quot;")
-            .replace(/'/g, "&#039;");
-        }
+        // ============================================
+        // SvelteBench Application Module
+        // ============================================
+        const SvelteBench = (function() {
+          'use strict';
 
-        // Toggle accordion function for shadcn-style accordions
-        function toggleAccordion(trigger) {
-          const content = trigger.nextElementSibling;
-          const isOpen = trigger.getAttribute('data-state') === 'open';
+          // ============================================
+          // Utility Functions Module
+          // ============================================
+          const Utils = {
+            // Escape HTML for safe display
+            escapeHtml(unsafe) {
+              if (!unsafe) return '';
+              return String(unsafe)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+            },
 
-          if (isOpen) {
-            trigger.setAttribute('data-state', 'closed');
-            content.setAttribute('data-state', 'closed');
-          } else {
-            trigger.setAttribute('data-state', 'open');
-            content.setAttribute('data-state', 'open');
-          }
-        }
+            // Decode base64 benchmark data
+            decodeBase64Data() {
+              const dataElement = document.getElementById("benchmark-data");
+              if (!dataElement) return [];
+              
+              const encodedData = dataElement.getAttribute("data-json");
+              if (!encodedData) {
+                console.error("No encoded data found");
+                return [];
+              }
 
-        // Function to decode base64 data
-        function decodeBase64Data() {
-          const encodedData = document
-            .getElementById("benchmark-data")
-            .getAttribute("data-json");
-          if (!encodedData) {
-            console.error("No encoded data found");
-            return [];
-          }
+              try {
+                const jsonString = atob(encodedData);
+                return JSON.parse(jsonString);
+              } catch (error) {
+                console.error("Error decoding benchmark data:", error);
+                return [];
+              }
+            },
 
-          try {
-            const jsonString = atob(encodedData);
-            return JSON.parse(jsonString);
-          } catch (error) {
-            console.error("Error decoding benchmark data:", error);
-            return [];
-          }
-        }
+            // Debounce function for performance optimization
+            debounce(func, wait) {
+              let timeout;
+              return function executedFunction(...args) {
+                const later = () => {
+                  clearTimeout(timeout);
+                  func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+              };
+            }
+          };
 
-        // Toggle top models visibility
-        function toggleTopModels() {
-          const hiddenRows = document.querySelectorAll('.hidden-model');
-          const expandBtn = document.querySelector('.btn[onclick="toggleTopModels()"]');
-          const expandText = expandBtn.querySelector('.expand-text');
-          const expandIcon = expandBtn.querySelector('.expand-icon');
+          // ============================================
+          // UI Components Module
+          // ============================================
+          const UIComponents = {
+            // Toggle accordion state
+            toggleAccordion(trigger) {
+              if (!trigger) return;
+              
+              const content = trigger.nextElementSibling;
+              const isOpen = trigger.getAttribute('data-state') === 'open';
+              const newState = isOpen ? 'closed' : 'open';
+              
+              trigger.setAttribute('data-state', newState);
+              if (content) {
+                content.setAttribute('data-state', newState);
+              }
+            },
 
-          if (hiddenRows.length > 0 && hiddenRows[0].style.display !== 'table-row') {
-            // Show all models
-            hiddenRows.forEach(row => {
-              row.style.display = 'table-row';
-            });
-            expandText.textContent = 'Show Top 5 Models';
-            expandIcon.textContent = '↑';
-            expandBtn.classList.add('expanded');
-          } else {
-            // Hide models beyond top 5
-            hiddenRows.forEach(row => {
-              row.style.display = 'none';
-            });
-            expandText.textContent = `Show All ${document.querySelectorAll('.top-model-row').length} Models`;
-            expandIcon.textContent = '↓';
-            expandBtn.classList.remove('expanded');
-          }
-        }
+            // Expand all accordion sections
+            expandAll() {
+              document.querySelectorAll('.accordion-trigger').forEach(trigger => {
+                trigger.setAttribute('data-state', 'open');
+                const content = trigger.nextElementSibling;
+                if (content) {
+                  content.setAttribute('data-state', 'open');
+                }
+              });
+            },
 
-        // Toggle context content visibility
-        function toggleContextContent() {
-          const contextContent = document.getElementById("context-content");
-          const toggleBtn = document.querySelector(".toggle-context-btn");
+            // Collapse all accordion sections
+            collapseAll() {
+              document.querySelectorAll('.accordion-trigger').forEach(trigger => {
+                trigger.setAttribute('data-state', 'closed');
+                const content = trigger.nextElementSibling;
+                if (content) {
+                  content.setAttribute('data-state', 'closed');
+                }
+              });
+            }
+          };
 
-          if (contextContent.style.display === "block") {
-            contextContent.style.display = "none";
-            toggleBtn.textContent = "Show Context";
-          } else {
-            contextContent.style.display = "block";
-            toggleBtn.textContent = "Hide Context";
-          }
-        }
+          // ============================================
+          // Top Models Management Module
+          // ============================================
+          const TopModels = {
+            toggle() {
+              const hiddenRows = document.querySelectorAll('.hidden-model');
+              const expandBtn = document.querySelector('.btn[onclick="toggleTopModels()"]');
+              if (!expandBtn) return;
+              
+              const expandText = expandBtn.querySelector('.expand-text');
+              const expandIcon = expandBtn.querySelector('.expand-icon');
+              const isExpanded = hiddenRows.length > 0 && hiddenRows[0].style.display === 'table-row';
+
+              hiddenRows.forEach(row => {
+                row.style.display = isExpanded ? 'none' : 'table-row';
+              });
+
+              if (expandText) {
+                expandText.textContent = isExpanded 
+                  ? `Show All ${document.querySelectorAll('.top-model-row').length} Models`
+                  : 'Show Top 5 Models';
+              }
+              
+              if (expandIcon) {
+                expandIcon.textContent = isExpanded ? '↓' : '↑';
+              }
+              
+              expandBtn.classList.toggle('expanded', !isExpanded);
+            }
+          };
+
+          // ============================================
+          // Context Content Module
+          // ============================================
+          const ContextContent = {
+            toggle() {
+              const contextContent = document.getElementById("context-content");
+              const toggleBtn = document.querySelector(".toggle-context-btn");
+              
+              if (!contextContent || !toggleBtn) return;
+              
+              const isVisible = contextContent.style.display === "block";
+              contextContent.style.display = isVisible ? "none" : "block";
+              toggleBtn.textContent = isVisible ? "Show Context" : "Hide Context";
+            }
+          };
 
 
-        // Function to show samples modal for HumanEval results
-        function showSamplesModal(provider, model, resultIndex) {
+          // ============================================
+          // Samples Modal Module
+          // ============================================
+          const SamplesModal = {
+            show(provider, model, resultIndex) {
           const samplesModal = document.getElementById("samples-modal");
           const samplesContainer = document.getElementById("samples-container");
           const modalTitle = document.getElementById("samples-modal-title");
           const modalMetrics = document.getElementById("samples-modal-metrics");
 
-          // Get the benchmark data
-          const benchmarkData = decodeBase64Data();
+              // Get the benchmark data
+              const benchmarkData = Utils.decodeBase64Data();
 
           // Find the result in the benchmark data
           let result = null;
@@ -631,16 +715,20 @@
 
           modalMetrics.innerHTML = `
             <div class="metric ${statusClass}">
-              <span class="metric-label">Status:</span> <span class="badge ${badgeClass}">${result.numCorrect === result.numSamples ? 'PASS' : (result.numCorrect > 0 ? 'PARTIAL' : 'FAIL')}</span>
+              <span class="metric-label">Status</span>
+              <span class="badge ${badgeClass}">${result.numCorrect === result.numSamples ? 'PASS' : (result.numCorrect > 0 ? 'PARTIAL' : 'FAIL')}</span>
             </div>
             <div class="metric">
-              <span class="metric-label">pass@1:</span> ${result.pass1.toFixed(4)}
+              <span class="metric-label">pass@1</span>
+              <span class="metric-value">${result.pass1.toFixed(4)}</span>
             </div>
             <div class="metric">
-              <span class="metric-label">pass@10:</span> ${result.pass10.toFixed(4)}
+              <span class="metric-label">pass@10</span>
+              <span class="metric-value">${result.pass10.toFixed(4)}</span>
             </div>
             <div class="metric">
-              <span class="metric-label">Correct:</span> ${result.numCorrect}/${result.numSamples}
+              <span class="metric-label">Samples</span>
+              <span class="metric-value">${result.numCorrect}/${result.numSamples}</span>
             </div>
           `;
 
@@ -687,7 +775,7 @@
 
             const contentInner = document.createElement("div");
             contentInner.className = "accordion-content-inner";
-            contentInner.innerHTML = `<pre><code class="language-svelte">${escapeHtml(sample.code)}</code></pre>`;
+              contentInner.innerHTML = `<pre><code class="language-svelte">${Utils.escapeHtml(sample.code)}</code></pre>`;
 
             // Add errors if any
             if (sample.errors && sample.errors.length > 0) {
@@ -699,8 +787,8 @@
                   ${sample.errors
                     .map(
                       (error) =>
-                        `<div class="error-item">
-                          <pre>${escapeHtml(error)}</pre>
+                          `<div class="error-item">
+                            <pre>${Utils.escapeHtml(error)}</pre>
                         </div>`
                     )
                     .join("")}
@@ -715,106 +803,151 @@
             samplesContainer.appendChild(sampleDiv);
           });
 
-          // Show the modal
-          samplesModal.style.display = "block";
-        }
+          // Store current scroll position before showing modal
+          const scrollY = window.scrollY;
+          document.body.style.top = `-${scrollY}px`;
+
+          // Hide back-to-top button and lock scroll when modal is shown
+          const backToTopBtn = document.getElementById('back-to-top');
+          if (backToTopBtn) {
+            backToTopBtn.classList.add('modal-hidden');
+          }
+
+          // Lock page scroll completely
+          document.body.classList.add('modal-open');
+          document.documentElement.classList.add('modal-open');
+
+              // Show the modal
+              samplesModal.style.display = "block";
+            },
+
+            close() {
+              const samplesModal = document.getElementById("samples-modal");
+              const backToTopBtn = document.getElementById('back-to-top');
+              
+              if (samplesModal) {
+                samplesModal.style.display = "none";
+              }
+
+              // Restore scroll position before unlocking scroll
+              const scrollY = document.body.style.top;
+              document.body.style.top = '';
+              
+              // Unlock page scroll completely
+              document.body.classList.remove('modal-open');
+              document.documentElement.classList.remove('modal-open');
+
+              // Restore the scroll position (scrollY is already negative, so make it positive)
+              if (scrollY) {
+                const scrollPosition = Math.abs(parseInt(scrollY));
+                window.scrollTo(0, scrollPosition);
+              }
+              
+              // Show back-to-top button again
+              if (backToTopBtn) {
+                backToTopBtn.classList.remove('modal-hidden');
+              }
+            }
+          };
 
 
 
 
-        // Expand all sections
-        function expandAll() {
-          // Expand all accordion items
-          const accordionTriggers = document.querySelectorAll('.accordion-trigger');
-          accordionTriggers.forEach(trigger => {
-            const content = trigger.nextElementSibling;
-            trigger.setAttribute('data-state', 'open');
-            content.setAttribute('data-state', 'open');
-          });
-        }
+          // ============================================
+          // Public API - Global Functions
+          // ============================================
+          return {
+            // Accordion controls
+            toggleAccordion: UIComponents.toggleAccordion,
+            expandAll: UIComponents.expandAll,
+            collapseAll: UIComponents.collapseAll,
+            
+            // Top models
+            toggleTopModels: TopModels.toggle,
+            
+            // Context
+            toggleContextContent: ContextContent.toggle,
+            
+            // Modal
+            showSamplesModal: SamplesModal.show,
+            closeSamplesModal: SamplesModal.close,
+            
+            // Utilities
+            escapeHtml: Utils.escapeHtml,
+            decodeBase64Data: Utils.decodeBase64Data,
+            debounce: Utils.debounce
+          };
+        })();
 
-        // Collapse all sections
-        function collapseAll() {
-          // Collapse all accordion items
-          const accordionTriggers = document.querySelectorAll('.accordion-trigger');
-          accordionTriggers.forEach(trigger => {
-            const content = trigger.nextElementSibling;
-            trigger.setAttribute('data-state', 'closed');
-            content.setAttribute('data-state', 'closed');
-          });
-        }
+        // ============================================
+        // Global Function Exports for onclick handlers
+        // ============================================
+        const toggleAccordion = SvelteBench.toggleAccordion;
+        const expandAll = SvelteBench.expandAll;
+        const collapseAll = SvelteBench.collapseAll;
+        const toggleTopModels = SvelteBench.toggleTopModels;
+        const toggleContextContent = SvelteBench.toggleContextContent;
+        const showSamplesModal = SvelteBench.showSamplesModal;
+        const closeSamplesModal = SvelteBench.closeSamplesModal;
 
-        // Theme toggle functionality with three states: system, light, dark
-        function initializeThemeToggle() {
+        // ============================================
+        // Theme Manager Module
+        // ============================================
+        const ThemeManager = {
+          init() {
           const themeToggle = document.getElementById('theme-toggle');
           if (!themeToggle) return;
 
-          // Get saved theme (defaults to 'system' if nothing saved)
-          const savedTheme = localStorage.getItem('theme') || 'system';
-          
-          // Set initial theme without causing flash
-          setTheme(savedTheme);
-          
-          // Update button title based on current theme
-          function updateButtonTitle(theme) {
-            const titles = {
-              'system': 'Toggle theme (System)',
-              'light': 'Toggle theme (Light)',
-              'dark': 'Toggle theme (Dark)'
-            };
-            themeToggle.title = titles[theme] || titles['system'];
+          // Get current theme from document
+          function getCurrentTheme() {
+            return document.documentElement.getAttribute('data-theme') || 'light';
           }
 
-          // Set theme and update button
+          // Set theme and update button appearance
           function setTheme(theme) {
             document.documentElement.setAttribute('data-theme', theme);
-            updateButtonTitle(theme);
+            localStorage.setItem('theme', theme);
+            updateButtonAppearance(theme);
           }
 
-          // Three-state toggle: system -> light -> dark -> system
-          function toggleTheme() {
-            const currentTheme = document.documentElement.getAttribute('data-theme') || 'system';
-            let nextTheme;
+          // Update button appearance based on theme
+          function updateButtonAppearance(theme) {
+            const sunIcon = themeToggle.querySelector('.sun-icon');
+            const moonIcon = themeToggle.querySelector('.moon-icon');
             
-            switch(currentTheme) {
-              case 'system':
-                nextTheme = 'light';
-                break;
-              case 'light':
-                nextTheme = 'dark';
-                break;
-              case 'dark':
-                nextTheme = 'system';
-                break;
-              default:
-                nextTheme = 'system';
+            if (theme === 'dark') {
+              // In dark mode, show moon icon (indicating current dark state)
+              sunIcon.style.opacity = '0';
+              moonIcon.style.opacity = '1';
+              themeToggle.title = 'Switch to light mode';
+            } else {
+              // In light mode, show sun icon (indicating current light state)
+              sunIcon.style.opacity = '1';
+              moonIcon.style.opacity = '0';
+              themeToggle.title = 'Switch to dark mode';
             }
-            
+          }
+
+          // Simple toggle: light <-> dark
+          function toggleTheme() {
+            const currentTheme = getCurrentTheme();
+            const nextTheme = currentTheme === 'dark' ? 'light' : 'dark';
             setTheme(nextTheme);
-            localStorage.setItem('theme', nextTheme);
           }
 
           // Add click event listener
           themeToggle.addEventListener('click', toggleTheme);
 
-          // Listen for system theme changes (only affects system mode)
-          window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-            // Only update if we're in system mode
-            if (document.documentElement.getAttribute('data-theme') === 'system') {
-              // Force a repaint by briefly removing and re-adding the attribute
-              document.documentElement.removeAttribute('data-theme');
-              requestAnimationFrame(() => {
-                document.documentElement.setAttribute('data-theme', 'system');
-              });
-            }
-          });
+            // Initial setup
+            updateButtonAppearance(getCurrentTheme());
+          }
+        };
 
-          // Initial setup
-          updateButtonTitle(savedTheme);
-        }
-
-        // Model search functionality
-        function initializeModelSearch() {
+        // ============================================
+        // Model Search Module
+        // ============================================
+        const ModelSearch = {
+          init() {
           const searchInput = document.getElementById('model-search-input');
           const expandButton = document.getElementById('expand-button-container');
           const noResultsDiv = document.getElementById('search-no-results');
@@ -887,12 +1020,16 @@
 
               // Show no results message if needed
               noResultsDiv.style.display = visibleCount === 0 ? 'block' : 'none';
+              }
             }
           }
-        }
+        };
 
-        // Handle hash navigation by expanding all sections first
-        function handleHashNavigation() {
+        // ============================================
+        // Navigation Module
+        // ============================================
+        const Navigation = {
+          handleHashNavigation() {
           const hash = window.location.hash;
           if (hash.startsWith('#model-')) {
             expandAll();
@@ -905,17 +1042,18 @@
                 console.log('Scrolling to', element);
                 element.scrollIntoView();
               }
-            }, 300);
+              }, 300);
+            }
           }
-        }
+        };
 
-        // Initialize the page
+        // ============================================
+        // Application Initialization
+        // ============================================
         document.addEventListener("DOMContentLoaded", () => {
-          // Initialize theme toggle
-          initializeThemeToggle();
-          
-          // Initialize model search
-          initializeModelSearch();
+          // Initialize all modules
+          ThemeManager.init();
+          ModelSearch.init();
 
           // Hide models beyond top 5 on initial load (unless there's a search query)
           const urlParams = new URLSearchParams(window.location.search);
@@ -928,68 +1066,70 @@
             });
           }
 
-          // Handle hash navigation on page load
-          handleHashNavigation();
+          // Handle navigation
+          Navigation.handleHashNavigation();
+          window.addEventListener('hashchange', Navigation.handleHashNavigation);
 
-          // Listen for hash changes
-          window.addEventListener('hashchange', handleHashNavigation);
-
-          // Close samples modal when clicking the close button
+          // Setup modal event listeners
           const closeSamplesButton = document.getElementById("close-samples-modal");
           if (closeSamplesButton) {
-            closeSamplesButton.addEventListener("click", () => {
-              const samplesModal = document.getElementById("samples-modal");
-              samplesModal.style.display = "none";
-            });
+            closeSamplesButton.addEventListener("click", SvelteBench.closeSamplesModal);
           }
 
-          // Close samples modal when clicking outside the modal content
           const samplesModal = document.getElementById("samples-modal");
           if (samplesModal) {
             samplesModal.addEventListener("click", (event) => {
               if (event.target === samplesModal) {
-                samplesModal.style.display = "none";
+                SvelteBench.closeSamplesModal();
               }
             });
           }
 
-          // Initialize all sections as expanded
-          expandAll();
-
-          // Back to top functionality
-          const backToTopBtn = document.getElementById('back-to-top');
-          const topModelsSection = document.querySelector('.top-models-section');
-          
-          if (backToTopBtn) {
-            // Show/hide button based on scroll position
-            function handleScroll() {
-              if (topModelsSection) {
-                const topModelsSectionRect = topModelsSection.getBoundingClientRect();
-                const isTopModelsSectionVisible = topModelsSectionRect.bottom > 0;
-                
-                if (!isTopModelsSectionVisible) {
-                  backToTopBtn.classList.add('visible');
-                } else {
-                  backToTopBtn.classList.remove('visible');
-                }
+          // Add escape key handler to close the samples modal
+          document.addEventListener("keydown", (event) => {
+            if (event.key === "Escape") {
+              const samplesModal = document.getElementById("samples-modal");
+              if (samplesModal && samplesModal.style.display === "block") {
+                SvelteBench.closeSamplesModal();
               }
             }
+          });
 
-            // Smooth scroll to top
-            function scrollToTop() {
-              window.scrollTo({
-                top: 0,
-                behavior: 'smooth'
-              });
+          // Initialize all sections as expanded
+          SvelteBench.expandAll();
+
+          // ============================================
+          // Back to Top Button Module
+          // ============================================
+          const BackToTop = {
+            init() {
+              const btn = document.getElementById('back-to-top');
+              const topSection = document.querySelector('.top-models-section');
+              
+              if (!btn) return;
+
+              const handleScroll = () => {
+                if (topSection) {
+                  const rect = topSection.getBoundingClientRect();
+                  btn.classList.toggle('visible', rect.bottom <= 0);
+                }
+              };
+
+              const scrollToTop = () => {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              };
+
+              // Use debounced scroll handler for better performance
+              const debouncedScroll = SvelteBench.debounce ? 
+                SvelteBench.debounce(handleScroll, 100) : handleScroll;
+
+              window.addEventListener('scroll', debouncedScroll);
+              btn.addEventListener('click', scrollToTop);
+              handleScroll(); // Initial check
             }
+          };
 
-            // Event listeners
-            window.addEventListener('scroll', handleScroll);
-            backToTopBtn.addEventListener('click', scrollToTop);
-
-            // Initial check
-            handleScroll();
-          }
+          BackToTop.init();
         });
       </script>
   <% } %>
