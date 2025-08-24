@@ -446,10 +446,9 @@
 
     .progress-indicator {
       height: 100%;
-      width: 100%;
-      flex: 1;
+      width: 0%;
       background: var(--primary);
-      transition: transform 0.3s ease-in-out;
+      transition: width 0.3s ease-in-out;
       border-radius: 9999px;
     }
 
@@ -958,10 +957,19 @@
       top: 0;
       width: 100%;
       height: 100%;
-      overflow: auto;
-      background-color: rgba(0, 0, 0, 0.3);
+      background-color: rgba(0, 0, 0, 0.4);
       backdrop-filter: blur(8px);
       animation: fadeIn 0.3s ease;
+      /* Center the modal using flexbox */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      box-sizing: border-box;
+    }
+
+    .modal[style*="block"] {
+      display: flex !important;
     }
 
     @keyframes fadeIn {
@@ -971,50 +979,64 @@
 
     .modal-content {
       background: var(--surface);
-      margin: 5% auto;
-      padding: 32px;
       border: none;
-      width: 90%;
+      width: 100%;
       max-width: 1200px;
+      max-height: 90vh;
       border-radius: var(--radius-xl);
       box-shadow: var(--shadow-lg);
       animation: slideUp 0.3s ease;
       position: relative;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
     }
 
     @keyframes slideUp {
       from {
         opacity: 0;
-        transform: translateY(20px);
+        transform: translateY(30px) scale(0.95);
       }
       to {
         opacity: 1;
-        transform: translateY(0);
+        transform: translateY(0) scale(1);
       }
     }
 
-    .close {
-      color: var(--text-secondary);
-      position: absolute;
-      top: 24px;
-      right: 24px;
-      font-size: 24px;
-      font-weight: normal;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      background: var(--surface-secondary);
-      transition: all 0.2s ease;
+    /* Modal layout structure */
+    .modal-header {
+      padding: 2rem 2rem 1rem 2rem;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
     }
 
-    .close:hover {
-      color: var(--text-primary);
-      background: var(--surface-tertiary);
-      transform: scale(1.1);
+    .modal-body {
+      flex: 1;
+      padding: 1rem 2rem;
+      overflow-y: auto;
+      min-height: 0; /* Important for flexbox scrolling */
+    }
+
+    .modal-footer {
+      padding: 1rem 2rem 2rem 2rem;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .modal-close-btn {
+      min-width: 120px;
+      padding: 0.75rem 1.5rem;
+      font-size: 1rem;
+      font-weight: 600;
+    }
+
+    /* Hide back-to-top button when modal is active */
+    .back-to-top.modal-hidden {
+      opacity: 0 !important;
+      visibility: hidden !important;
+      transform: translateY(10px) !important;
     }
 
     .code-container {
@@ -1964,6 +1986,51 @@
       .score-text {
         font-size: 13px;
       }
+
+      /* Adjust table column widths for mobile */
+      .top-models-table th:first-child,
+      .top-models-table td:first-child {
+        width: 50px;
+        min-width: 50px;
+      }
+
+      .top-models-table th:last-child,
+      .top-models-table td:last-child {
+        width: 120px;
+        min-width: 120px;
+      }
+
+      /* Ensure table fits on small screens */
+      .top-models-section {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      /* Make navigation and controls more compact */
+      .navigation-links {
+        flex-wrap: wrap;
+        gap: 0.5rem !important;
+      }
+
+      .controls {
+        flex-wrap: wrap;
+        gap: 0.5rem !important;
+        padding: 0.75rem !important;
+      }
+
+      .btn {
+        font-size: 0.875rem;
+        padding: 0.5rem 0.75rem;
+      }
+
+      /* Prevent any fixed width elements from overflowing */
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        overflow-x: hidden;
+      }
     }
 
     /* Mobile Responsive Design */
@@ -2133,12 +2200,20 @@
       }
 
       /* Mobile-specific modal improvements */
-      .modal-content {
-        width: 95%;
-        margin: 2% auto;
-        padding: 20px;
-        max-height: 90vh;
-        overflow-y: auto;
+      .modal {
+        padding: 1rem;
+      }
+
+      .modal-header {
+        padding: 1.5rem 1.5rem 1rem 1.5rem;
+      }
+
+      .modal-body {
+        padding: 0.5rem 1.5rem;
+      }
+
+      .modal-footer {
+        padding: 1rem 1.5rem 1.5rem 1.5rem;
       }
 
       .samples-container {

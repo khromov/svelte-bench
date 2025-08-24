@@ -313,7 +313,7 @@
                   <div style="display: flex; align-items: center; gap: 0.75rem;">
                     <span style="font-size: 0.875rem; font-weight: 600; color: var(--foreground); min-width: 3rem;"><%= model.score.toFixed(1) %>%</span>
                     <div class="progress" style="flex: 1;">
-                      <div class="progress-indicator" style="transform: translateX(-<%= 100 - model.score %>%)"></div>
+                      <div class="progress-indicator" style="width: <%= model.score %>%; transform: translateX(0);"></div>
                     </div>
                   </div>
                 </td>
@@ -469,10 +469,16 @@
     <!-- Modal for HumanEval samples view -->
     <div id="samples-modal" class="modal">
       <div class="modal-content">
-        <span id="close-samples-modal" class="close">&times;</span>
-        <h2 id="samples-modal-title"></h2>
-        <div class="humaneval-metrics" id="samples-modal-metrics"></div>
-        <div class="accordion samples-container" id="samples-container"></div>
+        <div class="modal-header">
+          <h2 id="samples-modal-title"></h2>
+          <div class="humaneval-metrics" id="samples-modal-metrics"></div>
+        </div>
+        <div class="modal-body">
+          <div class="accordion samples-container" id="samples-container"></div>
+        </div>
+        <div class="modal-footer">
+          <button id="close-samples-modal" class="btn btn-primary modal-close-btn">Close</button>
+        </div>
       </div>
     </div>
 
@@ -715,6 +721,12 @@
             samplesContainer.appendChild(sampleDiv);
           });
 
+          // Hide back-to-top button when modal is shown
+          const backToTopBtn = document.getElementById('back-to-top');
+          if (backToTopBtn) {
+            backToTopBtn.classList.add('modal-hidden');
+          }
+
           // Show the modal
           samplesModal.style.display = "block";
         }
@@ -934,13 +946,23 @@
           // Listen for hash changes
           window.addEventListener('hashchange', handleHashNavigation);
 
+          // Function to close samples modal and restore back-to-top button
+          function closeSamplesModal() {
+            const samplesModal = document.getElementById("samples-modal");
+            const backToTopBtn = document.getElementById('back-to-top');
+            
+            samplesModal.style.display = "none";
+            
+            // Show back-to-top button again
+            if (backToTopBtn) {
+              backToTopBtn.classList.remove('modal-hidden');
+            }
+          }
+
           // Close samples modal when clicking the close button
           const closeSamplesButton = document.getElementById("close-samples-modal");
           if (closeSamplesButton) {
-            closeSamplesButton.addEventListener("click", () => {
-              const samplesModal = document.getElementById("samples-modal");
-              samplesModal.style.display = "none";
-            });
+            closeSamplesButton.addEventListener("click", closeSamplesModal);
           }
 
           // Close samples modal when clicking outside the modal content
@@ -948,7 +970,7 @@
           if (samplesModal) {
             samplesModal.addEventListener("click", (event) => {
               if (event.target === samplesModal) {
-                samplesModal.style.display = "none";
+                closeSamplesModal();
               }
             });
           }
