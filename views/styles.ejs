@@ -914,15 +914,22 @@
     .error-list {
       max-height: 400px;
       overflow-y: auto;
+      overflow-x: hidden;
       border: 1px solid var(--border-light);
       border-radius: var(--radius-md);
       background: var(--surface);
+      width: 100%;
+      max-width: 100%;
     }
 
     .error-item {
       padding: 16px;
       border-bottom: 1px solid var(--border-light);
       background: var(--error-bg);
+      width: 100%;
+      max-width: 100%;
+      overflow-x: hidden;
+      box-sizing: border-box;
     }
 
     .error-item:last-child {
@@ -941,10 +948,15 @@
     .error-item pre {
       margin: 0;
       white-space: pre-wrap;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      word-break: break-word;
       font-size: 14px;
       font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
       line-height: 1.5;
       color: var(--error);
+      max-width: 100%;
+      overflow-x: hidden;
     }
 
     /* Lighter error text in dark mode for better legibility */
@@ -2370,6 +2382,15 @@
 
       .modal-body {
         padding: 0.5rem 1.5rem;
+        overflow-x: hidden;
+      }
+
+      /* Enhanced error text wrapping on mobile */
+      .error-item pre {
+        font-size: 12px !important;
+        word-break: break-all;
+        overflow-wrap: anywhere;
+      }
       }
 
       .modal-footer {
