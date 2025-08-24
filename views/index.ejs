@@ -835,9 +835,10 @@
               document.body.classList.remove('modal-open');
               document.documentElement.classList.remove('modal-open');
 
-              // Restore the scroll position
+              // Restore the scroll position (scrollY is already negative, so make it positive)
               if (scrollY) {
-                window.scrollTo(0, parseInt(scrollY || '0') * -1);
+                const scrollPosition = Math.abs(parseInt(scrollY));
+                window.scrollTo(0, scrollPosition);
               }
               
               // Show back-to-top button again
