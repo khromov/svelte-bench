@@ -18,6 +18,15 @@
         document.documentElement.setAttribute('data-theme', defaultTheme);
         localStorage.setItem('theme', defaultTheme);
       }
+      
+      // Also listen for system theme changes and update if no saved preference
+      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(e) {
+        if (!localStorage.getItem('theme')) {
+          const newTheme = e.matches ? 'dark' : 'light';
+          document.documentElement.setAttribute('data-theme', newTheme);
+          localStorage.setItem('theme', newTheme);
+        }
+      });
     })();
   </script>
   
@@ -792,6 +801,10 @@
             samplesContainer.appendChild(sampleDiv);
           });
 
+          // Store current scroll position before showing modal
+          const scrollY = window.scrollY;
+          document.body.style.top = `-${scrollY}px`;
+
           // Hide back-to-top button and lock scroll when modal is shown
           const backToTopBtn = document.getElementById('back-to-top');
           if (backToTopBtn) {
@@ -813,10 +826,19 @@
               if (samplesModal) {
                 samplesModal.style.display = "none";
               }
+
+              // Restore scroll position before unlocking scroll
+              const scrollY = document.body.style.top;
+              document.body.style.top = '';
               
               // Unlock page scroll completely
               document.body.classList.remove('modal-open');
               document.documentElement.classList.remove('modal-open');
+
+              // Restore the scroll position
+              if (scrollY) {
+                window.scrollTo(0, parseInt(scrollY || '0') * -1);
+              }
               
               // Show back-to-top button again
               if (backToTopBtn) {
