@@ -19,14 +19,17 @@
         localStorage.setItem('theme', defaultTheme);
       }
       
-      // Also listen for system theme changes and update if no saved preference
+      // Also listen for system theme changes and update if no manual preference
       window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(e) {
-        if (!localStorage.getItem('theme')) {
+        // Only update theme if user has not manually set a preference
+        if (!localStorage.getItem('themeIsManual')) {
           const newTheme = e.matches ? 'dark' : 'light';
           document.documentElement.setAttribute('data-theme', newTheme);
           localStorage.setItem('theme', newTheme);
         }
       });
+      // To set a manual theme preference elsewhere in your code, use:
+      // localStorage.setItem('theme', THEME_VALUE); localStorage.setItem('themeIsManual', 'true');
     })();
   </script>
   
