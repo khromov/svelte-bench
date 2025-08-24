@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SvelteBench Visualization</title>
-  
+
   <!-- Prevent flash of wrong theme -->
   <script>
     (function() {
@@ -18,7 +18,7 @@
         document.documentElement.setAttribute('data-theme', defaultTheme);
         localStorage.setItem('theme', defaultTheme);
       }
-      
+
       // Also listen for system theme changes and update if no manual preference
       window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(e) {
         // Only update theme if user has not manually set a preference
@@ -32,7 +32,7 @@
       // localStorage.setItem('theme', THEME_VALUE); localStorage.setItem('themeIsManual', 'true');
     })();
   </script>
-  
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -139,17 +139,17 @@
           if (typeof ThemeManager !== 'undefined') {
             ThemeManager.init();
           }
-          
+
           const backToTopBtn = document.getElementById('back-to-top');
           const topModelsSection = document.querySelector('.top-models-section');
-          
+
           if (backToTopBtn) {
             // Show/hide button based on scroll position
             function handleScroll() {
               if (topModelsSection) {
                 const topModelsSectionRect = topModelsSection.getBoundingClientRect();
                 const isTopModelsSectionVisible = topModelsSectionRect.bottom > 0;
-                
+
                 if (!isTopModelsSectionVisible) {
                   backToTopBtn.classList.add('visible');
                 } else {
@@ -196,7 +196,7 @@
           GitHub
         </a>
         <a href="index.html" class="btn btn-primary">View Raw Results →</a>
-        
+
         <!-- Theme toggle button -->
         <button id="theme-toggle" class="btn btn-outline theme-toggle-inline" title="Toggle theme">
           <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -436,7 +436,8 @@
                           </td>
                           <td>
                             <div class="button-group" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-                                      onclick="showSamplesModal('<%= providerData.provider %>', '<%= model %>', <%= index %>);">
+ <button type="button" class="btn btn-primary btn-sm"
+                                      onclick="event.preventDefault(); showSamplesModal('<%= providerData.provider %>', '<%= model %>', <%= index %>); return false;">
                                 View Samples
                               </button>
                               <a href="https://github.com/khromov/svelte-bench/blob/main/src/tests/<%= result.testName %>/prompt.md"
@@ -526,7 +527,7 @@
             decodeBase64Data() {
               const dataElement = document.getElementById("benchmark-data");
               if (!dataElement) return [];
-              
+
               const encodedData = dataElement.getAttribute("data-json");
               if (!encodedData) {
                 console.error("No encoded data found");
@@ -563,11 +564,11 @@
             // Toggle accordion state
             toggleAccordion(trigger) {
               if (!trigger) return;
-              
+
               const content = trigger.nextElementSibling;
               const isOpen = trigger.getAttribute('data-state') === 'open';
               const newState = isOpen ? 'closed' : 'open';
-              
+
               trigger.setAttribute('data-state', newState);
               if (content) {
                 content.setAttribute('data-state', newState);
@@ -605,7 +606,7 @@
               const hiddenRows = document.querySelectorAll('.hidden-model');
               const expandBtn = document.querySelector('.btn[onclick="toggleTopModels()"]');
               if (!expandBtn) return;
-              
+
               const expandText = expandBtn.querySelector('.expand-text');
               const expandIcon = expandBtn.querySelector('.expand-icon');
               const isExpanded = hiddenRows.length > 0 && hiddenRows[0].style.display === 'table-row';
@@ -615,15 +616,15 @@
               });
 
               if (expandText) {
-                expandText.textContent = isExpanded 
+                expandText.textContent = isExpanded
                   ? `Show All ${document.querySelectorAll('.top-model-row').length} Models`
                   : 'Show Top 5 Models';
               }
-              
+
               if (expandIcon) {
                 expandIcon.textContent = isExpanded ? '↓' : '↑';
               }
-              
+
               expandBtn.classList.toggle('expanded', !isExpanded);
             }
           };
@@ -635,9 +636,9 @@
             toggle() {
               const contextContent = document.getElementById("context-content");
               const toggleBtn = document.querySelector(".toggle-context-btn");
-              
+
               if (!contextContent || !toggleBtn) return;
-              
+
               const isVisible = contextContent.style.display === "block";
               contextContent.style.display = isVisible ? "none" : "block";
               toggleBtn.textContent = isVisible ? "Show Context" : "Hide Context";
@@ -824,7 +825,7 @@
             close() {
               const samplesModal = document.getElementById("samples-modal");
               const backToTopBtn = document.getElementById('back-to-top');
-              
+
               if (samplesModal) {
                 samplesModal.style.display = "none";
               }
@@ -832,7 +833,7 @@
               // Restore scroll position before unlocking scroll
               const scrollY = document.body.style.top;
               document.body.style.top = '';
-              
+
               // Unlock page scroll completely
               document.body.classList.remove('modal-open');
               document.documentElement.classList.remove('modal-open');
@@ -842,7 +843,7 @@
                 const scrollPosition = Math.abs(parseInt(scrollY));
                 window.scrollTo(0, scrollPosition);
               }
-              
+
               // Show back-to-top button again
               if (backToTopBtn) {
                 backToTopBtn.classList.remove('modal-hidden');
@@ -861,17 +862,17 @@
             toggleAccordion: UIComponents.toggleAccordion,
             expandAll: UIComponents.expandAll,
             collapseAll: UIComponents.collapseAll,
-            
+
             // Top models
             toggleTopModels: TopModels.toggle,
-            
+
             // Context
             toggleContextContent: ContextContent.toggle,
-            
+
             // Modal
             showSamplesModal: SamplesModal.show,
             closeSamplesModal: SamplesModal.close,
-            
+
             // Utilities
             escapeHtml: Utils.escapeHtml,
             decodeBase64Data: Utils.decodeBase64Data,
@@ -914,7 +915,7 @@
           function updateButtonAppearance(theme) {
             const sunIcon = themeToggle.querySelector('.sun-icon');
             const moonIcon = themeToggle.querySelector('.moon-icon');
-            
+
             if (theme === 'dark') {
               // In dark mode, show moon icon (indicating current dark state)
               sunIcon.style.opacity = '0';
@@ -1105,7 +1106,7 @@
             init() {
               const btn = document.getElementById('back-to-top');
               const topSection = document.querySelector('.top-models-section');
-              
+
               if (!btn) return;
 
               const handleScroll = () => {
@@ -1120,7 +1121,7 @@
               };
 
               // Use debounced scroll handler for better performance
-              const debouncedScroll = SvelteBench.debounce ? 
+              const debouncedScroll = SvelteBench.debounce ?
                 SvelteBench.debounce(handleScroll, 100) : handleScroll;
 
               window.addEventListener('scroll', debouncedScroll);
