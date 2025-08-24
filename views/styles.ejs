@@ -960,16 +960,14 @@
       background-color: rgba(0, 0, 0, 0.4);
       backdrop-filter: blur(8px);
       animation: fadeIn 0.3s ease;
-      /* Center the modal using flexbox */
-      display: flex;
-      align-items: center;
-      justify-content: center;
       padding: 2rem;
       box-sizing: border-box;
     }
 
     .modal[style*="block"] {
       display: flex !important;
+      align-items: center;
+      justify-content: center;
     }
 
     @keyframes fadeIn {
@@ -982,7 +980,8 @@
       border: none;
       width: 100%;
       max-width: 1200px;
-      max-height: 90vh;
+      height: 85vh;
+      max-height: 85vh;
       border-radius: var(--radius-xl);
       box-shadow: var(--shadow-lg);
       animation: slideUp 0.3s ease;
@@ -1026,7 +1025,7 @@
     }
 
     .modal-close-btn {
-      min-width: 120px;
+      width: 100%;
       padding: 0.75rem 1.5rem;
       font-size: 1rem;
       font-weight: 600;
@@ -1529,8 +1528,9 @@
       }
 
       .results-table {
-        min-width: 700px; /* Ensure table doesn't get crushed */
+        min-width: auto; /* Allow table to shrink on mobile */
         margin-bottom: 16px;
+        width: 100%;
       }
 
       .results-table th,
@@ -1551,8 +1551,9 @@
       }
 
       .results-table {
-        min-width: 600px; /* Minimum width for mobile */
+        min-width: auto; /* Allow table to shrink on very small mobile */
         font-size: 13px;
+        width: 100%;
       }
 
       .results-table th,
@@ -2031,6 +2032,11 @@
       body {
         overflow-x: hidden;
       }
+
+      /* Hide less important table columns on mobile */
+      .mobile-hide {
+        display: none !important;
+      }
     }
 
     /* Mobile Responsive Design */
@@ -2202,6 +2208,11 @@
       /* Mobile-specific modal improvements */
       .modal {
         padding: 1rem;
+      }
+
+      .modal-content {
+        height: 90vh;
+        max-height: 90vh;
       }
 
       .modal-header {

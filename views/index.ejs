@@ -384,9 +384,9 @@
                         <th>Test</th>
                         <th>Status</th>
                         <th>pass@1</th>
-                        <th>pass@10</th>
-                        <th>Passing Samples</th>
-                        <th>Errors</th>
+                        <th class="mobile-hide">pass@10</th>
+                        <th class="mobile-hide">Passing Samples</th>
+                        <th class="mobile-hide">Errors</th>
                         <th>Actions</th>
                       </tr>
 
@@ -404,9 +404,9 @@
                             <% } %>
                           </td>
                           <td><%= result.pass1.toFixed(4) %></td>
-                          <td><%= result.pass10.toFixed(4) %></td>
-                          <td><%= result.numCorrect %>/<%= result.numSamples %></td>
-                          <td>
+                          <td class="mobile-hide"><%= result.pass10.toFixed(4) %></td>
+                          <td class="mobile-hide"><%= result.numCorrect %>/<%= result.numSamples %></td>
+                          <td class="mobile-hide">
                             <%
                               const errorCount = result.samples.reduce((count, sample) => {
                                 return count + (sample.errors ? sample.errors.length : 0);
@@ -426,12 +426,12 @@
                               </button>
                               <a href="https://github.com/khromov/svelte-bench/blob/main/src/tests/<%= result.testName %>/prompt.md"
                                  target="_blank"
-                                 class="btn btn-outline btn-sm">
+                                 class="btn btn-outline btn-sm mobile-hide">
                                 View Prompt
                               </a>
                               <a href="https://github.com/khromov/svelte-bench/blob/main/src/tests/<%= result.testName %>/test.ts"
                                  target="_blank"
-                                 class="btn btn-outline btn-sm">
+                                 class="btn btn-outline btn-sm mobile-hide">
                                 View Tests
                               </a>
                             </div>
