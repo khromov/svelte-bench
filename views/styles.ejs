@@ -1613,24 +1613,71 @@
     /* Mobile: Enable horizontal scroll and set minimum table width */
     @media (max-width: 710px) {
       .table-scroll-wrapper {
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
+        overflow-x: hidden; /* Prevent horizontal scrolling */
+        max-width: 100%;
       }
 
       .results-table {
         min-width: auto; /* Allow table to shrink on mobile */
         margin-bottom: 16px;
         width: 100%;
+        table-layout: auto; /* Let table columns flex naturally */
       }
 
+      /* When mobile-hide is active, redistribute column space */
       .results-table th,
       .results-table td {
-        padding: 12px 16px;
+        padding: 10px 12px;
         font-size: 14px;
+        white-space: normal; /* Allow text wrapping */
+        word-wrap: break-word;
+      }
+
+      /* Let columns use natural widths based on content */
+      .results-table th:nth-child(1), /* Test */
+      .results-table td:nth-child(1) {
+        width: auto;
+        min-width: 25%;
+      }
+      
+      .results-table th:nth-child(2), /* Status */
+      .results-table td:nth-child(2) {
+        width: auto;
+        min-width: 60px;
+        text-align: center;
+      }
+      
+      .results-table th:nth-child(3), /* pass@1 */
+      .results-table td:nth-child(3) {
+        width: auto;
+        min-width: 50px;
+        text-align: center;
+      }
+      
+      /* Actions column should take remaining space */
+      .results-table th:last-child,
+      .results-table td:last-child {
+        width: auto;
+        min-width: 100px;
       }
 
       .results-table th {
         font-size: 12px;
+      }
+
+      /* Make buttons more compact and flexible */
+      .button-group {
+        flex-direction: column !important;
+        gap: 0.25rem !important;
+        align-items: stretch;
+      }
+
+      .btn-sm {
+        padding: 0.25rem 0.5rem !important;
+        font-size: 0.75rem !important;
+        min-width: auto;
+        white-space: nowrap;
+        text-align: center;
       }
     }
 
@@ -2411,7 +2458,8 @@
     /* Additional touch improvements for very small screens */
     @media (max-width: 320px) {
       .results-table {
-        min-width: 550px;
+        min-width: auto;
+        width: 100%;
       }
 
       .table-scroll-wrapper .view-code-button,
