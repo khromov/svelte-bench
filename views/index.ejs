@@ -424,8 +424,8 @@
                           </td>
                           <td>
                             <div class="button-group" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-                              <button class="btn btn-primary btn-sm"
-                                      onclick="showSamplesModal('<%= providerData.provider %>', '<%= model %>', <%= index %>)">
+                              <button type="button" class="btn btn-primary btn-sm"
+                                      onclick="event.preventDefault(); showSamplesModal('<%= providerData.provider %>', '<%= model %>', <%= index %>); return false;">
                                 View Samples
                               </button>
                               <a href="https://github.com/khromov/svelte-bench/blob/main/src/tests/<%= result.testName %>/prompt.md"
@@ -1059,6 +1059,16 @@
               }
             });
           }
+
+          // Add escape key handler to close the samples modal
+          document.addEventListener("keydown", (event) => {
+            if (event.key === "Escape") {
+              const samplesModal = document.getElementById("samples-modal");
+              if (samplesModal && samplesModal.style.display === "block") {
+                SvelteBench.closeSamplesModal();
+              }
+            }
+          });
 
           // Initialize all sections as expanded
           SvelteBench.expandAll();
