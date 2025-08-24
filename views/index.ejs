@@ -792,11 +792,14 @@
             samplesContainer.appendChild(sampleDiv);
           });
 
-          // Hide back-to-top button when modal is shown
+          // Hide back-to-top button and lock scroll when modal is shown
           const backToTopBtn = document.getElementById('back-to-top');
           if (backToTopBtn) {
             backToTopBtn.classList.add('modal-hidden');
           }
+
+          // Lock page scroll
+          document.body.style.overflow = 'hidden';
 
               // Show the modal
               samplesModal.style.display = "block";
@@ -809,6 +812,9 @@
               if (samplesModal) {
                 samplesModal.style.display = "none";
               }
+              
+              // Unlock page scroll
+              document.body.style.overflow = '';
               
               // Show back-to-top button again
               if (backToTopBtn) {
@@ -883,12 +889,14 @@
             const moonIcon = themeToggle.querySelector('.moon-icon');
             
             if (theme === 'dark') {
-              sunIcon.style.opacity = '1';
-              moonIcon.style.opacity = '0';
-              themeToggle.title = 'Switch to light mode';
-            } else {
+              // In dark mode, show moon icon (indicating current dark state)
               sunIcon.style.opacity = '0';
               moonIcon.style.opacity = '1';
+              themeToggle.title = 'Switch to light mode';
+            } else {
+              // In light mode, show sun icon (indicating current light state)
+              sunIcon.style.opacity = '1';
+              moonIcon.style.opacity = '0';
               themeToggle.title = 'Switch to dark mode';
             }
           }
