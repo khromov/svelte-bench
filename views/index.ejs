@@ -398,7 +398,6 @@
                             <table class="results-table">
                       <tr>
                         <th>Test</th>
-                        <th>Status</th>
                         <th>pass@1</th>
                         <th class="mobile-hide">pass@10</th>
                         <th class="mobile-hide">Passing Samples</th>
@@ -411,15 +410,17 @@
                         <tr>
                           <td><%= result.testName %></td>
                           <td>
-                            <% if (result.numCorrect === result.numSamples) { %>
-                              <span class="badge badge-success">PASS</span>
-                            <% } else if (result.numCorrect > 0) { %>
-                              <span class="badge badge-warning">PARTIAL</span>
-                            <% } else { %>
-                              <span class="badge badge-error">FAIL</span>
-                            <% } %>
+                            <% 
+                              const pass1Percentage = Math.round(result.pass1 * 100);
+                              let badgeClass = 'badge-error';
+                              if (result.numCorrect === result.numSamples) {
+                                badgeClass = 'badge-success';
+                              } else if (result.numCorrect > 0) {
+                                badgeClass = 'badge-warning';
+                              }
+                            %>
+                            <span class="badge <%= badgeClass %>"><%= pass1Percentage %>%</span>
                           </td>
-                          <td><%= Math.round(result.pass1 * 100) %>%</td>
                           <td class="mobile-hide"><%= Math.round(result.pass10 * 100) %>%</td>
                           <td class="mobile-hide"><%= result.numCorrect %>/<%= result.numSamples %></td>
                           <td class="mobile-hide">
@@ -1041,7 +1042,11 @@
               const element = document.getElementById(elementId);
               if (element) {
                 console.log('Scrolling to', element);
-                element.scrollIntoView();
+                element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                // Add additional padding to ensure visibility
+                setTimeout(() => {
+                  window.scrollBy(0, -100);
+                }, 100);
               }
               }, 300);
             }
