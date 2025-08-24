@@ -419,8 +419,8 @@
                               <span class="badge badge-error">FAIL</span>
                             <% } %>
                           </td>
-                          <td><%= result.pass1.toFixed(4) %></td>
-                          <td class="mobile-hide"><%= result.pass10.toFixed(4) %></td>
+                          <td><%= Math.round(result.pass1 * 100) %>%</td>
+                          <td class="mobile-hide"><%= Math.round(result.pass10 * 100) %>%</td>
                           <td class="mobile-hide"><%= result.numCorrect %>/<%= result.numSamples %></td>
                           <td class="mobile-hide">
                             <%
@@ -438,17 +438,17 @@
                             <div class="button-group" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
  <button type="button" class="btn btn-primary btn-sm"
                                       onclick="event.preventDefault(); showSamplesModal('<%= providerData.provider %>', '<%= model %>', <%= index %>); return false;">
-                                View Samples
+                                Samples
                               </button>
                               <a href="https://github.com/khromov/svelte-bench/blob/main/src/tests/<%= result.testName %>/prompt.md"
                                  target="_blank"
                                  class="btn btn-outline btn-sm mobile-hide">
-                                View Prompt
+                                Prompt
                               </a>
                               <a href="https://github.com/khromov/svelte-bench/blob/main/src/tests/<%= result.testName %>/test.ts"
                                  target="_blank"
                                  class="btn btn-outline btn-sm mobile-hide">
-                                View Tests
+                                Tests
                               </a>
                             </div>
                           </td>
@@ -721,11 +721,11 @@
             </div>
             <div class="metric">
               <span class="metric-label">pass@1</span>
-              <span class="metric-value">${result.pass1.toFixed(4)}</span>
+              <span class="metric-value">${Math.round(result.pass1 * 100)}%</span>
             </div>
             <div class="metric">
               <span class="metric-label">pass@10</span>
-              <span class="metric-value">${result.pass10.toFixed(4)}</span>
+              <span class="metric-value">${Math.round(result.pass10 * 100)}%</span>
             </div>
             <div class="metric">
               <span class="metric-label">Samples</span>
