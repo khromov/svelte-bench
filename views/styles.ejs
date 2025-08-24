@@ -828,12 +828,36 @@
       border-radius: var(--radius-md);
       border: 1px solid var(--border);
       background: var(--surface);
+      overflow: hidden; /* Clip content to rounded corners */
     }
 
     .results-table th, .results-table td {
       padding: 10px 12px;
       text-align: left;
       border-bottom: 1px solid var(--border-light);
+    }
+
+    /* Remove border-bottom from last row to avoid double borders */
+    .results-table tr:last-child th,
+    .results-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    /* Ensure proper corner radius on header and last row */
+    .results-table tr:first-child th:first-child {
+      border-top-left-radius: var(--radius-md);
+    }
+    
+    .results-table tr:first-child th:last-child {
+      border-top-right-radius: var(--radius-md);
+    }
+    
+    .results-table tr:last-child td:first-child {
+      border-bottom-left-radius: var(--radius-md);
+    }
+    
+    .results-table tr:last-child td:last-child {
+      border-bottom-right-radius: var(--radius-md);
     }
 
     .results-table th {
@@ -1611,8 +1635,8 @@
       overflow-y: visible;
       max-width: 100%;
       width: 100%;
-      margin: 0 -24px;
-      padding: 0 24px;
+      margin: 0;
+      padding: 0;
     }
 
     /* Desktop: No horizontal scroll */
@@ -1699,8 +1723,8 @@
 
     @media (max-width: 480px) {
       .table-scroll-wrapper {
-        margin: 0 -16px;
-        padding: 0 16px;
+        margin: 0;
+        padding: 0;
       }
 
       .results-table {
