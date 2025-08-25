@@ -1733,11 +1733,6 @@
         display: none !important;
       }
 
-      /* Also hide table columns with mobile-hide class */
-      .mobile-hide {
-        display: none !important;
-      }
-
       .results-table {
         min-width: auto; /* Allow table to shrink on very small mobile */
         font-size: 13px;
@@ -2126,6 +2121,13 @@
         font-size: 16px;
       }
 
+    }
+
+    /* Hide table columns at 600px but keep buttons visible */
+    @media (max-width: 600px) {
+      .mobile-hide:not(.btn) {
+        display: none !important;
+      }
     }
 
     @media (max-width: 480px) {
