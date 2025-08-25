@@ -1705,11 +1705,12 @@
         font-size: 12px;
       }
 
-      /* Make buttons more compact and flexible */
+      /* Make buttons more compact but keep them inline */
       .button-group {
-        flex-direction: column !important;
+        flex-direction: row !important;
         gap: 0.25rem !important;
-        align-items: stretch;
+        align-items: center;
+        flex-wrap: wrap;
       }
 
       .btn-sm {
@@ -1725,6 +1726,16 @@
       .table-scroll-wrapper {
         margin: 0;
         padding: 0;
+      }
+
+      /* Hide Prompt and Tests buttons on very small screens */
+      .btn.mobile-hide {
+        display: none !important;
+      }
+
+      /* Also hide table columns with mobile-hide class */
+      .mobile-hide {
+        display: none !important;
       }
 
       .results-table {
@@ -2115,10 +2126,6 @@
         font-size: 16px;
       }
 
-      /* Hide less important table columns on mobile */
-      .mobile-hide {
-        display: none !important;
-      }
     }
 
     @media (max-width: 480px) {
