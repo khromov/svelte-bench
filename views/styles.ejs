@@ -2,7 +2,7 @@
     /* ============================================
      * GLOBAL STYLES & RESETS
      * ============================================ */
-    
+
     /* Global reset and box model */
     *, *::before, *::after {
       box-sizing: border-box;
@@ -189,11 +189,11 @@
     /* ============================================
      * UTILITY CLASSES
      * ============================================ */
-    
+
     /* Display utilities */
     .hidden { display: none !important; }
     .visible { display: block !important; }
-    
+
     /* Flexbox utilities */
     .flex { display: flex; }
     .flex-col { flex-direction: column; }
@@ -201,23 +201,23 @@
     .items-center { align-items: center; }
     .justify-center { justify-content: center; }
     .justify-between { justify-content: space-between; }
-    
+
     /* Spacing utilities */
     .gap-2 { gap: 0.5rem; }
     .gap-4 { gap: 1rem; }
     .p-2 { padding: 0.5rem; }
     .p-4 { padding: 1rem; }
     .mb-4 { margin-bottom: 1rem; }
-    
+
     /* Text utilities */
     .text-center { text-align: center; }
     .font-bold { font-weight: 700; }
     .text-sm { font-size: 0.875rem; }
-    
+
     /* Border utilities */
     .rounded { border-radius: var(--radius); }
     .rounded-lg { border-radius: var(--radius-lg); }
-    
+
     /* Width utilities */
     .w-full { width: 100%; }
     .max-w-full { max-width: 100%; }
@@ -600,7 +600,8 @@
     }
 
     .accordion-content[data-state="open"] {
-      max-height: 10000px;
+      max-height: none;
+      height: auto;
       overflow: visible;
       padding-bottom: 1rem;
     }
@@ -825,15 +826,38 @@
       font-size: 14px;
       font-weight: 400;
       border-radius: var(--radius-md);
-      overflow: hidden;
       border: 1px solid var(--border);
       background: var(--surface);
+      overflow: hidden; /* Clip content to rounded corners */
     }
 
     .results-table th, .results-table td {
       padding: 10px 12px;
       text-align: left;
       border-bottom: 1px solid var(--border-light);
+    }
+
+    /* Remove border-bottom from last row to avoid double borders */
+    .results-table tr:last-child th,
+    .results-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    /* Ensure proper corner radius on header and last row */
+    .results-table tr:first-child th:first-child {
+      border-top-left-radius: var(--radius-md);
+    }
+    
+    .results-table tr:first-child th:last-child {
+      border-top-right-radius: var(--radius-md);
+    }
+    
+    .results-table tr:last-child td:first-child {
+      border-bottom-left-radius: var(--radius-md);
+    }
+    
+    .results-table tr:last-child td:last-child {
+      border-bottom-right-radius: var(--radius-md);
     }
 
     .results-table th {
@@ -914,15 +938,22 @@
     .error-list {
       max-height: 400px;
       overflow-y: auto;
+      overflow-x: hidden;
       border: 1px solid var(--border-light);
       border-radius: var(--radius-md);
       background: var(--surface);
+      width: 100%;
+      max-width: 100%;
     }
 
     .error-item {
       padding: 16px;
       border-bottom: 1px solid var(--border-light);
       background: var(--error-bg);
+      width: 100%;
+      max-width: 100%;
+      overflow-x: hidden;
+      box-sizing: border-box;
     }
 
     .error-item:last-child {
@@ -941,10 +972,15 @@
     .error-item pre {
       margin: 0;
       white-space: pre-wrap;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      word-break: break-word;
       font-size: 14px;
       font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
       line-height: 1.5;
       color: var(--error);
+      max-width: 100%;
+      overflow-x: hidden;
     }
 
     /* Lighter error text in dark mode for better legibility */
@@ -1593,51 +1629,108 @@
       margin-left: 8px;
     }
 
-    /* Table scroll wrapper for mobile */
+    /* Table scroll wrapper - ensure full content visibility */
     .table-scroll-wrapper {
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
-      margin: 0 -24px;
-      padding: 0 24px;
+      overflow-x: hidden;
+      overflow-y: visible;
+      max-width: 100%;
+      width: 100%;
+      margin: 0;
+      padding: 0;
     }
 
     /* Desktop: No horizontal scroll */
-    @media (min-width: 769px) {
+    @media (min-width: 711px) {
       .table-scroll-wrapper {
         overflow-x: visible;
+        overflow-y: visible;
         margin: 0;
         padding: 0;
       }
     }
 
-    /* Mobile: Enable horizontal scroll and set minimum table width */
-    @media (max-width: 768px) {
+    /* Mobile: Prevent horizontal scroll but allow full content height */
+    @media (max-width: 710px) {
       .table-scroll-wrapper {
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
+        overflow-x: hidden; /* Prevent horizontal scrolling */
+        overflow-y: visible; /* Allow full vertical content */
+        max-width: 100%;
       }
 
       .results-table {
         min-width: auto; /* Allow table to shrink on mobile */
         margin-bottom: 16px;
         width: 100%;
+        table-layout: auto; /* Let table columns flex naturally */
       }
 
+      /* When mobile-hide is active, redistribute column space */
       .results-table th,
       .results-table td {
-        padding: 12px 16px;
+        padding: 10px 12px;
         font-size: 14px;
+        white-space: normal; /* Allow text wrapping */
+        word-wrap: break-word;
+      }
+
+      /* Let columns use natural widths based on content */
+      .results-table th:nth-child(1), /* Test */
+      .results-table td:nth-child(1) {
+        width: auto;
+        min-width: 25%;
+      }
+      
+      .results-table th:nth-child(2), /* pass@1 (combined with status) */
+      .results-table td:nth-child(2) {
+        width: auto;
+        min-width: 70px;
+        text-align: center;
+      }
+      
+      .results-table th:nth-child(3), /* pass@10 (now 3rd column) */
+      .results-table td:nth-child(3) {
+        width: auto;
+        min-width: 50px;
+        text-align: center;
+      }
+      
+      /* Actions column should take remaining space */
+      .results-table th:last-child,
+      .results-table td:last-child {
+        width: auto;
+        min-width: 100px;
       }
 
       .results-table th {
         font-size: 12px;
       }
+
+      /* Make buttons more compact but keep them inline */
+      .button-group {
+        flex-direction: row !important;
+        gap: 0.25rem !important;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+
+      .btn-sm {
+        padding: 0.25rem 0.5rem !important;
+        font-size: 0.75rem !important;
+        min-width: auto;
+        white-space: nowrap;
+        text-align: center;
+      }
     }
 
     @media (max-width: 480px) {
       .table-scroll-wrapper {
-        margin: 0 -16px;
-        padding: 0 16px;
+        margin: 0;
+        padding: 0;
+      }
+
+      /* Hide Prompt and Tests buttons on very small screens */
+      .btn.mobile-hide {
+        display: none !important;
       }
 
       .results-table {
@@ -1784,20 +1877,30 @@
     }
 
     .top-models-badge {
-      background: linear-gradient(135deg, var(--success) 0%, var(--success-light) 100%);
-      color: white;
+      background: var(--card);
+      color: var(--primary);
       padding: 6px 14px;
       border-radius: 16px;
       font-size: 11px;
       font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 0.8px;
-      box-shadow: var(--shadow-sm);
+      border: 2px solid var(--primary);
+      box-shadow: 0 2px 8px rgba(250, 103, 66, 0.15);
     }
 
-    /* Black text in light mode for better contrast */
+    /* Enhanced styling for light mode */
     [data-theme="light"] .top-models-badge {
-      color: black;
+      background: var(--background);
+      color: var(--primary);
+      border: 2px solid var(--primary);
+    }
+
+    /* Enhanced styling for dark mode */
+    [data-theme="dark"] .top-models-badge {
+      background: var(--card);
+      color: var(--primary);
+      border: 2px solid var(--primary);
     }
 
     .top-models-table {
@@ -1975,7 +2078,7 @@
       display: none;
     }
 
-    @media (max-width: 768px) {
+    @media (max-width: 710px) {
       .top-models-section {
         padding: 24px 20px;
         margin: 24px 0;
@@ -2016,6 +2119,14 @@
 
       .rank {
         font-size: 16px;
+      }
+
+    }
+
+    /* Hide table columns at 600px but keep buttons visible */
+    @media (max-width: 600px) {
+      .mobile-hide:not(.btn) {
+        display: none !important;
       }
     }
 
@@ -2122,17 +2233,12 @@
       /* Additional mobile overflow prevention */
       .table-scroll-wrapper {
         max-width: 100vw;
-        overflow-x: auto;
-      }
-
-      /* Hide less important table columns on mobile */
-      .mobile-hide {
-        display: none !important;
+        overflow-x: hidden;
       }
     }
 
     /* Mobile Responsive Design */
-    @media (max-width: 768px) {
+    @media (max-width: 710px) {
       /* Tablet and below adjustments */
       body {
         padding: 24px 16px;
@@ -2313,6 +2419,15 @@
 
       .modal-body {
         padding: 0.5rem 1.5rem;
+        overflow-x: hidden;
+      }
+
+      /* Enhanced error text wrapping on mobile */
+      .error-item pre {
+        font-size: 12px !important;
+        word-break: break-all;
+        overflow-wrap: anywhere;
+      }
       }
 
       .modal-footer {
@@ -2401,7 +2516,8 @@
     /* Additional touch improvements for very small screens */
     @media (max-width: 320px) {
       .results-table {
-        min-width: 550px;
+        min-width: auto;
+        width: 100%;
       }
 
       .table-scroll-wrapper .view-code-button,
@@ -2467,7 +2583,7 @@
     }
 
     /* Mobile adjustments for back to top */
-    @media (max-width: 768px) {
+    @media (max-width: 710px) {
       .back-to-top {
         bottom: 1.5rem;
         right: 1.5rem;
