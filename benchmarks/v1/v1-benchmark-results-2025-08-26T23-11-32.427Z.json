@@ -1,0 +1,861 @@
+[
+  {
+    "testName": "counter",
+    "provider": "OpenRouter",
+    "modelId": "nousresearch/hermes-4-70b",
+    "numSamples": 10,
+    "numCorrect": 1,
+    "pass1": 0.09999999999999998,
+    "pass10": 1,
+    "context": {
+      "used": false,
+      "content": ""
+    },
+    "samples": [
+      {
+        "index": 0,
+        "code": "<svelte:options runes={true} />\n\n<script>\n    $state count = 0;\n</script>\n\n<div class=\"counter\">\n    <button data-testid=\"decrement-button\" on:click={() => count -= 1}>-</button>\n    <span data-testid=\"count-value\">{$state count}</span>\n    <button data-testid=\"increment-button\" on:click={() => count += 1}>+</button>\n</div>",
+        "success": false,
+        "errors": [
+          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/counter_sample0_8a64152f94d22746/Component.svelte:4:11 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+        ],
+        "temperature": 0
+      },
+      {
+        "index": 1,
+        "code": "<svelte:options runes={true} />\n\n<script>\n    $state.start = 0\n\n    function decrement() {\n        $state.start -= 1\n    }\n\n    function increment() {\n        $state.start += 1\n    }\n</script>\n\n<div class=\"counter\">\n    <button data-testid=\"decrement-button\" on:click={decrement}>-</button>\n    <span data-testid=\"count-value\">{$state.start}</span>\n    <button data-testid=\"increment-button\" on:click={increment}>+</button>\n</div>\n\n<style>\n    .counter {\n        font-family: sans-serif;\n        font-size: 1rem;\n        text-align: center;\n        padding: 1rem;\n        border: 1px solid #ccc;\n        border-radius: 4px;\n        max-width: 200px;\n        margin: 0 auto;\n    }\n\n    button {\n        cursor: pointer;\n        margin: 0 0.5rem;\n        padding: 0.25rem 0.75rem;\n        border-radius: 4px;\n        border: 1px solid #ccc;\n        font-size: 1rem;\n        background-color: #fff;\n    }\n\n    button:hover {\n        background-color: #f5f5f5;\n    }\n</style>",
+        "success": false,
+        "errors": [
+          "tmp/samples/openrouter/counter_sample1_874ce8e77ae2ef35/Component.svelte:4:4 `$state.start` is not a valid rune\nhttps://svelte.dev/e/rune_invalid_name"
+        ]
+      },
+      {
+        "index": 2,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  let count = 0;\n\n  const increment = () => count += 1;\n  const decrement = () => count -= 1;\n</script>\n\n<div class=\"counter\">\n  <button data-testid=\"decrement-button\" on:click={decrement}>-</button>\n  <span data-testid=\"count-value\">{$state count}</span>\n  <button data-testid=\"increment-button\" on:click={increment}>+</button>\n</div>",
+        "success": false,
+        "errors": [
+          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/counter_sample2_3eddd24695b345af/Component.svelte:12:42 Expected token }\nhttps://svelte.dev/e/expected_token"
+        ]
+      },
+      {
+        "index": 3,
+        "code": "<svelte:options runes={true} />\n\n<script>\n    $state start = 0\n\n    function increment() {\n        $state start += 1\n    }\n\n    function decrement() {\n        $state start -= 1\n    }\n</script>\n\n<div class=\"counter\">\n    <button data-testid=\"decrement-button\" on:click={decrement}>-</button>\n    <span data-testid=\"count-value\">{$state start}</span>\n    <button data-testid=\"increment-button\" on:click={increment}>+</button>\n</div>",
+        "success": false,
+        "errors": [
+          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/counter_sample3_a2f85153cfed7a02/Component.svelte:4:11 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+        ]
+      },
+      {
+        "index": 4,
+        "code": "<svelte:options runes={true} />\n\n<script>\n    let count = $state(0, () => 0);\n</script>\n\n<div class=\"counter\">\n  <button data-testid=\"decrement-button\" on:click={() => count -= 1}>-</button>\n  <span data-testid=\"count-value\">{count}</span>\n  <button data-testid=\"increment-button\" on:click={() => count += 1}>+</button>\n</div>",
+        "success": false,
+        "errors": [
+          "tmp/samples/openrouter/counter_sample4_0b044c6da3c969f9/Component.svelte:4:16 `$state` must be called with zero or one arguments\nhttps://svelte.dev/e/rune_invalid_arguments_length"
+        ]
+      },
+      {
+        "index": 5,
+        "code": "<svelte:options runes={true} />\n\n<script>\n    let count = 0;\n    \n    const decrement = () => {\n        $state.count -= 1;\n    };\n    \n    const increment = () => {\n        $state.count += 1;\n    };\n</script>\n\n<div class=\"counter\">\n    <button data-testid=\"decrement-button\" on:click={decrement}>-</button>\n    <span data-testid=\"count-value\">{$state.count}</span>\n    <button data-testid=\"increment-button\" on:click={increment}>+</button>\n</div>",
+        "success": false,
+        "errors": [
+          "tmp/samples/openrouter/counter_sample5_ac85ff039e72821a/Component.svelte:7:8 `$state.count` is not a valid rune\nhttps://svelte.dev/e/rune_invalid_name"
+        ]
+      },
+      {
+        "index": 6,
+        "code": "<svelte:options runes={true} />\n\n<script>\n    $state count = 0\n</script>\n\n<div class=\"counter\">\n    <button data-testid=\"decrement-button\" on:click={() => count -= 1}>-</button>\n    <span data-testid=\"count-value\">{count}</span>\n    <button data-testid=\"increment-button\" on:click={() => count += 1}>+</button>\n</div>",
+        "success": false,
+        "errors": [
+          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/counter_sample6_abbca292df4e0b14/Component.svelte:4:11 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+        ]
+      },
+      {
+        "index": 7,
+        "code": "<svelte:options runes={true} />\n\n<script>\n    $state count = 0;\n</script>\n\n<div class=\"counter\">\n    <button data-testid=\"decrement-button\" on:click={() => count -= 1}>-</button>\n    <span data-testid=\"count-value\">{$count}</span>\n    <button data-testid=\"increment-button\" on:click={() => count += 1}>+</button>\n</div>\n\n<style>\n    .counter {\n        display: flex;\n        align-items: center;\n        gap: 1rem;\n    }\n</style>",
+        "success": false,
+        "errors": [
+          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/counter_sample7_29d3cf40dcc49fb6/Component.svelte:4:11 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+        ]
+      },
+      {
+        "index": 8,
+        "code": "<svelte:options runes={true} />\n\n<script>\n    $state count = 0\n</script>\n\n<div class=\"counter\">\n    <button data-testid=\"decrement-button\" on:click={() => count -= 1}>-</button>\n    <span data-testid=\"count-value\">{$state count}</span>\n    <button data-testid=\"increment-button\" on:click={() => count += 1}>+</button>\n</div>",
+        "success": false,
+        "errors": [
+          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/counter_sample8_b0c31d4ff471188c/Component.svelte:4:11 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+        ]
+      },
+      {
+        "index": 9,
+        "code": "<svelte:options runes={true} />\n\n<script>\n    let count = $state(0);\n</script>\n\n<div class=\"counter\">\n    <button data-testid=\"decrement-button\" on:click={() => count -= 1}>-</button>\n    <span data-testid=\"count-value\">{count}</span>\n    <button data-testid=\"increment-button\" on:click={() => count += 1}>+</button>\n</div>",
+        "success": true,
+        "errors": []
+      }
+    ]
+  },
+  {
+    "testName": "derived",
+    "provider": "OpenRouter",
+    "modelId": "nousresearch/hermes-4-70b",
+    "numSamples": 10,
+    "numCorrect": 0,
+    "pass1": 0,
+    "pass10": 0,
+    "context": {
+      "used": false,
+      "content": ""
+    },
+    "samples": [
+      {
+        "index": 0,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  import { $state, $derived } from 'svelte/internal';\n\n  $state start = 5;\n  $derived doubled (($: start)) => start * 2;\n</script>\n\n<div>\n  <p data-testid=\"number-value\">Number: {start}</p>\n  <p data-testid=\"doubled-value\">Doubled: {doubled}</p>\n  <button data-testid=\"increment-button\" on:click={() => start += 1}>Increment</button>\n</div>",
+        "success": false,
+        "errors": [
+          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/derived_sample0_9e44ff6a5ecaaad3/Component.svelte:6:9 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+        ],
+        "temperature": 0
+      },
+      {
+        "index": 1,
+        "code": "<svelte:options runes={true} />\n\n<script>\n    let number = 5;\n\n    $derived(\n        doubled,\n        $state => doubled = number * 2\n    );\n\n    const increment = () => {\n        number += 1;\n    };\n</script>\n\n<div>\n    <p data-testid=\"number-value\">Number: {number}</p>\n    <p data-testid=\"doubled-value\">Doubled: {doubled}</p>\n    <button data-testid=\"increment-button\" on:click={increment}>Increment</button>\n</div>",
+        "success": false,
+        "errors": [
+          "tmp/samples/openrouter/derived_sample1_45ae7723300b00c1/Component.svelte:6:4 `$derived(...)` can only be used as a variable declaration initializer, a class field declaration, or the first assignment to a class field at the top level of the constructor.\nhttps://svelte.dev/e/state_invalid_placement"
+        ]
+      },
+      {
+        "index": 2,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  let number = 5;\n  $derived(doubled, $, number, number * 2);\n</script>\n\n<div>\n  <p data-testid=\"number-value\">Number: {number}</p>\n  <p data-testid=\"doubled-value\">Doubled: {doubled}</p>\n  <button data-testid=\"increment-button\" on:click={() => number += 1}>Increment</button>\n</div>",
+        "success": false,
+        "errors": [
+          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/derived_sample2_9266eca65437b5b9/Component.svelte:5:20 `$` is an illegal variable name. To reference a global variable called `$`, use `globalThis.$`\nhttps://svelte.dev/e/global_reference_invalid"
+        ]
+      },
+      {
+        "index": 3,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  import { state, derived } from 'svelte/internal'\n\n  const [number, setNumber] = state(5);\n  const [doubled] = derived([number], ($number) => $number * 2);\n</script>\n\n<div>\n  <p data-testid=\"number-value\">Number: {number}</p>\n  <p data-testid=\"doubled-value\">Doubled: {doubled}</p>\n  <button data-testid=\"increment-button\" on:click={() => setNumber(n => n + 1)}>Increment</button>\n</div>",
+        "success": false,
+        "errors": [
+          "tmp/samples/openrouter/derived_sample3_90c1fc1958369316/Component.svelte:4:2 Imports of `svelte/internal/*` are forbidden. It contains private runtime code which is subject to change without notice. If you're importing from `svelte/internal/*` to work around a limitation of Svelte, please open an issue at https://github.com/sveltejs/svelte and explain your use case\nhttps://svelte.dev/e/import_svelte_internal_forbidden"
+        ]
+      },
+      {
+        "index": 4,
+        "code": "<svelte:options runes={true} />\n\n<script>\n    import { derived, state } from \"svelte/internal\";\n    \n    let number;\n    $state('number', () => number, () => 5);\n    \n    let doubled;\n    $: $derived(\n        () => number,\n        ($number) => { doubled = $number * 2 }\n    );\n</script>\n\n<div>\n    <p data-testid=\"number-value\">Number: {number}</p>\n    <p data-testid=\"doubled-value\">Doubled: {doubled}</p>\n    <button data-testid=\"increment-button\" on:click={() => number += 1}>Increment</button>\n</div>",
+        "success": false,
+        "errors": [
+          "tmp/samples/openrouter/derived_sample4_a79330cd2158b68d/Component.svelte:4:4 Imports of `svelte/internal/*` are forbidden. It contains private runtime code which is subject to change without notice. If you're importing from `svelte/internal/*` to work around a limitation of Svelte, please open an issue at https://github.com/sveltejs/svelte and explain your use case\nhttps://svelte.dev/e/import_svelte_internal_forbidden"
+        ]
+      },
+      {
+        "index": 5,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  import { $state, $derived, $effect } from 'svelte/internal';\n  import { rune } from 'svelte-rune';\n\n  const $state = rune((initial) => {\n    let value = initial;\n    return (set) => ({\n      set $$value(newVal) {\n        value = newVal;\n        set($$value, value);\n      },\n      get $$value() {\n        return value;\n      },\n    });\n  });\n\n  rune.display = (num, name) => (label) => (set, get) => {\n    set(name, num());\n    return <p data-testid=\"${name}\">${label}: ${get(name)}</p>;\n  };\n\n  const { $$value, prop1 } = $state(5);\n  prop1.$$value = $$value;\n\n  const doubled = $derived($$value, ($$value) => $$value * 2);\n\n  $effect(() => {\n    const fn = () => {\n      $$value.set(get($$value) + 1);\n    };\n    fn();\n  });\n</script>\n\n<div>\n  {rune.display($$value, \"number-value\")(\"Number\")}\n  {rune.display(doubled, \"doubled-value\")(\"Doubled\")}\n  <button data-testid=\"increment-button\" on:click={() => $$value.set(get($$value) + 1)}>\n    Increment\n  </button>\n</div>",
+        "success": false,
+        "errors": [
+          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/derived_sample5_1a44ee2624f0ca0c/Component.svelte:7:8 Identifier '$state' has already been declared\nhttps://svelte.dev/e/js_parse_error"
+        ]
+      },
+      {
+        "index": 6,
+        "code": "<svelte:options runes={true} />\n\n<script>\n    import { state, derived } from 'svelte/internal';\n    \n    let number = state(5);\n    \n    let doubled = derived(number, ($number) => $number * 2);\n    \n    function increment() {\n        $number += 1;\n    }\n</script>\n\n<div>\n    <p data-testid=\"number-value\">Number: {$number}</p>\n    <p data-testid=\"doubled-value\">Doubled: {$doubled}</p>\n    <button data-testid=\"increment-button\" on:click={increment}>Increment</button>\n</div>",
+        "success": false,
+        "errors": [
+          "tmp/samples/openrouter/derived_sample6_0a7228823d648aaf/Component.svelte:4:4 Imports of `svelte/internal/*` are forbidden. It contains private runtime code which is subject to change without notice. If you're importing from `svelte/internal/*` to work around a limitation of Svelte, please open an issue at https://github.com/sveltejs/svelte and explain your use case\nhttps://svelte.dev/e/import_svelte_internal_forbidden"
+        ]
+      },
+      {
+        "index": 7,
+        "code": "<svelte:options runes={true} />\n\n<script>\n    let number = 5;\n    let doubled = $derived(number, ($n) => $n * 2);\n</script>\n\n<div>\n    <p data-testid=\"number-value\">Number: {number}</p>\n    <p data-testid=\"doubled-value\">Doubled: {doubled}</p>\n    <button data-testid=\"increment-button\" on:click={() => number += 1}>Increment</button>\n</div>",
+        "success": false,
+        "errors": [
+          "tmp/samples/openrouter/derived_sample7_8eaee5fdb2779f03/Component.svelte:5:18 `$derived` must be called with exactly one argument\nhttps://svelte.dev/e/rune_invalid_arguments_length"
+        ]
+      },
+      {
+        "index": 8,
+        "code": "<svelte:options runes={true} />\n\n<script>\n    $$value {\n        let number = 5\n    }\n\n    $$value {\n        let doubled = $derived(number, $n => $n * 2)\n    }\n</script>\n\n<div>\n    <p data-testid=\"number-value\">Number: {number}</p>\n    <p data-testid=\"doubled-value\">Doubled: {doubled}</p>\n    <button data-testid=\"increment-button\" on:click={() => number += 1}>Increment</button>\n</div>",
+        "success": false,
+        "errors": [
+          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/derived_sample8_1c836fd879e1f16e/Component.svelte:4:12 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+        ]
+      },
+      {
+        "index": 9,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  import { state, derived } from 'svelte/internal'\n  \n  let number = state(5)\n  let doubled = derived($number, $n => $n * 2)\n  \n  const increment = () => {\n    number.update(n => n + 1)\n  }\n</script>\n\n<div>\n  <p data-testid=\"number-value\">Number: {$number}</p>\n  <p data-testid=\"doubled-value\">Doubled: {$doubled}</p>\n  <button data-testid=\"increment-button\" on:click={increment}>Increment</button>\n</div>",
+        "success": false,
+        "errors": [
+          "tmp/samples/openrouter/derived_sample9_40f3968cc6348c9b/Component.svelte:4:2 Imports of `svelte/internal/*` are forbidden. It contains private runtime code which is subject to change without notice. If you're importing from `svelte/internal/*` to work around a limitation of Svelte, please open an issue at https://github.com/sveltejs/svelte and explain your use case\nhttps://svelte.dev/e/import_svelte_internal_forbidden"
+        ]
+      }
+    ]
+  },
+  {
+    "testName": "derived-by",
+    "provider": "OpenRouter",
+    "modelId": "nousresearch/hermes-4-70b",
+    "numSamples": 10,
+    "numCorrect": 0,
+    "pass1": 0,
+    "pass10": 0,
+    "context": {
+      "used": false,
+      "content": ""
+    },
+    "samples": [
+      {
+        "index": 0,
+        "code": "<svelte:options runes={true} />\n\n<script>\n    import { state, derived, by } from 'svelte/internal'\n    \n    let text = state('')\n    \n    $: ({ count: wordCount, length: charCount, isLong } = by(text, (text) => {\n        const words = text.trim().split(/\\s+/)\n        const wordCount = words.length\n        const charCount = text.length\n        const isLong = wordCount > 15\n        return { count: wordCount, length: charCount, isLong }\n    }))\n</script>\n\n<div>\n    <input data-testid=\"text-input\" type=\"text\" bind:value={$text} />\n    <button data-testid=\"clear-button\" on:click={() => $text = ''}>Clear</button>\n    <div>\n        <p data-testid=\"word-count\">Words: {wordCount}</p>\n        <p data-testid=\"char-count\">Characters: {charCount}</p>\n        <p data-testid=\"length-indicator\">Status: {isLong ? 'Long text' : 'Short text'}</p>\n    </div>\n</div>",
+        "success": false,
+        "errors": [
+          "tmp/samples/openrouter/derived-by_sample0_e89ce1f850765e39/Component.svelte:4:4 Imports of `svelte/internal/*` are forbidden. It contains private runtime code which is subject to change without notice. If you're importing from `svelte/internal/*` to work around a limitation of Svelte, please open an issue at https://github.com/sveltejs/svelte and explain your use case\nhttps://svelte.dev/e/import_svelte_internal_forbidden"
+        ],
+        "temperature": 0
+      },
+      {
+        "index": 1,
+        "code": "<svelte:options runes={true} />\n\n<#include#@!>\n<script>\n   let text = ''\n   \n   let textStats = $derived.by(\n      text,\n      ($currentText) => (\n         $update {\n            wordCount: $currentText ? $currentText.trim().split(/\\s+/).length : 0,\n            charCount: $currentText ? $currentText.replace(/\\s+/g, '').length : 0,\n            isLong: $currentText ? $currentText.trim().split(/\\s+/).length > 15 : false\n         },\n         {\n            wordCount: 0,\n            charCount: 0,\n            isLong: false\n         }\n      )\n   )\n\n   function clearText() {\n      text = ''\n   }\n</script>\n\n<div>\n   <input data-testid=\"text-input\" type=\"text\" bind:name={text} />\n   <button data-testid=\"clear-button\" on:click={clearText}>Clear</button>\n   <div>\n      <p data-testid=\"word-count\">Words: {textStats.wordCount}</p>\n      <p data-testid=\"char-count\">Characters: {textStats.charCount}</p>\n      <p data-testid=\"length-indicator\">Status: {textStats.isLong ? 'Long text' : 'Short text'}</p>\n   </div>\n</div>",
+        "success": false,
+        "errors": [
+          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/derived-by_sample1_357c8847ead5779f/Component.svelte:3:1 Expected a valid element or component name. Components must have a valid variable name or dot notation expression\nhttps://svelte.dev/e/tag_invalid_name"
+        ]
+      },
+      {
+        "index": 2,
+        "code": "<svelte:options runes={true} />\n\nsuffix=\"svelte\"\n\n<script>\n    import { state, derived, effect } from \"svelte/internal\";\n\n    let $state = state(\"\");\n    let clear = () => $state.set(\"\");\n\n    derived.by({\n        state: $state,\n        calculate: (text) => {\n            const words = text.trim() === \"\" ? 0 : text.split(/\\s+/).length;\n            const isLong = words > 15;\n            return { words, length: text.length, isLong };\n        }\n    }).then(({ words, length, isLong }) => {\n        $derived = { words, length, isLong };\n    });\n</script>\n\n<div>\n    <input data-testid=\"text-input\" type=\"text\" use:state={$state} />\n    <button data-testid=\"clear-button\" on:click={clear}>Clear</button>\n    <div>\n        <p data-testid=\"word-count\">Words: {$derived?.words}</p>\n        <p data-testid=\"char-count\">Characters: {$derived?.length}</p>\n        <p data-testid=\"length-indicator\">Status: {$derived?.isLong ? \"Long\" : \"Short\"} text</p>\n    </div>\n</div>",
+        "success": false,
+        "errors": [
+          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/derived-by_sample2_aaad77076d4cc97d/Component.svelte:8:8 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
+        ]
+      },
+      {
+        "index": 3,
+        "code": "<svelte:options runes={true} />\n\n<script>\n    import { $derived, by } from 'svelte/internal'\n    \n    let text = ''\n    \n    $derived.by(() => [\n        text,\n        wordCount = text.trim().split(/\\s+/).filter(Boolean).length,\n        characterCount = text.length\n    ], ([,,characterCount, wordCount]) => ({\n        wordCount,\n        characterCount,\n        isLong: wordCount > 15\n    }))\n</script>\n\n<div>\n    <input {text} data-testid=\"text-input\" type=\"text\">\n    <button on:click={() => text = ''} data-testid=\"clear-button\">Clear</button>\n    <div>\n        <p data-testid=\"word-count\">Words: {$derived.wordCount}</p>\n        <p data-testid=\"char-count\">Characters: {$derived.characterCount}</p>\n        <p data-testid=\"length-indicator\">Status: {'isLong' in $derived ? $derived.isLong ? 'Long text' : 'Short text' : 'Short text'}</p>\n    </div>\n</div>",
+        "success": false,
+        "errors": [
+          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/derived-by_sample3_1ed90778d5520dfb/Component.svelte:4:13 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
+        ]
+      },
+      {
+        "index": 4,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  let text = ''\n  const { wordCount, charCount, isLong } = $derived.by(() => ({\n    wordCount: text.trim().split(/\\s+/).length,\n    charCount: text.length,\n    isLong: wordCount > 15\n  }))\n</script>\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n  <button data-testid=\"clear-button\" on:click={() => (text = '')}>Clear</button>\n  <div>\n    <p data-testid=\"word-count\">Words: {wordCount}</p>\n    <p data-testid=\"char-count\">Characters: {charCount}</p>\n    <p data-testid=\"length-indicator\">Status: {isLong ? 'Long text' : 'Short text'}</p>\n  </div>\n</div>",
+        "success": false,
+        "errors": [
+          "derived_references_self\nA derived value cannot reference itself recursively\nhttps://svelte.dev/e/derived_references_self\n\n\tin <unknown>\n",
+          "derived_references_self\nA derived value cannot reference itself recursively\nhttps://svelte.dev/e/derived_references_self\n\n\tin <unknown>\n",
+          "derived_references_self\nA derived value cannot reference itself recursively\nhttps://svelte.dev/e/derived_references_self\n\n\tin <unknown>\n"
+        ]
+      },
+      {
+        "index": 5,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  import { state, derived, by } from 'svelte/internal';\n  \n  export let text = state('');\n  derived(by([text], (t) => {\n    const words = t.trim() === '' ? 0 : t.split(/\\s+/).length;\n    const charCount = t.length;\n    const isLong = words > 15;\n    return { words, charCount, isLong };\n  }));\n  \n  function clearText() {\n    text.set('');\n  }\n</script>\n\n<div>\n  <input\n    data-testid=\"text-input\"\n    type=\"text\"\n    bind:value={$text}\n  />\n  <button data-testid=\"clear-button\" on:click={clearText}>\n    Clear\n  </button>\n  <div>\n    <p data-testid=\"word-count\">\n      Words: {$derived.words}\n    </p>\n    <p data-testid=\"char-count\">\n      Characters: {$derived.charCount}\n    </p>\n    <p data-testid=\"length-indicator\">\n      Status: {($derived.isLong ? 'Long text' : 'Short text')}\n    </p>\n  </div>\n</div>",
+        "success": false,
+        "errors": [
+          "tmp/samples/openrouter/derived-by_sample5_5a6922e121acb90a/Component.svelte:4:2 Imports of `svelte/internal/*` are forbidden. It contains private runtime code which is subject to change without notice. If you're importing from `svelte/internal/*` to work around a limitation of Svelte, please open an issue at https://github.com/sveltejs/svelte and explain your use case\nhttps://svelte.dev/e/import_svelte_internal_forbidden"
+        ]
+      },
+      {
+        "index": 6,
+        "code": "<svelte:options runes={true} />\n\n<script>\n    import { $state } from 'svelte';\n\n    let text = $state('');\n\n    $derived.by(text => {\n        const trimmedText = text.trim();\n        const words = trimmedText === '' ? 0 : trimmedText.split(/\\s+/).length;\n        const characters = text.length;\n        const isLong = words > 15;\n\n        return {\n            words,\n            characters,\n            status: isLong ? 'Long text' : 'Short text'\n        };\n    }, { words: 0, characters: 0, status: 'Short text' });\n</script>\n\n<div>\n    <input data-testid=\"text-input\" type=\"text\" bind:value={$state(text)} />\n    <button data-testid=\"clear-button\" on:click={() => $state(text, '')}>Clear</button>\n    <div>\n        <p data-testid=\"word-count\">Words: {words}</p>\n        <p data-testid=\"char-count\">Characters: {characters}</p>\n        <p data-testid=\"length-indicator\">Status: {status}</p>\n    </div>\n</div>",
+        "success": false,
+        "errors": [
+          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/derived-by_sample6_4c322b956f4b356a/Component.svelte:4:13 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
+        ]
+      },
+      {
+        "index": 7,
+        "code": "<svelte:options runes={true} />\n\n<script>\n    let text = $state(\"\");\n\n    $derived.by({\n        text,\n        words: 0,\n        chars: 0,\n        is_long: false\n    }, ({ text }, set) => {\n        const words = text.trim() === \"\" ? 0 : text.split(/\\s+/).length;\n        const chars = text.length;\n        const is_long = words > 15;\n        set({ words, chars, is_long });\n    });\n\n    const clearText = () => {\n        text = \"\";\n    };\n</script>\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" bind:text />\n  <button data-testid=\"clear-button\" on:click={clearText}>Clear</button>\n  <div>\n    <p data-testid=\"word-count\">Words: {words}</p>\n    <p data-testid=\"char-count\">Characters: {chars}</p>\n    <p data-testid=\"length-indicator\">Status: {is_long ? 'Long text' : 'Short text'}</p>\n  </div>\n</div>",
+        "success": false,
+        "errors": [
+          "tmp/samples/openrouter/derived-by_sample7_e0b52fedf213e9c5/Component.svelte:6:4 `$derived.by(...)` can only be used as a variable declaration initializer, a class field declaration, or the first assignment to a class field at the top level of the constructor.\nhttps://svelte.dev/e/state_invalid_placement"
+        ]
+      },
+      {
+        "index": 8,
+        "code": "<svelte:options runes={true} />\n\n<script>\n    let $text = $state('');\n\n    const $derived = {\n        word_count: $derived.by($text, $text => {\n            const words = $text.value.split(/\\s+/);\n            return words.filter(word => word.length > 0).length;\n        }),\n        char_count: $derived.by($text, $text => {\n            return $text.value.length;\n        }),\n        is_long: $derived.by($text, $text => {\n            return $text.value.split(/\\s+/).filter(word => word.length > 0).length > 15;\n        })\n    }\n\n    function clear_text() {\n        $text.set('');\n    }\n</script>\n\n<div>\n    <input data-testid=\"text-input\" type=\"text\" bind=$text />\n    <button data-testid=\"clear-button\" on:click={clear_text}>Clear</button>\n    <div>\n        <p data-testid=\"word-count\">Words: {$derived.word_count}</p>\n        <p data-testid=\"char-count\">Characters: {$derived.char_count}</p>\n        <p data-testid=\"length-indicator\">Status: {#if $derived.is_long}Long text{/if}{#if !$derived.is_long}Short text{/if}</p>\n    </div>\n</div>",
+        "success": false,
+        "errors": [
+          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/derived-by_sample8_23f5fcbbe129870e/Component.svelte:4:8 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
+        ]
+      },
+      {
+        "index": 9,
+        "code": "<svelte:options runes={true} />\n\n<script lang=\"ts\">\n  import { $derived, $state } from 'svelte995'\n  \n  let text = $state('')\n  \n  $derived.by(() => {\n    const words = text.value.split(/\\s+/).filter(Boolean).length\n    const chars = text.value.length\n    const isLong = words > 15\n    \n    return {\n      words,\n      chars,\n      isLong\n    }\n  })\n  let derived\n</script>\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" bind:text.value />\n  <button data-testid=\"clear-button\" on:click={() => text.set('')}>Clear</button>\n  <div>\n    <p data-testid=\"word-count\">Words: {derived.words}</p>\n    <p data-testid=\"char-count\">Characters: {derived.chars}</p>\n    <p data-testid=\"length-indicator\">Status: {derived.isLong ? 'Long text' : 'Short text'}</p>\n  </div>\n</div>",
+        "success": false,
+        "errors": [
+          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/derived-by_sample9_c78c21a155523620/Component.svelte:4:11 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
+        ]
+      }
+    ]
+  },
+  {
+    "testName": "each",
+    "provider": "OpenRouter",
+    "modelId": "nousresearch/hermes-4-70b",
+    "numSamples": 10,
+    "numCorrect": 0,
+    "pass1": 0,
+    "pass10": 0,
+    "context": {
+      "used": false,
+      "content": ""
+    },
+    "samples": [
+      {
+        "index": 0,
+        "code": "<svelte:options runes={true} />\n\n<script>\n    let characters = [\"Jerry\", \"Elaine\", \"Kramer\"];\n    \n    $: addGeorge = () => {\n        characters = [...characters, \"George\"];\n    }\n</script>\n\n<div>\n    <ul data-testid=\"characters-list\">\n        {#each characters as character}\n            <li data-testid=\"character\">{character}</li>\n        {/each}\n    </ul>\n    <button data-testid=\"add-george-button\" on:click={addGeorge}>Add George</button>\n</div>",
+        "success": false,
+        "errors": [
+          "tmp/samples/openrouter/each_sample0_efc9667096d5c18f/Component.svelte:6:4 `$:` is not allowed in runes mode, use `$derived` or `$effect` instead\nhttps://svelte.dev/e/legacy_reactive_statement_invalid"
+        ],
+        "temperature": 0
+      },
+      {
+        "index": 1,
+        "code": "<svelte:options runes={true} />\n\n<script>\n    let characters = ['Jerry', 'Elaine', 'Kramer'];\n    \n    $: addGeorge = () => characters.push('George');\n</script>\n\n<div>\n    <ul data-testid=\"characters-list\">\n        {#each characters as character}\n            <li data-testid=\"character\">{character}</li>\n        {/each}\n    </ul>\n    <button data-testid=\"add-george-button\" on:click={addGeorge}>Add George</button>\n</div>",
+        "success": false,
+        "errors": [
+          "tmp/samples/openrouter/each_sample1_79407870d0a67d0f/Component.svelte:6:4 `$:` is not allowed in runes mode, use `$derived` or `$effect` instead\nhttps://svelte.dev/e/legacy_reactive_statement_invalid"
+        ]
+      },
+      {
+        "index": 2,
+        "code": "<svelte:options runes={true} />\n\n<script>\n    let characters = ['Jerry', 'Elaine', 'Kramer'];\n    \n    $: addGeorge = () => {\n        characters = [...characters, 'George'];\n    };\n</script>\n\n<div>\n    <ul data-testid=\"characters-list\">\n        {#each characters as character (character)}\n            <li data-testid=\"character\">{character}</li>\n        {/each}\n    </ul>\n    <button data-testid=\"add-george-button\" on:click={addGeorge}>Add George</button>\n</div>",
+        "success": false,
+        "errors": [
+          "tmp/samples/openrouter/each_sample2_dc77a578e6a635e9/Component.svelte:6:4 `$:` is not allowed in runes mode, use `$derived` or `$effect` instead\nhttps://svelte.dev/e/legacy_reactive_statement_invalid"
+        ]
+      },
+      {
+        "index": 3,
+        "code": "<svelte:options runes={true} />\n\n<script>\n    let characters = ['Jerry', 'Elaine', 'Kramer'];\n\n    const addGeorge = () => {\n        characters = [...characters, 'George'];\n    };\n</script>\n\n<div>\n    <ul data-testid=\"characters-list\">\n        {#each characters as character (character)}\n            <li data-testid=\"character\">{character}</li>\n        {/each}\n    </ul>\n    <button data-testid=\"add-george-button\" on:click={addGeorge}>Add George</button>\n</div>",
+        "success": false,
+        "errors": [
+          "expected 3 to be 4 // Object.is equality"
+        ]
+      },
+      {
+        "index": 4,
+        "code": "<svelte:options runes={true} />\n\n<script>\n    let characters = ['Jerry', 'Elaine', 'Kramer']\n    \n    $: addGeorge = () => {\n        characters.push('George')\n    }\n</script>\n\n<div>\n    <ul data-testid=\"characters-list\">\n        {#each characters as character (character)}\n            <li data-testid=\"character\">{character}</li>\n        {/each}\n    </ul>\n    <button data-testid=\"add-george-button\" on:click={addGeorge}>Add George</button>\n</div>",
+        "success": false,
+        "errors": [
+          "tmp/samples/openrouter/each_sample4_47eb868a15f8ee64/Component.svelte:6:4 `$:` is not allowed in runes mode, use `$derived` or `$effect` instead\nhttps://svelte.dev/e/legacy_reactive_statement_invalid"
+        ]
+      },
+      {
+        "index": 5,
+        "code": "<svelte:options runes={true} />\n\n<script>\n    let characters = ['Jerry', 'Elaine', 'Kramer'];\n\n    const addGeorge = () => {\n        characters = [...characters, 'George'];\n    };\n</script>\n\n<div>\n    <ul data-testid=\"characters-list\">\n        <li data-testid=\"character\" each=\"{characters}\">{characters}</li>\n    </ul>\n\n    <button data-testid=\"add-george-button\" on:click={addGeorge}>Add George</button>\n</div>",
+        "success": false,
+        "errors": [
+          "expected 1 to be 3 // Object.is equality",
+          "expected 1 to be 3 // Object.is equality"
+        ]
+      },
+      {
+        "index": 6,
+        "code": "<svelte:options runes={true} />\n\n<script>\n    let characters = ['Jerry', 'Elaine', 'Kramer'];\n\n    $: addGeorgeToCharacters = () => characters.push('George');\n</script>\n\n<div>\n    <ul data-testid=\"characters-list\">\n        {#each characters as character (character)}\n            <li data-testid=\"character\">{character}</li>\n        {/each}\n    </ul>\n    <button data-testid=\"add-george-button\" on:click={addGeorgeToCharacters}>Add George</button>\n</div>",
+        "success": false,
+        "errors": [
+          "tmp/samples/openrouter/each_sample6_7b6a8f879412e365/Component.svelte:6:4 `$:` is not allowed in runes mode, use `$derived` or `$effect` instead\nhttps://svelte.dev/e/legacy_reactive_statement_invalid"
+        ]
+      },
+      {
+        "index": 7,
+        "code": "<svelte:options runes={true} />\n\n<script>\n    let characters = [\"Jerry\", \"Elaine\", \"Kramer\"]\n\n    $: addGeorge = () => characters.push(\"George\")\n</script>\n\n<div>\n    <ul data-testid=\"characters-list\">\n        {#each characters as character (character)}\n            <li data-testid=\"character\">{character}</li>\n        {/each}\n    </ul>\n    <button data-testid=\"add-george-button\" on:click={addGeorge}>Add George</button>\n</div>",
+        "success": false,
+        "errors": [
+          "tmp/samples/openrouter/each_sample7_e022421dfea5164e/Component.svelte:6:4 `$:` is not allowed in runes mode, use `$derived` or `$effect` instead\nhttps://svelte.dev/e/legacy_reactive_statement_invalid"
+        ]
+      },
+      {
+        "index": 8,
+        "code": "<svelte:options runes={true} />\n\n<script>\n    let characters = [\"Jerry\", \"Elaine\", \"Kramer\"];\n    \n    $: charactersCount = characters.length;\n    \n    const addGeorge = () => {\n        if (!characters.includes(\"George\")) {\n            characters = [...characters, \"George\"];\n        }\n    };\n</script>\n\n<div>\n    <ul data-testid=\"characters-list\">\n        {#each characters as character}\n            <li data-testid=\"character\">{character}</li>\n        {/each}\n    </ul>\n    {#if charactersCount < 4}\n        <button data-testid=\"add-george-button\" on:click={addGeorge}>Add George</button>\n    {/if}\n</div>",
+        "success": false,
+        "errors": [
+          "tmp/samples/openrouter/each_sample8_fbba2b12c418af37/Component.svelte:6:4 `$:` is not allowed in runes mode, use `$derived` or `$effect` instead\nhttps://svelte.dev/e/legacy_reactive_statement_invalid"
+        ]
+      },
+      {
+        "index": 9,
+        "code": "<svelte:options runes={true} />\n\n<script>\n    let characters = ['Jerry', 'Elaine', 'Kramer']\n    let addGeorge = () => characters.push('George')\n</script>\n\n<div>\n    <ul data-testid=\"characters-list\">\n        {$each: characters as character}\n            <li data-testid=\"character\">{character}</li>\n        {$each}\n    </ul>\n    <button data-testid=\"add-george-button\" on:click={addGeorge}>Add George</button>\n</div>",
+        "success": false,
+        "errors": [
+          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/each_sample9_1eef78f91daf92a3/Component.svelte:10:14 Expected token }\nhttps://svelte.dev/e/expected_token"
+        ]
+      }
+    ]
+  },
+  {
+    "testName": "effect",
+    "provider": "OpenRouter",
+    "modelId": "nousresearch/hermes-4-70b",
+    "numSamples": 10,
+    "numCorrect": 0,
+    "pass1": 0,
+    "pass10": 0,
+    "context": {
+      "used": false,
+      "content": ""
+    },
+    "samples": [
+      {
+        "index": 0,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  let number = 5;\n  let doubled;\n\n  $effect(() => {\n    doubled = number * 2;\n  });\n</script>\n\n<div>\n  <p data-testid=\"number-value\">Number: {number}</p>\n  <p data-testid=\"doubled-value\">Doubled: {doubled}</p>\n  <button data-testid=\"increment-button\" on:click={() => number++}>Increment</button>\n</div>",
+        "success": false,
+        "errors": [
+          "\u001b[2mexpect(\u001b[22m\u001b[31melement\u001b[39m\u001b[2m).toHaveTextContent()\u001b[22m\n\nExpected element to have text content:\n\u001b[32m  Doubled: 10\u001b[39m\nReceived:\n\u001b[31m  Doubled:\u001b[39m",
+          "\u001b[2mexpect(\u001b[22m\u001b[31melement\u001b[39m\u001b[2m).toHaveTextContent()\u001b[22m\n\nExpected element to have text content:\n\u001b[32m  Number: 6\u001b[39m\nReceived:\n\u001b[31m  Number: 5\u001b[39m"
+        ],
+        "temperature": 0
+      },
+      {
+        "index": 1,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  let number = 5;\n  let doubled = 0;\n\n  $effect(() => {\n    doubled = number * 2;\n  });\n\n  const increment = () => {\n    number += 1;\n  };\n</script>\n\n<div>\n  <p data-testid=\"number-value\">Number: {number}</p>\n  <p data-testid=\"doubled-value\">Doubled: {doubled}</p>\n  <button data-testid=\"increment-button\" on:click=\"{increment}\">\n    Increment\n  </button>\n</div>",
+        "success": false,
+        "errors": [
+          "\u001b[2mexpect(\u001b[22m\u001b[31melement\u001b[39m\u001b[2m).toHaveTextContent()\u001b[22m\n\nExpected element to have text content:\n\u001b[32m  Doubled: 10\u001b[39m\nReceived:\n\u001b[31m  Doubled: 0\u001b[39m",
+          "\u001b[2mexpect(\u001b[22m\u001b[31melement\u001b[39m\u001b[2m).toHaveTextContent()\u001b[22m\n\nExpected element to have text content:\n\u001b[32m  Number: 6\u001b[39m\nReceived:\n\u001b[31m  Number: 5\u001b[39m"
+        ]
+      },
+      {
+        "index": 2,
+        "code": "<svelte:options runes={true} />\n\n<button data-testid=\"increment-button\" on:click={() => $state.number += 1}>\n  Increment\n</button>\n<p data-testid=\"number-value\">Number: {$state.number}</p>\n<p data-testid=\"doubled-value\">Doubled: {$effect.double}</p>\nlet $state = {\n  number: 5\n};\n\n$: $effect.double = $state.number * 2;",
+        "success": false,
+        "errors": [
+          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/effect_sample2_7d1e633a0233182a/Component.svelte:9:8 Expected token }\nhttps://svelte.dev/e/expected_token"
+        ]
+      },
+      {
+        "index": 3,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  $state number ﻿= 5;\n  let doubled;\n\n  $effect(() => {\n    doubled = number * 2;\n  });\n</script>\n\n<div>\n  <p data-testid=\"number-value\">Number: {number}</p>\n  <p data-testid=\"doubled-value\">Doubled: {doubled}</p>\n  <button data-testid=\"increment-button\" on:click={() => number += 1}>Increment</button>\n</div>",
+        "success": false,
+        "errors": [
+          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/effect_sample3_c4355aabf517fed8/Component.svelte:4:9 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+        ]
+      },
+      {
+        "index": 4,
+        "code": "<svelte:options runes={true} />\n\n<script>\n    let number = 5;\n\n    $state(number);\n\n    let doubled;\n\n    $effect(() => {\n        doubled = number * 2;\n    }, $number);\n</script>\n\n<div>\n    <p data-testid=\"number-value\">Number: {number}</p>\n    <p data-testid=\"doubled-value\">Doubled: {doubled}</p>\n    <button data-testid=\"increment-button\" on:click={() => number += 1}>Increment</button>\n</div>",
+        "success": false,
+        "errors": [
+          "tmp/samples/openrouter/effect_sample4_a5d9c7b27a337c97/Component.svelte:6:4 `$state(...)` can only be used as a variable declaration initializer, a class field declaration, or the first assignment to a class field at the top level of the constructor.\nhttps://svelte.dev/e/state_invalid_placement"
+        ]
+      },
+      {
+        "index": 5,
+        "code": "<svelte:options runes={true} />\n\n<script>\n    $state number = 5\n    let doubled\n\n    $effect () => {\n        doubled = number * 2\n    }\n\n    function increment() {\n        $state number += 1\n    }\n</script>\n\n<div>\n    <p data-testid=\"number-value\">Number: {number}</p>\n    <p data-testid=\"doubled-value\">Doubled: {doubled}</p>\n    <button data-testid=\"increment-button\" on:click={increment}>Increment</button>\n</div>",
+        "success": false,
+        "errors": [
+          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/effect_sample5_ca36b3200ce10057/Component.svelte:4:11 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+        ]
+      },
+      {
+        "index": 6,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  let number = 5;\n\n  $effect(() => {\n    doubled = number * 2;\n  });\n\n  const increment = () => {\n    number += 1;\n  };\n</script>\n\n<div>\n  <p data-testid=\"number-value\">Number: {number}</p>\n  <p data-testid=\"doubled-value\">Doubled: {doubled}</p>\n  <button data-testid=\"increment-button\" on:click={increment}>Increment</button>\n</div>",
+        "success": false,
+        "errors": [
+          "doubled is not defined\n\n\tin <unknown>\n",
+          "doubled is not defined\n\n\tin <unknown>\n"
+        ]
+      },
+      {
+        "index": 7,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  $state number = 5\n  let doubled\n\n  $effect () => {\n    doubled = number * 2\n  }\n</script>\n\n<div>\n  <p data-testid=\"number-value\">Number: {number}</p>\n  <p data-testid=\"doubled-value\">Doubled: {doubled}</p>\n  <button data-testid=\"increment-button\" on:click={() => number += 1}>Increment</button>\n</div>",
+        "success": false,
+        "errors": [
+          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/effect_sample7_dbe5210677d37796/Component.svelte:4:9 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+        ]
+      },
+      {
+        "index": 8,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  import { state, effect } from 'svelte/internal'\n\n  let _state = state(5)\n\n  function _increment() {\n    _state.update(v => v + 1)\n  }\n\n  let doubled\n\n  effect(() => {\n    doubled = _state.subscribe(v => v * 2)\n  })\n\n  _state.subscribe(value => {\n    doubled = value * 2\n  })\n</script>\n\n<div>\n  <p data-testid=\"number-value\">Number: {$state}</p>\n  <p data-testid=\"doubled-value\">Doubled: {doubled}</p>\n  <button data-testid=\"increment-button\" on:click={_increment}>Increment</button>\n</div>",
+        "success": false,
+        "errors": [
+          "tmp/samples/openrouter/effect_sample8_bb08b5b60e9a1541/Component.svelte:4:2 Imports of `svelte/internal/*` are forbidden. It contains private runtime code which is subject to change without notice. If you're importing from `svelte/internal/*` to work around a limitation of Svelte, please open an issue at https://github.com/sveltejs/svelte and explain your use case\nhttps://svelte.dev/e/import_svelte_internal_forbidden"
+        ]
+      },
+      {
+        "index": 9,
+        "code": "<svelte:options runes={true} />\n\n<script>\n    let number = 5;\n</script>\n\n<div>\n    <p data-testid=\"number-value\">Number: {$state number}</p>\n    {$effect number => doubled = number * 2}\n    <p data-testid=\"doubled-value\">Doubled: {doubled}</p>\n    <button data-testid=\"increment-button\" on:click={() => number++}>Increment</button>\n</div>",
+        "success": false,
+        "errors": [
+          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/effect_sample9_c25159054cc62b5b/Component.svelte:8:50 Expected token }\nhttps://svelte.dev/e/expected_token"
+        ]
+      }
+    ]
+  },
+  {
+    "testName": "hello-world",
+    "provider": "OpenRouter",
+    "modelId": "nousresearch/hermes-4-70b",
+    "numSamples": 10,
+    "numCorrect": 5,
+    "pass1": 0.5,
+    "pass10": 1,
+    "context": {
+      "used": false,
+      "content": ""
+    },
+    "samples": [
+      {
+        "index": 0,
+        "code": "<svelte:options runes={true} />\n\n<script>\n    let greeting = \"Hello, World!\";\n</script>\n\n<div data-testid=\"greeting\" class=\"greeting\">{greeting}</div>\n\n<style>\n    .greeting {\n        color: blue;\n        text-align: center;\n        margin: 8px;\n    }\n</style>",
+        "success": true,
+        "errors": [],
+        "temperature": 0
+      },
+      {
+        "index": 1,
+        "code": "<svelte:options runes={true} />\n\n<script>\n    import { setBodyStyles } from './helpers/body-styles';\n    setBodyStyles('display:flex', 'justify-content:center', 'align-items:center', 'height:100vh');\n</script>\n\n<div data-testid=\"greeting\" class=\"greeting\">Hello, World!</div>\n\n<style>\n    .greeting {\n        color: blue;\n        margin: 8px;\n    }\n</style>",
+        "success": false,
+        "errors": [
+          "Failed to resolve import \"./helpers/body-styles\" from \"tmp/samples/openrouter/hello-world_sample1_6ae126fed4d7c859/Component.svelte\". Does the file exist?"
+        ]
+      },
+      {
+        "index": 2,
+        "code": "<svelte:options runes={true} />\n\n<script>\n    let greetingClass = 'greeting';\n</script>\n\n<div data-testid=\"greeting\" class={greetingClass}>Hello, World!</div>\n\n<style>\n    .greeting {\n        color: blue;\n        text-align: center;\n        margin: 8px;\n    }\n</style>",
+        "success": true,
+        "errors": []
+      },
+      {
+        "index": 3,
+        "code": "<svelte:options runes={true} />\n\n<script>\n    import { onMount } from 'svelte';\n    let mounted = false;\n    onMount(() => {\n        mounted = true;\n    });\n</script>\n\n{#if mounted}\n<div data-testid=\"greeting\" class=\"greeting\">Hello, World!</div>\n<style>\n    .greeting {\n        color: blue;\n        text-align: center;\n        margin: 8px;\n    }\n</style>\n{/if}",
+        "success": false,
+        "errors": [
+          "Unable to find an element by: [data-testid=\"greeting\"]\n\nIgnored nodes: comments, script, style\n\u001b[36m<body>\u001b[39m\n  \u001b[36m<div>\u001b[39m\n    \u001b[0m\u001b[0m\n    \u001b[0m\u001b[0m\n  \u001b[36m</div>\u001b[39m\n\u001b[36m</body>\u001b[39m",
+          "Unable to find an element by: [data-testid=\"greeting\"]\n\nIgnored nodes: comments, script, style\n\u001b[36m<body>\u001b[39m\n  \u001b[36m<div>\u001b[39m\n    \u001b[0m\u001b[0m\n    \u001b[0m\u001b[0m\n  \u001b[36m</div>\u001b[39m\n\u001b[36m</body>\u001b[39m"
+        ]
+      },
+      {
+        "index": 4,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  export let name = 'World';\n</script>\n\n<div data-testid=\"greeting\" class=\"greeting\">\n  Hello, {name}!\n</div>\n\n<style>\n  .greeting {\n    color: blue;\n    text-align: center;\n    margin: 10px;\n  }\n</style>",
+        "success": false,
+        "errors": [
+          "tmp/samples/openrouter/hello-world_sample4_fd4ea53e8c95568c/Component.svelte:4:2 Cannot use `export let` in runes mode — use `$props()` instead\nhttps://svelte.dev/e/legacy_export_invalid"
+        ]
+      },
+      {
+        "index": 5,
+        "code": "<svelte:options runes={true} />\n\n<script>\n    import { onMount } from 'svelte';\n</script>\n\n<div data-testid=\"greeting\" class=\"greeting\">Hello, World!</div>\n\n<style>\n    .greeting {\n        color: blue;\n        margin: 0.5rem;\n        text-align: center;\n    }\n</style>",
+        "success": true,
+        "errors": []
+      },
+      {
+        "index": 6,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  function handleHelloWorldEvent(event) {\n    // Handle event as needed\n  }\n</script>\n\n<div data-testid=\"greeting\" class=\"greeting\" on:click={handleHelloWorldEvent}>Hello, World!</div>\n\n<style>\n  .greeting {\n    color: blue;\n    margin: 10px;\n    text-align: center;\n  }\n</style>",
+        "success": true,
+        "errors": []
+      },
+      {
+        "index": 7,
+        "code": "<svelte:options runes={true} />\n\n<script>\n    setStyle(\n        .greeting {\n            color: blue;\n            text-align: center;\n            margin: 10px;\n        }\n    );\n</script>\n\n<div data-testid=\"greeting\" class=\"greeting\">Hello, World!</div>",
+        "success": false,
+        "errors": [
+          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/hello-world_sample7_df6a905d04240bf0/Component.svelte:5:8 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+        ]
+      },
+      {
+        "index": 8,
+        "code": "<svelte:options runes={true} />\n\n<script>\n    let greetingStyle = 'color: blue; text-align: center; margin: 10px;';\n</script>\n\n<div data-testid=\"greeting\" class=\"greeting\" style={greetingStyle}>Hello, World!</div>\n\n<style>\n    .greeting {\n        color: blue;\n        text-align: center;\n        margin: 10px;\n    }\n</style>",
+        "success": true,
+        "errors": []
+      },
+      {
+        "index": 9,
+        "code": "<svelte:options runes={true} />\n\n<script>\n    export let name = 'World';\n</script>\n\n<div data-testid=\"greeting\" class=\"greeting\">Hello, {name}!</div>\n\n<style>\n    .greeting {\n        color: blue;\n        margin: 0.5rem;\n        text-align: center;\n    }\n</style>",
+        "success": false,
+        "errors": [
+          "tmp/samples/openrouter/hello-world_sample9_7305f381da5d64cf/Component.svelte:4:4 Cannot use `export let` in runes mode — use `$props()` instead\nhttps://svelte.dev/e/legacy_export_invalid"
+        ]
+      }
+    ]
+  },
+  {
+    "testName": "inspect",
+    "provider": "OpenRouter",
+    "modelId": "nousresearch/hermes-4-70b",
+    "numSamples": 10,
+    "numCorrect": 0,
+    "pass1": 0,
+    "pass10": 0,
+    "context": {
+      "used": false,
+      "content": ""
+    },
+    "samples": [
+      {
+        "index": 0,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  import { $state, $inspect, $effect } from 'svelte/internal';\n\n  $state text = 'Hello world';\n\n  $inspect(text).with((value) => {\n    console.log('Input value updated:', value);\n  });\n\n  $effect(() => {\n    $inspect.trace();\n    console.log('Input changed, current value:', text);\n  });\n</script>\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" bind:value=\"{text}\" />\n  <p data-testid=\"text-value\">Current text: {text}</p>\n  <p data-testid=\"char-count\">Character count: {text.length}</p>\n</div>",
+        "success": false,
+        "errors": [
+          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/inspect_sample0_ad4f8635c9b10a28/Component.svelte:6:9 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+        ],
+        "temperature": 0
+      },
+      {
+        "index": 1,
+        "code": "<svelte:options runes={true} />\n\n<div>\n    <form>\n        <input\n            data-testid=\"text-input\"\n            type=\"text\"\n            bind:value={$state.text}\n            placeholder=\"Type something\"\n        />\n    </form>\n    <p data-testid=\"text-value\">Input: {$state.text}</p>\n    <p data-testid=\"char-count\">Character count: {textLength}</p>\n\n    {$inspect($state.text)\n        .with((text) => {\n            console.log(Input changed to: ${text});\n        })}\n    \n    {$effect($state.text, () => {\n        $inspect.trace($state.text);\n    })}\n</div>",
+        "success": false,
+        "errors": [
+          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/inspect_sample1_609813cd235ab32b/Component.svelte:17:30 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+        ]
+      },
+      {
+        "index": 2,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  import { $$state, $inspect } from 'svelte/internal';\n\n  const { $state } = $$state;\n  const text = $state('Hello world');\n\n  $inspect(text)\n    .with(($value) => { \n      console.log('Input value changed to:', $value); \n    });\n</script>\n\n<div>\n  <input\n    data-testid=\"text-input\"\n    type=\"text\"\n    bind:value={$state.text.value}\n  />\n  <p data-testid=\"text-value\">Current text: {$state.text.value}</p>\n  <p data-testid=\"char-count\">Character count: {$state.text.value.length}</p>\n\n  {$effect(() => {\n    $inspect.trace($state.text.value);\n  })}\n</div>",
+        "success": false,
+        "errors": [
+          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/inspect_sample2_eacfb8d802a09e37/Component.svelte:4:11 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
+        ]
+      },
+      {
+        "index": 3,
+        "code": "<svelte:options runes={true} />\n\n<script>\n    import { state, inspect, with, effect, trace } from 'svelte/internal';\n</script>\n\n<div>\n    <input data-testid=\"text-input\" type=\"text\" bind:value={$state.text} />\n    <p data-testid=\"text-value\">Current text: {$state.text}</p>\n    <p data-testid=\"char-count\">Character count: {$state.text.length}</p>\n    {$inspect($state.text).with((value) => console.log(\"Input updated to:\", value))}\n    {effect(() => {\n        $inspect.trace($state.text);\n        console.log(\"Effect ran - char count:\", $state.text.length);\n    })}\n</div>",
+        "success": false,
+        "errors": [
+          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/inspect_sample3_300f6fd198fdbb08/Component.svelte:4:29 Unexpected keyword 'with'\nhttps://svelte.dev/e/js_parse_error"
+        ]
+      },
+      {
+        "index": 4,
+        "code": "<svelte:options runes={true} />\n\n<script>\n    import { $state, $inspect, $effect } from 'svelte/internal'\n    let text = $state('Hello world')\n\n    $effect(() => {\n        console.log(Input updated: ${text})\n    }, [text])\n\n    $effect(() => {\n        console.log(Tracing updates: ${text})\n    }, [text])\n\n    $inspect(text)\n        .with((instance) => {\n            console.log('Custom callback:', instance.get())\n        })\n        .trace()\n\n    $inspect(traceCallback, text)\n\n    function traceCallback(value) {\n        console.log(Tracking: ${value})\n    }\n</script>\n\n<div>\n    <input data-testid=\"text-input\" type=\"text\" bind:value=\"{text}\" />\n    <p data-testid=\"text-value\">Current text: {text}</p>\n    <p data-testid=\"char-count\">Character count: {text.length}</p>\n</div>",
+        "success": false,
+        "errors": [
+          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/inspect_sample4_457eb1ae81fceba2/Component.svelte:8:26 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+        ]
+      },
+      {
+        "index": 5,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  import { rune } from 'svelte-runetree';\n\n  const text = $state('Hello world');\n  $inspect(text);\n  $inspect(text).with(v => console.log('Text updated to:', v));\n\n  $effect(() => {\n    $inspect.trace();\n    console.log('Text changed to:', $text);\n  }, $text);\n</script>\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" bind:value={$text} />\n  <p data-testid=\"text-value\">Current text: {$text}</p>\n  <p data-testid=\"char-count\">Character count: {$text.length}</p>\n</div>",
+        "success": false,
+        "errors": [
+          "tmp/samples/openrouter/inspect_sample5_33764a3db151b9ef/Component.svelte:10:2 `$effect` must be called with exactly one argument\nhttps://svelte.dev/e/rune_invalid_arguments_length"
+        ]
+      },
+      {
+        "index": 6,
+        "code": "<svelte:options runes={true} />\n\n<script>\n    import { inspect, state, effect } from 'svelte/internal';\n\n    const input = state('Hello world');\n\n    inspect(input);\n    inspect(input).with((value) => console.log('Input updated to:', value));\n\n    $: {\n        effect(() => {\n            inspect.trace();\n        });\n    }\n\n    const charCount = input.length;\n</script>\n\n<div>\n    <input {input} data-testid=\"text-input\" type=\"text\" />\n    <p data-testid=\"text-value\">Current text: {input}</p>\n    <p data-testid=\"char-count\">Character count: {charCount}</p>\n</div>",
+        "success": false,
+        "errors": [
+          "tmp/samples/openrouter/inspect_sample6_14cb9ccc912896fa/Component.svelte:4:4 Imports of `svelte/internal/*` are forbidden. It contains private runtime code which is subject to change without notice. If you're importing from `svelte/internal/*` to work around a limitation of Svelte, please open an issue at https://github.com/sveltejs/svelte and explain your use case\nhttps://svelte.dev/e/import_svelte_internal_forbidden"
+        ]
+      },
+      {
+        "index": 7,
+        "code": "<svelte:options runes={true} />\n\n<script>\n    import { state, inspect, effect } from 'svelte/internal';\n    \n    let text = state('Hello world');\n    \n    $inspect(text);\n    \n    $inspect(text).with((value) => {\n        if (value !== 'Hello world') {\n            console.log('Input value changed:', value);\n        }\n    });\n    \n    $effect(() => {\n        if ($state(text).length > 0) {\n            console.log(Updated text length: ${$state(text).length});\n        }\n    });\n</script>\n\n<div>\n    <input data-testid=\"text-input\" type=\"text\" bind:value={$state(text)} />\n    <p data-testid=\"text-value\">Current text: {$state(text)}</p>\n    <p data-testid=\"char-count\">Character count: {$state(text).length}</p>\n</div>",
+        "success": false,
+        "errors": [
+          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/inspect_sample7_8510138a3d4d7bed/Component.svelte:18:32 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+        ]
+      },
+      {
+        "index": 8,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  <state>{text} = 'Hello world'</state>\n  <effect>\n    <inspect>{text}\n  </effect>\n  <inspect bind={text} with={() => console.log('Text updated:', text)}>\n  <effect>\n    <inspect>text).trace('Text changes')\n  </effect>\n\n  const charCount = text => text.length\n</script>\n\n<div>\n  <input {text} data-testid=\"text-input\" type=\"text\"/>\n  <p data-testid=\"text-value\">Current text: {text}</p>\n  <p data-testid=\"char-count\">Character count: {charCount(text)}</p>\n</div>",
+        "success": false,
+        "errors": [
+          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/inspect_sample8_c9b2bd3acab171e2/Component.svelte:4:2 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+        ]
+      },
+      {
+        "index": 9,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  import { $use, $inspect, $$effect } from '$libs/runtimeVERRUNES';\n  \n  export let text = $use('Hello world');\n\n  $effect(\n    $inspect(text).with(() => {\n      console.log(Text value changed to: ${text});\n    })\n  );\n\n  $$effect($inspect(text).trace());\n</script>\n\n<div>\n  <input\n    data-testid=\"text-input\"\n    type=\"text\"\n    bind:value=\"{text}\"\n  />\n  <p data-testid=\"text-value\">Current text: {text}</p>\n  <p data-testid=\"char-count\">Character count: {text.length}</p>\n</div>",
+        "success": false,
+        "errors": [
+          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/inspect_sample9_b8ba60407fd462c3/Component.svelte:10:23 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+        ]
+      }
+    ]
+  },
+  {
+    "testName": "props",
+    "provider": "OpenRouter",
+    "modelId": "nousresearch/hermes-4-70b",
+    "numSamples": 10,
+    "numCorrect": 0,
+    "pass1": 0,
+    "pass10": 0,
+    "context": {
+      "used": false,
+      "content": ""
+    },
+    "samples": [
+      {
+        "index": 0,
+        "code": "<svelte:options runes={true} />\n\n<script>\n    import { $props } from 'svelte';\n    import { $state } from 'svelte';\n    \n    $props({\n        name: \"World\",\n        count: 0,\n        showDetails: false\n    });\n    \n    $state({\n        count: $props.count\n    });\n    \n    function increment() {\n        $state.count += 1;\n    }\n</script>\n\n<div>\n    <h1 data-testid=\"name-display\">Hello, {$props.name}!</h1>\n    <p data-testid=\"count-display\">Count: {$state.count}</p>\n    <button data-testid=\"increment-button\" on:click={increment}>Increment</button>\n\n    {#if $props.showDetails}\n        <div data-testid=\"details\">\n            <p>Name is {$props.name}</p>\n            <p>Count is {$state.count}</p>\n            <p>ShowDetails is {$props.showDetails}</p>\n        </div>\n    {/if}\n</div>",
+        "success": false,
+        "errors": [
+          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/props_sample0_0811e2ad76ad9672/Component.svelte:4:13 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
+        ],
+        "temperature": 0
+      },
+      {
+        "index": 1,
+        "code": "<svelte:options runes={true} />\n\n<script>\n    let count = $props.count;\n</script>\n\n<h1 data-testid=\"name-display\">Hello, {$props.name}!</h1>\n<p data-testid=\"count-display\">Count: {count}</p>\n<button data-testid=\"increment-button\" on:click={() => count += 1}>Increment</button>\n\n{#if $props.showDetails}\n    <div data-testid=\"details\">\n        <p>Name is {$props.name}</p>\n        <p>Count is {count}</p>\n        <p>ShowDetails is {$props.showDetails}</p>\n    </div>\n{/if}",
+        "success": false,
+        "errors": [
+          "tmp/samples/openrouter/props_sample1_cbe89812d906443d/Component.svelte:4:8 `$props.count` is not a valid rune\nhttps://svelte.dev/e/rune_invalid_name"
+        ]
+      },
+      {
+        "index": 2,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  let $state = {\n    count: $props.count\n  };\n</script>\n\n<h1 data-testid=\"name-display\">Hello, {$props.name}!</h1>\n<p data-testid=\"count-display\">Count: {$state.count}</p>\n<button data-testid=\"increment-button\" on:click={() => $state.count += 1}>Increment</button>\n\n{#if $props.showDetails}\n  <div data-testid=\"details\">\n    <p>Name is {$props.name}</p>\n    <p>Count is {$state.count}</p>\n    <p>ShowDetails is {String($props.showDetails)}</p>\n  </div>\n{/if}",
+        "success": false,
+        "errors": [
+          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/props_sample2_0bd90c0b2ee93d10/Component.svelte:4:6 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
+        ]
+      },
+      {
+        "index": 3,
+        "code": "<svelte:options runes={true} />\n\n<script>\n    let count = $props.count\n    let name = $props.name ?? \"World\"\n    let showDetails = $props.showDetails ?? false\n\n    const increment = () => count += 1\n</script>\n\n<div>\n    <h1 data-testid=\"name-display\">Hello, {name}!</h1>\n    <p data-testid=\"count-display\">Count: {count}</p>\n    <button data-testid=\"increment-button\" on:click={increment}>\n        Increment\n    </button>\n\n    {#if showDetails}\n    <div data-testid=\"details\">\n        <p>Name is {name}</p>\n        <p>Count is {count}</p>\n        <p>ShowDetails is {showDetails ? 'true' : 'false'}</p>\n    </div>\n    {/if}\n</div>",
+        "success": false,
+        "errors": [
+          "tmp/samples/openrouter/props_sample3_7428c3e73aef7fee/Component.svelte:4:8 `$props.count` is not a valid rune\nhttps://svelte.dev/e/rune_invalid_name"
+        ]
+      },
+      {
+        "index": 4,
+        "code": "<svelte:options runes={true} />\n\n<script>\n    let $props;\n    $state(() => {\n        return {\n            count: 0\n        };\n    });\n</script>\n\n<div>\n    <h1 data-testid=\"name-display\">Hello, {$props.name || \"World\"}!</h1>\n    <p data-testid=\"count-display\">Count: {$state.count}</p>\n    <button data-testid=\"increment-button\" on:click={() => $state.count += 1}>Increment</button>\n    {#if $props.showDetails}\n        <div data-testid=\"details\">\n            <p>Name is {$props.name || \"World\"}</p>\n            <p>Count is {$state.count}</p>\n            <p>ShowDetails is {$props.showDetails ? \"true\" : \"false\"}</p>\n        </div>\n    {/if}\n</div>",
+        "success": false,
+        "errors": [
+          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/props_sample4_1abab45d48ee3924/Component.svelte:4:8 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
+        ]
+      },
+      {
+        "index": 5,
+        "code": "<svelte:options runes={true} />\n\n<script>\n    let name = \"World\"\n    let count = 0;\n    let showDetails = false;\n\n    export let $props = {\n        name,\n        count: 0,\n        showDetails: false\n    }\n</script>\n\n<div>\n    <h1 data-testid=\"name-display\">Hello, {name}!</h1>\n    <p data-testid=\"count-display\">Count: {count}</p>\n    <button data-testid=\"increment-button\" on:click={() => count += 1}>Increment</button>\n    \n    {#if showDetails}\n        <div data-testid=\"details\">\n            <p>Name is {name}</p>\n            <p>Count is {count}</p>\n            <p>ShowDetails is {showDetails.toString()}</p>\n        </div>\n    {/if}\n</div>",
+        "success": false,
+        "errors": [
+          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/props_sample5_938c125015f9f761/Component.svelte:8:15 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
+        ]
+      },
+      {
+        "index": 6,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  let localCount = $props.count ?? 0;\n</script>\n\n<h1 data-testid=\"name-display\">Hello, {$props.name ?? \"World\"}!</h1>\n<p data-testid=\"count-display\">Count: {localCount}</p>\n<button data-testid=\"increment-button\" on:click={() => localCount += 1}>Increment</button>\n\n{#if $props.showDetails ?? false}\n  <div data-testid=\"details\">\n    <p>Name is {$props.name ?? \"World\"}</p>\n    <p>Count is {localCount}</p>\n    <p>ShowDetails is {($props.showDetails ?? false).toString()}</p>\n  </div>\n{/if}",
+        "success": false,
+        "errors": [
+          "tmp/samples/openrouter/props_sample6_c4a74f4055b3950e/Component.svelte:4:19 `$props.count` is not a valid rune\nhttps://svelte.dev/e/rune_invalid_name"
+        ]
+      },
+      {
+        "index": 7,
+        "code": "<svelte:options runes={true} />\n\n<script>\n    export default {\n        name: 'PropsDemo',\n        $props: {\n            name: 'World',\n            count: 0,\n            showDetails: false\n        },\n        $state: {\n            count\n        },\n        methods: {\n            increment() {\n                this.count += 1;\n            }\n        }\n    };\n</script>\n\n<div>\n    <h1 data-testid=\"name-display\">Hello, {$props.name}!</h1>\n    <p data-testid=\"count-display\">Count: {$state.count}</p>\n    <button data-testid=\"increment-button\" on:click={increment}>Increment</button>\n\n    {#if $props.showDetails}\n        <div data-testid=\"details\">\n            <p>Name is {$props.name}</p>\n            <p>Count is {$state.count}</p>\n            <p>ShowDetails is {$props.showDetails === true ? 'true' : 'false'}</p>\n        </div>\n    {/if}\n</div>",
+        "success": false,
+        "errors": [
+          "tmp/samples/openrouter/props_sample7_1dcca5329dd20288/Component.svelte:4:4 A component cannot have a default export\nhttps://svelte.dev/e/module_illegal_default_export"
+        ]
+      },
+      {
+        "index": 8,
+        "code": "<svelte:options runes={true} />\n\n<script>\n    export let name = \"World\";\n    export let count = 0;\n    export let showDetails = false;\n    \n    $state $count = count;\n    \n    let increment = () => {$count += 1};\n</script>\n\n<div>\n    <h1 data-testid=\"name-display\">Hello, {name}!</h1>\n    <p data-testid=\"count-display\">Count: {$count}</p>\n    <button data-testid=\"increment-button\" on:click={increment}>Increment</button>\n\n    {#if showDetails}\n    <div data-testid=\"details\">\n        <p>Name is {name}</p>\n        <p>Count is {$count}</p>\n        <p>ShowDetails is {showDetails}</p>\n    </div>\n    {/if}\n</div>",
+        "success": false,
+        "errors": [
+          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/props_sample8_cfb641fd63018ced/Component.svelte:8:11 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+        ]
+      },
+      {
+        "index": 9,
+        "code": "<svelte:options runes={true} />\n\n<script>\n    import { $props, $state } from 'svelte';\n    import PropsDemo from './PropsDemo.svelte';\n</script>\n\n<div>\n    <h1 data-testid=\"name-display\">Hello, {$props.name}!</h1>\n    <p data-testid=\"count-display\">Count: {$state.count}</p>\n    <button data-testid=\"increment-button\" on:click={() => $state.count++}>Increment</button>\n\n    {#if $props.showDetails}\n        <div data-testid=\"details\">\n            <p>Name is {$props.name}</p>\n            <p>Count is {$state.count}</p>\n            <p>ShowDetails is {$props.showDetails}</p>\n        </div>\n    {/if}\n</div>",
+        "success": false,
+        "errors": [
+          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/props_sample9_5ef2c58960dfb94b/Component.svelte:4:13 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
+        ]
+      }
+    ]
+  },
+  {
+    "testName": "snippets",
+    "provider": "OpenRouter",
+    "modelId": "nousresearch/hermes-4-70b",
+    "numSamples": 10,
+    "numCorrect": 0,
+    "pass1": 0,
+    "pass10": 0,
+    "context": {
+      "used": false,
+      "content": ""
+    },
+    "samples": [
+      {
+        "index": 0,
+        "code": "<svelte:options runes={true} />\n\n<script>\n    const books = [\"The Lord of the Rings\", \"To Kill a Mockingbird\", \"1984\"];\n</script>\n\n<ul>\n    {#each books as book}\n        <li data-testid=\"book-item\">\n            {@render title book}\n        </li>\n    {/each}\n</ul>\n\n{$snippet title as {title}}\n    <span data-testid=\"book-title\">{title}</span>\n{/snippet}",
+        "success": false,
+        "errors": [
+          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/snippets_sample0_5259bb99757c46a6/Component.svelte:10:21 `{@render ...}` tags can only contain call expressions\nhttps://svelte.dev/e/render_tag_invalid_expression"
+        ],
+        "temperature": 0
+      },
+      {
+        "index": 1,
+        "code": "<svelte:options runes={true} />\n\n<script>\n    import { render } from '@svelteçe/snip';\n    const title = (_, bookTitle) => ({});\n</script>\n\n<ul>\n    <li data-testid=\"book-item\">\n        {@render title(\"The Lord of the Rings\") bookTitle=\"The Lord of the Rings\"}\n    </li>\n    <li data-testid=\"book-item\">\n        {@render title(\"To Kill a Mockingbird\") bookTitle=\"To Kill a Mockingbird\"}\n    </li>\n    <li data-testid=\"book-item\">\n        {@render title(\"1984\") bookTitle=\"1984\"}\n    </li>\n</ul>\n\n{@render title(bookTitle) {bookTitle} as \"span\"\n    dataTestId=\"book-title\"}\n</ul>",
+        "success": false,
+        "errors": [
+          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/snippets_sample1_5bcfc5b2102d93d7/Component.svelte:10:48 Expected token }\nhttps://svelte.dev/e/expected_token"
+        ]
+      },
+      {
+        "index": 2,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  $bookTitles = [\"The Lord of the Rings\", \"To Kill a Mockingbird\", \"1984\"];\n  $title = (book) => <span data-testid=\"book-title\">${book}</span>;\n</script>\n\n<ul>\n  {$each $bookTitles as bookTitle ($bookTitles)}\n    <li data-testid=\"book-item\">{@render $title(bookTitle)}</li>\n  {/$each}\n</ul>",
+        "success": false,
+        "errors": [
+          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/snippets_sample2_697c7fa447f0ae86/Component.svelte:5:21 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+        ]
+      },
+      {
+        "index": 3,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  const books = [\"The Lord of the Rings\", \"To Kill a Mockingbird\", \"1984\"];\n</script>\n\n<ul>\n  {#each books as book (book)}\n    <li data-testid=\"book-item\">\n      {@render title, { book } }\n    </li>\n  {/each}\n</ul>\n\n{@snippet title book={...}}\n  <span data-testid=\"book-title\">{book}</span>\n{/snippet}",
+        "success": false,
+        "errors": [
+          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/snippets_sample3_9793cd03aceefb7e/Component.svelte:10:15 `{@render ...}` tags can only contain call expressions\nhttps://svelte.dev/e/render_tag_invalid_expression"
+        ]
+      },
+      {
+        "index": 4,
+        "code": "<svelte:options runes={true} />\n\n<script>\n    let books = [\"The Lord of the Rings\", \"To Kill a Mockingbird\", \"1984\"]\n\n    $: title = (bookTitle) => \n        <span data-testid=\"book-title\">${bookTitle}</span>\n    \n</script>\n\n<ul>\n    {#each books as book}\n        <li data-testid=\"book-item\">\n            {@render title(book)}\n        </li>\n    {/each}\n</ul>",
+        "success": false,
+        "errors": [
+          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/snippets_sample4_7c92df74fc93b348/Component.svelte:7:8 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+        ]
+      },
+      {
+        "index": 5,
+        "code": "<svelte:options runes={true} />\n\n<svelte:options LeonardoSnippets=true />\n<script>\n    const books = [\"The Lord of the Rings\", \"To Kill a Mockingbird\", \"1984\"];\n</script>\n\n<ul>\n    {#each books as book}\n        <li data-testid=\"book-item\">\n            {@render title book}\n        </li>\n    {/each}\n</ul>\n\n--title.svelte\n<svelte:options LeonardoSnippets={title} /> \n<script>\n    export let title = \"\";\n</script>\n<span data-testid=\"book-title\">\n    {title}\n</span>",
+        "success": false,
+        "errors": [
+          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/snippets_sample5_94bf13f699ffb790/Component.svelte:3:0 A component can only have one `<svelte:options>` element\nhttps://svelte.dev/e/svelte_meta_duplicate"
+        ]
+      },
+      {
+        "index": 6,
+        "code": "<svelte:options runes={true} />\n\n<script>\n    $state array = [\"The Lord of the Rings\", \"To Kill a Mockingbird\", \"1984\"];\n\n    $snippet title(title) {\n        <span data-testid=\"book-title\">{title}</span>\n    }\n</script>\n\n<ul>\n    {#each array as book}\n        <li data-testid=\"book-item\">\n            {@render title(title=book)}\n        </li>\n    {/each}\n</ul>",
+        "success": false,
+        "errors": [
+          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/snippets_sample6_b57330234c80f278/Component.svelte:4:11 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+        ]
+      },
+      {
+        "index": 7,
+        "code": "<svelte:options runes={true} />\n\n<script>\n    const books = ['The Lord of the Rings', 'To Kill a Mockingbird', '1984'];\n</script>\n\n<ul>\n    {#each books as book}\n        <li data-testid=\"book-item\">\n            {@render title book}\n        </li>\n    {/each}\n</ul>\n\n{#snippet title(title)}\n    <span data-testid=\"book-title\">{title}</span>\n{/snippet}",
+        "success": false,
+        "errors": [
+          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/snippets_sample7_d2616db4170c440a/Component.svelte:10:21 `{@render ...}` tags can only contain call expressions\nhttps://svelte.dev/e/render_tag_invalid_expression"
+        ]
+      },
+      {
+        "index": 8,
+        "code": "<svelte:options runes={true} />\n\n<script>\n    const books = [\"The Lord of the Rings\", \"To Kill a Mockingbird\", \"1984\"];\n\n    $snippet(\"title\", ({ title }) => {\n        return <span data-testid=\"book-title\">{title}</span>;\n    });\n</script>\n\n<ul>\n    {#each books as book}\n        <li data-testid=\"book-item\">\n            {@render title with {title: book}}\n        </li>\n    {/each}\n</ul>",
+        "success": false,
+        "errors": [
+          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/snippets_sample8_3a48b8236e666bbf/Component.svelte:7:15 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+        ]
+      },
+      {
+        "index": 9,
+        "code": "<svelte:options runes={true} />\n\n<script>\n    let books = [\"The Lord of the Rings\", \"To Kill a Mockingbird\", \"1984\"];\n\n    $title: ({ title }) => <span data-testid=\"book-title\">{title}</span>;\n</script>\n\n<ul>\n    {#each books as book}\n        <li data-testid=\"book-item\">{@render title with title={book}}</li>\n    {/each}\n</ul>",
+        "success": false,
+        "errors": [
+          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/snippets_sample9_91c9c7a4c1a07a85/Component.svelte:6:27 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+        ]
+      }
+    ]
+  }
+]
