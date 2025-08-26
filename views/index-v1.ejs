@@ -1,0 +1,1240 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SvelteBench Visualization - V1 Results</title>
+
+  <!-- Prevent flash of wrong theme -->
+  <script>
+    (function() {
+      const savedTheme = localStorage.getItem('theme');
+      if (savedTheme) {
+        document.documentElement.setAttribute('data-theme', savedTheme);
+      } else {
+        // Respect device preference on first load
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const defaultTheme = prefersDark ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', defaultTheme);
+        localStorage.setItem('theme', defaultTheme);
+      }
+
+      // Also listen for system theme changes and update if no manual preference
+      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(e) {
+        // Only update theme if user has not manually set a preference
+        if (!localStorage.getItem('themeIsManual')) {
+          const newTheme = e.matches ? 'dark' : 'light';
+          document.documentElement.setAttribute('data-theme', newTheme);
+          localStorage.setItem('theme', newTheme);
+        }
+      });
+      // To set a manual theme preference elsewhere in your code, use:
+      // localStorage.setItem('theme', THEME_VALUE); localStorage.setItem('themeIsManual', 'true');
+    })();
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <%- include('styles') %>
+  <style>
+    /* V1 Warning Alert Styles */
+    .v1-warning-alert {
+      margin: 1.5rem 0 2rem;
+      padding: 1rem 1.5rem;
+      background: var(--warning-bg, hsl(38.3 92.1% 95%));
+      border: 1px solid var(--warning, hsl(38.3 92.1% 50.2%));
+      border-radius: var(--radius-md);
+      color: var(--warning-foreground, var(--foreground));
+    }
+
+    [data-theme="dark"] .v1-warning-alert {
+      background: hsla(38.3, 92.1%, 50.2%, 0.15);
+      border-color: hsla(38.3, 92.1%, 50.2%, 0.5);
+    }
+
+    .v1-warning-alert h3 {
+      font-size: 1.125rem;
+      font-weight: 700;
+      margin: 0 0 0.5rem 0;
+      color: var(--warning-foreground, var(--foreground));
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .v1-warning-alert p {
+      margin: 0 0 1rem 0;
+      font-size: 0.9375rem;
+      line-height: 1.6;
+    }
+
+    .v1-warning-alert p:last-child {
+      margin-bottom: 0;
+    }
+
+    .warning-icon {
+      width: 20px;
+      height: 20px;
+      fill: var(--warning, hsl(38.3 92.1% 50.2%));
+      flex-shrink: 0;
+    }
+
+    /* Smoother accordion animations */
+    .accordion-content {
+      overflow: hidden;
+      font-size: 0.875rem;
+      transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
+                  opacity 0.3s ease-out,
+                  transform 0.3s ease-out;
+      max-height: 0;
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+
+    .accordion-content[data-state="open"] {
+      max-height: 5000px; /* Large enough for content */
+      opacity: 1;
+      transform: translateY(0);
+      padding-bottom: 1rem;
+    }
+
+    .chevron-icon {
+      height: 1rem;
+      width: 1rem;
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+  </style>
+</head>
+<body>
+
+  <h1>SvelteBench Visualization - V1 Results</h1>
+
+  <!-- V1 Warning Alert -->
+  <div class="v1-warning-alert">
+    <h3>
+      <svg class="warning-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+        <line x1="12" y1="9" x2="12" y2="13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <circle cx="12" cy="17" r="1" fill="currentColor"/>
+      </svg>
+      Important: These are V1 Results with Known Issues
+    </h3>
+    <p>
+      These benchmark results contain an error in the "inspect" test prompt that may affect accuracy. The prompt had incorrect quotation marks in the Svelte binding syntax examples, which could confuse language models and lead to inconsistent results.
+    </p>
+    <p>
+      <strong>We strongly recommend viewing the updated V2 results instead:</strong><br>
+      <a href="../benchmark-results-merged.html" class="btn btn-primary" style="display: inline-flex; margin-top: 0.5rem;">
+        View Corrected V2 Results →
+      </a>
+    </p>
+  </div>
+
+  <% if (typeof isIndexPage !== 'undefined' && isIndexPage === true) { %>
+    <!-- Index page showing list of all benchmark results -->
+    <% if (benchmarkFiles.length === 0) { %>
+      <div class="no-results">
+        <h2>No benchmark results found</h2>
+        <p>Run the benchmark first using <code>npm start</code></p>
+      </div>
+    <% } else { %>
+      <%
+        // Separate merged file from other files
+        const mergedFile = benchmarkFiles.find(file => file.name.includes('merged'));
+        const otherFiles = benchmarkFiles.filter(file => !file.name.includes('merged'));
+      %>
+
+      <% if (mergedFile) { %>
+        <!-- Featured merged results -->
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Latest Merged Results</h2>
+            <p class="card-description">
+              This file contains the most recent results from each model, automatically merged for easy comparison.
+            </p>
+          </div>
+          <div class="card-footer">
+            <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+              <a href="<%= mergedFile.name.replace('.json', '.html') %>" class="btn btn-primary">
+                View Results
+              </a>
+              <a href="<%= mergedFile.name %>" download class="btn btn-outline">
+                Download JSON
+              </a>
+            </div>
+          </div>
+        </div>
+      <% } %>
+
+      <% if (otherFiles.length > 0) { %>
+        <!-- Other results section -->
+        <div class="accordion" style="margin-top: 2rem;">
+          <div class="accordion-item card">
+            <button class="accordion-trigger" onclick="toggleAccordion(this)" data-state="closed">
+              <h2 style="margin: 0; font-size: 1.25rem; font-weight: 600;">
+                Raw Results
+                <span class="badge badge-secondary" style="margin-left: 0.5rem;"><%= otherFiles.length %> files</span>
+              </h2>
+              <svg class="chevron-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6,9 12,15 18,9"></polyline>
+              </svg>
+            </button>
+
+            <div class="accordion-content" data-state="closed">
+              <div class="accordion-content-inner">
+                <div class="benchmark-list" style="display: flex; flex-direction: column; gap: 0.75rem;">
+                  <% otherFiles.forEach(file => { %>
+                    <div class="benchmark-item" style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; border: 1px solid var(--border); border-radius: var(--radius); background: var(--card);">
+                      <a href="<%= file.name.replace('.json', '.html') %>" class="benchmark-link" style="color: var(--foreground); text-decoration: none; font-weight: 500;">
+                        <%= file.name.replace('.json', '') %>
+                      </a>
+                      <a href="<%= file.name %>" download class="btn btn-outline btn-sm">Download</a>
+                    </div>
+                  <% }); %>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      <% } %>
+
+      <% if (!mergedFile && otherFiles.length === 0) { %>
+        <!-- This shouldn't happen, but just in case -->
+        <div class="no-results">
+          <h2>No valid benchmark results found</h2>
+          <p>Run the benchmark first using <code>npm start</code></p>
+        </div>
+      <% } %>
+
+      <script>
+        // Toggle accordion function for shadcn-style accordions
+        function toggleAccordion(trigger) {
+          const content = trigger.nextElementSibling;
+          const isOpen = trigger.getAttribute('data-state') === 'open';
+
+          if (isOpen) {
+            trigger.setAttribute('data-state', 'closed');
+            content.setAttribute('data-state', 'closed');
+          } else {
+            trigger.setAttribute('data-state', 'open');
+            content.setAttribute('data-state', 'open');
+          }
+        }
+
+        // Back to top functionality
+        document.addEventListener('DOMContentLoaded', function() {
+          // Initialize theme toggle
+          if (typeof ThemeManager !== 'undefined') {
+            ThemeManager.init();
+          }
+
+          const backToTopBtn = document.getElementById('back-to-top');
+          const topModelsSection = document.querySelector('.top-models-section');
+
+          if (backToTopBtn) {
+            // Show/hide button based on scroll position
+            function handleScroll() {
+              if (topModelsSection) {
+                const topModelsSectionRect = topModelsSection.getBoundingClientRect();
+                const isTopModelsSectionVisible = topModelsSectionRect.bottom > 0;
+
+                if (!isTopModelsSectionVisible) {
+                  backToTopBtn.classList.add('visible');
+                } else {
+                  backToTopBtn.classList.remove('visible');
+                }
+              } else {
+                // Fallback: show after scrolling 400px if no top models section
+                if (window.scrollY > 400) {
+                  backToTopBtn.classList.add('visible');
+                } else {
+                  backToTopBtn.classList.remove('visible');
+                }
+              }
+            }
+
+            // Smooth scroll to top
+            function scrollToTop() {
+              window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+              });
+            }
+
+            // Event listeners
+            window.addEventListener('scroll', handleScroll);
+            backToTopBtn.addEventListener('click', scrollToTop);
+
+            // Initial check
+            handleScroll();
+          }
+        });
+      </script>
+    <% } %>
+  <% } else { %>
+    <!-- Regular benchmark result page -->
+
+    <% if (typeof isStaticBuild !== 'undefined' && isStaticBuild === true) { %>
+      <!-- Static build version -->
+      <div class="navigation-links" style="display: flex; gap: 0.75rem; margin-bottom: 2rem;">
+        <a href="https://github.com/khromov/svelte-bench" target="_blank" class="btn btn-outline">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+            <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+          </svg>
+          GitHub
+        </a>
+        <a href="../benchmark-results-merged.html" class="btn btn-primary">View V2 Results →</a>
+
+        <!-- Theme toggle button -->
+        <button id="theme-toggle" class="btn btn-outline theme-toggle-inline" title="Toggle theme">
+          <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+          </svg>
+          <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+        </button>
+      </div>
+    <% } else { %>
+      <!-- Server version with dropdown -->
+      <div>
+        <label for="benchmark-select">Select Benchmark:</label>
+        <select id="benchmark-select" onchange="window.location.href = '/?file=' + this.value">
+          <% benchmarkFiles.forEach(file => { %>
+            <option value="<%= file.name %>" <%= file.name === selectedFile ? 'selected' : '' %>>
+              <%= file.name %>
+            </option>
+          <% }); %>
+        </select>
+      </div>
+    <% } %>
+
+    <!-- Display context information if available -->
+    <% if (typeof contextInfo !== 'undefined' && contextInfo) { %>
+      <div class="context-info">
+        <div class="context-header">
+          <h3>Context File: <%= contextInfo.filename %></h3>
+          <button class="btn btn-primary" onclick="toggleContextContent()">Show Context</button>
+        </div>
+        <div class="context-content" id="context-content">
+          <%= contextInfo.content %>
+        </div>
+      </div>
+    <% } %>
+
+    <%
+    // Check if this is the merged results file and calculate top models
+    let topModelsList = [];
+    if (selectedFile && selectedFile.includes('merged') && groupedResults.length > 0) {
+      const modelScores = new Map();
+
+      // Iterate through all providers and models
+      groupedResults.forEach(providerData => {
+        Object.entries(providerData.models).forEach(([modelName, results]) => {
+          // Calculate average pass@1 for this model
+          let totalPass1 = 0;
+          let testCount = 0;
+
+          results.forEach(result => {
+            totalPass1 += result.pass1;
+            testCount++;
+          });
+
+          if (testCount > 0) {
+            const avgPass1 = totalPass1 / testCount;
+            modelScores.set(`${providerData.provider}|${modelName}`, {
+              provider: providerData.provider,
+              model: modelName,
+              averagePass1: avgPass1,
+              score: avgPass1 * 100 // Convert to percentage
+            });
+          }
+        });
+      });
+
+      // Sort models by average pass@1 in descending order
+      topModelsList = Array.from(modelScores.values())
+        .sort((a, b) => b.averagePass1 - a.averagePass1);
+    }
+    %>
+
+    <% if (topModelsList.length > 0) { %>
+      <!-- Top models section for merged results -->
+      <div class="top-models-section">
+        <div class="top-models-header">
+          <h2 class="top-models-title">Top Models Leaderboard</h2>
+          <span class="top-models-badge">Average pass@1 scores</span>
+        </div>
+
+        <!-- Search bar for models -->
+        <div class="model-search-container">
+          <input
+            type="text"
+            id="model-search-input"
+            class="input"
+            placeholder="Search models..."
+            autocomplete="off"
+            style="padding-left: 2.5rem;"
+          />
+          <svg class="search-icon" style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: var(--muted-foreground);" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <path d="m21 21-4.35-4.35"></path>
+          </svg>
+        </div>
+
+        <table class="top-models-table">
+          <thead>
+            <tr>
+              <th style="width: 60px; text-align: center;">Rank</th>
+              <th>Model</th>
+              <th style="width: 200px;">Score</th>
+            </tr>
+          </thead>
+          <tbody id="top-models-tbody">
+            <% topModelsList.forEach((model, index) => { %>
+              <tr class="top-model-row <%= index >= 5 ? 'hidden-model' : '' %>"
+                  data-rank="<%= index + 1 %>"
+                  data-model-name="<%= model.model.toLowerCase() %>"
+                  data-provider-name="<%= model.provider.toLowerCase() %>">
+                <td style="text-align: center;">
+                  <span class="rank rank-<%= index + 1 %>"><%= index + 1 %></span>
+                </td>
+                <td>
+                  <a href="#model-<%= model.provider.replace(/\s+/g, '-').toLowerCase() %>-<%= model.model.replace(/\s+/g, '-').toLowerCase() %>" class="model-name-link">
+                    <span class="model-name"><%= model.model %></span>
+                  </a>
+                  <span class="provider-name">(<%= model.provider %>)</span>
+                </td>
+                <td>
+                  <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <span style="font-size: 0.875rem; font-weight: 600; color: var(--foreground); min-width: 3rem;"><%= model.score.toFixed(1) %>%</span>
+                    <div class="progress" style="flex: 1;">
+                      <div class="progress-indicator" style="width: <%= model.score %>%; transform: translateX(0);"></div>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+
+        <div class="search-no-results" id="search-no-results" style="display: none;">
+          <p>No models found matching your search.</p>
+        </div>
+
+        <% if (topModelsList.length > 5) { %>
+          <div class="top-models-expand-container" id="expand-button-container" style="text-align: center; margin-top: 1rem;">
+            <button class="btn btn-secondary" onclick="toggleTopModels()">
+              <span class="expand-text">Show All <%= topModelsList.length %> Models</span>
+              <span class="expand-icon" style="margin-left: 0.5rem;">↓</span>
+            </button>
+          </div>
+        <% } %>
+      </div>
+    <% } %>
+
+    <!-- Notes and Errata sections -->
+    <div class="notes-box">
+      <p>
+        <i><strong>Note:</strong> Certain OpenAI thinking models (o3, o4) and gpt-5 do not support temperature adjustments (only default value of 1 is supported). Models with "-reasoning-" suffix (e.g., gpt-5-2025-08-07-reasoning-medium) will use the specified reasoning effort setting.</i>
+      </p>
+
+      <p>
+        <i><strong>Errata:</strong> The "inspect" test has known correctness issues but is retained in the benchmark suite to maintain consistency and fairness in scoring across all evaluated models.</i>
+      </p>
+    </div>
+
+    <div class="controls" style="display: flex; gap: 0.5rem; padding: 1rem; background: var(--card); border-radius: var(--radius-md); border: 1px solid var(--border); margin-bottom: 1.5rem;">
+      <button class="btn btn-outline" onclick="expandAll()">Expand All</button>
+      <button class="btn btn-outline" onclick="collapseAll()">Collapse All</button>
+    </div>
+
+    <% if (groupedResults.length > 0) { %>
+      <div class="accordion grouped-results">
+        <% groupedResults.forEach(providerData => { %>
+          <div class="accordion-item card provider-section" id="provider-<%= providerData.provider.replace(/\s+/g, '-').toLowerCase() %>">
+            <button class="accordion-trigger" onclick="toggleAccordion(this)" data-state="open">
+              <h2 style="margin: 0; font-size: 1.5rem; font-weight: 600;"><%= providerData.provider %></h2>
+              <svg class="chevron-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6,9 12,15 18,9"></polyline>
+              </svg>
+            </button>
+
+            <div class="accordion-content" data-state="open">
+              <div class="accordion-content-inner">
+                <div class="accordion" style="margin-top: 0.5rem;">
+                  <% Object.entries(providerData.models).forEach(([model, results]) => { %>
+                    <div class="accordion-item" id="model-<%= providerData.provider.replace(/\s+/g, '-').toLowerCase() %>-<%= model.replace(/\s+/g, '-').toLowerCase() %>">
+                      <button class="accordion-trigger" onclick="toggleAccordion(this)" data-state="open">
+                        <h3 style="margin: 0; font-size: 1.125rem; font-weight: 600;"><%= model %></h3>
+                        <svg class="chevron-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <polyline points="6,9 12,15 18,9"></polyline>
+                        </svg>
+                      </button>
+
+                      <div class="accordion-content" data-state="open">
+                        <div class="accordion-content-inner">
+                          <div class="table-scroll-wrapper">
+                            <table class="results-table">
+                      <tr>
+                        <th>Test</th>
+                        <th>pass@1</th>
+                        <th class="mobile-hide">pass@10</th>
+                        <th class="mobile-hide">Passing Samples</th>
+                        <th class="mobile-hide">Errors</th>
+                        <th>Actions</th>
+                      </tr>
+
+                      <!-- HumanEval Format -->
+                      <% results.forEach((result, index) => { %>
+                        <tr>
+                          <td><%= result.testName %></td>
+                          <td>
+                            <% 
+                              const pass1Percentage = Math.round(result.pass1 * 100);
+                              let badgeClass = 'badge-error';
+                              if (result.numCorrect === result.numSamples) {
+                                badgeClass = 'badge-success';
+                              } else if (result.numCorrect > 0) {
+                                badgeClass = 'badge-warning';
+                              }
+                            %>
+                            <span class="badge <%= badgeClass %>"><%= pass1Percentage %>%</span>
+                          </td>
+                          <td class="mobile-hide"><%= Math.round(result.pass10 * 100) %>%</td>
+                          <td class="mobile-hide"><%= result.numCorrect %>/<%= result.numSamples %></td>
+                          <td class="mobile-hide">
+                            <%
+                              const errorCount = result.samples.reduce((count, sample) => {
+                                return count + (sample.errors ? sample.errors.length : 0);
+                              }, 0);
+                            %>
+                            <% if (errorCount > 0) { %>
+                              <span class="failure"><%= errorCount %></span>
+                            <% } else { %>
+                              0
+                            <% } %>
+                          </td>
+                          <td>
+                            <div class="button-group" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+ <button type="button" class="btn btn-primary btn-sm"
+                                      onclick="event.preventDefault(); showSamplesModal('<%= providerData.provider %>', '<%= model %>', <%= index %>); return false;">
+                                Samples
+                              </button>
+                              <a href="https://github.com/khromov/svelte-bench/blob/main/src/tests/<%= result.testName %>/prompt.md"
+                                 target="_blank"
+                                 class="btn btn-outline btn-sm mobile-hide">
+                                Prompt
+                              </a>
+                              <a href="https://github.com/khromov/svelte-bench/blob/main/src/tests/<%= result.testName %>/test.ts"
+                                 target="_blank"
+                                 class="btn btn-outline btn-sm mobile-hide">
+                                Tests
+                              </a>
+                            </div>
+                          </td>
+                        </tr>
+                            <% }); %>
+                          </table>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  <% }); %>
+                </div>
+              </div>
+            </div>
+          </div>
+        <% }); %>
+      </div>
+    <% } else { %>
+      <div class="no-results">
+        <h2>No benchmark results found</h2>
+        <p>Run the benchmark first using <code>npm start</code></p>
+      </div>
+    <% } %>
+
+    <!-- Modal for code view -->
+    <div id="code-modal" class="modal">
+      <div class="modal-content">
+        <span id="close-modal" class="close">&times;</span>
+        <h2 id="modal-title"></h2>
+        <div class="code-container" id="code-display"></div>
+      </div>
+    </div>
+
+    <!-- Modal for HumanEval samples view -->
+    <div id="samples-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 id="samples-modal-title"></h2>
+          <div class="humaneval-metrics" id="samples-modal-metrics"></div>
+        </div>
+        <div class="modal-body">
+          <div class="accordion samples-container" id="samples-container"></div>
+        </div>
+        <div class="modal-footer">
+          <button id="close-samples-modal" class="btn btn-primary modal-close-btn">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Hidden element with base64 encoded benchmark data -->
+    <div id="benchmark-data" style="display: none;" data-json="<%= benchmarkDataB64 %>"></div>
+
+      <script>
+        // ============================================
+        // SvelteBench Application Module
+        // ============================================
+        const SvelteBench = (function() {
+          'use strict';
+
+          // ============================================
+          // Utility Functions Module
+          // ============================================
+          const Utils = {
+            // Escape HTML for safe display
+            escapeHtml(unsafe) {
+              if (!unsafe) return '';
+              return String(unsafe)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+            },
+
+            // Decode base64 benchmark data
+            decodeBase64Data() {
+              const dataElement = document.getElementById("benchmark-data");
+              if (!dataElement) return [];
+
+              const encodedData = dataElement.getAttribute("data-json");
+              if (!encodedData) {
+                console.error("No encoded data found");
+                return [];
+              }
+
+              try {
+                const jsonString = atob(encodedData);
+                return JSON.parse(jsonString);
+              } catch (error) {
+                console.error("Error decoding benchmark data:", error);
+                return [];
+              }
+            },
+
+            // Debounce function for performance optimization
+            debounce(func, wait) {
+              let timeout;
+              return function executedFunction(...args) {
+                const later = () => {
+                  clearTimeout(timeout);
+                  func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+              };
+            }
+          };
+
+          // ============================================
+          // UI Components Module
+          // ============================================
+          const UIComponents = {
+            // Toggle accordion state
+            toggleAccordion(trigger) {
+              if (!trigger) return;
+
+              const content = trigger.nextElementSibling;
+              const isOpen = trigger.getAttribute('data-state') === 'open';
+              const newState = isOpen ? 'closed' : 'open';
+
+              trigger.setAttribute('data-state', newState);
+              if (content) {
+                content.setAttribute('data-state', newState);
+              }
+            },
+
+            // Expand all accordion sections
+            expandAll() {
+              document.querySelectorAll('.accordion-trigger').forEach(trigger => {
+                trigger.setAttribute('data-state', 'open');
+                const content = trigger.nextElementSibling;
+                if (content) {
+                  content.setAttribute('data-state', 'open');
+                }
+              });
+            },
+
+            // Collapse all accordion sections
+            collapseAll() {
+              document.querySelectorAll('.accordion-trigger').forEach(trigger => {
+                trigger.setAttribute('data-state', 'closed');
+                const content = trigger.nextElementSibling;
+                if (content) {
+                  content.setAttribute('data-state', 'closed');
+                }
+              });
+            }
+          };
+
+          // ============================================
+          // Top Models Management Module
+          // ============================================
+          const TopModels = {
+            toggle() {
+              const hiddenRows = document.querySelectorAll('.hidden-model');
+              const expandBtn = document.querySelector('.btn[onclick="toggleTopModels()"]');
+              if (!expandBtn) return;
+
+              const expandText = expandBtn.querySelector('.expand-text');
+              const expandIcon = expandBtn.querySelector('.expand-icon');
+              const isExpanded = hiddenRows.length > 0 && hiddenRows[0].style.display === 'table-row';
+
+              hiddenRows.forEach(row => {
+                row.style.display = isExpanded ? 'none' : 'table-row';
+              });
+
+              if (expandText) {
+                expandText.textContent = isExpanded
+                  ? `Show All ${document.querySelectorAll('.top-model-row').length} Models`
+                  : 'Show Top 5 Models';
+              }
+
+              if (expandIcon) {
+                expandIcon.textContent = isExpanded ? '↓' : '↑';
+              }
+
+              expandBtn.classList.toggle('expanded', !isExpanded);
+            }
+          };
+
+          // ============================================
+          // Context Content Module
+          // ============================================
+          const ContextContent = {
+            toggle() {
+              const contextContent = document.getElementById("context-content");
+              const toggleBtn = document.querySelector(".toggle-context-btn");
+
+              if (!contextContent || !toggleBtn) return;
+
+              const isVisible = contextContent.style.display === "block";
+              contextContent.style.display = isVisible ? "none" : "block";
+              toggleBtn.textContent = isVisible ? "Show Context" : "Hide Context";
+            }
+          };
+
+
+          // ============================================
+          // Samples Modal Module
+          // ============================================
+          const SamplesModal = {
+            show(provider, model, resultIndex) {
+          const samplesModal = document.getElementById("samples-modal");
+          const samplesContainer = document.getElementById("samples-container");
+          const modalTitle = document.getElementById("samples-modal-title");
+          const modalMetrics = document.getElementById("samples-modal-metrics");
+
+              // Get the benchmark data
+              const benchmarkData = Utils.decodeBase64Data();
+
+          // Find the result in the benchmark data
+          let result = null;
+          for (const providerData of benchmarkData) {
+            if (providerData.provider === provider) {
+              for (const [modelName, results] of Object.entries(providerData.models)) {
+                if (modelName === model) {
+                  result = results[resultIndex];
+                  break;
+                }
+              }
+              if (result) break;
+            }
+          }
+
+          if (!result) {
+            console.error("Result not found");
+            return;
+          }
+
+          // Set the title with status
+          let statusText = "";
+          if (result.numCorrect === result.numSamples) {
+            statusText = "PASS";
+          } else if (result.numCorrect > 0) {
+            statusText = "PARTIAL";
+          } else {
+            statusText = "FAIL";
+          }
+
+          modalTitle.textContent = `${result.testName} - ${provider} ${model} (${statusText})`;
+
+          // Add status class to the title
+          if (result.numCorrect === result.numSamples) {
+            modalTitle.className = "success";
+          } else if (result.numCorrect > 0) {
+            modalTitle.className = "partial";
+          } else {
+            modalTitle.className = "failure";
+          }
+
+          // Set the metrics with status indicator
+          let statusClass = "";
+          let badgeClass = "";
+
+          if (result.numCorrect === result.numSamples) {
+            statusClass = "success";
+            badgeClass = "badge-success";
+          } else if (result.numCorrect > 0) {
+            statusClass = "partial";
+            badgeClass = "badge-warning";
+          } else {
+            statusClass = "failure";
+            badgeClass = "badge-error";
+          }
+
+          modalMetrics.innerHTML = `
+            <div class="metric ${statusClass}">
+              <span class="metric-label">Status</span>
+              <span class="badge ${badgeClass}">${result.numCorrect === result.numSamples ? 'PASS' : (result.numCorrect > 0 ? 'PARTIAL' : 'FAIL')}</span>
+            </div>
+            <div class="metric">
+              <span class="metric-label">pass@1</span>
+              <span class="metric-value">${Math.round(result.pass1 * 100)}%</span>
+            </div>
+            <div class="metric">
+              <span class="metric-label">pass@10</span>
+              <span class="metric-value">${Math.round(result.pass10 * 100)}%</span>
+            </div>
+            <div class="metric">
+              <span class="metric-label">Samples</span>
+              <span class="metric-value">${result.numCorrect}/${result.numSamples}</span>
+            </div>
+          `;
+
+          // Clear samples container
+          samplesContainer.innerHTML = "";
+
+          // Add each sample
+          result.samples.forEach((sample, idx) => {
+            const sampleDiv = document.createElement("div");
+            sampleDiv.className = "accordion-item";
+
+            const header = document.createElement("button");
+            header.className = "accordion-trigger";
+            header.setAttribute("data-state", "closed");
+
+            // Temperature text - handle undefined temperature
+            let tempText = '';
+            if (sample.temperature !== undefined) {
+              tempText = ` (temp: ${sample.temperature})`;
+            } else {
+              tempText = ' (default temp)';
+            }
+
+            header.innerHTML = `
+              <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <h4 style="margin: 0; font-size: 1rem; font-weight: 600;">Sample ${sample.index + 1}${tempText}</h4>
+                <span class="badge ${sample.success ? 'badge-success' : 'badge-error'}">
+                  ${sample.success ? 'PASS' : 'FAIL'}
+                </span>
+              </div>
+              <svg class="chevron-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6,9 12,15 18,9"></polyline>
+              </svg>
+            `;
+
+            // Add click event to toggle visibility using the same function as main accordions
+            header.addEventListener("click", function() {
+              toggleAccordion(this);
+            });
+
+            const content = document.createElement("div");
+            content.className = "accordion-content";
+            content.setAttribute("data-state", "closed");
+
+            const contentInner = document.createElement("div");
+            contentInner.className = "accordion-content-inner";
+              contentInner.innerHTML = `<pre><code class="language-svelte">${Utils.escapeHtml(sample.code)}</code></pre>`;
+
+            // Add errors if any
+            if (sample.errors && sample.errors.length > 0) {
+              const errorsDiv = document.createElement("div");
+              errorsDiv.className = "errors-section";
+              errorsDiv.innerHTML = `
+                <h4>Errors (${sample.errors.length})</h4>
+                <div class="error-list">
+                  ${sample.errors
+                    .map(
+                      (error) =>
+                          `<div class="error-item">
+                            <pre>${Utils.escapeHtml(error)}</pre>
+                        </div>`
+                    )
+                    .join("")}
+                </div>
+              `;
+              contentInner.appendChild(errorsDiv);
+            }
+
+            content.appendChild(contentInner);
+            sampleDiv.appendChild(header);
+            sampleDiv.appendChild(content);
+            samplesContainer.appendChild(sampleDiv);
+          });
+
+          // Store current scroll position before showing modal
+          const scrollY = window.scrollY;
+          document.body.style.top = `-${scrollY}px`;
+
+          // Hide back-to-top button and lock scroll when modal is shown
+          const backToTopBtn = document.getElementById('back-to-top');
+          if (backToTopBtn) {
+            backToTopBtn.classList.add('modal-hidden');
+          }
+
+          // Lock page scroll completely
+          document.body.classList.add('modal-open');
+          document.documentElement.classList.add('modal-open');
+
+              // Show the modal
+              samplesModal.style.display = "block";
+            },
+
+            close() {
+              const samplesModal = document.getElementById("samples-modal");
+              const backToTopBtn = document.getElementById('back-to-top');
+
+              if (samplesModal) {
+                samplesModal.style.display = "none";
+              }
+
+              // Restore scroll position before unlocking scroll
+              const scrollY = document.body.style.top;
+              document.body.style.top = '';
+
+              // Unlock page scroll completely
+              document.body.classList.remove('modal-open');
+              document.documentElement.classList.remove('modal-open');
+
+              // Restore the scroll position (scrollY is already negative, so make it positive)
+              if (scrollY) {
+                const scrollPosition = Math.abs(parseInt(scrollY));
+                window.scrollTo(0, scrollPosition);
+              }
+
+              // Show back-to-top button again
+              if (backToTopBtn) {
+                backToTopBtn.classList.remove('modal-hidden');
+              }
+            }
+          };
+
+
+
+
+          // ============================================
+          // Public API - Global Functions
+          // ============================================
+          return {
+            // Accordion controls
+            toggleAccordion: UIComponents.toggleAccordion,
+            expandAll: UIComponents.expandAll,
+            collapseAll: UIComponents.collapseAll,
+
+            // Top models
+            toggleTopModels: TopModels.toggle,
+
+            // Context
+            toggleContextContent: ContextContent.toggle,
+
+            // Modal
+            showSamplesModal: SamplesModal.show,
+            closeSamplesModal: SamplesModal.close,
+
+            // Utilities
+            escapeHtml: Utils.escapeHtml,
+            decodeBase64Data: Utils.decodeBase64Data,
+            debounce: Utils.debounce
+          };
+        })();
+
+        // ============================================
+        // Global Function Exports for onclick handlers
+        // ============================================
+        const toggleAccordion = SvelteBench.toggleAccordion;
+        const expandAll = SvelteBench.expandAll;
+        const collapseAll = SvelteBench.collapseAll;
+        const toggleTopModels = SvelteBench.toggleTopModels;
+        const toggleContextContent = SvelteBench.toggleContextContent;
+        const showSamplesModal = SvelteBench.showSamplesModal;
+        const closeSamplesModal = SvelteBench.closeSamplesModal;
+
+        // ============================================
+        // Theme Manager Module
+        // ============================================
+        const ThemeManager = {
+          init() {
+          const themeToggle = document.getElementById('theme-toggle');
+          if (!themeToggle) return;
+
+          // Get current theme from document
+          function getCurrentTheme() {
+            return document.documentElement.getAttribute('data-theme') || 'light';
+          }
+
+          // Set theme and update button appearance
+          function setTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            localStorage.setItem('theme', theme);
+            updateButtonAppearance(theme);
+          }
+
+          // Update button appearance based on theme
+          function updateButtonAppearance(theme) {
+            const sunIcon = themeToggle.querySelector('.sun-icon');
+            const moonIcon = themeToggle.querySelector('.moon-icon');
+
+            if (theme === 'dark') {
+              // In dark mode, show moon icon (indicating current dark state)
+              sunIcon.style.opacity = '0';
+              moonIcon.style.opacity = '1';
+              themeToggle.title = 'Switch to light mode';
+            } else {
+              // In light mode, show sun icon (indicating current light state)
+              sunIcon.style.opacity = '1';
+              moonIcon.style.opacity = '0';
+              themeToggle.title = 'Switch to dark mode';
+            }
+          }
+
+          // Simple toggle: light <-> dark
+          function toggleTheme() {
+            const currentTheme = getCurrentTheme();
+            const nextTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            setTheme(nextTheme);
+          }
+
+          // Add click event listener
+          themeToggle.addEventListener('click', toggleTheme);
+
+            // Initial setup
+            updateButtonAppearance(getCurrentTheme());
+          }
+        };
+
+        // ============================================
+        // Model Search Module
+        // ============================================
+        const ModelSearch = {
+          init() {
+          const searchInput = document.getElementById('model-search-input');
+          const expandButton = document.getElementById('expand-button-container');
+          const noResultsDiv = document.getElementById('search-no-results');
+
+          if (!searchInput) return;
+
+          // Check for search query param on load
+          const urlParams = new URLSearchParams(window.location.search);
+          const searchQuery = urlParams.get('search');
+          if (searchQuery) {
+            searchInput.value = searchQuery;
+            performSearch(searchQuery);
+          }
+
+          // Add search event listener
+          searchInput.addEventListener('input', (e) => {
+            const query = e.target.value.trim();
+            performSearch(query);
+
+            // Update URL with search query
+            const url = new URL(window.location);
+            if (query) {
+              url.searchParams.set('search', query);
+            } else {
+              url.searchParams.delete('search');
+            }
+            window.history.replaceState({}, '', url);
+          });
+
+          function performSearch(query) {
+            const rows = document.querySelectorAll('.top-model-row');
+            let visibleCount = 0;
+
+            if (query === '') {
+              // Reset to default state
+              rows.forEach((row, index) => {
+                row.style.display = index < 5 ? 'table-row' : 'none';
+                if (index < 5) visibleCount++;
+              });
+
+              // Show expand button again
+              if (expandButton) {
+                expandButton.style.display = 'block';
+                const expandBtn = expandButton.querySelector('.btn[onclick="toggleTopModels()"]');
+                const expandText = expandBtn.querySelector('.expand-text');
+                const expandIcon = expandBtn.querySelector('.expand-icon');
+                expandText.textContent = `Show All ${rows.length} Models`;
+                expandIcon.textContent = '↓';
+                expandBtn.classList.remove('expanded');
+              }
+
+              noResultsDiv.style.display = 'none';
+            } else {
+              // Show all models when searching
+              const lowerQuery = query.toLowerCase();
+
+              rows.forEach((row) => {
+                const modelName = row.getAttribute('data-model-name');
+                const providerName = row.getAttribute('data-provider-name');
+                const matches = modelName.includes(lowerQuery) || providerName.includes(lowerQuery);
+
+                row.style.display = matches ? 'table-row' : 'none';
+                if (matches) visibleCount++;
+              });
+
+              // Hide expand button when searching
+              if (expandButton) {
+                expandButton.style.display = 'none';
+              }
+
+              // Show no results message if needed
+              noResultsDiv.style.display = visibleCount === 0 ? 'block' : 'none';
+              }
+            }
+          }
+        };
+
+        // ============================================
+        // Navigation Module
+        // ============================================
+        const Navigation = {
+          handleHashNavigation() {
+          const hash = window.location.hash;
+          if (hash.startsWith('#model-')) {
+            expandAll();
+            // Re-trigger navigation after sections expand
+            setTimeout(() => {
+              // Remove the # and use getElementById to avoid CSS selector issues with dots
+              const elementId = hash.substring(1);
+              const element = document.getElementById(elementId);
+              if (element) {
+                console.log('Scrolling to', element);
+                element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                // Add additional padding to ensure visibility
+                setTimeout(() => {
+                  window.scrollBy(0, -100);
+                }, 100);
+              }
+              }, 300);
+            }
+          }
+        };
+
+        // ============================================
+        // Application Initialization
+        // ============================================
+        document.addEventListener("DOMContentLoaded", () => {
+          // Initialize all modules
+          ThemeManager.init();
+          ModelSearch.init();
+
+          // Hide models beyond top 5 on initial load (unless there's a search query)
+          const urlParams = new URLSearchParams(window.location.search);
+          const hasSearchQuery = urlParams.get('search');
+
+          if (!hasSearchQuery) {
+            const hiddenModels = document.querySelectorAll('.hidden-model');
+            hiddenModels.forEach(row => {
+              row.style.display = 'none';
+            });
+          }
+
+          // Handle navigation
+          Navigation.handleHashNavigation();
+          window.addEventListener('hashchange', Navigation.handleHashNavigation);
+
+          // Setup modal event listeners
+          const closeSamplesButton = document.getElementById("close-samples-modal");
+          if (closeSamplesButton) {
+            closeSamplesButton.addEventListener("click", SvelteBench.closeSamplesModal);
+          }
+
+          const samplesModal = document.getElementById("samples-modal");
+          if (samplesModal) {
+            samplesModal.addEventListener("click", (event) => {
+              if (event.target === samplesModal) {
+                SvelteBench.closeSamplesModal();
+              }
+            });
+          }
+
+          // Add escape key handler to close the samples modal
+          document.addEventListener("keydown", (event) => {
+            if (event.key === "Escape") {
+              const samplesModal = document.getElementById("samples-modal");
+              if (samplesModal && samplesModal.style.display === "block") {
+                SvelteBench.closeSamplesModal();
+              }
+            }
+          });
+
+          // Initialize all sections as expanded
+          SvelteBench.expandAll();
+
+          // ============================================
+          // Back to Top Button Module
+          // ============================================
+          const BackToTop = {
+            init() {
+              const btn = document.getElementById('back-to-top');
+              const topSection = document.querySelector('.top-models-section');
+
+              if (!btn) return;
+
+              const handleScroll = () => {
+                if (topSection) {
+                  const rect = topSection.getBoundingClientRect();
+                  btn.classList.toggle('visible', rect.bottom <= 0);
+                }
+              };
+
+              const scrollToTop = () => {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              };
+
+              // Use debounced scroll handler for better performance
+              const debouncedScroll = SvelteBench.debounce ?
+                SvelteBench.debounce(handleScroll, 100) : handleScroll;
+
+              window.addEventListener('scroll', debouncedScroll);
+              btn.addEventListener('click', scrollToTop);
+              handleScroll(); // Initial check
+            }
+          };
+
+          BackToTop.init();
+        });
+      </script>
+  <% } %>
+
+
+  <!-- Back to top button -->
+  <button id="back-to-top" class="back-to-top" title="Back to top">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="18,15 12,9 6,15"></polyline>
+    </svg>
+  </button>
+</body>
+</html>
