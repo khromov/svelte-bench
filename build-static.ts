@@ -196,9 +196,24 @@ async function generateIndexHTML(
 }
 
 /**
- * Check if the merged benchmark results file exists
+ * Check if merged benchmark results files exist, prioritizing v2
  */
 async function checkForMergedResultsFile(): Promise<string | null> {
+  // Check for v2 merged file first
+  const mergedV2FilePath = path.resolve(
+    process.cwd(),
+    "benchmarks",
+    "benchmark-results-merged-v2.json"
+  );
+
+  try {
+    await fs.access(mergedV2FilePath);
+    return mergedV2FilePath;
+  } catch (error) {
+    // v2 file doesn't exist, check for regular merged file
+  }
+
+  // Fallback to regular merged file
   const mergedFilePath = path.resolve(
     process.cwd(),
     "benchmarks",
@@ -268,7 +283,9 @@ async function buildStaticFiles(): Promise<void> {
     // Check for merged results file and process it
     const mergedFilePath = await checkForMergedResultsFile();
     if (mergedFilePath) {
-      console.log(`🔄 Processing merged results file...`);
+      const isV2Merged = mergedFilePath.includes("merged-v2");
+      const mergedFileName = path.basename(mergedFilePath);
+      console.log(`🔄 Processing merged results file (${isV2Merged ? 'v2' : 'v1'}): ${mergedFileName}`);
 
       // Load the merged benchmark data
       const mergedBenchmarkData = await loadBenchmarkData(mergedFilePath);
@@ -276,22 +293,23 @@ async function buildStaticFiles(): Promise<void> {
       // Generate HTML for merged results
       const mergedHtml = await generateBenchmarkHTML(
         mergedBenchmarkData,
-        "benchmark-results-merged.json",
+        mergedFileName,
         benchmarkFiles
       );
 
       // Write HTML file for merged results
+      const htmlFileName = mergedFileName.replace('.json', '.html');
       const mergedHtmlFilePath = path.resolve(
         process.cwd(),
         "benchmarks",
-        "benchmark-results-merged.html"
+        htmlFileName
       );
       await fs.writeFile(mergedHtmlFilePath, mergedHtml);
 
-      console.log(`📝 Created benchmark-results-merged.html`);
+      console.log(`📝 Created ${htmlFileName}`);
     } else {
       console.log(
-        `ℹ️ No merged results file found. Run 'npm run merge' to create one.`
+        `ℹ️ No merged results file found. Run 'npm run merge' or 'npm run merge-v2' to create one.`
       );
     }
 

@@ -1,0 +1,27 @@
+[
+  {
+    "testName": "inspect",
+    "provider": "OpenRouter",
+    "modelId": "anthropic/claude-3.5-sonnet:beta",
+    "numSamples": 1,
+    "numCorrect": 0,
+    "pass1": 0,
+    "pass10": 0,
+    "context": {
+      "used": false,
+      "content": ""
+    },
+    "samples": [
+      {
+        "index": 0,
+        "code": "<svelte:options runes={true} />\n\n<script>\nlet text = $state(\"Hello world\");\n\n$inspect(text);\n\n$inspect(text).with((value, prev) => {\n  console.log(Text changed from \"${prev}\" to \"${value}\");\n});\n\n$effect(() => {\n  $inspect.trace();\n  console.log(Effect running for text: ${text});\n});\n</script>\n\n<div>\n  <input \n    data-testid=\"text-input\" \n    type=\"text\" \n    bind:value={text} \n  />\n  <p data-testid=\"text-value\">Current text: \"{text}\"</p>\n  <p data-testid=\"char-count\">Character count: {text.length}</p>\n</div>",
+        "success": false,
+        "errors": [
+          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/inspect_sample0_f5b3a9e99becddc9/Component.svelte:9:19 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+        ],
+        "temperature": 0
+      }
+    ],
+    "timestamp": "2025-08-25T02:13:01.943Z"
+  }
+]

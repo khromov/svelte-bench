@@ -1,21 +1,21 @@
 # SvelteBench
 
-An LLM benchmark for Svelte 5 based on the OpenAI methodology from OpenAIs paper "Evaluating Large Language Models Trained on Code", using a similar structure to the HumanEval dataset.
-
-**Work in progress**
+An LLM benchmark for Svelte 5 based on the HumanEval methodology from OpenAI's paper "Evaluating Large Language Models Trained on Code". This benchmark evaluates LLMs' ability to generate functional Svelte 5 components with proper use of runes and modern Svelte features.
 
 ## Overview
 
-SvelteBench evaluates LLM-generated Svelte components by testing them against predefined test suites. It works by sending prompts to LLMs, generating Svelte components, and verifying their functionality through automated tests.
+SvelteBench evaluates LLM-generated Svelte components by testing them against predefined test suites. It works by sending prompts to LLMs, generating Svelte components, and verifying their functionality through automated tests. The benchmark calculates pass@k metrics (typically pass@1 and pass@10) to measure model performance.
 
 ## Supported Providers
 
 SvelteBench supports multiple LLM providers:
 
 - **OpenAI** - GPT-4, GPT-4o, o1, o3, o4 models
-- **Anthropic** - Claude 3.5, Claude 4 models
+- **Anthropic** - Claude 3.5, Claude 4 models  
 - **Google** - Gemini 2.5 models
-- **OpenRouter** - Access to multiple providers through a single API
+- **OpenRouter** - Access to 100+ models through a unified API
+- **Ollama** - Run models locally (Llama, Mistral, etc.)
+- **Z.ai** - GLM-4 and other models
 
 ## Setup
 
@@ -43,18 +43,40 @@ GEMINI_API_KEY=your_gemini_api_key_here
 OPENROUTER_API_KEY=your_openrouter_api_key_here
 OPENROUTER_SITE_URL=https://github.com/khromov/svelte-bench  # Optional
 OPENROUTER_SITE_NAME=SvelteBench  # Optional
+OPENROUTER_PROVIDER=deepseek  # Optional - preferred provider routing
+
+# Ollama (optional - defaults to http://127.0.0.1:11434)
+OLLAMA_HOST=http://127.0.0.1:11434
+
+# Z.ai (optional)
+Z_AI_API_KEY=your_z_ai_api_key_here
 ```
 
 You only need to configure the providers you want to test with.
 
 ## Running the Benchmark
 
+### Standard Execution
+
 ```bash
-# Run the benchmark with settings from .env file
+# Run the full benchmark (sequential execution)
 npm start
+
+# Run with parallel sample generation (faster)
+PARALLEL_EXECUTION=true npm start
+
+# Run tests only (without building visualization)
+npm run run-tests
 ```
 
 **NOTE: This will run all providers and models that are available!**
+
+### Execution Modes
+
+SvelteBench supports two execution modes:
+
+- **Sequential (default)**: Tests and samples run one at a time. More reliable with detailed progress output.
+- **Parallel**: Tests run sequentially, but samples within each test are generated in parallel. Faster execution with `PARALLEL_EXECUTION=true`.
 
 ### Debug Mode
 
@@ -109,17 +131,141 @@ To add a new test:
 1. Create a new directory in `src/tests/` with the name of your test
 2. Add a `prompt.md` file with instructions for the LLM
 3. Add a `test.ts` file with Vitest tests for the generated component
+4. Add a `Reference.svelte` file with a reference implementation for validation
 
 Example structure:
 
 ```
 src/tests/your-test/
-├── prompt.md    # Instructions for the LLM
-└── test.ts      # Tests for the generated component
+├── prompt.md        # Instructions for the LLM
+├── test.ts          # Tests for the generated component
+└── Reference.svelte # Reference implementation
 ```
 
 ## Benchmark Results
 
-After running the benchmark, results are saved to a JSON file in the `benchmarks` directory. The file is named `benchmark-results-{timestamp}.json`.
+### Output Files
 
-When running with a context file, the results filename will include "with-context" in the name: `benchmark-results-with-context-{timestamp}.json`.
+After running the benchmark, results are saved in multiple formats:
+
+- **JSON Results**: `benchmarks/benchmark-results-v2-{timestamp}.json` - Machine-readable results with pass@k metrics
+- **HTML Visualization**: `benchmarks/benchmark-results-v2-{timestamp}.html` - Interactive visualization of results
+- **Individual Model Results**: `benchmarks/benchmark-results-{provider}-{model}-{timestamp}.json` - Per-model results
+
+When running with a context file, the results filename will include "with-context" in the name.
+
+### Versioning System
+
+**v2 Results (Current)**: All new benchmark runs produce v2-tagged results with:
+- Fixed test prompts and improved error handling
+- Corrected Svelte syntax examples
+- Files tagged with `-v2-` in filename and `"version": "v2"` in JSON metadata
+
+**v1 Results (Legacy)**: Historical results from the original test suite (may contain inconsistencies).
+
+### Merging Results
+
+You can merge multiple benchmark results into a single file:
+
+```bash
+# Merge all results (v1 + v2)
+npm run merge
+
+# Merge only v2 results (recommended)
+npm run merge-v2
+
+# Build visualization from all results
+npm run build
+
+# Build visualization from v2 results only
+npm run build-v2
+```
+
+This creates merged JSON and HTML files:
+- `npm run merge` → `benchmarks/benchmark-results-merged.{json,html}`
+- `npm run merge-v2` → `benchmarks/benchmark-results-merged-v2.{json,html}` (v2 only)
+
+The build process automatically prioritizes v2 merged files when both exist.
+
+## Advanced Features
+
+### Checkpoint & Resume
+
+SvelteBench automatically saves checkpoints at the sample level, allowing you to resume interrupted benchmark runs:
+
+- Checkpoints are saved in `tmp/checkpoint/` after each sample completion
+- If a run is interrupted, it will automatically resume from the last checkpoint
+- Checkpoints are cleaned up after successful completion
+
+### Retry Mechanism
+
+API calls have configurable retry logic with exponential backoff. Configure in `.env`:
+
+```bash
+RETRY_MAX_ATTEMPTS=3          # Maximum retry attempts (default: 3)
+RETRY_INITIAL_DELAY_MS=1000   # Initial delay before retry (default: 1000ms)
+RETRY_MAX_DELAY_MS=30000      # Maximum delay between retries (default: 30s)
+RETRY_BACKOFF_FACTOR=2        # Exponential backoff factor (default: 2)
+```
+
+### Model Validation
+
+Before running benchmarks, models are automatically validated to ensure they're available and properly configured. Invalid models are skipped with appropriate warnings.
+
+### HumanEval Metrics
+
+The benchmark calculates pass@k metrics based on the HumanEval methodology:
+
+- **pass@1**: Probability that a single sample passes all tests
+- **pass@10**: Probability that at least one of 10 samples passes all tests
+- Default: 10 samples per test (1 sample for expensive models)
+
+### Test Verification
+
+Verify that all tests have proper structure:
+
+```bash
+npm run verify
+```
+
+This checks that each test has required files (prompt.md, test.ts, Reference.svelte).
+
+## Current Test Suite
+
+The benchmark includes tests for core Svelte 5 features:
+
+- **hello-world**: Basic component rendering
+- **counter**: State management with `$state` rune
+- **derived**: Computed values with `$derived` rune
+- **derived-by**: Advanced derived state with `$derived.by`
+- **effect**: Side effects with `$effect` rune
+- **props**: Component props with `$props` rune
+- **each**: List rendering with `{#each}` blocks
+- **snippets**: Reusable template snippets
+- **inspect**: Debug utilities with `$inspect` rune
+
+## Troubleshooting
+
+### Common Issues
+
+1. **Models not found**: Ensure API keys are correctly set in `.env`
+2. **Tests failing**: Check that you're using Node.js 20+ and have run `npm install`
+3. **Parallel execution errors**: Try sequential mode (remove `PARALLEL_EXECUTION=true`)
+4. **Memory issues**: Reduce the number of samples or run in debug mode with fewer models
+
+### Debugging
+
+Enable detailed logging by examining the generated components in `tmp/samples/` directories and test outputs in the console.
+
+## Contributing
+
+Contributions are welcome! Please ensure:
+
+1. New tests include all required files (prompt.md, test.ts, Reference.svelte)
+2. Tests follow the existing structure and naming conventions
+3. Reference implementations are correct and pass all tests
+4. Documentation is updated for new features
+
+## License
+
+MIT

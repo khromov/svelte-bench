@@ -215,7 +215,7 @@ async function runBenchmark() {
           // Save individual model results immediately to prevent loss if later models fail
           if (results.length > 0) {
             try {
-              await saveBenchmarkResults(results, contextFile, contextContent);
+              await saveBenchmarkResults(results, contextFile, contextContent, undefined, "v2");
               console.log(`💾 Saved individual results for ${providerWithModel.modelId}`);
             } catch (saveError) {
               console.error(`⚠️  Failed to save individual results for ${providerWithModel.modelId}:`, saveError);
@@ -273,7 +273,7 @@ async function runBenchmark() {
           // Save individual model results immediately to prevent loss if later models fail
           if (results.length > 0) {
             try {
-              await saveBenchmarkResults(results, contextFile, contextContent);
+              await saveBenchmarkResults(results, contextFile, contextContent, undefined, "v2");
               console.log(`💾 Saved individual results for ${providerWithModel.modelId}`);
             } catch (saveError) {
               console.error(`⚠️  Failed to save individual results for ${providerWithModel.modelId}:`, saveError);

@@ -639,23 +639,25 @@ export async function saveBenchmarkResults(
   results: HumanEvalResult[],
   contextFile?: string,
   contextContent?: string,
-  customFilenamePrefix?: string
+  customFilenamePrefix?: string,
+  version?: string
 ): Promise<string> {
   try {
     await ensureBenchmarksDir();
 
     const timestamp = new Date().toISOString().replace(/:/g, "-");
     let filenamePrefix: string;
+    const versionSuffix = version ? `-${version}` : "";
     
     if (customFilenamePrefix) {
       const cleanPrefix = customFilenamePrefix.replace(/[^a-zA-Z0-9\-_]/g, '-');
       filenamePrefix = contextFile
-        ? `benchmark-results-with-context-${cleanPrefix}-`
-        : `benchmark-results-${cleanPrefix}-`;
+        ? `benchmark-results-with-context-${cleanPrefix}${versionSuffix}-`
+        : `benchmark-results-${cleanPrefix}${versionSuffix}-`;
     } else {
       filenamePrefix = contextFile
-        ? `benchmark-results-with-context-`
-        : `benchmark-results-`;
+        ? `benchmark-results-with-context${versionSuffix}-`
+        : `benchmark-results${versionSuffix}-`;
     }
     
     const filename = `${filenamePrefix}${timestamp}.json`;
@@ -669,7 +671,11 @@ export async function saveBenchmarkResults(
           content: contextContent,
         };
       }
-      return result;
+      return {
+        ...result,
+        version: version || "v1",
+        timestamp: new Date().toISOString(),
+      };
     });
 
     await fs.writeFile(filePath, JSON.stringify(resultsWithContext, null, 2));
