@@ -30,36 +30,32 @@ function extractTimestamp(filename: string): Date | null {
 }
 
 /**
- * Get all v2 benchmark JSON files from the benchmarks directory
+ * Get all benchmark JSON files from the benchmarks directory
  */
-async function getV2BenchmarkFiles(): Promise<string[]> {
+async function getBenchmarkFiles(): Promise<string[]> {
   const benchmarksDir = path.resolve(process.cwd(), "benchmarks");
   const files = await fs.readdir(benchmarksDir);
 
-  // Filter for v2 JSON files only, exclude the merged file itself,
+  // Filter for JSON files only, exclude the merged file itself,
   // and importantly, exclude files with "with-context" in the name
   return files
     .filter(
       (file) =>
         file.endsWith(".json") &&
         file.includes("benchmark-results") &&
-        file.includes("-v2-") && // Only v2 files
         !file.includes("with-context") &&
-        file !== "benchmark-results-merged-v2.json"
+        file !== "benchmark-results-merged.json"
     )
     .map((file) => path.join(benchmarksDir, file));
 }
 
 /**
- * Read and parse a benchmark file, filtering for v2 results
+ * Read and parse a benchmark file
  */
-async function readV2BenchmarkFile(filePath: string): Promise<HumanEvalResult[]> {
+async function readBenchmarkFile(filePath: string): Promise<HumanEvalResult[]> {
   try {
     const content = await fs.readFile(filePath, "utf-8");
-    const results = JSON.parse(content);
-    
-    // Filter to only include v2 results (some files might be mixed)
-    return results.filter((result: any) => result.version === "v2");
+    return JSON.parse(content);
   } catch (error) {
     console.error(`Error reading benchmark file ${filePath}:`, error);
     return [];
@@ -67,16 +63,16 @@ async function readV2BenchmarkFile(filePath: string): Promise<HumanEvalResult[]>
 }
 
 /**
- * Find the latest v2 file for each provider/model combination
+ * Find the latest file for each provider/model combination
  */
-async function findLatestV2ResultsForEachModel(): Promise<
+async function findLatestResultsForEachModel(): Promise<
   Map<string, LatestFileInfo>
 > {
-  const benchmarkFiles = await getV2BenchmarkFiles();
+  const benchmarkFiles = await getBenchmarkFiles();
   const latestFiles = new Map<string, LatestFileInfo>();
 
   console.log(
-    `🔍 Found ${benchmarkFiles.length} eligible v2 benchmark files (excluding with-context files)`
+    `🔍 Found ${benchmarkFiles.length} eligible benchmark files (excluding with-context files)`
   );
 
   for (const filePath of benchmarkFiles) {
@@ -89,8 +85,8 @@ async function findLatestV2ResultsForEachModel(): Promise<
       continue;
     }
 
-    // Read the v2 results from this file
-    const results = await readV2BenchmarkFile(filePath);
+    // Read the results from this file
+    const results = await readBenchmarkFile(filePath);
 
     // Group by provider/model combinations
     for (const result of results) {
@@ -116,46 +112,46 @@ async function findLatestV2ResultsForEachModel(): Promise<
 }
 
 /**
- * Merge the latest v2 results and save to a new file
+ * Merge the latest results and save to a new file
  */
-async function mergeAndSaveV2Results(): Promise<void> {
-  console.log("🔄 Merging v2-only benchmark results...");
+async function mergeAndSaveResults(): Promise<void> {
+  console.log("🔄 Merging benchmark results...");
 
-  // Get the latest v2 results for each provider/model
-  const latestResultsMap = await findLatestV2ResultsForEachModel();
+  // Get the latest results for each provider/model
+  const latestResultsMap = await findLatestResultsForEachModel();
 
-  // Merge all v2 results
+  // Merge all results
   const mergedResults: HumanEvalResult[] = [];
   const includedFiles = new Set<string>();
 
   for (const [key, info] of latestResultsMap.entries()) {
     console.log(
-      `📊 Including v2 results for ${key} from ${path.basename(info.filePath)}`
+      `📊 Including results for ${key} from ${path.basename(info.filePath)}`
     );
     mergedResults.push(...info.results);
     includedFiles.add(info.filePath);
   }
 
-  // Save merged v2 results
+  // Save merged results
   await ensureBenchmarksDir();
   const outputPath = path.resolve(
     process.cwd(),
     "benchmarks",
-    "benchmark-results-merged-v2.json"
+    "benchmark-results-merged.json"
   );
 
   await fs.writeFile(outputPath, JSON.stringify(mergedResults, null, 2));
 
   console.log(
-    `\n✅ Successfully merged v2 results from ${includedFiles.size} files`
+    `\n✅ Successfully merged results from ${includedFiles.size} files`
   );
   console.log(`✅ Total provider/model combinations: ${latestResultsMap.size}`);
-  console.log(`✅ Total v2 result entries: ${mergedResults.length}`);
-  console.log(`✅ Merged v2 results saved to: ${outputPath}`);
+  console.log(`✅ Total result entries: ${mergedResults.length}`);
+  console.log(`✅ Merged results saved to: ${outputPath}`);
 }
 
 // Run the merge process
-mergeAndSaveV2Results().catch((error) => {
-  console.error("Error merging v2 benchmark results:", error);
+mergeAndSaveResults().catch((error) => {
+  console.error("Error merging benchmark results:", error);
   process.exit(1);
 });

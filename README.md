@@ -148,44 +148,44 @@ src/tests/your-test/
 
 After running the benchmark, results are saved in multiple formats:
 
-- **JSON Results**: `benchmarks/benchmark-results-v2-{timestamp}.json` - Machine-readable results with pass@k metrics
-- **HTML Visualization**: `benchmarks/benchmark-results-v2-{timestamp}.html` - Interactive visualization of results
+- **JSON Results**: `benchmarks/benchmark-results-{timestamp}.json` - Machine-readable results with pass@k metrics
+- **HTML Visualization**: `benchmarks/benchmark-results-{timestamp}.html` - Interactive visualization of results
 - **Individual Model Results**: `benchmarks/benchmark-results-{provider}-{model}-{timestamp}.json` - Per-model results
 
 When running with a context file, the results filename will include "with-context" in the name.
 
 ### Versioning System
 
-**v2 Results (Current)**: All new benchmark runs produce v2-tagged results with:
+**Current Results**: All new benchmark runs produce current results with:
 - Fixed test prompts and improved error handling
 - Corrected Svelte syntax examples
-- Files tagged with `-v2-` in filename and `"version": "v2"` in JSON metadata
+- Standard naming without version suffixes
 
-**v1 Results (Legacy)**: Historical results from the original test suite (may contain inconsistencies).
+**Legacy Results (v1)**: Historical results from the original test suite with known issues in the "inspect" test prompt (stored in `benchmarks/v1/`).
 
 ### Merging Results
 
 You can merge multiple benchmark results into a single file:
 
 ```bash
-# Merge all results (v1 + v2)
+# Merge current results (recommended)
 npm run merge
 
-# Merge only v2 results (recommended)
-npm run merge-v2
+# Merge legacy results (if needed)
+npm run merge-v1
 
-# Build visualization from all results
+# Build visualization from current results
 npm run build
 
-# Build visualization from v2 results only
-npm run build-v2
+# Build visualization from legacy results
+npm run build-v1
 ```
 
 This creates merged JSON and HTML files:
-- `npm run merge` → `benchmarks/benchmark-results-merged.{json,html}`
-- `npm run merge-v2` → `benchmarks/benchmark-results-merged-v2.{json,html}` (v2 only)
+- `npm run merge` → `benchmarks/benchmark-results-merged.{json,html}` (current results)
+- `npm run merge-v1` → `benchmarks/v1/benchmark-results-merged.{json,html}` (legacy results)
 
-The build process automatically prioritizes v2 merged files when both exist.
+The standard build process uses current results by default.
 
 ## Advanced Features
 
