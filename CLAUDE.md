@@ -77,13 +77,13 @@ The benchmark generates components in `tmp/{provider}/` directories and runs tes
 
 ## Versioning System
 
-**v2 Results (Current):** Results generated with fixed test prompts and improved error handling. All new benchmark runs produce v2-tagged results with:
+**Current Results:** Results generated with fixed test prompts and improved error handling. All new benchmark runs produce results with:
 - Fixed quotation mark issues in test prompts that were causing model confusion
 - Corrected Svelte binding syntax examples (e.g., `bind:value={text}` instead of `bind:value="{text}"`)
 - Improved test reliability and accuracy
-- Files tagged with `-v2-` in filename and `"version": "v2"` in JSON metadata
+- Clean filenames without version suffixes (e.g., `benchmark-results-2025-08-27T12-34-56.789Z.json`)
 
-**v1 Results (Legacy):** Historical results from original test suite. These may contain inconsistencies due to prompt formatting issues.
+**Legacy Results:** Historical results from original test suite in the `benchmarks/v1/` directory. These may contain inconsistencies due to prompt formatting issues.
 
 ## Environment Setup
 
