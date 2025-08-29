@@ -11,7 +11,7 @@ SvelteBench evaluates LLM-generated Svelte components by testing them against pr
 SvelteBench supports multiple LLM providers:
 
 - **OpenAI** - GPT-4, GPT-4o, o1, o3, o4 models
-- **Anthropic** - Claude 3.5, Claude 4 models  
+- **Anthropic** - Claude 3.5, Claude 4 models
 - **Google** - Gemini 2.5 models
 - **OpenRouter** - Access to 100+ models through a unified API
 - **Ollama** - Run models locally (Llama, Mistral, etc.)
@@ -21,7 +21,7 @@ SvelteBench supports multiple LLM providers:
 
 ```bash
 nvm use
-npm install
+pnpm install
 
 # Create .env file from example
 cp .env.example .env
@@ -60,13 +60,13 @@ You only need to configure the providers you want to test with.
 
 ```bash
 # Run the full benchmark (sequential execution)
-npm start
+pnpm start
 
 # Run with parallel sample generation (faster)
-PARALLEL_EXECUTION=true npm start
+PARALLEL_EXECUTION=true pnpm start
 
 # Run tests only (without building visualization)
-npm run run-tests
+pnpm run run-tests
 ```
 
 **NOTE: This will run all providers and models that are available!**
@@ -109,7 +109,7 @@ You can provide a context file (like Svelte documentation) to help the LLM gener
 
 ```bash
 # Run with a context file
-npm run run-tests -- --context ./context/svelte.dev/llms-small.txt && npm run build
+pnpm run run-tests -- --context ./context/svelte.dev/llms-small.txt && pnpm run build
 ```
 
 The context file will be included in the prompt to the LLM, providing additional information for generating components.
@@ -119,7 +119,7 @@ The context file will be included in the prompt to the LLM, providing additional
 After running the benchmark, you can visualize the results using the built-in visualization tool:
 
 ```bash
-npm run build
+pnpm run build
 ```
 
 You can now find the visualization in the `dist` directory.
@@ -169,21 +169,21 @@ You can merge multiple benchmark results into a single file:
 
 ```bash
 # Merge current results (recommended)
-npm run merge
+pnpm run merge
 
 # Merge legacy results (if needed)
-npm run merge-v1
+pnpm run merge-v1
 
 # Build visualization from current results
-npm run build
+pnpm run build
 
 # Build visualization from legacy results
-npm run build-v1
+pnpm run build-v1
 ```
 
 This creates merged JSON and HTML files:
-- `npm run merge` → `benchmarks/benchmark-results-merged.{json,html}` (current results)
-- `npm run merge-v1` → `benchmarks/v1/benchmark-results-merged.{json,html}` (legacy results)
+- `pnpm run merge` → `benchmarks/benchmark-results-merged.{json,html}` (current results)
+- `pnpm run merge-v1` → `benchmarks/v1/benchmark-results-merged.{json,html}` (legacy results)
 
 The standard build process uses current results by default.
 
@@ -225,7 +225,7 @@ The benchmark calculates pass@k metrics based on the HumanEval methodology:
 Verify that all tests have proper structure:
 
 ```bash
-npm run verify
+pnpm run verify
 ```
 
 This checks that each test has required files (prompt.md, test.ts, Reference.svelte).
@@ -249,7 +249,7 @@ The benchmark includes tests for core Svelte 5 features:
 ### Common Issues
 
 1. **Models not found**: Ensure API keys are correctly set in `.env`
-2. **Tests failing**: Check that you're using Node.js 20+ and have run `npm install`
+2. **Tests failing**: Check that you're using Node.js 20+ and have run `pnpm install`
 3. **Parallel execution errors**: Try sequential mode (remove `PARALLEL_EXECUTION=true`)
 4. **Memory issues**: Reduce the number of samples or run in debug mode with fewer models
 
