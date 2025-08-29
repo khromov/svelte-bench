@@ -8,12 +8,12 @@ const expectCurrentTextToBe = (element: HTMLElement, expectedText: string) => {
   const textContent = element.textContent || "";
   const withQuotes = `Current text: "${expectedText}"`;
   const withoutQuotes = `Current text: ${expectedText}`;
-  
+
   const hasWithQuotes = textContent.includes(withQuotes);
   const hasWithoutQuotes = textContent.includes(withoutQuotes);
-  
+
   expect(hasWithQuotes || hasWithoutQuotes).toBe(true);
-  
+
   if (!hasWithQuotes && !hasWithoutQuotes) {
     throw new Error(
       `Expected element to contain either "${withQuotes}" or "${withoutQuotes}", but got "${textContent}"`
@@ -21,6 +21,10 @@ const expectCurrentTextToBe = (element: HTMLElement, expectedText: string) => {
   }
 };
 
+// Helper function to get all console output as a single string
+const getAllConsoleOutput = (consoleSpy: any) => {
+  return consoleSpy.mock.calls.map((call: any[]) => call.join(" ")).join("\n");
+};
 
 describe("InspectDemo component", () => {
   test("renders with initial state", () => {
@@ -58,6 +62,11 @@ describe("InspectDemo component", () => {
     // This proves $inspect, $inspect.with, and $inspect.trace are working
     expect(consoleSpy).toHaveBeenCalled();
 
+    // Verify standard $inspect output is present
+    const output = getAllConsoleOutput(consoleSpy);
+    expect(output).toContain("init"); // Basic $inspect always logs init event
+    expect(output).toContain("update"); // Should have update events from typing
+
     // Restore original console.log
     consoleSpy.mockRestore();
   });
@@ -84,6 +93,11 @@ describe("InspectDemo component", () => {
     // Verify $inspect features are working
     expect(consoleSpy).toHaveBeenCalled();
 
+    // Verify standard $inspect output is present
+    const output = getAllConsoleOutput(consoleSpy);
+    expect(output).toContain("init"); // Basic $inspect always logs init event
+    expect(output).toContain("update"); // Should have update events from typing
+
     consoleSpy.mockRestore();
   });
 
@@ -107,6 +121,11 @@ describe("InspectDemo component", () => {
 
     // Verify $inspect features are working
     expect(consoleSpy).toHaveBeenCalled();
+
+    // Verify standard $inspect output is present
+    const output = getAllConsoleOutput(consoleSpy);
+    expect(output).toContain("init"); // Basic $inspect always logs init event
+    expect(output).toContain("update"); // Should have update events from clearing input
 
     consoleSpy.mockRestore();
   });
