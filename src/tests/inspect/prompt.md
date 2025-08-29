@@ -18,7 +18,7 @@ Example structure:
 ```html
 <div>
   <input data-testid="text-input" type="text" bind:value={text} />
-  <p data-testid="text-value">Current text: {text}</p>
+  <p data-testid="text-value">Current text: "{text}"</p>
   <p data-testid="char-count">Character count: {text.length}</p>
 </div>
 ```
