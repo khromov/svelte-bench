@@ -1003,6 +1003,54 @@
           ThemeManager.init();
           ModelSearch.init();
 
+          function expandProvidersAndModels() {
+            // Find all provider sections and their model subsections
+            const providerSections = document.querySelectorAll('.provider-section');
+            
+            providerSections.forEach(providerSection => {
+              const providerTrigger = providerSection.querySelector('.accordion-trigger');
+              const providerContent = providerSection.querySelector('.accordion-content');
+              
+              // Expand provider if collapsed
+              if (providerTrigger && providerTrigger.getAttribute('data-state') === 'closed') {
+                providerTrigger.setAttribute('data-state', 'open');
+                if (providerContent) {
+                  providerContent.setAttribute('data-state', 'open');
+                }
+              }
+              
+              // Expand all model sections within this provider
+              const modelSections = providerSection.querySelectorAll('.accordion-item:not(.provider-section)');
+              modelSections.forEach(modelSection => {
+                const modelTrigger = modelSection.querySelector('.accordion-trigger');
+                const modelContent = modelSection.querySelector('.accordion-content');
+                
+                if (modelTrigger && modelTrigger.getAttribute('data-state') === 'closed') {
+                  modelTrigger.setAttribute('data-state', 'open');
+                  if (modelContent) {
+                    modelContent.setAttribute('data-state', 'open');
+                  }
+                }
+              });
+            });
+          }
+
+          // Handle clicks on top model links
+          document.addEventListener('click', function(event) {
+            const modelLink = event.target.closest('.model-name-link');
+            if (modelLink) {
+              event.preventDefault(); // Prevent immediate navigation
+              
+              // Expand all providers and models
+              expandProvidersAndModels();
+              
+              // Wait 150ms then navigate to the hash
+              setTimeout(() => {
+                window.location.hash = modelLink.getAttribute('href').substring(1);
+              }, 150);
+            }
+          });
+
           // Hide models beyond top 5 on initial load (unless there's a search query)
           const urlParams = new URLSearchParams(window.location.search);
           const hasSearchQuery = urlParams.get('search');
