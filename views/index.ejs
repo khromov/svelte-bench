@@ -805,19 +805,6 @@
             samplesContainer.appendChild(sampleDiv);
           });
 
-          // Store current scroll position before showing modal
-          const scrollY = window.scrollY;
-          document.body.style.top = `-${scrollY}px`;
-
-          // Hide back-to-top button and lock scroll when modal is shown
-          const backToTopBtn = document.getElementById('back-to-top');
-          if (backToTopBtn) {
-            backToTopBtn.classList.add('modal-hidden');
-          }
-
-          // Lock page scroll completely
-          document.body.classList.add('modal-open');
-          document.documentElement.classList.add('modal-open');
 
               // Show the modal
               samplesModal.style.display = "block";
@@ -825,29 +812,9 @@
 
             close() {
               const samplesModal = document.getElementById("samples-modal");
-              const backToTopBtn = document.getElementById('back-to-top');
 
               if (samplesModal) {
                 samplesModal.style.display = "none";
-              }
-
-              // Restore scroll position before unlocking scroll
-              const scrollY = document.body.style.top;
-              document.body.style.top = '';
-
-              // Unlock page scroll completely
-              document.body.classList.remove('modal-open');
-              document.documentElement.classList.remove('modal-open');
-
-              // Restore the scroll position (scrollY is already negative, so make it positive)
-              if (scrollY) {
-                const scrollPosition = Math.abs(parseInt(scrollY));
-                window.scrollTo(0, scrollPosition);
-              }
-
-              // Show back-to-top button again
-              if (backToTopBtn) {
-                backToTopBtn.classList.remove('modal-hidden');
               }
             }
           };
@@ -1027,31 +994,6 @@
           }
         };
 
-        // ============================================
-        // Navigation Module
-        // ============================================
-        const Navigation = {
-          handleHashNavigation() {
-          const hash = window.location.hash;
-          if (hash.startsWith('#model-')) {
-            expandAll();
-            // Re-trigger navigation after sections expand
-            setTimeout(() => {
-              // Remove the # and use getElementById to avoid CSS selector issues with dots
-              const elementId = hash.substring(1);
-              const element = document.getElementById(elementId);
-              if (element) {
-                console.log('Scrolling to', element);
-                element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                // Add additional padding to ensure visibility
-                setTimeout(() => {
-                  window.scrollBy(0, -100);
-                }, 100);
-              }
-              }, 300);
-            }
-          }
-        };
 
         // ============================================
         // Application Initialization
@@ -1071,10 +1013,6 @@
               row.style.display = 'none';
             });
           }
-
-          // Handle navigation
-          Navigation.handleHashNavigation();
-          window.addEventListener('hashchange', Navigation.handleHashNavigation);
 
           // Setup modal event listeners
           const closeSamplesButton = document.getElementById("close-samples-modal");
