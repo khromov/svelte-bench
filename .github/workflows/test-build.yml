@@ -1,26 +1,14 @@
-name: Build and Deploy Benchmark Results
+name: Test Build
 
 on:
-  push:
-    branches:
-      - main
-  workflow_dispatch:
+  pull_request:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
-
-concurrency:
-  group: pages
-  cancel-in-progress: true
 
 jobs:
-  build-and-deploy:
+  test-build:
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
 
     steps:
       - name: Checkout
@@ -48,21 +36,7 @@ jobs:
       - name: Install deps
         run: pnpm install --frozen-lockfile --prefer-offline
 
-      - name: Build static files
+      - name: Test build
         env:
           NODE_ENV: production
         run: pnpm run build
-
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
-
-      - name: Upload pages artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: benchmarks
-          name: github-pages
-          retention-days: 1
-
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
