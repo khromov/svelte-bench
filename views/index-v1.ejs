@@ -93,7 +93,7 @@
     .accordion-content {
       overflow: hidden;
       font-size: 0.875rem;
-      transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
+      transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1),
                   opacity 0.3s ease-out,
                   transform 0.3s ease-out;
       max-height: 0;
@@ -102,7 +102,7 @@
     }
 
     .accordion-content[data-state="open"] {
-      max-height: 5000px; /* Large enough for content */
+      max-height: 500000px; /* Large enough for content */
       opacity: 1;
       transform: translateY(0);
       padding-bottom: 1rem;
@@ -512,7 +512,7 @@
                         <tr>
                           <td><%= result.testName %></td>
                           <td>
-                            <% 
+                            <%
                               const pass1Percentage = Math.round(result.pass1 * 100);
                               let badgeClass = 'badge-error';
                               if (result.numCorrect === result.numSamples) {
@@ -1212,15 +1212,15 @@
           window.smoothScrollToModel = function(event, link) {
             event.preventDefault();
             event.stopPropagation(); // Prevent event bubbling
-            
+
             const targetId = link.getAttribute('href').substring(1);
             let targetElement = document.getElementById(targetId);
-            
+
             // If not found, try alternative approaches
             if (!targetElement) {
               const allModelElements = document.querySelectorAll('[id^="model-"]');
               const targetIdParts = targetId.split('-');
-              
+
               // Look for a partial match
               for (const element of allModelElements) {
                 const elementIdParts = element.id.split('-');
@@ -1230,7 +1230,7 @@
                   const targetModel = targetIdParts.slice(-1)[0];
                   const elementProvider = elementIdParts.slice(1, -1).join('-');
                   const targetProvider = targetIdParts.slice(1, -1).join('-');
-                  
+
                   if (elementModel === targetModel && elementProvider === targetProvider) {
                     targetElement = element;
                     break;
@@ -1238,39 +1238,39 @@
                 }
               }
             }
-            
+
             if (!targetElement) {
               console.warn('Could not find target element for ID:', targetId);
               return;
             }
-            
+
             // Find and open all parent accordions
             let currentElement = targetElement;
             const accordionsToOpen = [];
-            
+
             // Walk up the DOM tree to find all accordion items that need to be opened
             while (currentElement && currentElement !== document.body) {
               if (currentElement.classList.contains('accordion-item')) {
                 const trigger = currentElement.querySelector('.accordion-trigger');
                 const content = currentElement.querySelector('.accordion-content');
-                
+
                 if (trigger && content && content.getAttribute('data-state') === 'closed') {
                   accordionsToOpen.push(trigger);
                 }
               }
               currentElement = currentElement.parentElement;
             }
-            
+
             // Open all accordions that need to be opened (in reverse order - parent first)
             accordionsToOpen.reverse().forEach(trigger => trigger.click());
-            
+
             // Smooth scroll to the target with proper offset
             setTimeout(() => {
               // Ensure the element is visible after accordions open
               const rect = targetElement.getBoundingClientRect();
               const offset = 120;
               const targetY = window.scrollY + rect.top - offset;
-              
+
               window.scrollTo({
                 top: Math.max(0, targetY),
                 behavior: 'smooth'
@@ -1283,28 +1283,28 @@
           // ============================================
           const searchInput = document.getElementById('model-search-input');
           const clearButton = document.getElementById('clear-search-btn');
-          
+
           if (searchInput && clearButton) {
             // Show/hide clear button based on input content
             function toggleClearButton() {
               clearButton.style.display = searchInput.value ? 'block' : 'none';
             }
-            
+
             // Clear search and hide button
             function clearSearch() {
               searchInput.value = '';
               clearButton.style.display = 'none';
               searchInput.focus();
-              
+
               // Trigger input event to update search results
               const event = new Event('input', { bubbles: true });
               searchInput.dispatchEvent(event);
             }
-            
+
             // Add event listeners
             searchInput.addEventListener('input', toggleClearButton);
             clearButton.addEventListener('click', clearSearch);
-            
+
             // Initial state
             toggleClearButton();
           }
