@@ -560,14 +560,15 @@
       align-items: center;
       justify-content: space-between;
       gap: 1rem;
-      padding: 1rem;
+      padding: calc(1rem - 2px);
+      margin: 2px;
       font-weight: 500;
       transition: all 0.2s ease;
       background: transparent;
-      border: none;
+      border: 2px solid transparent;
       cursor: pointer;
       text-align: left;
-      width: 100%;
+      width: calc(100% - 4px);
       color: var(--foreground);
       border-radius: var(--radius);
     }
@@ -575,7 +576,7 @@
     .accordion-trigger:hover {
       background: var(--accent);
       color: var(--accent-foreground);
-      box-shadow: inset 0 0 0 0.25rem var(--background);
+      border-color: var(--background);
     }
 
     .accordion-trigger:focus-visible {
@@ -606,7 +607,7 @@
     }
 
     .accordion-content[data-state="open"] {
-      max-height: 5000px; /* Large enough for content */
+      max-height: 50000px; /* Much larger for all content */
       opacity: 1;
       transform: translateY(0);
     }

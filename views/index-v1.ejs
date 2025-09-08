@@ -422,7 +422,7 @@
                   <span class="rank rank-<%= index + 1 %>"><%= index + 1 %></span>
                 </td>
                 <td>
-                  <a href="#model-<%= model.provider.replace(/\s+/g, '-').toLowerCase() %>-<%= model.model.replace(/\s+/g, '-').toLowerCase() %>" class="model-name-link" onclick="smoothScrollToModel(event, this)">
+                  <a href="#model-<%= model.provider.replace(/\s+/g, '-').replace(/[^\w-]/g, '').toLowerCase() %>-<%= model.model.replace(/\s+/g, '-').replace(/[^\w-]/g, '').toLowerCase() %>" class="model-name-link" onclick="smoothScrollToModel(event, this)">
                     <span class="model-name"><%= model.model %></span>
                   </a>
                   <span class="provider-name">(<%= model.provider %>)</span>
@@ -474,7 +474,7 @@
     <% if (groupedResults.length > 0) { %>
       <div class="accordion grouped-results">
         <% groupedResults.forEach(providerData => { %>
-          <div class="accordion-item card provider-section" id="provider-<%= providerData.provider.replace(/\s+/g, '-').toLowerCase() %>">
+          <div class="accordion-item card provider-section" id="provider-<%= providerData.provider.replace(/\s+/g, '-').replace(/[^\w-]/g, '').toLowerCase() %>">
             <button class="accordion-trigger" onclick="toggleAccordion(this)" data-state="open">
               <h2 style="margin: 0; font-size: 1.5rem; font-weight: 600;"><%= providerData.provider %></h2>
               <svg class="chevron-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -486,7 +486,7 @@
               <div class="accordion-content-inner">
                 <div class="accordion" style="margin-top: 0.5rem;">
                   <% Object.entries(providerData.models).forEach(([model, results]) => { %>
-                    <div class="accordion-item" id="model-<%= providerData.provider.replace(/\s+/g, '-').toLowerCase() %>-<%= model.replace(/\s+/g, '-').toLowerCase() %>">
+                    <div class="accordion-item" id="model-<%= providerData.provider.replace(/\s+/g, '-').replace(/[^\w-]/g, '').toLowerCase() %>-<%= model.replace(/\s+/g, '-').replace(/[^\w-]/g, '').toLowerCase() %>">
                       <button class="accordion-trigger" onclick="toggleAccordion(this)" data-state="open">
                         <h3 style="margin: 0; font-size: 1.125rem; font-weight: 600;"><%= model %></h3>
                         <svg class="chevron-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1207,48 +1207,76 @@
           SvelteBench.expandAll();
 
           // ============================================
-          // Smooth Scroll to Model Function
+          // Smooth Scroll to Model Function (Global scope)
           // ============================================
-          function smoothScrollToModel(event, link) {
+          window.smoothScrollToModel = function(event, link) {
             event.preventDefault();
-            const targetId = link.getAttribute('href').substring(1);
-            const targetElement = document.getElementById(targetId);
+            event.stopPropagation(); // Prevent event bubbling
             
-            if (targetElement) {
-              // Find and open all parent accordions
-              let currentElement = targetElement;
-              const accordionsToOpen = [];
+            const targetId = link.getAttribute('href').substring(1);
+            let targetElement = document.getElementById(targetId);
+            
+            // If not found, try alternative approaches
+            if (!targetElement) {
+              const allModelElements = document.querySelectorAll('[id^="model-"]');
+              const targetIdParts = targetId.split('-');
               
-              // Walk up the DOM tree to find all accordion items that need to be opened
-              while (currentElement && currentElement !== document.body) {
-                if (currentElement.classList.contains('accordion-item')) {
-                  const trigger = currentElement.querySelector('.accordion-trigger');
-                  const content = currentElement.querySelector('.accordion-content');
+              // Look for a partial match
+              for (const element of allModelElements) {
+                const elementIdParts = element.id.split('-');
+                // Check if the last parts match (model name) and provider matches
+                if (elementIdParts.length >= 3 && targetIdParts.length >= 3) {
+                  const elementModel = elementIdParts.slice(-1)[0];
+                  const targetModel = targetIdParts.slice(-1)[0];
+                  const elementProvider = elementIdParts.slice(1, -1).join('-');
+                  const targetProvider = targetIdParts.slice(1, -1).join('-');
                   
-                  if (trigger && content && content.getAttribute('data-state') === 'closed') {
-                    accordionsToOpen.push(trigger);
+                  if (elementModel === targetModel && elementProvider === targetProvider) {
+                    targetElement = element;
+                    break;
                   }
                 }
-                currentElement = currentElement.parentElement;
               }
-              
-              // Open all accordions that need to be opened (in reverse order - parent first)
-              accordionsToOpen.reverse().forEach(trigger => trigger.click());
-              
-              // Smooth scroll to the target with proper offset
-              setTimeout(() => {
-                targetElement.scrollIntoView({ 
-                  behavior: 'smooth', 
-                  block: 'start',
-                  inline: 'nearest'
-                });
-                // Add additional padding to ensure visibility
-                setTimeout(() => {
-                  window.scrollBy(0, -120); // Adjusted offset for better visibility
-                }, 100);
-              }, accordionsToOpen.length > 0 ? 300 : 100); // Longer delay if accordions need to open
             }
-          }
+            
+            if (!targetElement) {
+              console.warn('Could not find target element for ID:', targetId);
+              return;
+            }
+            
+            // Find and open all parent accordions
+            let currentElement = targetElement;
+            const accordionsToOpen = [];
+            
+            // Walk up the DOM tree to find all accordion items that need to be opened
+            while (currentElement && currentElement !== document.body) {
+              if (currentElement.classList.contains('accordion-item')) {
+                const trigger = currentElement.querySelector('.accordion-trigger');
+                const content = currentElement.querySelector('.accordion-content');
+                
+                if (trigger && content && content.getAttribute('data-state') === 'closed') {
+                  accordionsToOpen.push(trigger);
+                }
+              }
+              currentElement = currentElement.parentElement;
+            }
+            
+            // Open all accordions that need to be opened (in reverse order - parent first)
+            accordionsToOpen.reverse().forEach(trigger => trigger.click());
+            
+            // Smooth scroll to the target with proper offset
+            setTimeout(() => {
+              // Ensure the element is visible after accordions open
+              const rect = targetElement.getBoundingClientRect();
+              const offset = 120;
+              const targetY = window.scrollY + rect.top - offset;
+              
+              window.scrollTo({
+                top: Math.max(0, targetY),
+                behavior: 'smooth'
+              });
+            }, accordionsToOpen.length > 0 ? 350 : 150);
+          };
 
           // ============================================
           // Search Clear Button Functionality
