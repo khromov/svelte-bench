@@ -51,6 +51,15 @@
     [data-theme="dark"] .v1-warning-alert {
       background: hsla(38.3, 92.1%, 50.2%, 0.15);
       border-color: hsla(38.3, 92.1%, 50.2%, 0.5);
+      color: hsl(0 0% 98%);
+    }
+
+    [data-theme="dark"] .v1-warning-alert h3 {
+      color: hsl(0 0% 98%);
+    }
+
+    [data-theme="dark"] .v1-warning-alert p {
+      color: hsl(0 0% 90%);
     }
 
     .v1-warning-alert h3 {
@@ -110,6 +119,7 @@
 
   <h1>SvelteBench Visualization - Legacy Results</h1>
 
+
   <!-- V1 Warning Alert -->
   <div class="v1-warning-alert">
     <h3>
@@ -124,10 +134,7 @@
       These benchmark results contain an error in the "inspect" test prompt that may affect accuracy. The prompt had incorrect quotation marks in the Svelte binding syntax examples, which could confuse language models and lead to inconsistent results.
     </p>
     <p>
-      <strong>We strongly recommend viewing the updated results instead:</strong><br>
-      <a href="../benchmark-results-merged.html" class="btn btn-primary" style="display: inline-flex; margin-top: 0.5rem;">
-        View Corrected Results →
-      </a>
+      The updated results with corrected prompts are available separately.
     </p>
   </div>
 
@@ -383,12 +390,18 @@
             class="input"
             placeholder="Search models..."
             autocomplete="off"
-            style="padding-left: 2.5rem;"
+            style="padding-left: 2.5rem; padding-right: 2.5rem;"
           />
           <svg class="search-icon" style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: var(--muted-foreground);" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="11" cy="11" r="8"></circle>
             <path d="m21 21-4.35-4.35"></path>
           </svg>
+          <button class="clear-search-btn" id="clear-search-btn" type="button" style="position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--muted-foreground); cursor: pointer; padding: 0; width: 16px; height: 16px; display: none;" title="Clear search">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="m18 6-12 12"></path>
+              <path d="m6 6 12 12"></path>
+            </svg>
+          </button>
         </div>
 
         <table class="top-models-table">
@@ -409,7 +422,7 @@
                   <span class="rank rank-<%= index + 1 %>"><%= index + 1 %></span>
                 </td>
                 <td>
-                  <a href="#model-<%= model.provider.replace(/\s+/g, '-').toLowerCase() %>-<%= model.model.replace(/\s+/g, '-').toLowerCase() %>" class="model-name-link">
+                  <a href="#model-<%= model.provider.replace(/\s+/g, '-').toLowerCase() %>-<%= model.model.replace(/\s+/g, '-').toLowerCase() %>" class="model-name-link" onclick="smoothScrollToModel(event, this)">
                     <span class="model-name"><%= model.model %></span>
                   </a>
                   <span class="provider-name">(<%= model.provider %>)</span>
@@ -1192,6 +1205,82 @@
 
           // Initialize all sections as expanded
           SvelteBench.expandAll();
+
+          // ============================================
+          // Smooth Scroll to Model Function
+          // ============================================
+          function smoothScrollToModel(event, link) {
+            event.preventDefault();
+            const targetId = link.getAttribute('href').substring(1);
+            const targetElement = document.getElementById(targetId);
+            
+            if (targetElement) {
+              // Ensure the accordion is open
+              const accordionItem = targetElement.closest('.accordion-item');
+              if (accordionItem) {
+                const trigger = accordionItem.querySelector('.accordion-trigger');
+                const content = accordionItem.querySelector('.accordion-content');
+                
+                if (trigger && content) {
+                  // Open the accordion if it's closed
+                  if (content.getAttribute('data-state') === 'closed') {
+                    trigger.click();
+                  }
+                  
+                  // Also open parent provider accordion if needed
+                  const parentProviderItem = accordionItem.closest('.provider-section');
+                  if (parentProviderItem) {
+                    const parentTrigger = parentProviderItem.querySelector('.accordion-trigger');
+                    const parentContent = parentProviderItem.querySelector('.accordion-content');
+                    if (parentTrigger && parentContent && parentContent.getAttribute('data-state') === 'closed') {
+                      parentTrigger.click();
+                    }
+                  }
+                }
+              }
+              
+              // Smooth scroll to the target with some offset
+              setTimeout(() => {
+                const targetRect = targetElement.getBoundingClientRect();
+                const offset = 100; // Adjust this value as needed
+                window.scrollTo({
+                  top: window.scrollY + targetRect.top - offset,
+                  behavior: 'smooth'
+                });
+              }, 100); // Small delay to allow accordion to open
+            }
+          }
+
+          // ============================================
+          // Search Clear Button Functionality
+          // ============================================
+          const searchInput = document.getElementById('model-search-input');
+          const clearButton = document.getElementById('clear-search-btn');
+          
+          if (searchInput && clearButton) {
+            // Show/hide clear button based on input content
+            function toggleClearButton() {
+              clearButton.style.display = searchInput.value ? 'block' : 'none';
+            }
+            
+            // Clear search and hide button
+            function clearSearch() {
+              searchInput.value = '';
+              clearButton.style.display = 'none';
+              searchInput.focus();
+              
+              // Trigger input event to update search results
+              const event = new Event('input', { bubbles: true });
+              searchInput.dispatchEvent(event);
+            }
+            
+            // Add event listeners
+            searchInput.addEventListener('input', toggleClearButton);
+            clearButton.addEventListener('click', clearSearch);
+            
+            // Initial state
+            toggleClearButton();
+          }
 
           // ============================================
           // Back to Top Button Module
