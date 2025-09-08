@@ -1215,39 +1215,38 @@
             const targetElement = document.getElementById(targetId);
             
             if (targetElement) {
-              // Ensure the accordion is open
-              const accordionItem = targetElement.closest('.accordion-item');
-              if (accordionItem) {
-                const trigger = accordionItem.querySelector('.accordion-trigger');
-                const content = accordionItem.querySelector('.accordion-content');
-                
-                if (trigger && content) {
-                  // Open the accordion if it's closed
-                  if (content.getAttribute('data-state') === 'closed') {
-                    trigger.click();
-                  }
+              // Find and open all parent accordions
+              let currentElement = targetElement;
+              const accordionsToOpen = [];
+              
+              // Walk up the DOM tree to find all accordion items that need to be opened
+              while (currentElement && currentElement !== document.body) {
+                if (currentElement.classList.contains('accordion-item')) {
+                  const trigger = currentElement.querySelector('.accordion-trigger');
+                  const content = currentElement.querySelector('.accordion-content');
                   
-                  // Also open parent provider accordion if needed
-                  const parentProviderItem = accordionItem.closest('.provider-section');
-                  if (parentProviderItem) {
-                    const parentTrigger = parentProviderItem.querySelector('.accordion-trigger');
-                    const parentContent = parentProviderItem.querySelector('.accordion-content');
-                    if (parentTrigger && parentContent && parentContent.getAttribute('data-state') === 'closed') {
-                      parentTrigger.click();
-                    }
+                  if (trigger && content && content.getAttribute('data-state') === 'closed') {
+                    accordionsToOpen.push(trigger);
                   }
                 }
+                currentElement = currentElement.parentElement;
               }
               
-              // Smooth scroll to the target with some offset
+              // Open all accordions that need to be opened (in reverse order - parent first)
+              accordionsToOpen.reverse().forEach(trigger => trigger.click());
+              
+              // Smooth scroll to the target with proper offset
               setTimeout(() => {
-                const targetRect = targetElement.getBoundingClientRect();
-                const offset = 100; // Adjust this value as needed
-                window.scrollTo({
-                  top: window.scrollY + targetRect.top - offset,
-                  behavior: 'smooth'
+                targetElement.scrollIntoView({ 
+                  behavior: 'smooth', 
+                  block: 'start',
+                  inline: 'nearest'
                 });
-              }, 100); // Small delay to allow accordion to open
+                // Add additional padding to ensure visibility
+                setTimeout(() => {
+                  window.scrollBy(0, -120); // Adjusted offset for better visibility
+                }, 100);
+              }, accordionsToOpen.length > 0 ? 300 : 100); // Longer delay if accordions need to open
             }
           }
 
