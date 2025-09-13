@@ -43,7 +43,6 @@ async function getBenchmarkFiles(): Promise<string[]> {
       (file) =>
         file.endsWith(".json") &&
         file.includes("benchmark-results") &&
-        file.includes("-2025-") && // Include current timestamped files
         !file.includes("with-context") &&
         file !== "benchmark-results-merged.json"
     )
@@ -56,10 +55,7 @@ async function getBenchmarkFiles(): Promise<string[]> {
 async function readBenchmarkFile(filePath: string): Promise<HumanEvalResult[]> {
   try {
     const content = await fs.readFile(filePath, "utf-8");
-    const results = JSON.parse(content);
-    
-    // Return results (excluding v1 results if they have version field)
-    return results.filter((result: any) => !result.version || result.version !== "v1");
+    return JSON.parse(content);
   } catch (error) {
     console.error(`Error reading benchmark file ${filePath}:`, error);
     return [];

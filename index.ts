@@ -177,7 +177,18 @@ async function runBenchmark() {
     }
 
     // Set number of samples (use 10 samples by default unless a specific test was requested)
-    const numSamples = debugTest ? 1 : 10;
+    let numSamples: number;
+    if (isDebugMode && process.env.DEBUG_SAMPLES) {
+      // Use DEBUG_SAMPLES value in debug mode if specified
+      const debugSamples = parseInt(process.env.DEBUG_SAMPLES, 10);
+      if (isNaN(debugSamples) || debugSamples <= 0) {
+        throw new Error(`DEBUG_SAMPLES must be a positive integer, got: ${process.env.DEBUG_SAMPLES}`);
+      }
+      numSamples = debugSamples;
+    } else {
+      // Use default logic: 1 for specific debug tests, 10 for full runs
+      numSamples = debugTest ? 1 : 10;
+    }
 
     console.log(
       `👉 Running with ${numSamples} samples per test (for pass@k metrics)`
@@ -215,7 +226,7 @@ async function runBenchmark() {
           // Save individual model results immediately to prevent loss if later models fail
           if (results.length > 0) {
             try {
-              await saveBenchmarkResults(results, contextFile, contextContent);
+              await saveBenchmarkResults(results, contextFile, contextContent, undefined);
               console.log(`💾 Saved individual results for ${providerWithModel.modelId}`);
             } catch (saveError) {
               console.error(`⚠️  Failed to save individual results for ${providerWithModel.modelId}:`, saveError);
@@ -273,7 +284,7 @@ async function runBenchmark() {
           // Save individual model results immediately to prevent loss if later models fail
           if (results.length > 0) {
             try {
-              await saveBenchmarkResults(results, contextFile, contextContent);
+              await saveBenchmarkResults(results, contextFile, contextContent, undefined);
               console.log(`💾 Saved individual results for ${providerWithModel.modelId}`);
             } catch (saveError) {
               console.error(`⚠️  Failed to save individual results for ${providerWithModel.modelId}:`, saveError);
