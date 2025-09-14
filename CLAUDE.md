@@ -71,8 +71,19 @@ Multiple models can be specified: `DEBUG_MODEL=model1,model2,model3`
 Each test in `src/tests/` requires:
 - `prompt.md` - Instructions for the LLM to generate a Svelte component
 - `test.ts` - Vitest tests that validate the generated component functionality
+- `Reference.svelte` - Reference implementation for validation
 
 The benchmark generates components in `tmp/{provider}/` directories and runs tests using the integrated Vitest setup.
+
+## Versioning System
+
+**Current Results:** Results generated with fixed test prompts and improved error handling. All new benchmark runs produce results with:
+- Fixed quotation mark issues in test prompts that were causing model confusion
+- Corrected Svelte binding syntax examples (e.g., `bind:value={text}` instead of `bind:value="{text}"`)
+- Improved test reliability and accuracy
+- Clean filenames without version suffixes (e.g., `benchmark-results-2025-08-27T12-34-56.789Z.json`)
+
+**Legacy Results:** Historical results from original test suite in the `benchmarks/v1/` directory. These may contain inconsistencies due to prompt formatting issues.
 
 ## Environment Setup
 

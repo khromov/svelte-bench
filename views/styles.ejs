@@ -560,14 +560,15 @@
       align-items: center;
       justify-content: space-between;
       gap: 1rem;
-      padding: 1rem;
+      padding: calc(1rem - 2px);
+      margin: 2px;
       font-weight: 500;
       transition: all 0.2s ease;
       background: transparent;
-      border: none;
+      border: 2px solid transparent;
       cursor: pointer;
       text-align: left;
-      width: 100%;
+      width: calc(100% - 4px);
       color: var(--foreground);
       border-radius: var(--radius);
     }
@@ -575,6 +576,7 @@
     .accordion-trigger:hover {
       background: var(--accent);
       color: var(--accent-foreground);
+      border-color: var(--background);
     }
 
     .accordion-trigger:focus-visible {
@@ -589,21 +591,25 @@
     .chevron-icon {
       height: 1rem;
       width: 1rem;
-      transition: transform 0.2s ease;
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
+    /* Smoother accordion animations */
     .accordion-content {
       overflow: hidden;
       font-size: 0.875rem;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
+                  opacity 0.3s ease-out,
+                  transform 0.3s ease-out;
       max-height: 0;
+      opacity: 0;
+      transform: translateY(-10px);
     }
 
     .accordion-content[data-state="open"] {
-      max-height: none;
-      height: auto;
-      overflow: visible;
-      padding-bottom: 1rem;
+      max-height: 50000px; /* Much larger for all content */
+      opacity: 1;
+      transform: translateY(0);
     }
 
     .accordion-content-inner {
@@ -717,7 +723,6 @@
 
     .provider-section:hover {
       box-shadow: var(--shadow-lg);
-      transform: translateY(-2px);
     }
 
     .provider-header {

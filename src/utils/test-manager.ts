@@ -605,7 +605,10 @@ export async function saveBenchmarkResults(
           content: contextContent,
         };
       }
-      return result;
+      return {
+        ...result,
+        timestamp: new Date().toISOString(),
+      };
     });
 
     await fs.writeFile(filePath, JSON.stringify(resultsWithContext, null, 2));

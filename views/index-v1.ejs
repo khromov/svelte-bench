@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SvelteBench Visualization</title>
+  <title>SvelteBench Visualization - Legacy Results</title>
 
   <!-- Prevent flash of wrong theme -->
   <script>
@@ -37,10 +37,106 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <%- include('styles') %>
+  <style>
+    /* V1 Warning Alert Styles */
+    .v1-warning-alert {
+      margin: 1.5rem 0 2rem;
+      padding: 1rem 1.5rem;
+      background: var(--warning-bg, hsl(38.3 92.1% 95%));
+      border: 1px solid var(--warning, hsl(38.3 92.1% 50.2%));
+      border-radius: var(--radius-md);
+      color: var(--warning-foreground, var(--foreground));
+    }
+
+    [data-theme="dark"] .v1-warning-alert {
+      background: hsla(38.3, 92.1%, 50.2%, 0.15);
+      border-color: hsla(38.3, 92.1%, 50.2%, 0.5);
+      color: hsl(0 0% 98%);
+    }
+
+    [data-theme="dark"] .v1-warning-alert h3 {
+      color: hsl(0 0% 98%);
+    }
+
+    [data-theme="dark"] .v1-warning-alert p {
+      color: hsl(0 0% 90%);
+    }
+
+    .v1-warning-alert h3 {
+      font-size: 1.125rem;
+      font-weight: 700;
+      margin: 0 0 0.5rem 0;
+      color: var(--warning-foreground, var(--foreground));
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .v1-warning-alert p {
+      margin: 0 0 1rem 0;
+      font-size: 0.9375rem;
+      line-height: 1.6;
+    }
+
+    .v1-warning-alert p:last-child {
+      margin-bottom: 0;
+    }
+
+    .warning-icon {
+      width: 20px;
+      height: 20px;
+      fill: var(--warning, hsl(38.3 92.1% 50.2%));
+      flex-shrink: 0;
+    }
+
+    /* Smoother accordion animations */
+    .accordion-content {
+      overflow: hidden;
+      font-size: 0.875rem;
+      transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                  opacity 0.3s ease-out,
+                  transform 0.3s ease-out;
+      max-height: 0;
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+
+    .accordion-content[data-state="open"] {
+      max-height: 500000px; /* Large enough for content */
+      opacity: 1;
+      transform: translateY(0);
+      padding-bottom: 1rem;
+    }
+
+    .chevron-icon {
+      height: 1rem;
+      width: 1rem;
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+  </style>
 </head>
 <body>
 
-  <h1>SvelteBench Visualization</h1>
+  <h1>SvelteBench Visualization - Legacy Results</h1>
+
+
+  <!-- V1 Warning Alert -->
+  <div class="v1-warning-alert">
+    <h3>
+      <svg class="warning-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+        <line x1="12" y1="9" x2="12" y2="13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <circle cx="12" cy="17" r="1" fill="currentColor"/>
+      </svg>
+      Important: These are Legacy Results with Known Issues
+    </h3>
+    <p>
+      These benchmark results contain an error in the "inspect" test prompt that may affect accuracy. The prompt had incorrect quotation marks in the Svelte binding syntax examples, which could confuse language models and lead to inconsistent results.
+    </p>
+    <p>
+      The updated results with corrected prompts are available separately.
+    </p>
+  </div>
 
   <% if (typeof isIndexPage !== 'undefined' && isIndexPage === true) { %>
     <!-- Index page showing list of all benchmark results -->
@@ -66,14 +162,14 @@
             </p>
           </div>
           <div class="card-footer">
-             <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
-               <a href="<%= mergedFile.name.replace('.json', '.html') %>" class="btn btn-primary">
-                 View Results
-               </a>
-               <a href="<%= mergedFile.name %>" download class="btn btn-outline">
-                 Download JSON
-               </a>
-             </div>
+            <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+              <a href="<%= mergedFile.name.replace('.json', '.html') %>" class="btn btn-primary">
+                View Results
+              </a>
+              <a href="<%= mergedFile.name %>" download class="btn btn-outline">
+                Download JSON
+              </a>
+            </div>
           </div>
         </div>
       <% } %>
@@ -195,10 +291,10 @@
           </svg>
           GitHub
         </a>
-        <a href="index.html" class="btn btn-primary">View Raw Results →</a>
-        <a href="v1/v1-benchmark-results-merged.html" class="btn btn-outline">v1 Results</a>
+         <a href="../benchmark-results-merged.html" class="btn btn-primary">View Current Results →</a>
+         <a href="index.html" class="btn btn-outline">v1 Raw Results</a>
 
-        <!-- Theme toggle button -->
+         <!-- Theme toggle button -->
         <button id="theme-toggle" class="btn btn-outline theme-toggle-inline" title="Toggle theme">
           <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="12" cy="12" r="5"></circle>
@@ -417,7 +513,7 @@
                         <tr>
                           <td><%= result.testName %></td>
                           <td>
-                            <% 
+                            <%
                               const pass1Percentage = Math.round(result.pass1 * 100);
                               let badgeClass = 'badge-error';
                               if (result.numCorrect === result.numSamples) {
@@ -812,6 +908,19 @@
             samplesContainer.appendChild(sampleDiv);
           });
 
+          // Store current scroll position before showing modal
+          const scrollY = window.scrollY;
+          document.body.style.top = `-${scrollY}px`;
+
+          // Hide back-to-top button and lock scroll when modal is shown
+          const backToTopBtn = document.getElementById('back-to-top');
+          if (backToTopBtn) {
+            backToTopBtn.classList.add('modal-hidden');
+          }
+
+          // Lock page scroll completely
+          document.body.classList.add('modal-open');
+          document.documentElement.classList.add('modal-open');
 
               // Show the modal
               samplesModal.style.display = "block";
@@ -819,9 +928,29 @@
 
             close() {
               const samplesModal = document.getElementById("samples-modal");
+              const backToTopBtn = document.getElementById('back-to-top');
 
               if (samplesModal) {
                 samplesModal.style.display = "none";
+              }
+
+              // Restore scroll position before unlocking scroll
+              const scrollY = document.body.style.top;
+              document.body.style.top = '';
+
+              // Unlock page scroll completely
+              document.body.classList.remove('modal-open');
+              document.documentElement.classList.remove('modal-open');
+
+              // Restore the scroll position (scrollY is already negative, so make it positive)
+              if (scrollY) {
+                const scrollPosition = Math.abs(parseInt(scrollY));
+                window.scrollTo(0, scrollPosition);
+              }
+
+              // Show back-to-top button again
+              if (backToTopBtn) {
+                backToTopBtn.classList.remove('modal-hidden');
               }
             }
           };
@@ -1001,6 +1130,31 @@
           }
         };
 
+        // ============================================
+        // Navigation Module
+        // ============================================
+        const Navigation = {
+          handleHashNavigation() {
+          const hash = window.location.hash;
+          if (hash.startsWith('#model-')) {
+            expandAll();
+            // Re-trigger navigation after sections expand
+            setTimeout(() => {
+              // Remove the # and use getElementById to avoid CSS selector issues with dots
+              const elementId = hash.substring(1);
+              const element = document.getElementById(elementId);
+              if (element) {
+                console.log('Scrolling to', element);
+                element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                // Add additional padding to ensure visibility
+                setTimeout(() => {
+                  window.scrollBy(0, -100);
+                }, 100);
+              }
+              }, 300);
+            }
+          }
+        };
 
         // ============================================
         // Application Initialization
@@ -1009,54 +1163,6 @@
           // Initialize all modules
           ThemeManager.init();
           ModelSearch.init();
-
-          function expandProvidersAndModels() {
-            // Find all provider sections and their model subsections
-            const providerSections = document.querySelectorAll('.provider-section');
-            
-            providerSections.forEach(providerSection => {
-              const providerTrigger = providerSection.querySelector('.accordion-trigger');
-              const providerContent = providerSection.querySelector('.accordion-content');
-              
-              // Expand provider if collapsed
-              if (providerTrigger && providerTrigger.getAttribute('data-state') === 'closed') {
-                providerTrigger.setAttribute('data-state', 'open');
-                if (providerContent) {
-                  providerContent.setAttribute('data-state', 'open');
-                }
-              }
-              
-              // Expand all model sections within this provider
-              const modelSections = providerSection.querySelectorAll('.accordion-item:not(.provider-section)');
-              modelSections.forEach(modelSection => {
-                const modelTrigger = modelSection.querySelector('.accordion-trigger');
-                const modelContent = modelSection.querySelector('.accordion-content');
-                
-                if (modelTrigger && modelTrigger.getAttribute('data-state') === 'closed') {
-                  modelTrigger.setAttribute('data-state', 'open');
-                  if (modelContent) {
-                    modelContent.setAttribute('data-state', 'open');
-                  }
-                }
-              });
-            });
-          }
-
-          // Handle clicks on top model links
-          document.addEventListener('click', function(event) {
-            const modelLink = event.target.closest('.model-name-link');
-            if (modelLink) {
-              event.preventDefault(); // Prevent immediate navigation
-              
-              // Expand all providers and models
-              expandProvidersAndModels();
-              
-              // Wait 150ms then navigate to the hash
-              setTimeout(() => {
-                window.location.hash = modelLink.getAttribute('href').substring(1);
-              }, 150);
-            }
-          });
 
           // Hide models beyond top 5 on initial load (unless there's a search query)
           const urlParams = new URLSearchParams(window.location.search);
@@ -1068,6 +1174,10 @@
               row.style.display = 'none';
             });
           }
+
+          // Handle navigation
+          Navigation.handleHashNavigation();
+          window.addEventListener('hashchange', Navigation.handleHashNavigation);
 
           // Setup modal event listeners
           const closeSamplesButton = document.getElementById("close-samples-modal");
@@ -1098,20 +1208,20 @@
           SvelteBench.expandAll();
 
           // ============================================
-          // Smooth Scroll to Model Function
+          // Smooth Scroll to Model Function (Global scope)
           // ============================================
           window.smoothScrollToModel = function(event, link) {
             event.preventDefault();
             event.stopPropagation(); // Prevent event bubbling
-            
+
             const targetId = link.getAttribute('href').substring(1);
             let targetElement = document.getElementById(targetId);
-            
+
             // If not found, try alternative approaches
             if (!targetElement) {
               const allModelElements = document.querySelectorAll('[id^="model-"]');
               const targetIdParts = targetId.split('-');
-              
+
               // Look for a partial match
               for (const element of allModelElements) {
                 const elementIdParts = element.id.split('-');
@@ -1121,7 +1231,7 @@
                   const targetModel = targetIdParts.slice(-1)[0];
                   const elementProvider = elementIdParts.slice(1, -1).join('-');
                   const targetProvider = targetIdParts.slice(1, -1).join('-');
-                  
+
                   if (elementModel === targetModel && elementProvider === targetProvider) {
                     targetElement = element;
                     break;
@@ -1129,39 +1239,39 @@
                 }
               }
             }
-            
+
             if (!targetElement) {
               console.warn('Could not find target element for ID:', targetId);
               return;
             }
-            
+
             // Find and open all parent accordions
             let currentElement = targetElement;
             const accordionsToOpen = [];
-            
+
             // Walk up the DOM tree to find all accordion items that need to be opened
             while (currentElement && currentElement !== document.body) {
               if (currentElement.classList.contains('accordion-item')) {
                 const trigger = currentElement.querySelector('.accordion-trigger');
                 const content = currentElement.querySelector('.accordion-content');
-                
+
                 if (trigger && content && content.getAttribute('data-state') === 'closed') {
                   accordionsToOpen.push(trigger);
                 }
               }
               currentElement = currentElement.parentElement;
             }
-            
+
             // Open all accordions that need to be opened (in reverse order - parent first)
             accordionsToOpen.reverse().forEach(trigger => trigger.click());
-            
+
             // Smooth scroll to the target with proper offset
             setTimeout(() => {
               // Ensure the element is visible after accordions open
               const rect = targetElement.getBoundingClientRect();
               const offset = 120;
               const targetY = window.scrollY + rect.top - offset;
-              
+
               window.scrollTo({
                 top: Math.max(0, targetY),
                 behavior: 'smooth'
@@ -1174,28 +1284,28 @@
           // ============================================
           const searchInput = document.getElementById('model-search-input');
           const clearButton = document.getElementById('clear-search-btn');
-          
+
           if (searchInput && clearButton) {
             // Show/hide clear button based on input content
             function toggleClearButton() {
               clearButton.style.display = searchInput.value ? 'block' : 'none';
             }
-            
+
             // Clear search and hide button
             function clearSearch() {
               searchInput.value = '';
               clearButton.style.display = 'none';
               searchInput.focus();
-              
+
               // Trigger input event to update search results
               const event = new Event('input', { bubbles: true });
               searchInput.dispatchEvent(event);
             }
-            
+
             // Add event listeners
             searchInput.addEventListener('input', toggleClearButton);
             clearButton.addEventListener('click', clearSearch);
-            
+
             // Initial state
             toggleClearButton();
           }
