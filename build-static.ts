@@ -47,6 +47,52 @@ async function loadBenchmarkFiles(): Promise<
 }
 
 /**
+ * Load all benchmark results from the benchmarks/v1 directory
+ */
+async function loadV1BenchmarkFiles(): Promise<
+  Array<{ name: string; path: string; mtime: number }>
+> {
+  const benchmarksDir = path.resolve(process.cwd(), "benchmarks", "v1");
+
+  try {
+    const files = await fs.readdir(benchmarksDir);
+
+    // Filter only JSON files, exclude merged files
+    const jsonFiles = files.filter((file) =>
+      file.endsWith(".json") &&
+      file.includes("benchmark-results") &&
+      !file.includes("merged")
+    );
+
+    // Get file details with modification time
+    const fileDetails = await Promise.all(
+      jsonFiles.map(async (file) => {
+        const filePath = path.join(benchmarksDir, file);
+        const stats = await fs.stat(filePath);
+        return {
+          name: file,
+          path: filePath,
+          mtime: stats.mtime.getTime(),
+        };
+      })
+    );
+
+    // Sort all files by name using reverse natural sort order (Z to A)
+    fileDetails.sort((a, b) => {
+      return b.name.localeCompare(a.name, undefined, {
+        numeric: true,
+        sensitivity: "base",
+      });
+    });
+
+    return fileDetails;
+  } catch (error) {
+    console.warn("Could not read v1 directory:", error);
+    return [];
+  }
+}
+
+/**
  * Load a benchmark file
  */
 async function loadBenchmarkData(filePath: string): Promise<any[]> {
@@ -196,6 +242,38 @@ async function generateIndexHTML(
 }
 
 /**
+ * Generate an index HTML file that lists all v1 benchmark results with warnings
+ */
+async function generateV1IndexHTML(
+  benchmarkFiles: Array<{ name: string; path: string; mtime: number }>
+): Promise<string> {
+  // Load the v1 EJS template
+  const templatePath = path.join(__dirname, "views", "index-v1.ejs");
+  const template = await fs.readFile(templatePath, "utf-8");
+
+  // Format benchmark files for the template
+  const formattedBenchmarkFiles = benchmarkFiles.map((file) => ({
+    name: file.name,
+    path: file.path,
+  }));
+
+  // Render the template with minimal data to show just the file list
+  const html = ejs.render(template, {
+    benchmarkFiles: formattedBenchmarkFiles,
+    selectedFile: null,
+    groupedResults: [],
+    benchmarkDataB64: "",
+    isStaticBuild: true,
+    isIndexPage: true,
+    isV1IndexPage: true,
+  }, {
+    filename: templatePath, // This tells EJS where to resolve includes from
+  });
+
+  return html;
+}
+
+/**
  * Check if merged benchmark results file exists
  */
 async function checkForMergedResultsFile(): Promise<string | null> {
@@ -297,6 +375,20 @@ async function buildStaticFiles(): Promise<void> {
     );
     await fs.writeFile(indexHtmlPath, indexHtml);
     console.log(`📝 Created index.html at ${indexHtmlPath}`);
+
+    // Create a v1/index.html file if v1 results exist
+    const v1BenchmarkFiles = await loadV1BenchmarkFiles();
+    if (v1BenchmarkFiles.length > 0) {
+      const v1IndexHtml = await generateV1IndexHTML(v1BenchmarkFiles);
+      const v1IndexHtmlPath = path.resolve(
+        process.cwd(),
+        "benchmarks",
+        "v1",
+        "index.html"
+      );
+      await fs.writeFile(v1IndexHtmlPath, v1IndexHtml);
+      console.log(`📝 Created v1/index.html at ${v1IndexHtmlPath}`);
+    }
 
     if (benchmarkFiles.length === 0) {
       console.log("⚠️ No benchmark files found.");
