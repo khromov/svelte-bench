@@ -1,0 +1,891 @@
+[
+  {
+    "testName": "counter",
+    "provider": "OpenRouter",
+    "modelId": "arcee-ai/afm-4.5b",
+    "numSamples": 10,
+    "numCorrect": 0,
+    "pass1": 0,
+    "pass10": 0,
+    "context": {
+      "used": false,
+      "content": ""
+    },
+    "samples": [
+      {
+        "index": 0,
+        "code": "<svelte:options runes={true} />\n\n<script>\nexport let count = 0\n\nexport let increment = () => {\n  count++\n}\n\nexport let decrement = () => {\n  count--\n}\n</script>\n\n<div class=\"counter\">\n  <button data-testid=\"decrement-button\">-</button>\n  <span data-testid=\"count-value\">0</span>\n  <button data-testid=\"increment-button\">+</button>\n</div>",
+        "success": false,
+        "errors": [
+          "tmp/samples/openrouter/counter_sample0_0aaa84292fa178ba/Component.svelte:4:0 Cannot use `export let` in runes mode — use `$props()` instead\nhttps://svelte.dev/e/legacy_export_invalid"
+        ],
+        "temperature": 0
+      },
+      {
+        "index": 1,
+        "code": "<svelte:options runes={true} />\n\n<Counter></Counter>",
+        "success": false,
+        "errors": [
+          "Counter is not defined\n\n\tin <unknown>\n",
+          "Counter is not defined\n\n\tin <unknown>\n",
+          "Counter is not defined\n\n\tin <unknown>\n",
+          "Counter is not defined\n\n\tin <unknown>\n"
+        ]
+      },
+      {
+        "index": 2,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  export let counter = 0\n\n  $onInit(() => {\n    document.body.concat(\" \", document.body)\n  })\n\n  $effect(() => {\n    document\n      .querySelector(\"button[data-testid='decrement-button']\")\n      .onclick = () => { counter -= 1 }\n    document\n      .querySelector(\"button[data-testid='increment-button']\")\n      .onclick = () => { counter += 1 }\n    document\n      .querySelector(\"span[data-testid='count-value']\")\n      .innerText = counter\n  })\n</script>\n\n<counter></counter>",
+        "success": false,
+        "errors": [
+          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/counter_sample2_84696f4f764fadf7/Component.svelte:6:2 `$onInit` is an illegal variable name. To reference a global variable called `$onInit`, use `globalThis.$onInit`\nhttps://svelte.dev/e/global_reference_invalid"
+        ]
+      },
+      {
+        "index": 3,
+        "code": "<svelte:options runes={true} />\n\n(src/index.svelte)",
+        "success": false,
+        "errors": [
+          "Unable to find an element by: [data-testid=\"count-value\"]\n\nIgnored nodes: comments, script, style\n\u001b[36m<body>\u001b[39m\n  \u001b[36m<div>\u001b[39m\n    \u001b[0m(src/index.svelte)\u001b[0m\n    \u001b[0m\u001b[0m\n  \u001b[36m</div>\u001b[39m\n\u001b[36m</body>\u001b[39m",
+          "Unable to find an element by: [data-testid=\"increment-button\"]\n\nIgnored nodes: comments, script, style\n\u001b[36m<body>\u001b[39m\n  \u001b[36m<div>\u001b[39m\n    \u001b[0m(src/index.svelte)\u001b[0m\n    \u001b[0m\u001b[0m\n  \u001b[36m</div>\u001b[39m\n\u001b[36m</body>\u001b[39m",
+          "Unable to find an element by: [data-testid=\"decrement-button\"]\n\nIgnored nodes: comments, script, style\n\u001b[36m<body>\u001b[39m\n  \u001b[36m<div>\u001b[39m\n    \u001b[0m(src/index.svelte)\u001b[0m\n    \u001b[0m\u001b[0m\n  \u001b[36m</div>\u001b[39m\n\u001b[36m</body>\u001b[39m",
+          "Unable to find an element by: [data-testid=\"decrement-button\"]\n\nIgnored nodes: comments, script, style\n\u001b[36m<body>\u001b[39m\n  \u001b[36m<div>\u001b[39m\n    \u001b[0m(src/index.svelte)\u001b[0m\n    \u001b[0m\u001b[0m\n  \u001b[36m</div>\u001b[39m\n\u001b[36m</body>\u001b[39m"
+        ]
+      },
+      {
+        "index": 4,
+        "code": "<svelte:options runes={true} />\n\n<svelte-component>\n    <div class=\"counter\">\n        <button data-testid=\"decrement-button\">-</button>\n        <span data-testid=\"count-value\">{state.count}</span>\n        <button data-testid=\"increment-button\">+</button>\n    </div>\n</svelte-component>",
+        "success": false,
+        "errors": [
+          "state is not defined\n\n\tin <unknown>\n",
+          "state is not defined\n\n\tin <unknown>\n",
+          "state is not defined\n\n\tin <unknown>\n",
+          "state is not defined\n\n\tin <unknown>\n"
+        ]
+      },
+      {
+        "index": 5,
+        "code": "<svelte:options runes={true} />\n\n<c>\n<svelte:import name=\"Counter.veом\" />\n</svelte>",
+        "success": false,
+        "errors": [
+          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/counter_sample5_c8dddf8c6d010c2d/Component.svelte:4:1 Valid `<svelte:...>` tag names are svelte:head, svelte:options, svelte:window, svelte:document, svelte:body, svelte:element, svelte:component, svelte:self, svelte:fragment or svelte:boundary\nhttps://svelte.dev/e/svelte_meta_invalid_tag"
+        ]
+      },
+      {
+        "index": 6,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  import { $state } from 'svelte';\n\n  let count = $state('count');\n</script>\n\n<template>\n  <div class=\"counter\">\n    <button data-testid=\"decrement-button\">-</button>\n    <span data-testid=\"count-value\">{{ count }}</span>\n    <button data-testid=\"increment-button\">+</button>\n  </div>\n</template>",
+        "success": false,
+        "errors": [
+          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/counter_sample6_7e0dd1d6e15edff7/Component.svelte:4:11 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
+        ]
+      },
+      {
+        "index": 7,
+        "code": "<svelte:options runes={true} />\n\n<script>\nexport let counter = 0\n\nonMount(() => {\n    counter = 0\n})\n</script>\n\n<div class=\"counter\">\n  <button data-testid=\"decrement-button\">{!-- decrement() { counter -= 1 } --></button>\n  <span data-testid=\"count-value\"> {counter} </span>\n  <button data-testid=\"increment-button\">{!-- increment() { counter += 1 } --></button>\n</div>",
+        "success": false,
+        "errors": [
+          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/counter_sample7_a6ad7e35414f60c7/Component.svelte:12:46 Assigning to rvalue\nhttps://svelte.dev/e/js_parse_error"
+        ]
+      },
+      {
+        "index": 8,
+        "code": "<svelte:options runes={true} />\n\n<script>\n    export let count = 0;\n\n    const increment = () => count++;\n    const decrement = () => count--;\n\n    export const handleIncrement = () => increment();\n    export const handleDecrement = () => decrement();\n</script>\n\n<div class=\"counter\">\n    <button data-testid=\"decrement-button\" onclick={handleDecrement}>-</button>\n    <span data-testid=\"count-value\" style=\"color: blue; float: left;\">{count}</span>\n    <button data-testid=\"increment-button\" onclick={handleIncrement}>+</button>\n</div>",
+        "success": false,
+        "errors": [
+          "tmp/samples/openrouter/counter_sample8_6b78b9b59c5c7b85/Component.svelte:4:4 Cannot use `export let` in runes mode — use `$props()` instead\nhttps://svelte.dev/e/legacy_export_invalid"
+        ]
+      },
+      {
+        "index": 9,
+        "code": "<svelte:options runes={true} />\n\n<Counter></Counter>",
+        "success": false,
+        "errors": [
+          "Counter is not defined\n\n\tin <unknown>\n",
+          "Counter is not defined\n\n\tin <unknown>\n",
+          "Counter is not defined\n\n\tin <unknown>\n",
+          "Counter is not defined\n\n\tin <unknown>\n"
+        ]
+      }
+    ],
+    "timestamp": "2025-09-16T16:49:01.397Z"
+  },
+  {
+    "testName": "derived",
+    "provider": "OpenRouter",
+    "modelId": "arcee-ai/afm-4.5b",
+    "numSamples": 10,
+    "numCorrect": 0,
+    "pass1": 0,
+    "pass10": 0,
+    "context": {
+      "used": false,
+      "content": ""
+    },
+    "samples": [
+      {
+        "index": 0,
+        "code": "<svelte:options runes={true} />\n\n<script>\nexport let number = 5\nexport let doubled = $state * 2\n\nexport let increment = () => {\n  number++\n}\n</script>",
+        "success": false,
+        "errors": [
+          "tmp/samples/openrouter/derived_sample0_a2bb745d149d3702/Component.svelte:4:0 Cannot use `export let` in runes mode — use `$props()` instead\nhttps://svelte.dev/e/legacy_export_invalid"
+        ],
+        "temperature": 0
+      },
+      {
+        "index": 1,
+        "code": "<svelte:options runes={true} />\n\n<script>\nexport let number = 5\nexport let doubled = $state * 2\n\n<script>\n$effect oninput={event => {\n  duplicatedEvent = {\n    target: event.target,\n    currentTarget: event.currentTarget,\n    oldValue: event.currentTarget.value,\n    newValue: event.currentTarget.value,\n    type: event.type,\n    clientX: event.clientX,\n    clientY: event.clientY,\n    pageX: event.clientX,\n    pageY: event.clientY,\n    detail: event.detail,\n  }\n  $state = duplicatedEvent.target.value\n  doubled = $state * 2\n}}\n</script>",
+        "success": false,
+        "errors": [
+          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/derived_sample1_fea9b3337bd9c7fe/Component.svelte:8:8 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+        ]
+      },
+      {
+        "index": 2,
+        "code": "<svelte:options runes={true} />\n\n<template>\n  <div>\n    <p data-testid=\"number-value\">Number: {number}</p>\n    <p data-testid=\"doubled-value\">Doubled: {doubled}</p>\n    <button data-testid=\"increment-button\" on clickable={() => { number++; }}>Increment</button>\n  </div>\n</template>\n\n<script>\nexport let number = 5\nexport let doubled = $state * 2\n<script>",
+        "success": false,
+        "errors": [
+          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/derived_sample2_7b8be4a5fc1254b6/Component.svelte:14:8 `<script>` was left open\nhttps://svelte.dev/e/element_unclosed"
+        ]
+      },
+      {
+        "index": 3,
+        "code": "<svelte:options runes={true} />\n\n<script>\n    export let number = 5\n    $state number\n    $derived doubled := $state * 2\n</script>",
+        "success": false,
+        "errors": [
+          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/derived_sample3_f316cdbd6838230d/Component.svelte:5:11 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+        ]
+      },
+      {
+        "index": 4,
+        "code": "<svelte:options runes={true} />\n\n<script>\n// base number\nlet number = 5;\n\n// derived function to calculate the doubled value\nconst derived = (state) => state * 2;\n\nexport default {\n    created() {\n        $effect('derived', {state})\n    },\n    methods: {\n        increment() {\n            number++;\n        }\n    },\n    data() {\n        return {\n            number\n        }\n    },\n    template: \n        <div>\n            <p data-testid=\"number-value\">Number: {number}</p>\n            <p data-testid=\"doubled-value\">Doubled: {derived(number)}</p>\n            <button data-testid=\"increment-button\">Increment</button>\n        </div>\n    }\n};\n</script>",
+        "success": false,
+        "errors": [
+          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/derived_sample4_bd45392e53ca42ed/Component.svelte:25:8 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+        ]
+      },
+      {
+        "index": 5,
+        "code": "<svelte:options runes={true} />\n\n<ul>\n    <li>\n        <strong>$state</strong>:<span class=\"badge badge-info badge-sm\">5</span>\n    </li>\n    <li>\n        <strong>$derived</strong>:\n        <code faust=\"${state.number cutting='first'} * 2 as doubled}\"</code>\n        <code data-testid=\"doubled-value\">Doubled: {doubled}</code>\n    </li>\n    <li>\n        <strong>increase number</strong>:\n        <button on:\"click @in | inc()\" data-testid=\"increment-button\">Increment</button>\n    </li>\n    <li>\n        <strong>Output</strong>:\n        <div>\n            <p data-testid=\"number-value\">Number: {number}</p>\n            <p data-testid=\"doubled-value\">Doubled: {doubled}</p>\n        </div>\n    </li>\n</ul>",
+        "success": false,
+        "errors": [
+          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/derived_sample5_54f2fb4cef6bd6bc/Component.svelte:9:36 Expected token }\nhttps://svelte.dev/e/expected_token"
+        ]
+      },
+      {
+        "index": 6,
+        "code": "<svelte:options runes={true} />\n\n<script>\nexport let number = 5\nexport let doubled = $state * 2\n\nexport let increment()\n{\n  number++\n}\n</script>",
+        "success": false,
+        "errors": [
+          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/derived_sample6_535892ae12bbc279/Component.svelte:7:20 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+        ]
+      },
+      {
+        "index": 7,
+        "code": "<svelte:options runes={true} />\n\n<script>\nexport default {\n    data(): any { return { number: 5, doubled: 0 } },\n    setup() {\n        const number = $state.number;\n        const doubled = $derived(doubled, { $apply: () => number * 2 });\n        return {\n            number,\n            doubled,\n            increment: () => $state.number += 1\n        };\n    }\n};\n</script>",
+        "success": false,
+        "errors": [
+          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/derived_sample7_79792d906e0d9e80/Component.svelte:5:10 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+        ]
+      },
+      {
+        "index": 8,
+        "code": "<svelte:options runes={true} />\n\n<script>\nexport let number = 5\n\nPostRender(() => {\n    export let doubled = derive(\n        number => number * 2\n    )(number)\n})\n</script>",
+        "success": false,
+        "errors": [
+          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/derived_sample8_ad4c177fdde25b6e/Component.svelte:7:4 'import' and 'export' may only appear at the top level\nhttps://svelte.dev/e/js_parse_error"
+        ]
+      },
+      {
+        "index": 9,
+        "code": "<svelte:options runes={true} />\n\n<script>\n    export let number = 5\n    let doubled\n\n    $derived:function doubled() {\n        return number * 2;\n    }\n</script>\n\n<div>\n    <p data-testid=\"number-value\">Number: {number}</p>\n    <p data-testid=\"doubled-value\">Doubled: {doubled}</p>\n    <button data-testid=\"increment-button\">Increment</button>\n</div>",
+        "success": false,
+        "errors": [
+          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/derived_sample9_090b1fcca216708d/Component.svelte:7:13 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+        ]
+      }
+    ],
+    "timestamp": "2025-09-16T16:49:01.397Z"
+  },
+  {
+    "testName": "derived-by",
+    "provider": "OpenRouter",
+    "modelId": "arcee-ai/afm-4.5b",
+    "numSamples": 10,
+    "numCorrect": 0,
+    "pass1": 0,
+    "pass10": 0,
+    "context": {
+      "used": false,
+      "content": ""
+    },
+    "samples": [
+      {
+        "index": 0,
+        "code": "<svelte:options runes={true} />\n\n<script>\nexport let text = \"\"\n\nexport let wordCount = 0\nexport let charCount = 0\nexport let isLong = false\n\nexport let clearEffect = $effect(() => {\n  text = \"\"\n  wordCount = 0\n  charCount = 0\n  isLong = false\n})\n\nexport let update = $derived({\n  wordCount: $state.text.split(/\\s+/).length,\n  charCount: $state.text.length,\n  isLong: $state.text.split(/\\s+/).length > 15,\n})\n</script>\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" />\n  <button data-testid=\"clear-button\">Clear</button>\n  <div>\n    <p data-testid=\"word-count\">Words: <span data-testid=\"word-count\">{wordCount}</span></p>\n    <p data-testid=\"char-count\">Characters: <span data-testid=\"char-count\">{charCount}</span></p>\n    <p data-testid=\"length-indicator\">Status: <span data-testid=\"length-indicator\">{isLong ? \"Long text\" : \"Short text\"}</span></p>\n  </div>\n</div>",
+        "success": false,
+        "errors": [
+          "tmp/samples/openrouter/derived-by_sample0_0f7803184c1b8108/Component.svelte:4:0 Cannot use `export let` in runes mode — use `$props()` instead\nhttps://svelte.dev/e/legacy_export_invalid"
+        ],
+        "temperature": 0
+      },
+      {
+        "index": 1,
+        "code": "<svelte:options runes={true} />\n\n<section>\n  <input type=\"text\" data-testid=\"text-input\" />\n  <button data-testid=\"clear-button\">Clear</button>\n  <div>\n    <p data-testid=\"word-count\">Words: 0</p>\n    <p data-testid=\"char-count\">Characters: 0</p>\n    <p data-testid=\"length-indicator\">Status: Short text</p>\n  </div>\n</section>",
+        "success": false,
+        "errors": [
+          "\u001b[2mexpect(\u001b[22m\u001b[31melement\u001b[39m\u001b[2m).toHaveTextContent()\u001b[22m\n\nExpected element to have text content:\n\u001b[32m  Words: 2\u001b[39m\nReceived:\n\u001b[31m  Words: 0\u001b[39m",
+          "\u001b[2mexpect(\u001b[22m\u001b[31melement\u001b[39m\u001b[2m).toHaveTextContent()\u001b[22m\n\nExpected element to have text content:\n\u001b[32m  Words: 2\u001b[39m\nReceived:\n\u001b[31m  Words: 0\u001b[39m"
+        ]
+      },
+      {
+        "index": 2,
+        "code": "<svelte:options runes={true} />\n\n<script>\nexport let text\nexport let wordCount = 0\nexport let charCount = 0\nexport let isLong = false\n\nexport let clearListener\n\nsetup($) {\n  clearListener = event => {\n    if (event.target.name === 'clear') {\n      $text.value = ''\n    }\n  }\n}\n</script>\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" {...$text} onchange={e => $text.value = e.target.value} onkeyup={e => e.target.value.trim()} />\n  <button data-testid=\"clear-button\" on=\"{...clearListener}\">Clear</button>\n  <div>\n    <p data-testid=\"word-count\">Words: {wordCount}</p>\n    <p data-testid=\"char-count\">Characters: {charCount}</p>\n    <p data-testid=\"length-indicator\">Status: {isLong ? 'Long text' : 'Short text'}</p>\n  </div>\n</div>",
+        "success": false,
+        "errors": [
+          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/derived-by_sample2_0031c97f4df85d03/Component.svelte:11:9 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+        ]
+      },
+      {
+        "index": 3,
+        "code": "<svelte:options runes={true} />\n\n<script>\nconst inputValue = $state.text;\n\n$derived.invalidate(inputValue);\n\n$derived.by({ $inputValue: inputValue }, {\n  wordCount: {\n    count: countWords(),\n    $description: Words: ${countWords()},\n  },\n  charCount: {\n    count: countCharacters(),\n    $description: Characters: ${countCharacters()},\n  },\n  isLong: {\n    $result: isLongText(),\n    $description: Status: ${isLongText() ? 'Long text' : 'Short text'},\n  },\n});\n\n\nfunction countWords() {\n  return $inputValue.split(/\\s+/).length;\n}\n\nfunction countCharacters() {\n  return $inputValue.length;\n}\n\nfunction isLongText() {\n  return countWords() > 15;\n}\n</script>",
+        "success": false,
+        "errors": [
+          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/derived-by_sample3_187cb7cc59bb5d3c/Component.svelte:11:23 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+        ]
+      },
+      {
+        "index": 4,
+        "code": "<svelte:options runes={true} />\n\n<script>\nexport default {\n  data() {\n    return { value: '' }\n  },\n  methods: {\n    countWords() {\n      return this.value.split(/\\s+/).length;\n    },\n    countChars() {\n      return this.value.length;\n    },\n    isLong() {\n      return this.countWords() > 15;\n    },\n    onInput() {\n      this.$effect(() => {\n        this.value = this.$state;\n      }, this.stateChange);\n    },\n    onClear() {\n      this.value = '';\n    },\n  },\n  effects: {\n    stateChange() {\n      if (this.value !== '') {\n        this.wordCount = this.countWords();\n        this.charCount = this.countChars();\n        this.lengthIndicator = this.isLong()? 'Status: Long text' : 'Status: Short text';\n      } else {\n        this.wordCount = this.charCount = 0;\n        this.lengthIndicator = 'Status: Short text';\n      }\n    },\n  },\n};\n</script>\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" oninput={this.onInput} />\n  <button data-testid=\"clear-button\" onclick={this.onClear} />\n  <div>\n    <p data-testid=\"word-count\">Words: {this.wordCount}</p>\n    <p data-testid=\"char-count\">Characters: {this.charCount}</p>\n    <p data-testid=\"length-indicator\">{this.lengthIndicator}</p>\n  </div>\n</div>",
+        "success": false,
+        "errors": [
+          "tmp/samples/openrouter/derived-by_sample4_fa01e20b74725cdf/Component.svelte:4:0 A component cannot have a default export\nhttps://svelte.dev/e/module_illegal_default_export"
+        ]
+      },
+      {
+        "index": 5,
+        "code": "<svelte:options runes={true} />\n\n<script>\nexport let state = ''; // Initial text value\n\nexport let derived: any = {\n  wordCount: {\n    value: state.split(/\\s+/).length,\n    deps: ['state']\n  },\n  charCount: {\n    value: state.length,\n    deps: ['state']\n  },\n  isLong: {\n    value: state.split(/\\s+/).length > 15,\n    deps: ['state']\n  }\n};\n</script>\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" oninput={updateState} />\n  <button data-testid=\"clear-button\" on:click={clear}>Clear</button>\n  <div data-testid=\"output\">\n    <p data-testid=\"word-count\">Words: {derived.wordCount.value}</p>\n    <p data-testid=\"char-count\">Characters: {derived.charCount.value}</p>\n    <p data-testid=\"length-indicator\">{derived.isLong.value ? 'Long text' : 'Short text')}</p>\n  </div>\n</div>\n\n<script>\nasync function updateState(e) {\n  state = e.target.value.trim();\n}\nasync function clear() {\n  state = '';\n}\n</script>",
+        "success": false,
+        "errors": [
+          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/derived-by_sample5_33fc218ef4cc0c3c/Component.svelte:6:18 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+        ]
+      },
+      {
+        "index": 6,
+        "code": "<svelte:options runes={true} />\n\n<script>\nexport let textInput, wordCount, charCount, isLong\n\nexport let clearClicked = false\n\nexport let calculateDerived = (\n\tl,\n\tlist,\n\tfilter,\n\toptions,\n\tsimple\n) => {\n\tlet derives\n\tif (filter === 'every' && simple) {\n\t\tderives = [['wordCount', 'length']]\n\t} else {\n\t\tderives = [['wordCount', 'length'], ['charCount']]\n\t}\n\tlet totalDerives = derives.length\n\tlet needsUpdate = false\n\tlet pending = Array(totalDerives).fill(null)\n\tlet updates = []\n\tlet result = l\n\tfor (let i = 0; i < totalDerives; i++) {\n\t\tlet [key, prop] = derives[i]\n\t\tif (list && list[key] && list[key] instanceof Array) {\n\t\t\tconst listEl = list[key][filter ? list.index : list.index.filter((_, idx) => (options.from === undefined || idx >= options.from))]\n\t\t\tif (listEl) {\n\t\t\t\tconst resultEl = listEl.find(el => filter\n\t\t\t\t\t? (options.condition && options.condition(el))\n\t\t\t\t\t: simple\n\t\t\t\t)\n\t\t\t\tif (resultEl) {\n\t\t\t\t\tif (key === 'length' && resultEl) {\n\t\t\t\t\t\tresult = Array.isArray(listEl) ? listEl.length : resultEl\n\t\t\t\t\t\tneedsUpdate = true\n\t\t\t\t\t} else {\n\t\t\t\t\t\tresult[key] = resultEl\n\t\t\t\t\t\tneedsUpdate = true\n\t\t\t\t\t}\n\t\t\t\t}\n\t\t\t}\n\t\t} else {\n\t\t\tif (result === l) needsUpdate = true\n\t\t}\n\t\tif (needsUpdate && !pending[i]) {\n\t\t\tpending[i] = true\n\t\t\terr each updates, (next) => {\n\t\t\t\tupdate result => {\n\t\t\t\t\tnext(result)\n\t\t\t\t}\n\t\t\t\tif (options.total) options.total(result)\n\t\t\t\tneedsUpdate = false\n\t\t\t}\n\t\t}\n\t}\n\treturn result\n}\n\nexport let clear = () => {\n\tclearClicked = true\n}\n\nexport let handleInput = (e) => {\n\ttextInput = e.target.value\n\tclearClicked = false\n\tconst l = textInput.trim()\n\tconst wordCount = (l && l.split(/\\s+/)).length > 0 ? (l && l.split(/\\s+/)).length : 0\n\tconst charCount = textInput.length\n\tconst isLong = wordCount > 15\n\tcalculateDerived({\n\t\tl: l || '',\n\t\tlist: { wordCount, charCount },\n\t\tfilter: 'every',\n\t\toptions: { total: true },\n\t\tsimple: false\n\t})\n}\n\nexport let updateLengthIndicator = (isLong) => {\n\t_extension['set_attribute!']['classList']['length-indicator',['isLong', isLong]]\n}\n\nexport let main = (): void => {\n\ttextInput = ''\n\twordCount = 0\n\tcharCount = ''\n\tisLong = false\n\n\teach [clear, handleInput], ({ target }) => {\n\t\ttarget.addEventListener('click', () => {\n\t\t\tif (target === clear) clearClicked = true\n\t\t\telse textInput = ''\n\t\t})\n\t}\n\n\t(math['get_thread_local!'], (thread) =>\n\t\tcalculateDerived({\n\t\t\tl: textInput,\n\t\t\tlist: { wordCount, charCount },\n\t\t\tfilter: 'every',\n\t\t\toptions: { total: true },\n\t\t\tsimple: false\n\t\t}), [], updateLengthIndicator)\n}\n</script>\n<div />\n\t<input data-testid=\"text-input\" type=\"text\" />\n\t<button data-testid=\"clear-button\">Clear</button>\n\t<div>\n    <p data-testid=\"word-count\">Words: 0</p>\n    <p data-testid=\"char-count\">Characters: 0</p>\n    <p data-testid=\"length-indicator\">Status: Short text</p>\n  </div>\n</div>",
+        "success": false,
+        "errors": [
+          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/derived-by_sample6_65b4bea4e0eb7f00/Component.svelte:50:7 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+        ]
+      },
+      {
+        "index": 7,
+        "code": "<svelte:options runes={true} />\n\n<script>\nexport let text = '';\n\nexport let wordCount = 0;\nexport let charCount = 0;\nexport let isLong = false;\n\nfunction updateStats() {\n  wordCount = text.split(/\\s*/).length;\n  charCount = text.length;\n  isLong = wordCount > 15;\n\n  updateStatsToDOM();\n}\n\nfunction updateStatsToDOM() {\n  document.querySelector('div').textContent =\n    ${isLong ? 'Status: Long text' : 'Status: Short text'}\\n;\n  document.querySelector('p.word-count').textContent = Words: ${wordCount};\n  document.querySelector('p.char-count').textContent = Characters: ${charCount};\n}\n\ninput.onchange(() => {\n  text = input.value.trim();\n  updateStats();\n});\n\nbutton.onmouseup(() => {\n  text = '';\n  updateStats();\n});\n\nupdateStats();\n</script>\n<template>\n  <div Defines a layout container>\n    <input data-testid=\"text-input\" type=\"text\" oninput={updateStats} />\n    <button data-testid=\"clear-button\">Clear</button>\n    <div Text is displayed within the div container>\n      <p data-testid=\"word-count\">Words: 0</p>\n      <p data-testid=\"char-count\">Characters: 0</p>\n      <p data-testid=\"length-indicator\">Status: Short text</p>\n    </div>\n  </div>\n</template>",
+        "success": false,
+        "errors": [
+          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/derived-by_sample7_80cc83fdc3b1011c/Component.svelte:20:5 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+        ]
+      },
+      {
+        "index": 8,
+        "code": "<svelte:options runes={true} />\n\n<script>\nexport let text = '';\n\nconst update = ({Δtext}) => {\n  updateState('text', Δtext);\n  updateDerived('wordCount', Δtext, ([text]) => {\n    return text.match(/\\w+/g).length;\n  });\n  updateDerived('charCount', Δtext, ([text]) => {\n    return text.length;\n  });\n  updateDerived('isLong', Δtext, ([text]) => {\n    return text.split(',').length > 15;\n  });\n};\n\nexport default {\n  data: () => ({\n    text: ''\n  }),\n  methods: {\n    updateState(key, value) {\n      $state[key] = value;\n    },\n    updateDerived(key, listeners, init) {\n      $derived.by(key, listeners, init);\n    },\n    clear(){\n      $state['text'] = '';\n    }\n  },\n  onMount() {\n    $store.watch([text], update);\n  }\n};\n</script>\n\n<article>\n  <input\n    type=\"text\"\n    data-testid=\"text-input\"\n    oninput={update}\n    value={text}\n  />\n  <button\n    data-testid=\"clear-button\"\n    oncommand={clear}\n  >\n    Clear\n  </button>\n  <div>\n    <p\n      data-testid=\"word-count\"\n      safer={false}\n    >\n      <span data-testid=\"word-count-value\">Words: 0</span>\n    </p>\n    <p\n      data-testid=\"char-count\"\n      safer={false}\n    >\n      <span data-testid=\"char-count-value\">Characters: 0</span>\n    </p>\n    <p\n      data-testid=\"length-indicator\"\n      safer={false}\n    >\n      <span data-testid=\"length-indicator-value\">Status: Short text</span>\n    </p>\n  </div>\n</article>",
+        "success": false,
+        "errors": [
+          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/derived-by_sample8_bd4e93dff524fa0e/Component.svelte:35:4 `$store` is an illegal variable name. To reference a global variable called `$store`, use `globalThis.$store`\nhttps://svelte.dev/e/global_reference_invalid"
+        ]
+      },
+      {
+        "index": 9,
+        "code": "<svelte:options runes={true} />\n\n<svelte:import local=\"derived.by.component\" />\r\n\tdata-testid=\"text-input\"\r\n\tdata-testid=\"clear-button\"\r\n\t{\r\n\t\ttext: '',\r\n\t\twordCount: 0,\r\n\t\tcharCount: 0,\r\n\t\tisLong: false\r\n\t}\r\n\t{\r\n\t\twordCount: calculateWordCount(text),\r\n\t\tcharCount: calculateCharCount(text),\r\n\t\tisLong: text.split('').filter(word => word.length > 1).length > 15\r\n\t}\r\n<Link on=\"click\">Clear</Link>",
+        "success": false,
+        "errors": [
+          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/derived-by_sample9_92ce29db77d1d62e/Component.svelte:3:1 Valid `<svelte:...>` tag names are svelte:head, svelte:options, svelte:window, svelte:document, svelte:body, svelte:element, svelte:component, svelte:self, svelte:fragment or svelte:boundary\nhttps://svelte.dev/e/svelte_meta_invalid_tag"
+        ]
+      }
+    ],
+    "timestamp": "2025-09-16T16:49:01.397Z"
+  },
+  {
+    "testName": "each",
+    "provider": "OpenRouter",
+    "modelId": "arcee-ai/afm-4.5b",
+    "numSamples": 10,
+    "numCorrect": 0,
+    "pass1": 0,
+    "pass10": 0,
+    "context": {
+      "used": false,
+      "content": ""
+    },
+    "samples": [
+      {
+        "index": 0,
+        "code": "<svelte:options runes={true} />\n\n<script>\n    let characters = [\"Jerry\", \"Elaine\", \"Kramer\"];\n</script>\n\n{#each characters as character}\n    <li data-testid=\"character\">{{ character }}</li>\n{/each}\n\n<button data-testid=\"add-george-button\">Add George</button>",
+        "success": false,
+        "errors": [
+          "\u001b[2mexpect(\u001b[22m\u001b[31melement\u001b[39m\u001b[2m).toHaveTextContent()\u001b[22m\n\nExpected element to have text content:\n\u001b[32m  Jerry\u001b[39m\nReceived:\n\u001b[31m  [object Object]\u001b[39m",
+          "expected 3 to be 4 // Object.is equality"
+        ],
+        "temperature": 0
+      },
+      {
+        "index": 1,
+        "code": "<svelte:options runes={true} />\n\n<script>\nexport let characters = [\"Jerry\", \"Elaine\", \"Kramer\"];\n</script>\n\n<div>\n  <ul data-testid=\"characters-list\">\n    {#each characters as character}\n      <li data-testid=\"character\">{character}</li>\n    {/each}\n  </ul>\n  <button data-testid=\"add-george-button\">(Click to add George)</button>\n</div>",
+        "success": false,
+        "errors": [
+          "tmp/samples/openrouter/each_sample1_4ae48cc23753e420/Component.svelte:4:0 Cannot use `export let` in runes mode — use `$props()` instead\nhttps://svelte.dev/e/legacy_export_invalid"
+        ]
+      },
+      {
+        "index": 2,
+        "code": "<svelte:options runes={true} />\n\n<script>\n    let characters = [\"Jerry\", \"Elaine\", \"Kramer\"];\n\n    // Function to add a new character to the array\n    function addCharacter() {\n        characters.push(\"George\");\n    }\n</script>\n\n<div>\n    <ul data-testid=\"characters-list\">\n        {#each characters as char}\n            <li data-testid=\"character\">{char}</li>\n        {/each}\n    </ul>\n\n    <button data-testid=\"add-george-button\" Onclick={addCharacter}>Add George</button>\n</div>",
+        "success": false,
+        "errors": [
+          "expected 3 to be 4 // Object.is equality"
+        ]
+      },
+      {
+        "index": 3,
+        "code": "<svelte:options runes={true} />\n\n<script>\n    let characters = [\"Jerry\", \"Elaine\", \"Kramer\"];\n</script>\n\n{#each characters as character}\n    <li data-testid=\"character\">${character}</li>\n{/each}\n\n<button data-testid=\"add-george-button\">Add George</button>",
+        "success": false,
+        "errors": [
+          "expected 3 to be 4 // Object.is equality"
+        ]
+      },
+      {
+        "index": 4,
+        "code": "<svelte:options runes={true} />\n\n<script>\nconst characters = ['Jerry', 'Elaine', 'Kramer'];\n\nconst addGeorge = () => {\n  characters.push('George');\n};\n\nexport const Characters = {\n  data: { characters },\n  methods: { addGeorge },\n};\n</script>",
+        "success": false,
+        "errors": [
+          "Unable to find an element by: [data-testid=\"character\"]\n\nIgnored nodes: comments, script, style\n\u001b[36m<body>\u001b[39m\n  \u001b[36m<div>\u001b[39m\n    \u001b[0m\u001b[0m\n  \u001b[36m</div>\u001b[39m\n\u001b[36m</body>\u001b[39m",
+          "Unable to find an element by: [data-testid=\"character\"]\n\nIgnored nodes: comments, script, style\n\u001b[36m<body>\u001b[39m\n  \u001b[36m<div>\u001b[39m\n    \u001b[0m\u001b[0m\n  \u001b[36m</div>\u001b[39m\n\u001b[36m</body>\u001b[39m"
+        ]
+      },
+      {
+        "index": 5,
+        "code": "<svelte:options runes={true} />\n\nconst characters = [\"Jerry\", \"Elaine\", \"Kramer\"]\n\n{#each characters as character}\n  <li data-testid=\"character\">{{ character }}</li>\n{/each}\n\n<button data-testid=\"add-george-button\">Add George</button>",
+        "success": false,
+        "errors": [
+          "characters is not defined\n\n\tin <unknown>\n",
+          "characters is not defined\n\n\tin <unknown>\n"
+        ]
+      },
+      {
+        "index": 6,
+        "code": "<svelte:options runes={true} />\n\n<script>\n    let characters = ['Jerry', 'Elaine', 'Kramer'];\n    let addedGeorge = false;\n\n    function addGeorge() {\n        characters.push('George');\n        addedGeorge = true;\n    }\n</script>\n\n<div>\n    <ul data-testid=\"characters-list\">\n        {#each characters as character}\n            <li data-testid=\"character\">${character}</li>\n        {/each}\n    </ul>\n    {#if addedGeorge}\n        <button data-testid=\"add-george-button\">Add George</button>\n    {/if}\n</div>",
+        "success": false,
+        "errors": [
+          "Unable to find an element by: [data-testid=\"add-george-button\"]\n\nIgnored nodes: comments, script, style\n\u001b[36m<body>\u001b[39m\n  \u001b[36m<div>\u001b[39m\n    \u001b[36m<div>\u001b[39m\n      \u001b[36m<ul\u001b[39m\n        \u001b[33mdata-testid\u001b[39m=\u001b[32m\"characters-list\"\u001b[39m\n      \u001b[36m>\u001b[39m\n        \u001b[36m<li\u001b[39m\n          \u001b[33mdata-testid\u001b[39m=\u001b[32m\"character\"\u001b[39m\n        \u001b[36m>\u001b[39m\n          \u001b[0m$Jerry\u001b[0m\n        \u001b[36m</li>\u001b[39m\n        \u001b[36m<li\u001b[39m\n          \u001b[33mdata-testid\u001b[39m=\u001b[32m\"character\"\u001b[39m\n        \u001b[36m>\u001b[39m\n          \u001b[0m$Elaine\u001b[0m\n        \u001b[36m</li>\u001b[39m\n        \u001b[36m<li\u001b[39m\n          \u001b[33mdata-testid\u001b[39m=\u001b[32m\"character\"\u001b[39m\n        \u001b[36m>\u001b[39m\n          \u001b[0m$Kramer\u001b[0m\n        \u001b[36m</li>\u001b[39m\n        \u001b[0m\u001b[0m\n      \u001b[36m</ul>\u001b[39m\n      \u001b[0m \u001b[0m\n    \u001b[36m</div>\u001b[39m\n    \u001b[0m\u001b[0m\n  \u001b[36m</div>\u001b[39m\n\u001b[36m</body>\u001b[39m"
+        ]
+      },
+      {
+        "index": 7,
+        "code": "<svelte:options runes={true} />\n\n<script>\nexport default {\n    data() {\n        return {\n            characters: ['Jerry', 'Elaine', 'Kramer']\n        }\n    },\n    methods: {\n        addGeorge() {\n            this.characters.push('George');\n        }\n    }\n};\n</script>\n\n{#each characters as character}  \n  <li data-testid=\"character\">{character}</li>\n{/each}\n\n<button data-testid=\"add-george-button\">Add George</button>",
+        "success": false,
+        "errors": [
+          "tmp/samples/openrouter/each_sample7_891193b95766ee37/Component.svelte:4:0 A component cannot have a default export\nhttps://svelte.dev/e/module_illegal_default_export"
+        ]
+      },
+      {
+        "index": 8,
+        "code": "<svelte:options runes={true} />\n\n<script>\n    let characters = [\"Jerry\", \"Elaine\", \"Kramer\"];\n\n    function addGeorge() {\n        characters.push(\"George\");\n    }\n</script>\n\n<div>\n    <ul data-testid=\"characters-list\">\n        {#each characters of char in {id: c.id, name: c.name, score: c.score} as char in char in {name: c.name, score: c.score} in {id: c.id, name: c.name, score: c.score} in {name: c.name, score: c.score} in {id: c.id}*/\n            <li data-testid=\"character\">{{char.name}}</li>\n        {/each}\n    </ul>\n\n    <button data-testid=\"add-george-button\">Add George</button>\n</div>",
+        "success": false,
+        "errors": [
+          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/each_sample8_b44c5f0f8baa8b5e/Component.svelte:13:26 Expected token }\nhttps://svelte.dev/e/expected_token"
+        ]
+      },
+      {
+        "index": 9,
+        "code": "<svelte:options runes={true} />\n\n<script>\n    let characters = [\"Jerry\", \"Elaine\", \"Kramer\"];\n</script>\n\n<ul data-testid=\"characters-list\">\n    {#each characters as character}\n        <li data-testid=\"character\">{character}</li>\n    {/each}\n</ul>\n\n<button data-testid=\"add-george-button\">Add George</button>",
+        "success": false,
+        "errors": [
+          "expected 3 to be 4 // Object.is equality"
+        ]
+      }
+    ],
+    "timestamp": "2025-09-16T16:49:01.397Z"
+  },
+  {
+    "testName": "effect",
+    "provider": "OpenRouter",
+    "modelId": "arcee-ai/afm-4.5b",
+    "numSamples": 10,
+    "numCorrect": 0,
+    "pass1": 0,
+    "pass10": 0,
+    "context": {
+      "used": false,
+      "content": ""
+    },
+    "samples": [
+      {
+        "index": 0,
+        "code": "<svelte:options runes={true} />\n\n<script>\nexport let number = 5\nexport let doubled = number * 2\n\nonMount(() => {\n  number++\n})\n</script>",
+        "success": false,
+        "errors": [
+          "tmp/samples/openrouter/effect_sample0_f604308b9a83e0b7/Component.svelte:4:0 Cannot use `export let` in runes mode — use `$props()` instead\nhttps://svelte.dev/e/legacy_export_invalid"
+        ],
+        "temperature": 0
+      },
+      {
+        "index": 1,
+        "code": "<svelte:options runes={true} />\n\n<style>\n\t[data-testid=\"number-value\"] { border: 1px solid #888; padding: 5px; }\n\t[data-testid=\"doubled-value\"] { border: 1px solid #888; padding: 5px; }\n\t[data-testid=\"increment-button\"] { background: #4CAF50; color: white; padding: 10px; border: none; cursor: pointer; }\n</style>\n\n<onsoffunction>\n<svelte:unless $inited>\n\t<div>\n\t\t<label for=\"number-input\" class=\"form-label\">Number:</label>\n\t\t<input type=\"number\" id=\"number-input\" value={number} oninput={onInput}>\n\t\t<p data-testid=\"number-value\">Number: {number}</p>\n\t</div>\n</so>\n\n<s2211:expr>\n\t<doubled>value</doubled>\n</s2211:expr>\n\n<div>\n\t<p data-testid=\"number-value\">Number: {number}</p>\n\t<p data-testid=\"doubled-value\">Doubled: {doubled}</p>\n\t<button data-testid=\"increment-button\" on:${on-click}>Duplicate</button>\n</div>\n\n<script>\nexport let number = 5\n\nexport let doubled = 0\n\nexport let $inited = false\n\nexport async function on §§init() {\n\t$inited = true\n\n\tupdate()\n}\n\nexport function update() {\n\tevent={doubled}\n}\n\nexport async function on-click() {\n\tnumber += 1\n\tupdate()\n}\n</script>",
+        "success": false,
+        "errors": [
+          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/effect_sample1_cb8178d60eb14215/Component.svelte:10:1 Valid `<svelte:...>` tag names are svelte:head, svelte:options, svelte:window, svelte:document, svelte:body, svelte:element, svelte:component, svelte:self, svelte:fragment or svelte:boundary\nhttps://svelte.dev/e/svelte_meta_invalid_tag"
+        ]
+      },
+      {
+        "index": 2,
+        "code": "<svelte:options runes={true} />\n\n<script>\n    let number = 5;\n    let doubled;\n\n    updateNumber(n) {\n        this.number = n;\n        this.doubled = n * 2;\n    }\n</script>\n\n<div>\n    <p data-testid=\"number-value\">Number: {number}</p>\n    <p data-testid=\"doubled-value\">Doubled: {doubled}</p>\n    <button data-testid=\"increment-button\">Increment</button>\n</div>\n<script.Context on=\"updateNumber(_:)\" bind'])</script>",
+        "success": false,
+        "errors": [
+          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/effect_sample2_3452a4665c107844/Component.svelte:7:20 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+        ]
+      },
+      {
+        "index": 3,
+        "code": "<svelte:options runes={true} />\n\nconst { state, effect } = useRune();\n\nconstnumber=getstate(\"number\");\n\nconstdoubled=effect(() => {\n  const x=number*2;\n  return x;\n});\n\n<script>\n  export const increment = () => {\n    effect(() => {\n      const x = number * 2;\n      state(\"number\", x);\n    });\n  };\n\n  export const display = () => {\n    const doubled = doubled();\n    return {\n      number: number,\n      doubled: doubled(),\n    };\n  };\n</script>",
+        "success": false,
+        "errors": [
+          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/effect_sample3_7b39056a481c41f8/Component.svelte:8:2 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+        ]
+      },
+      {
+        "index": 4,
+        "code": "<svelte:options runes={true} />\n\n<use-effect js=\"import('./effect.js')\">\n  <input type=\"number\" value=\"{number}\" oninput=\"{setNumber:. прием specify ist bes communicating)\" />\n  <p data-testid=\"number-value\">Number: {number}</p>\n  <p data-testid=\"doubled-value\">Doubled: {doubled}</p>\n  <button data-testid=\"increment-button\">Increment</button>\n</use-effect>",
+        "success": false,
+        "errors": [
+          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/effect_sample4_574dab502a348874/Component.svelte:4:59 Expected token }\nhttps://svelte.dev/e/expected_token"
+        ]
+      },
+      {
+        "index": 5,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  export let number = 5\n</script>\n\n<div>\n  <p data-testid=\"number-value\">Number: {number}</p>\n  <p data-testid=\"doubled-value\">Doubled: {number * 2}</p>\n  <button data-testid=\"increment-button\">Increment</button>\n</div>",
+        "success": false,
+        "errors": [
+          "tmp/samples/openrouter/effect_sample5_2fc5712e684bf688/Component.svelte:4:2 Cannot use `export let` in runes mode — use `$props()` instead\nhttps://svelte.dev/e/legacy_export_invalid"
+        ]
+      },
+      {
+        "index": 6,
+        "code": "<svelte:options runes={true} />\n\n<style>\n  body {\n    font-family: Arial, sans-serif;\n    margin: 0;\n    padding: 0;\n    color: #333;\n  }\n  .container {\n    width: 300px;\n    padding: 20px;\n    margin: 20px auto;\n    background: #f5f5f5;\n  }\n  .number-input {\n    border: 1px solid #888;\n    border-radius: 4px;\n    padding: 10px;\n    width: 100%;\n    font-size: 16px;\n  }\n  .doubled-message {\n    margin-top: 10px;\n  }\n  .increment-button {\n    padding: 10px 20px;\n    font-size: 14px;\n    cursor: pointer;\n  }\n</style>\n\n<script>\nexport default {\n  data() {\n    return {\n      number: 5,\n      doubled: calculateDoubled(5)\n    };\n  },\n  methods: {\n    calculateDoubled(value) {\n      return value * 2;\n    },\n    incrementNumber() {\n      this.number++;\n    }\n  },\n  computed: {\n    doubledValue() {\n      return this.calculateDoubled(this.number);\n    }\n  },\n  observe: {\n    number: 'number'\n  },\n  onMount() {\n    setInterval(() => {\n      this.incrementNumber();\n    }, 1000);\n  }\n};\n</script>\n\n<div class=\"container\">\n  <h2>Simple $effect Demo</h2>\n  <p data-testid=\"number-value\">{number}</p>\n  <p data-testid=\"doubled-value\">Doubled: {doubledValue}</p>\n  <button data-testid=\"increment-button\" on_click={incrementNumber}>Increment</button>\n</div>",
+        "success": false,
+        "errors": [
+          "tmp/samples/openrouter/effect_sample6_4b1083de41e6860e/Component.svelte:34:0 A component cannot have a default export\nhttps://svelte.dev/e/module_illegal_default_export"
+        ]
+      },
+      {
+        "index": 7,
+        "code": "<svelte:options runes={true} />\n\n<svelte-component>\n<script>\nexport let number = 5\nexport let doubled = number * 2\n\n直到你按了\"Increment\"之后:\n<player effect=\"double\">\n  <p data-testid=\"number-value\">Number: {number}</p>\n  <p data-testid=\"doubled-value\">Doubled: {doubled}</p>\n  <button data-testid=\"increment-button\">Increment</button>\n</player>\n</script>\n</svelte-component>",
+        "success": false,
+        "errors": [
+          "Cannot convert object to primitive value"
+        ]
+      },
+      {
+        "index": 8,
+        "code": "<svelte:options runes={true} />\n\n<SvelteComponent>\n  <script>\n    fetchFromNextTick(() => {\n      const initialNumber = 5\n      $state.number = initialNumber\n      $effect.doubled = initialNumber * 2\n\n      function incrementNumber() {\n        $state.number++\n      }\n    })\n  </script>\n\n  <div>\n    <p data-testid=\"number-value\">Number: {$state.number}</p>\n    <p data-testid=\"doubled-value\">Doubled: {$effect.doubled}</p>\n    <button data-testid=\"increment-button\" on:click={incrementNumber}>Increment</button>\n  </div>\n</SvelteComponent>",
+        "success": false,
+        "errors": [
+          "tmp/samples/openrouter/effect_sample8_4b64b8f494b4e676/Component.svelte:17:42 `$state.number` is not a valid rune\nhttps://svelte.dev/e/rune_invalid_name"
+        ]
+      },
+      {
+        "index": 9,
+        "code": "<svelte:options runes={true} />\n\n<script>\nexport default {\n    data(): any {\n        return {\n            number: 5\n        }\n    },\n    affects: ['body'],\n    effects: {\n        increment() {\n            this.number += 1\n        }\n    }\n}\n</script>\n<style>\nbody {\n    font-family: Arial, sans-serif;\n}\n</style>\n<input type=\"number\" value={this.number} datasource={{ type:'primitive', value: this.number, onChange: this.increment }} data-testid=\"number-value\" />\n<p data-testid=\"doubled-value\">{this.number * 2}</p>\n<button data-testid=\"increment-button\" on:click={this.increment}>Increment</button>",
+        "success": false,
+        "errors": [
+          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/effect_sample9_86e96c6c06b01197/Component.svelte:5:10 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+        ]
+      }
+    ],
+    "timestamp": "2025-09-16T16:49:01.397Z"
+  },
+  {
+    "testName": "hello-world",
+    "provider": "OpenRouter",
+    "modelId": "arcee-ai/afm-4.5b",
+    "numSamples": 10,
+    "numCorrect": 5,
+    "pass1": 0.5,
+    "pass10": 1,
+    "context": {
+      "used": false,
+      "content": ""
+    },
+    "samples": [
+      {
+        "index": 0,
+        "code": "<svelte:options runes={true} />\n\n<div data-testid=\"greeting\" class=\"greeting\" style=\"color: blue; text-align: center; margin: 10px;\">Hello, World!</div>",
+        "success": true,
+        "errors": [],
+        "temperature": 0
+      },
+      {
+        "index": 1,
+        "code": "<svelte:options runes={true} />\n\n<script>\nexport let HelloWorld\n</script>\n\n<div data-testid=\"greeting\" class=\"greeting\" style=\"color: blue; text-align: center; margin: 10px auto;\">Hello, World!</div>",
+        "success": false,
+        "errors": [
+          "tmp/samples/openrouter/hello-world_sample1_b0e03a2191a044a5/Component.svelte:4:0 Cannot use `export let` in runes mode — use `$props()` instead\nhttps://svelte.dev/e/legacy_export_invalid"
+        ]
+      },
+      {
+        "index": 2,
+        "code": "<svelte:options runes={true} />\n\n<div data-testid=\"greeting\" class=\"greeting\" style=\"text-align:center; margin:10px;\">Hello, World!</div>",
+        "success": true,
+        "errors": []
+      },
+      {
+        "index": 3,
+        "code": "<svelte:options runes={true} />\n\n<div data-testid=\"greeting\" class=\"greeting\" style=\"margin: 10px; text-align: center; color: blue;\">Hello, World!</div>",
+        "success": true,
+        "errors": []
+      },
+      {
+        "index": 4,
+        "code": "<svelte:options runes={true} />\n\n<svelte-component>\n<style>\n.greeting {\n  color: blue;\n  text-align: center;\n  margin: 10px;\n}\n</style>\n\n<div data-testid=\"greeting\" class=\"greeting\">Hello, World!</div>\n</svelte-component>",
+        "success": true,
+        "errors": []
+      },
+      {
+        "index": 5,
+        "code": "<svelte:options runes={true} />\n\n<div data-testid=\"greeting\" class=\"greeting\" style=\"color:<|demand_case:|1>|utf8|size:<|demand_case:|0|><|demand_case:|2|>) margin: 10px;\">Hello, World!</div>",
+        "success": true,
+        "errors": []
+      },
+      {
+        "index": 6,
+        "code": "<svelte:options runes={true} />\n\n< HelloWorld </ HelloWorld >",
+        "success": false,
+        "errors": [
+          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/hello-world_sample6_f18208aaa3afd710/Component.svelte:3:1 Expected a valid element or component name. Components must have a valid variable name or dot notation expression\nhttps://svelte.dev/e/tag_invalid_name"
+        ]
+      },
+      {
+        "index": 7,
+        "code": "<svelte:options runes={true} />\n\n<script>\n    export let message = \"Hello, World!\"\n</script>\n\n<div data-testid=\"greeting\" class=\"greeting\" style=\"color: blue; text-align: center; margin: 10px;\">${message}</div>",
+        "success": false,
+        "errors": [
+          "tmp/samples/openrouter/hello-world_sample7_7d49a83d1babe5fe/Component.svelte:4:4 Cannot use `export let` in runes mode — use `$props()` instead\nhttps://svelte.dev/e/legacy_export_invalid"
+        ]
+      },
+      {
+        "index": 8,
+        "code": "<svelte:options runes={true} />\n\n<VariantLayout version=5>\n<script>\nexport default {\n    // Create an inline template for the component\n    template: \n        <div data-testid=\"greeting\" class=\"greeting\">\n            <style scoped>\n                .greeting {\n                    color: blue;\n                    text-align: center;\n                    margin: 10px 0;\n                }\n            </style>\n            Hello, World!\n        </div>\n    ,\n    // Svelte widget documentation suggests using prepare only if you need to do DOM preparation\n    // However, since this is simple, we'll keep it as is\n    prepare(createElement) {\n        // No need to prepare for this simple component\n        return createElement(\"div\", {\n            ...args,\n            class: \"greeting\",\n        });\n    },\n};\n</script>\n<VariantLayout version=5>",
+        "success": false,
+        "errors": [
+          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/hello-world_sample8_4078bd18dabcb332/Component.svelte:30:0 Block was left open\nhttps://svelte.dev/e/block_unclosed"
+        ]
+      },
+      {
+        "index": 9,
+        "code": "<svelte:options runes={true} />\n\n<HelloWorld></HelloWorld>",
+        "success": false,
+        "errors": [
+          "HelloWorld is not defined\n\n\tin <unknown>\n",
+          "HelloWorld is not defined\n\n\tin <unknown>\n"
+        ]
+      }
+    ],
+    "timestamp": "2025-09-16T16:49:01.397Z"
+  },
+  {
+    "testName": "inspect",
+    "provider": "OpenRouter",
+    "modelId": "arcee-ai/afm-4.5b",
+    "numSamples": 10,
+    "numCorrect": 0,
+    "pass1": 0,
+    "pass10": 0,
+    "context": {
+      "used": false,
+      "content": ""
+    },
+    "samples": [
+      {
+        "index": 0,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  let text = \"Hello world\";\n  let charCount = text.length;\n\n  effect(() => {\n    $inspect.trace();\n  }, { with: () => text });\n\n  $inspect.with(() => text, {\n    on: {\n      update: (old, new) => {\n        charCount = new.length;\n      },\n    },\n  });\n\n  $inspect.log(text);\n\n  $inspect.log(charCount);\n\n  $inspect.log($state.text);\n</script>\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n  <p data-testid=\"text-value\">Current text: \"{text}\"</p>\n  <p data-testid=\"char-count\">Character count: {charCount}</p>\n</div>",
+        "success": false,
+        "errors": [
+          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/inspect_sample0_46fe48c28f1fc8df/Component.svelte:13:23 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+        ],
+        "temperature": 0
+      },
+      {
+        "index": 1,
+        "code": "<svelte:options runes={true} />\n\n<script>\nexport default {\n  async effect enterHandler() {\n    this.text = $('#write').val();\n  },\n  $state: { text: \"Hello world\" },\n  $inspect: ({ $inspect, $effect }) =>\n    $effect(\n      () => {\n        console.log(\"Checking for changes\");\n        if ($inspect.text) {\n          console.log($inspect.text());\n        }\n      },\n      (event) => console.log(event),\n      {\n        with: () => {\n          return $inspect.text.bind($inspect);\n        },\n      }\n    ),\n  $inspect.trace: () => {\n    console.log(\"Running trace\");\n  },\n  $charCount: (text) => {\n    return text.length;\n  },\n  $after: () => {\n    this.text = '';\n  },\n};\n</script>\n<div>\n  <input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n  <p data-testid=\"text-value\">Current text: \"{text}\"</p>\n  <p data-testid=\"char-count\">Character count: {this.$charCount(text)}</p>\n</div>",
+        "success": false,
+        "errors": [
+          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/inspect_sample1_a589aa576b060aea/Component.svelte:5:15 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+        ]
+      },
+      {
+        "index": 2,
+        "code": "<svelte:options runes={true} />\n\n<script>\n expos['inspect'].with(function(key){\n  $inspect.trace(key).on('changed', function(changed){\n    $inspect.$emit('changed', changed)\n  })\n}, 'text')\n</script>\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" bind:value={text}/>\n  <p data-testid=\"text-value\">Current text: {text}</p>\n  <p data-testid=\"char-count\">Character count: {text.length}</p>\n</div>",
+        "success": false,
+        "errors": [
+          "tmp/samples/openrouter/inspect_sample2_d4e5e14e8de1be75/Component.svelte:5:2 `$inspect.trace(...)` must be the first statement of a function body\nhttps://svelte.dev/e/inspect_trace_invalid_placement"
+        ]
+      },
+      {
+        "index": 3,
+        "code": "<svelte:options runes={true} />\n\n<script>\n    let text = \"Hello world\";\n    let textChange = null;\n    let charCount = text.length;\n\n    effect(() => {\n        $inspect.trace(() => {\n            charCount = text.length;\n        }).with(() => {\n            textChange = text;\n        });\n    });\n\n    effect(() => {\n        $inspect.with(() => {\n            let newCharCount;\n            $inspect.trace(() => {\n                newCharCount = text.length;\n            }).with((old) => {\n                if (old !== newCharCount) {\n                    charCount = newCharCount;\n                }\n            });\n        });\n    });\n\n    effect(() => {\n        let inputEvent;\n        (e) => {\n            inputEvent = e;\n        }.call($inspect.inspect('input'));\n\n        if (inputEvent.target === input) {\n            $inspect.trace(() => {\n                text = inputEvent.target.value;\n            }).with((old) => {\n                if (old !== text) {\n                    textChange = text;\n                }\n            });\n        }\n    });\n\n    effect(() => {\n        let inputEvent;\n        (e) => {\n            inputEvent = e;\n        }.call($inspect.trace());\n    });\n\n    effect(({ $inspect }) => {\n        let updateCharCount;\n        (change) => {\n            updateCharCount = change;\n        }.call($inspect.trackIdentity('change', text));\n\n        if (updateCharCount) {\n            charCount = text.length;\n        }\n    });\n\n    $state('test', text);\n\n    effect(() => {\n        $inspect.log(text);\n    });\n</script>\n\n<div>\n    <input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n    <p data-testid=\"text-value\">Current text: \"{text}\"</p>\n    <p data-testid=\"char-count\">Character count: {charCount}</p>\n</div>",
+        "success": false,
+        "errors": [
+          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/inspect_sample3_ce5001c57b568b16/Component.svelte:33:9 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+        ]
+      },
+      {
+        "index": 4,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  let text = \"Hello world\";\n\n  effect(async () => {\n    const charCount = text.length;\n    this.$state.characterCount = charCount;\n  }, {\n    once: true\n  });\n\n  effect(() => {\n    const traceID = this.$inspect.trace();\n    console.info('traceID:', traceID);\n  }, {\n    once: true\n  });\n</script>\n\n<!-- HTML -->\n<style>\n</style>\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n  <p data-testid=\"text-value\">Current text: \"{text}\"</p>\n  <p data-testid=\"char-count\">Character count: {text.length}</p>\n</div>",
+        "success": false,
+        "errors": [
+          "effect is not defined\n\n\tin <unknown>\n",
+          "effect is not defined\n\n\tin <unknown>\n",
+          "effect is not defined\n\n\tin <unknown>\n",
+          "effect is not defined\n\n\tin <unknown>\n"
+        ]
+      },
+      {
+        "index": 5,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  export let text\n\n  $state.text = \"Hello world\"\n\n  $inspect(text).with((val, state, self) => $inspect(val))\n\n  $inspect.trace(() => {\n    // Example effect that does something when text changes\n    console.log(\"Input changed!\", state.text)\n  })\n\n  const charCount = () => text.length\n\n  <div>\n    <textarea data-testid=\"text-input\" bind:value={text} rows=\"5\" />\n    <p data-testid=\"text-value\">Current text: {text}</p>\n    <p data-testid=\"char-count\">Character count: {charCount()}</p>\n  </div>\n</script>",
+        "success": false,
+        "errors": [
+          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/inspect_sample5_109b0e0edbe6161e/Component.svelte:18:4 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+        ]
+      },
+      {
+        "index": 6,
+        "code": "<svelte:options runes={true} />\n\nMaggie <span class=\"tag\">indefinite article</span> aprendió Svelte 5 <span class=\"tag\">indefinite article</span>.",
+        "success": false,
+        "errors": [
+          "Unable to find an element by: [data-testid=\"text-value\"]\n\nIgnored nodes: comments, script, style\n\u001b[36m<body>\u001b[39m\n  \u001b[36m<div>\u001b[39m\n    \u001b[0mMaggie \u001b[0m\n    \u001b[36m<span\u001b[39m\n      \u001b[33mclass\u001b[39m=\u001b[32m\"tag\"\u001b[39m\n    \u001b[36m>\u001b[39m\n      \u001b[0mindefinite article\u001b[0m\n    \u001b[36m</span>\u001b[39m\n    \u001b[0m aprendió Svelte 5 \u001b[0m\n    \u001b[36m<span\u001b[39m\n      \u001b[33mclass\u001b[39m=\u001b[32m\"tag\"\u001b[39m\n    \u001b[36m>\u001b[39m\n      \u001b[0mindefinite article\u001b[0m\n    \u001b[36m</span>\u001b[39m\n    \u001b[0m.\u001b[0m\n    \u001b[0m\u001b[0m\n  \u001b[36m</div>\u001b[39m\n\u001b[36m</body>\u001b[39m",
+          "Unable to find an element by: [data-testid=\"text-input\"]\n\nIgnored nodes: comments, script, style\n\u001b[36m<body>\u001b[39m\n  \u001b[36m<div>\u001b[39m\n    \u001b[0mMaggie \u001b[0m\n    \u001b[36m<span\u001b[39m\n      \u001b[33mclass\u001b[39m=\u001b[32m\"tag\"\u001b[39m\n    \u001b[36m>\u001b[39m\n      \u001b[0mindefinite article\u001b[0m\n    \u001b[36m</span>\u001b[39m\n    \u001b[0m aprendió Svelte 5 \u001b[0m\n    \u001b[36m<span\u001b[39m\n      \u001b[33mclass\u001b[39m=\u001b[32m\"tag\"\u001b[39m\n    \u001b[36m>\u001b[39m\n      \u001b[0mindefinite article\u001b[0m\n    \u001b[36m</span>\u001b[39m\n    \u001b[0m.\u001b[0m\n    \u001b[0m\u001b[0m\n  \u001b[36m</div>\u001b[39m\n\u001b[36m</body>\u001b[39m",
+          "Unable to find an element by: [data-testid=\"text-input\"]\n\nIgnored nodes: comments, script, style\n\u001b[36m<body>\u001b[39m\n  \u001b[36m<div>\u001b[39m\n    \u001b[0mMaggie \u001b[0m\n    \u001b[36m<span\u001b[39m\n      \u001b[33mclass\u001b[39m=\u001b[32m\"tag\"\u001b[39m\n    \u001b[36m>\u001b[39m\n      \u001b[0mindefinite article\u001b[0m\n    \u001b[36m</span>\u001b[39m\n    \u001b[0m aprendió Svelte 5 \u001b[0m\n    \u001b[36m<span\u001b[39m\n      \u001b[33mclass\u001b[39m=\u001b[32m\"tag\"\u001b[39m\n    \u001b[36m>\u001b[39m\n      \u001b[0mindefinite article\u001b[0m\n    \u001b[36m</span>\u001b[39m\n    \u001b[0m.\u001b[0m\n    \u001b[0m\u001b[0m\n  \u001b[36m</div>\u001b[39m\n\u001b[36m</body>\u001b[39m",
+          "Unable to find an element by: [data-testid=\"text-input\"]\n\nIgnored nodes: comments, script, style\n\u001b[36m<body>\u001b[39m\n  \u001b[36m<div>\u001b[39m\n    \u001b[0mMaggie \u001b[0m\n    \u001b[36m<span\u001b[39m\n      \u001b[33mclass\u001b[39m=\u001b[32m\"tag\"\u001b[39m\n    \u001b[36m>\u001b[39m\n      \u001b[0mindefinite article\u001b[0m\n    \u001b[36m</span>\u001b[39m\n    \u001b[0m aprendió Svelte 5 \u001b[0m\n    \u001b[36m<span\u001b[39m\n      \u001b[33mclass\u001b[39m=\u001b[32m\"tag\"\u001b[39m\n    \u001b[36m>\u001b[39m\n      \u001b[0mindefinite article\u001b[0m\n    \u001b[36m</span>\u001b[39m\n    \u001b[0m.\u001b[0m\n    \u001b[0m\u001b[0m\n  \u001b[36m</div>\u001b[39m\n\u001b[36m</body>\u001b[39m"
+        ]
+      },
+      {
+        "index": 7,
+        "code": "<svelte:options runes={true} />\n\n<script>\n    let text;\n    let characterCount;\n\n    effect(() => {\n        text = $state.text;\n        characterCount = text.length;\n    }, [text]);\n\n   _runner('with', (callback) => {\n        const id = $store._withId;\n        $store._pipeline('with')(id, callback);\n        $store._changeQueue.length = 0;\n    });\n\n    runner('trace', (traceId) => {\n        console.log(Trace started: ${traceId});\n    });\n\n    runner('with', data => {\n        console.log(data.value);\n        console.log(data.with);\n        console.log(data.with('foo'));\n    });\n</script>\n\n<div>\n    <input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n    <p data-testid=\"text-value\">Current text: {text}</p>\n    <p data-testid=\"char-count\">{characterCount}</p>\n</div>",
+        "success": false,
+        "errors": [
+          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/inspect_sample7_3816c64937c19b34/Component.svelte:19:26 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+        ]
+      },
+      {
+        "index": 8,
+        "code": "<svelte:options runes={true} />\n\n<template>\n  <div>\n    <input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n    <p data-testid=\"text-value\">Current text: {text}</p>\n    <p data-testid=\"char-count\">Character count: {text?.length}</p>\n  </div>\n</template>\n\n<script>\nexport let text = ''\nexport let charCount = text?.length\n\n$inspect(input: .text-input) do text = $inspect(input: .value)\n\n$input => $inspect(input: .value) do charCount = $inspect.trace($msg => $msg Including $input).length\n\n$update() => $inspect.trace($msg => $msg With $charCount).bind(charCount: $charCount)\n\n\nwith($input) do charCount = $inspect.trace($msg => $msg With $charCount).bind(charCount: $charCount)\n\n</script>",
+        "success": false,
+        "errors": [
+          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/inspect_sample8_65d11d92fd6cd31e/Component.svelte:15:14 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+        ]
+      },
+      {
+        "index": 9,
+        "code": "<svelte:options runes={true} />\n\n<Vsage>\n<script>\nexport let text\nexport let onChangeStub\nexport let traceStub\n\nexport let config = { interval: 1000 }\n\nexport let effectHandlers = []\n\nconst logFn = () => console.log\n\nexport let customTraceOptions = {\n  label: 'Custom Trace Label',\n  watchers: [\n    {\n      name: 'My Custom Watcher',\n      message: '(injected from effect)'\n    }\n  ],\n  originalName: 'customCallbackName'\n}\n\nexport let charCountHandler = (s) => s.length\n\nexport let charCountFunc = (s) => s.length\n\nexport let stateHandlers = {}\n\nexport let withSpy = (spyHandler) => {\n  $inspect.with({\n    trace: () => {\n      traceSpy(spyHandler)\n      traceFn()\n    },\n    …const config = {\n      interval: 1000 // or whatever is needed\n    },\n    …$inspect.traceOptions = customTraceOptions\n  })\n  return effectStub\n}\n\nexport let effect = (effectFn, options = {}) => {\n  const args = arguments.slice(1)\n  effectHandlers.push({ effectFn, args })\n  return {\n    abort: () => {\n      const index = effectHandlers.findIndex(h => h.effectFn === effectFn)\n      if (index !== -1) {\n        effectHandlers[index].abort()\n      }\n      return false\n    }\n  }\n}\n\nfunction traceSpy(callback) {\n  const trace = (message) => {\n    const name = callback.name || 'anonymous'\n    const args = [...arguments]\n    // Changed to mock, so that effectsParameters is not empty in trace above\n    // args.splice(0, 1, { isBubble: true, effectsParameters: [] })\n    const traceInfo = { name, args, message }\n    console.trace('Effect Trace', traceInfo)\n  }\n  return trace\n}\n\nexport let handleChange = (e) => {\n  const value = e.target.value.trim()\n  const currentState = text\n  const newState = value !== '' ? value : currentState\n  text = newState\n  onChangeStub(e, currentState, newState)\n}\n\nexport let effectWithCallback = (effectFn) => {\n  effectStub = effectFn\n  withSpy(traceFn)\n  return effectFn\n}\n\nexport let effectWithCustomCallback = (effectFn) => {\n  effectStub = effectFn\n  withSpy(traceFnWithCustomCallback)\n}\n\nexport function traceFn() {\n  console.trace('Basic')\n}\n\nexport function traceFnWithCustomCallback(argument) {\n  console.trace('Custom Trace with Argument', argument)\n}\n\nexport let inputReg = /input(?:-[a-zA-Z0-9]+)?/\n\nfunction validateInputId(id) {\n  return inputReg.test(id) ? id : undefined\n}\n\nfunction getSinkId(inputId) {\n  const parts = inputId.split('-')\n  return parts.length > 1 ? parts[0] : parts[1]\n}\n\nfunction createElementWithId({ id }: { id?: string }) {\n  id || (id = createUniqueId())\n  return <div id=\"${id}\"></div>\n}\n\nfunction prettyPrint(stateStable) {\n  // Here you might return a formatted version of the state, or just pass it directly\n  return {\n    ...stateStable,\n    bootstrapState: true\n  }\n}\n\nexport let stateHandlersOnRoot = {\n  onChange: handleChange,\n  inputId: async (el) => {\n    const reg = inputReg\n    const id = el.getAttribute('data-testid') || await getSinkId(el.parentNode)\n    id = validateInputId(id)\n    return id\n  },\n  allowKeyboard: true,\n  maxLength: 20,\n  inputText: previewText\n}\n\nexport let options = { isStable: false }\nexport let refs = {}\n\nfunction previewText({ text }) {\n  return text?.length ? text : null\n}\n\nfunction handlePreviewText_updates(text) {\n  console.log(text)\n}\n\nexport let render = (state) => {\n  const sinkId = getSinkId('text-input')\n  refs[sinkId] = createElementWithId({ id: sinkId })\n  refs[sinkId].textContent = state?.text || ''\n  return refs[sinkId]\n}\n\nexport let state = {\n  text: 'Hello world!'\n\n};\n</Vsage>",
+        "success": false,
+        "errors": [
+          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/inspect_sample9_4743a2f563da62cf/Component.svelte:158:8 Expected token </script>\nhttps://svelte.dev/e/expected_token"
+        ]
+      }
+    ],
+    "timestamp": "2025-09-16T16:49:01.397Z"
+  },
+  {
+    "testName": "props",
+    "provider": "OpenRouter",
+    "modelId": "arcee-ai/afm-4.5b",
+    "numSamples": 10,
+    "numCorrect": 0,
+    "pass1": 0,
+    "pass10": 0,
+    "context": {
+      "used": false,
+      "content": ""
+    },
+    "samples": [
+      {
+        "index": 0,
+        "code": "<svelte:options runes={true} />\n\n<script>\nexport default {\n    $props: {\n        name: \"World\",\n        count: 0,\n        showDetails: false\n    },\n    $state: {\n        count: 0\n    },\n    updateCount: function() {\n        this.$state.count++;\n    },\n    onIncrement: function() {\n        this.updateCount();\n    },\n    showDetails: function() {\n        this.$props.showDetails = true;\n    },\n    hideDetails: function() {\n        this.$props.showDetails = false;\n    }\n};\n</script>",
+        "success": false,
+        "errors": [
+          "tmp/samples/openrouter/props_sample0_e3aac3812e3a820f/Component.svelte:4:0 A component cannot have a default export\nhttps://svelte.dev/e/module_illegal_default_export"
+        ],
+        "temperature": 0
+      },
+      {
+        "index": 1,
+        "code": "<svelte:options runes={true} />\n\nassertFalse($this->container->hasModule('ui-front'))\n$results = prepare_request('GET', '/api/login', [], ['script' => null])\n$result = $results->capture()[0]\n$message = $result->message?: 'An error occurred'\n$response = $result->response?: false\n$user = $response->data?: []\n$code = $response->code?: 0\n$delay = $result->await?: 0\n$customData = $result->customData?: []\n$exception = $result->exception?: null\n\nif (is_array($user) && !empty($user)) {\n    print(\"Username: {$user['username']}\")\n} else {\n    print(\"Failed to get user data\")\n}\nif ($delay > 0) {\n    print(\"Awaited for {$delay} seconds\")\n}\nif ($customData) {\n    print(\"Custom data: {$customData}\")\n}\nif ($exception) {\n    print(\"Exception: {$exception->getMessage()}\")\n}",
+        "success": false,
+        "errors": [
+          "Unable to find an element by: [data-testid=\"name-display\"]\n\nIgnored nodes: comments, script, style\n\u001b[36m<body>\u001b[39m\n  \u001b[36m<div>\u001b[39m\n    \u001b[0massertFalse($this-&gt;container-&gt;hasModule('ui-front'))\n$results = prepare_request('GET', '/api/login', [], ['script' =&gt; null])\n$result = $results-&gt;capture()[0]\n$message = $result-&gt;message?: 'An error occurred'\n$response = $result-&gt;response?: false\n$user = $response-&gt;data?: []\n$code = $response-&gt;code?: 0\n$delay = $result-&gt;await?: 0\n$customData = $result-&gt;customData?: []\n$exception = $result-&gt;exception?: null\n\nif (is_array($user) && !empty($user))  else \nif ($delay &gt; 0) \nif ($customData) \nif ($exception) \u001b[0m\n    \u001b[0m\u001b[0m\n  \u001b[36m</div>\u001b[39m\n\u001b[36m</body>\u001b[39m",
+          "Unable to find an element by: [data-testid=\"name-display\"]\n\nIgnored nodes: comments, script, style\n\u001b[36m<body>\u001b[39m\n  \u001b[36m<div>\u001b[39m\n    \u001b[0massertFalse($this-&gt;container-&gt;hasModule('ui-front'))\n$results = prepare_request('GET', '/api/login', [], ['script' =&gt; null])\n$result = $results-&gt;capture()[0]\n$message = $result-&gt;message?: 'An error occurred'\n$response = $result-&gt;response?: false\n$user = $response-&gt;data?: []\n$code = $response-&gt;code?: 0\n$delay = $result-&gt;await?: 0\n$customData = $result-&gt;customData?: []\n$exception = $result-&gt;exception?: null\n\nif (is_array($user) && !empty($user))  else \nif ($delay &gt; 0) \nif ($customData) \nif ($exception) \u001b[0m\n    \u001b[0m\u001b[0m\n  \u001b[36m</div>\u001b[39m\n\u001b[36m</body>\u001b[39m",
+          "Unable to find an element by: [data-testid=\"increment-button\"]\n\nIgnored nodes: comments, script, style\n\u001b[36m<body>\u001b[39m\n  \u001b[36m<div>\u001b[39m\n    \u001b[0massertFalse($this-&gt;container-&gt;hasModule('ui-front'))\n$results = prepare_request('GET', '/api/login', [], ['script' =&gt; null])\n$result = $results-&gt;capture()[0]\n$message = $result-&gt;message?: 'An error occurred'\n$response = $result-&gt;response?: false\n$user = $response-&gt;data?: []\n$code = $response-&gt;code?: 0\n$delay = $result-&gt;await?: 0\n$customData = $result-&gt;customData?: []\n$exception = $result-&gt;exception?: null\n\nif (is_array($user) && !empty($user))  else \nif ($delay &gt; 0) \nif ($customData) \nif ($exception) \u001b[0m\n    \u001b[0m\u001b[0m\n  \u001b[36m</div>\u001b[39m\n\u001b[36m</body>\u001b[39m",
+          "Unable to find an element by: [data-testid=\"details\"]\n\nIgnored nodes: comments, script, style\n\u001b[36m<body>\u001b[39m\n  \u001b[36m<div />\u001b[39m\n  \u001b[36m<div>\u001b[39m\n    \u001b[0massertFalse($this-&gt;container-&gt;hasModule('ui-front'))\n$results = prepare_request('GET', '/api/login', [], ['script' =&gt; null])\n$result = $results-&gt;capture()[0]\n$message = $result-&gt;message?: 'An error occurred'\n$response = $result-&gt;response?: false\n$user = $response-&gt;data?: []\n$code = $response-&gt;code?: 0\n$delay = $result-&gt;await?: 0\n$customData = $result-&gt;customData?: []\n$exception = $result-&gt;exception?: null\n\nif (is_array($user) && !empty($user))  else \nif ($delay &gt; 0) \nif ($customData) \nif ($exception) \u001b[0m\n    \u001b[0m\u001b[0m\n  \u001b[36m</div>\u001b[39m\n\u001b[36m</body>\u001b[39m"
+        ]
+      },
+      {
+        "index": 2,
+        "code": "<svelte:options runes={true} />\n\n<script>\n    let showDetails = false;\n\n    let count = 0;\n\n    $state: number;\n\n    $effect: { keyup: () => void };\n\n    $onInit(() => {\n        $effect: {\n            target: 'input[name=count]',\n            listenTo: 'keyup',\n            handler: ${event => {\n                count = parseInt(event.target.value, 10);\n            }},\n        };\n    });\n</script>\n\n<div>\n    <h1 data-testid=\"name-display\">Hello, ${$props.name || \"World\"}!</h1>\n    <p data-testid=\"count-display\">Count: ${count}</p>\n    <button data-testid=\"increment-button\">Increment</button>\n\n    <div data-testid=\"details\">\n        <p>Name is ${$props.name || \"World\"}</p>\n        <p>Count is ${count}</p>\n        <p>ShowDetails is ${$props.showDetails}</p>\n    </div>\n</div>",
+        "success": false,
+        "errors": [
+          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/props_sample2_b392db49129e743e/Component.svelte:10:33 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+        ]
+      },
+      {
+        "index": 3,
+        "code": "<svelte:options runes={true} />\n\nexport default {\n    $props: {\n        name: { default: \"World\" },\n        count: { default: 0 },\n        showDetails: { default: false }\n    },\n    $state: {\n        count: 0\n    },\n    /* ...other methods... */\n}",
+        "success": false,
+        "errors": [
+          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/props_sample3_92c358819259ba29/Component.svelte:4:10 Expected token }\nhttps://svelte.dev/e/expected_token"
+        ]
+      },
+      {
+        "index": 4,
+        "code": "<svelte:options runes={true} />\n\nexport default {\n    $props: {\n        name: { default: \"World\" },\n        count: { default: 0 },\n        showDetails: { default: false }\n    },\n    $state: {\n        count: 0\n    },\n    omit: [\"$props\", \"$state\"],\n    on Mount(): void {\n        this.incrementCount();\n    },\n    methods: {\n        incrementCount() {\n            this.$state.count++;\n        },\n        showDetails() {\n            this.$props.showDetails = true;\n        },\n        hideDetails() {\n            this.$props.showDetails = false;\n        }\n    }\n};",
+        "success": false,
+        "errors": [
+          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/props_sample4_9015f8dcce69d01e/Component.svelte:4:10 Expected token }\nhttps://svelte.dev/e/expected_token"
+        ]
+      },
+      {
+        "index": 5,
+        "code": "<svelte:options runes={true} />\n\n<script>\nexport let PropsDemo = {\n\tonshift: () {},\n\tdata() {\n\t\treturn {\n\t\t\t$count: 0\n\t\t};\n\t},\n\tprops: {\n\t\tname: {\n\t\t\ttype: 'string',\n\t\t\tdefault: 'World'\n\t\t},\n\t\tcount: {\n\t\t\ttype: 'number',\n\t\t\tdefault: 0\n\t\t},\n\t\tshowDetails: {\n\t\t\ttype: 'boolean',\n\t\t\tdefault: false\n\t\t}\n\t},\n\tview() {\n\t\tlet showDetails;\n\t\tif (this.showDetails) {\n\t\t\tshowDetails = true;\n\t\t}\n\t\tconst countText = this.$state$count;\n\t\treturn (\n\t\t\t<div>\n\t\t\t\t<h1 data-testid=\"name-display\">{this.$props:name}</h1>\n\t\t\t\t<p data-testid=\"count-display\">{countText}</p>\n\t\t\t\t<button data-testid=\"increment-button\">Increment</button>\n\t\t\t\t<div data-testid=\"details\" ${showDetails}>\n\t\t\t\t\t<p>Name is World</p>\n\t\t\t\t\t<p>Count is {this.$state$count}</p>\n\t\t\t\t\t<p>ShowDetails is {this.$props:showDetails}</p>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t);\n\t}\n};\n</script>",
+        "success": false,
+        "errors": [
+          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/props_sample5_753dc531f77f0a26/Component.svelte:5:11 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+        ]
+      },
+      {
+        "index": 6,
+        "code": "<svelte:options runes={true} />\n\n<script>\n wives do women Some things are better left unsaid and some emotions are too complex to fully convey. But when it comes to facing adulthood with a sense of responsibility and accountability, those feelings can be expressed and understood much more clearly.\n\nWhen I think about growing up and taking on adult responsibilities, my mind goes to the idea of maturity. As a young man in my early 20s, I'm constantly trying to navigate the balance between being carefree and being accountable. It's a delicate dance, but one that's necessary for personal growth and development.\n\nOne of the key aspects of adult responsibility is time management. Being able to prioritize tasks, create a schedule, and stick to it is crucial. It's the difference between feeling overwhelmed and in control. And as I've gotten older, I've learned that the more I focus on these skills, the better I perform in all areas of life.\n\nAnother important responsibility is financial management. Learning to budget, save, and make informed financial decisions is a huge part of becoming an adult. It's not always easy, but it's essential for stability and security.\n\nResponsibility also means being dependable and trustworthy. When you make commitments, follow through on them. This builds confidence in yourself and others, which is invaluable in personal and professional relationships.\n\nLastly, there's the responsibility of taking care of one's physical and mental health. This includes maintaining a healthy lifestyle, managing stress, and seeking help when needed. It's an ongoing process, but one that becomes more important with age.\n\nSo, to answer your question, adult responsibility and accountability are at the heart of growing up. They're not just about duty, but about maturity and self-growth as well.\n\nMoney and Finance\n\nMoney and finance are integral parts of modern life. Understanding these concepts helps us navigate day-to-day activities and long-term goals. Here’s some information about money and finance:\n\n### Basic Concepts\n\n- **Money**: A medium of exchange, unit of account, and store of value.\n- **Finance**: The management of money and other assets.\n\n### Types of Money\n- **Physical Money**: Cash, coins\n- **Digital Money**: Bank accounts, credit cards, digital wallets\n\n### Basic Financial Concepts\n- **Earning Money**: Through work, business, investments\n- **Spending Money**: On goods and services\n- **Saving Money**: For future needs\n- **Investing Money**: To grow wealth over time\n\n### Common Financial Tools\n- **Bank Accounts**: Savings, checking, credit\n- **Debit Cards**: For purchases\n- **Credit Cards**: For purchases with repayment\n- **Loans**: For borrowing money\n- **Investments**: Stocks, bonds, properties\n\n### Financial Goals\n- Short-term: Saving for a vacation\n- Long-term: Retirement planning\n\n### Financial Literacy\n- Understanding budgets\n- Knowing about interest rates\n- Basic investing knowledge\n\n### Common Challenges\n- Debt management\n- Savings goals\n- Financial planning\n\n### Financial Health\n- Monitoring income\n- Managing expenses\n- Building savings\n- Debt control\n\n### Tips for Better Money Management\n1. Set a budget\n2. Track expenses\n3. Save regularly\n4. Avoid unnecessary debt\n5. Invest wisely\n\n### Everyday Applications\n- Grocery shopping\n- Rent or mortgage payments\n- Utilities\n- Transportation\n\n### Financial Planning\n- Emergency funds\n- Retirement planning\n- Insurance\n- Investment strategies\n\n### Common Mistakes to Avoid\n- Impulsive spending\n- Overspending\n- Lack of savings\n- Poor tracking\n\n### Benefits of Good Money Management\n- Stress reduction\n- Financial security\n- Achieving goals\n- Building wealth\n\n### Modern Financial Innovations\n- Mobile banking\n- Online transactions\n- Automated savings\n- Investment apps\n\n### Cultural Aspects\n- Spending vs. saving norms\n- Investment preferences\n- Financial values\n\n### Future Trends\n- Digital currencies\n- Automated investing\n- Personal finance apps\n\nThis overview covers essential aspects of money and finance, helping with everyday financial decisions and planning.",
+        "success": false,
+        "errors": [
+          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/props_sample6_353a2d2cfdeab24a/Component.svelte:111:116 `<script>` was left open\nhttps://svelte.dev/e/element_unclosed"
+        ]
+      },
+      {
+        "index": 7,
+        "code": "<svelte:options runes={true} />\n\n<script>\nexport default {\n  props: ['name', 'count', 'showDetails'],\n\n  state: {\n    countState: 0\n  },\n\n  $props: { name, count, showDetails },\n\n  updateCount(e) {\n    this.countState += 1;\n  }\n};\n</script>\n\n<dl data-testid=\"name-display\">Hello, {{ $props.name }}!</dl>\n\n<p data-testid=\"count-display\">Count: {{ $props.count }}</p>\n\n<button data-testid=\"increment-button\" on:click={() => this.updateCount()}>Increment</button>\n\n{$showDetails && (\n  <div data-testid=\"details\">\n    <p>Name is {{ $props.name }}</p>\n    <p>Count is {{ $props.count }}</p>\n    <p>ShowDetails is {{ $props.showDetails }}</p>\n  </div>\n)}\n<button data-testid=\"showDetails\" ${$showDetails ? 'class=\"active\"' : ''}>Toggle Details</button>\n<button data-testid=\"reset-button\" (click)=>{this.countState=0}>Reset Count</button>\n<button data-testid=\"decrement-button\" (click)=>{this.countState-=1}>Decrement</button>\n<script>\nexport default {\n  props: ['name', 'count', 'showDetails'],\n\n  state: {\n    countState: 0\n  },\n\n  $props: { name, count, showDetails },\n  updateCount(e) {\n    this.countState += 1;\n  }\n};\n</script>",
+        "success": false,
+        "errors": [
+          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/props_sample7_70df8487d58220d6/Component.svelte:19:47 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+        ]
+      },
+      {
+        "index": 8,
+        "code": "<svelte:options runes={true} />\n\n<script>\n    export let name = \"$props.name\" || \"World\";\n    let count = 0;\n    let showDetails = false;\n\n    export let $stateCount = $props.count?v:0;\n\n    export let detailsHTML = showDetails\n        ? <div data-testid=\"details\">\n            <p>Name is ${name}</p>\n            <p>Count is ${$stateCount}</p>\n            <p>ShowDetails is ${showDetails}</p>\n        </div>\n        : null;\n\n    function increment() {\n        count++;\n        $stateCount++<->0;\n    }\n</script>\n\n<div>\n    <h1 data-testid=\"name-display\">${name}</h1>\n    <p data-testid=\"count-display\"><jsdoc-api-ref>Count: ${$stateCount}</jsdoc-api-ref></p>\n    <button data-testid=\"increment-button\">Increment</button>\n\n    <div data-testid=\"details\">\r\n\r\n    </div>\n</div>",
+        "success": false,
+        "errors": [
+          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/props_sample8_c561846fb9ffb408/Component.svelte:11:10 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+        ]
+      },
+      {
+        "index": 9,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  let name = $props.name || \"World\";\n  let showDetails = $props.showDetails || false;\n\n  let count = $props.count;\n  let state = count || 0;\n\n  updateCount(() => {\n    state++;\n  });\n\n  updateDetails(() => {\n    if (showDetails) {\n      showDetailsContext?.resolve({ name, count, showDetails });\n    }\n  });\n\n  $effect(() => {\n    if (showDetails) {\n      showDetailsContext?.subscribe(() => {\n        const { name, count, showDetails } = showDetailsContext.value;\n        document.querySelector(div[data-testid=\"details\"]).innerHTML =\n          <p>Name is ${name}</p><p>Count is ${count}</p><p>ShowDetails is ${showDetails}</p>;\n      });\n    }\n  });\n\n  $effect(() => {\n    const button = document.createElement(\"button\");\n    button.textContent = \"Increment\";\n    button.onclick = () => updateCount();\n    document.body.appendChild(button);\n  });\n\n  $effect(() => {\n    const detailsDiv = document.querySelector(div[data-testid=\"details\"]);\n    if (detailsDiv) detailsDiv.remove();\n  });\n\n  updateCount();\n</script>\n\n<div>\n  <h1 data-testid=\"name-display\">Hello, {{ name }}!</h1>\n  <p data-testid=\"count-display\">Count: {{ state }}</p>\n  <button data-testid=\"increment-button\">Increment</button>\n\n  <div data-testid=\"details\">\n    <div>You clicked me!</div>\n  </div>\n</div>",
+        "success": false,
+        "errors": [
+          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/props_sample9_7cb897f31b092556/Component.svelte:24:35 Assigning to rvalue\nhttps://svelte.dev/e/js_parse_error"
+        ]
+      }
+    ],
+    "timestamp": "2025-09-16T16:49:01.397Z"
+  },
+  {
+    "testName": "snippets",
+    "provider": "OpenRouter",
+    "modelId": "arcee-ai/afm-4.5b",
+    "numSamples": 10,
+    "numCorrect": 0,
+    "pass1": 0,
+    "pass10": 0,
+    "context": {
+      "used": false,
+      "content": ""
+    },
+    "samples": [
+      {
+        "index": 0,
+        "code": "<svelte:options runes={true} />\n\n<script>\nexport let books = [\n  \"The Lord of the Rings\",\n  \"To Kill a Mockingbird\",\n  \"1984\"\n];\n\nexport let title = ({ title }) => {\n  return <span data-testid=\"book-title\">{title}</span>;\n};\n</script>\n\n<ul>\n  {books.map((book, index) => {\n    return (\n      <li data-testid=\"book-item\" key={index}>\n        {@render title={book} />\n      </li>\n    );\n  })}\n</ul>",
+        "success": false,
+        "errors": [
+          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/snippets_sample0_6687c78d33865b5d/Component.svelte:11:9 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+        ],
+        "temperature": 0
+      },
+      {
+        "index": 1,
+        "code": "<svelte:options runes={true} />\n\n<script>\n    export let books = [\n        \"The Lord of the Rings\",\n        \"To Kill a Mockingbird\",\n        \"1984\"\n    ];\n\n    export function renderTitle(title) {\n        <span data-testid=\"book-title\">{title}</span>\n    }\n</script>\n\n<article>\n    <ul>\n        {@map.panel panelType=\"loop\" label=\"Books\" children}\n        {@render renderTitle}\n        {@end}\n    </ul>\n</article>",
+        "success": false,
+        "errors": [
+          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/snippets_sample1_89d8b263a1cbadd7/Component.svelte:11:8 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+        ]
+      },
+      {
+        "index": 2,
+        "code": "<svelte:options runes={true} />\n\n<script>\nexport const title = ({ title }) => {\n  return <span data-testid=\"book-title\">{title}</span>\n};\n</script>\n\n<ul>\n  <li>\n    {@render title=\"The Lord of the Rings\"}<br />\n    {@render title=\"To Kill a Mockingbird\"}<br />\n    {@render title=\"1984\"}\n  </li>\n</ul>",
+        "success": false,
+        "errors": [
+          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/snippets_sample2_aabbee097978b734/Component.svelte:5:9 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+        ]
+      },
+      {
+        "index": 3,
+        "code": "<svelte:options runes={true} />\n\nimport { Component, selector } from '#'\n\nconst books = ['The Lord of the Rings', 'To Kill a Mockingbird', '1984']\n\nexport default ${(props) => {\n    return {\n        $render: () => {\n            return <ul>\n                ${books.map((book, index) => {\n                    return <li data-testid=\"book-item\">\n                        {@render title=${book}}\n                    </li>\n                })}\n            </ul>\n        }\n    }\n}}\n\nexport const title = ({ title }) => {\n    return <span data-testid=\"book-title\">${title}</span>\n}",
+        "success": false,
+        "errors": [
+          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/snippets_sample3_c9655232a5c18dd7/Component.svelte:10:19 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+        ]
+      },
+      {
+        "index": 4,
+        "code": "<svelte:options runes={true} />\n\n<svelte:component>\n  <script>\n    let titles = [\"The Lord of the Rings\", \"To Kill a Mockingbird\", \"1984\"];\n\n    function render(title) {\n      return <span data-testid=\"book-title\">{title}</span>;\n    }\n\n    function renderList() {\n      return <ul>{titles.map(render)}</ul>;\n    }\n\n    {#each titles as title}\n      {#if render}\n        {render}\n      {/if}\n    {/each}\n  </script>\n</svelte:component>",
+        "success": false,
+        "errors": [
+          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/snippets_sample4_4565665a0b8af5c7/Component.svelte:3:0 `<svelte:component>` must have a 'this' attribute\nhttps://svelte.dev/e/svelte_component_missing_this"
+        ]
+      },
+      {
+        "index": 5,
+        "code": "<svelte:options runes={true} />\n\n<script>\nexport default function({ $items }) {\n  return [\n    { title: $items[0] },\n    { title: $items[1] },\n    { title: $items[2] },\n  ]\n}\n</script>",
+        "success": false,
+        "errors": [
+          "tmp/samples/openrouter/snippets_sample5_186bb4b0b81621aa/Component.svelte:4:0 A component cannot have a default export\nhttps://svelte.dev/e/module_illegal_default_export"
+        ]
+      },
+      {
+        "index": 6,
+        "code": "<svelte:options runes={true} />\n\n<script>\nexport default {\n\t@render(() => {\n\t\tconst titles = [\"The Lord of the Rings\", \"To Kill a Mockingbird\", \"1984\"];\n\t\treturn (\n\t\t\t<ul>\n\t\t\t\t{titles.map((title) => (\n\t\t\t\t\t<li data-testid=\"book-item\">{${title}}</li>\n\t\t\t\t))}\n\t\t\t</ul>\n\t\t);\n\t})\n}\n</script>",
+        "success": false,
+        "errors": [
+          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/snippets_sample6_efd7ec350dcd31c3/Component.svelte:5:1 Unexpected character '@'\nhttps://svelte.dev/e/js_parse_error"
+        ]
+      },
+      {
+        "index": 7,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  const books = [\"The Lord of the Rings\", \"To Kill a Mockingbird\", \"1984\"];\n\n  export let index = 0;\n\n  export function render({ title }) {\n    return <li data-testid=\"book-item\">{title}</li>;\n  }\n</script>\n\n<ul>\n  {@each books of render in @render}\n  <li data-testid=\"book-item\" @{index++}={${render($index, $books)}}>{@includeRenderTitle($title)}</li>\n  {@endeach}\n</ul>\n\n<script>\n  export function includeRenderTitle(title) {\n    return <span data-testid=\"book-title\">${title}</span>;\n  }\n</script>",
+        "success": false,
+        "errors": [
+          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/snippets_sample7_49be6a40d56bf3c6/Component.svelte:9:11 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+        ]
+      },
+      {
+        "index": 8,
+        "code": "<svelte:options runes={true} />\n\n<script>\nexport default {\n    data() {\n        return {\n            books: ['The Lord of the Rings', 'To Kill a Mockingbird', '1984']\n        };\n    },\n    methods: {\n        renderBookTitle(title) {\n            return <span data-testid=\"book-title\">{title}</span>;\n        }\n    },\n    items: {\n        '@render': {\n            template: {\n                *[String-Key](@render book) {\n                    return <li data-testid=\"book-item\">{this.renderBookTitle(book)}</li>;\n                }\n            },\n            mode: 'inline'\n        }\n    }\n};\n</script>\n\n<label for=\"books\">Choose books:</label>\n<loser select=\"books\" on-change=\"$state.books\"></loser>\n<br><br>\n\n<snippet title=\"{{ item }}\"><@render item></snippet>\n utilizar",
+        "success": false,
+        "errors": [
+          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/snippets_sample8_5efdf09f59231c58/Component.svelte:12:19 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+        ]
+      },
+      {
+        "index": 9,
+        "code": "<svelte:options runes={true} />\n\n<script>\nexport default {\n  data() {\n    return {\n      books: [\"The Lord of the Rings\", \"To Kill a Mockingbird\", \"1984\"]\n    };\n  },\n  methods: {\n    renderBook(book) {\n      return {\n        ns: \"book-item\",\n        content: {\n          type: \"xhtml\",\n          content: [\n            { type: \"str\", content: \"The Lord of the Rings\" },\n            { type: \"str\", content: \"To Kill a Mockingbird\" },\n            { type: \"str\", content: \"1984\" }\n          ],\n          ns: \"ns\"\n        }\n      };\n    }\n  }\n};\n</script>\n\n<ul>\n  @{ for book in $this.books {\n    .listItem {\n      className: \"book-item\"\n      data-testid: \"book-item\"\n    }\n    .title {\n      data-testid: \"book-title\"\n    }\n    .ns {\n      content: $this.renderBook(book)\n    }\n  } }\n</ul>",
+        "success": false,
+        "errors": [
+          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/snippets_sample9_7d4082cb22d73f9a/Component.svelte:30:5 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+        ]
+      }
+    ],
+    "timestamp": "2025-09-16T16:49:01.397Z"
+  }
+]
