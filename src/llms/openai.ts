@@ -4,10 +4,10 @@ import {
 } from "../utils/prompt";
 import type { LLMProvider } from "./index";
 import OpenAI from "openai";
-import type { 
-  ChatCompletionMessageParam, 
-  ChatCompletionCreateParamsNonStreaming 
-} from "openai/resources/chat/completions";
+import type {
+  EasyInputMessage,
+  ResponseCreateParamsNonStreaming,
+} from "openai/resources/responses/responses";
 import type { ReasoningEffort } from "openai/resources/shared";
 
 export class OpenAIProvider implements LLMProvider {
@@ -87,7 +87,7 @@ export class OpenAIProvider implements LLMProvider {
         : DEFAULT_SYSTEM_PROMPT;
 
       // Standard chat completions
-      const messages: ChatCompletionMessageParam[] = [
+      const inputMessages: EasyInputMessage[] = [
         {
           role: "system",
           content: systemPrompt,
@@ -96,21 +96,21 @@ export class OpenAIProvider implements LLMProvider {
 
       // Add context message if available
       if (contextContent) {
-        messages.push({
+        inputMessages.push({
           role: "user",
           content: contextContent,
         });
       }
 
       // Add the main prompt
-      messages.push({
+      inputMessages.push({
         role: "user",
         content: prompt,
       });
 
-      const requestOptions: ChatCompletionCreateParamsNonStreaming = {
+      const requestOptions: ResponseCreateParamsNonStreaming = {
         model: cleanModelId,
-        messages: messages,
+        input: inputMessages,
       };
 
       // Only add temperature if it's defined and the model supports it
@@ -120,12 +120,14 @@ export class OpenAIProvider implements LLMProvider {
 
       // Add reasoning effort if specified (for models that support it)
       if (reasoningEffort) {
-        requestOptions.reasoning_effort = reasoningEffort;
+        requestOptions.reasoning = {
+          effort: reasoningEffort,
+        };
       }
 
-      const completion = await this.client.chat.completions.create(requestOptions);
+      const response = await this.client.responses.create(requestOptions);
 
-      return completion.choices[0]?.message.content || "";
+      return response.output_text;
     } catch (error) {
       console.error("Error generating code with OpenAI:", error);
       throw new Error(
