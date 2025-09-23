@@ -105,7 +105,7 @@
         "code": "<svelte:options runes={true} />\n\n<div>\n  <p data-testid=\"number-value\">Number: {$state}</p>\n  <p data-testid=\"doubled-value\">Doubled: {$derived}</p>\n  <button data-testid=\"increment-button\" onclick={() => $state += 1}>Increment</button>\n</div>\n\n<script>\n  let $state = 5;\n  const $derived = $derived($state * 2);\n</script>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/derived_sample1_6e35bbd7f9b3bc8c/Component.svelte:10:6 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
+          "/svelte-bench/tmp/samples/openrouter/derived_sample1_6e35bbd7f9b3bc8c/Component.svelte:10:6 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
         ]
       },
       {
@@ -177,7 +177,7 @@
         "code": "<svelte:options runes={true} />\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n  <button data-testid=\"clear-button\" onclick={() => text = \"\"}>Clear</button>\n  <div>\n    <p data-testid=\"word-count\">Words: {$wordCount}</p>\n    <p data-testid=\"char-count\">Characters: {$charCount}</p>\n    <p data-testid=\"length-indicator\">Status: {$isLong ? \"Long text\" : \"Short text\"}</p>\n  </div>\n</div>\n\n<script>\n  let text = $state(\"\");\n\n  const $wordCount = $derived.by(() => {\n    return text.trim() === \"\" ? 0 : text.trim().split(/\\s+/).length;\n  });\n\n  const $charCount = $derived.by(() => {\n    return text.length;\n  });\n\n  const $isLong = $derived.by(() => {\n    return $wordCount > 15;\n  });\n</script>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/derived-by_sample0_6f8c916f9c399e81/Component.svelte:16:8 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
+          "/svelte-bench/tmp/samples/openrouter/derived-by_sample0_6f8c916f9c399e81/Component.svelte:16:8 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
         ],
         "temperature": 0
       },
@@ -186,7 +186,7 @@
         "code": "<svelte:options runes={true} />\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n  <button data-testid=\"clear-button\" onclick={() => text = \"\"}>Clear</button>\n  <div>\n    <p data-testid=\"word-count\">Words: {$wordCount}</p>\n    <p data-testid=\"char-count\">Characters: {$charCount}</p>\n    <p data-testid=\"length-indicator\">Status: {$lengthStatus}</p>\n  </div>\n</div>\n\n<script>\n  let text = $state(\"\");\n\n  const $wordCount = $derived.by(() => {\n    return text.trim() === \"\" ? 0 : text.trim().split(/\\s+/).length;\n  });\n\n  const $charCount = $derived.by(() => {\n    return text.length;\n  });\n\n  const $lengthStatus = $derived.by(() => {\n    const isLong = $wordCount > 15;\n    return isLong ? \"Long text\" : \"Short text\";\n  });\n</script>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/derived-by_sample1_f30b8dd6a8bde926/Component.svelte:16:8 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
+          "/svelte-bench/tmp/samples/openrouter/derived-by_sample1_f30b8dd6a8bde926/Component.svelte:16:8 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
         ]
       },
       {
@@ -194,7 +194,7 @@
         "code": "<svelte:options runes={true} />\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n  <button data-testid=\"clear-button\" onclick={() => text = \"\"}>Clear</button>\n  <div>\n    <p data-testid=\"word-count\">Words: {$wordCount}</p>\n    <p data-testid=\"char-count\">Characters: {$charCount}</p>\n    <p data-testid=\"length-indicator\">Status: {$isLong ? \"Long text\" : \"Short text\"}</p>\n  </div>\n</div>\n\n<script>\n  let text = $state(\"\");\n  \n  const $wordCount = $derived.by(() => {\n    return text.trim() === \"\" ? 0 : text.trim().split(/\\s+/).length;\n  });\n  \n  const $charCount = $derived.by(() => {\n    return text.length;\n  });\n  \n  const $isLong = $derived.by(() => {\n    return $wordCount > 15;\n  });\n</script>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/derived-by_sample2_c3ed7f2bad7c83d2/Component.svelte:16:8 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
+          "/svelte-bench/tmp/samples/openrouter/derived-by_sample2_c3ed7f2bad7c83d2/Component.svelte:16:8 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
         ]
       },
       {
@@ -202,7 +202,7 @@
         "code": "<svelte:options runes={true} />\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n  <button data-testid=\"clear-button\" onclick={() => text = ''}>Clear</button>\n  <div>\n    <p data-testid=\"word-count\">Words: {$wordCount}</p>\n    <p data-testid=\"char-count\">Characters: {$charCount}</p>\n    <p data-testid=\"length-indicator\">Status: {$isLong ? 'Long text' : 'Short text'}</p>\n  </div>\n</div>\n\n<script>\n  let text = $state('');\n  \n  const $wordCount = $derived.by(() => {\n    return text.trim() === '' ? 0 : text.trim().split(/\\s+/).length;\n  });\n  \n  const $charCount = $derived.by(() => {\n    return text.length;\n  });\n  \n  const $isLong = $derived.by(() => {\n    return $wordCount > 15;\n  });\n</script>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/derived-by_sample3_da921c8d3130ba3c/Component.svelte:16:8 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
+          "/svelte-bench/tmp/samples/openrouter/derived-by_sample3_da921c8d3130ba3c/Component.svelte:16:8 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
         ]
       },
       {
@@ -210,7 +210,7 @@
         "code": "<svelte:options runes={true} />\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n  <button data-testid=\"clear-button\" onclick={() => text = ''}>Clear</button>\n  <div>\n    <p data-testid=\"word-count\">Words: {$wordCount}</p>\n    <p data-testid=\"char-count\">Characters: {$charCount}</p>\n    <p data-testid=\"length-indicator\">Status: {$isLong ? 'Long text' : 'Short text'}</p>\n  </div>\n</div>\n\n<script>\n  let text = $state('');\n\n  const $wordCount = $derived.by(() => {\n    if (!text.trim()) return 0;\n    return text.trim().split(/\\s+/).length;\n  });\n\n  const $charCount = $derived.by(() => text.length);\n\n  const $isLong = $derived.by(() => $wordCount > 15);\n</script>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/derived-by_sample4_51b6277a7d91e3c2/Component.svelte:16:8 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
+          "/svelte-bench/tmp/samples/openrouter/derived-by_sample4_51b6277a7d91e3c2/Component.svelte:16:8 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
         ]
       },
       {
@@ -218,7 +218,7 @@
         "code": "<svelte:options runes={true} />\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n  <button data-testid=\"clear-button\" onclick={() => text = ''}>Clear</button>\n  <div>\n    <p data-testid=\"word-count\">Words: {$wordCount}</p>\n    <p data-testid=\"char-count\">Characters: {$charCount}</p>\n    <p data-testid=\"length-indicator\">Status: {$isLong ? 'Long text' : 'Short text'}</p>\n  </div>\n</div>\n\n<script>\n  let text = $state('');\n  \n  const $wordCount = $derived.by(() => {\n    return text.trim() === '' ? 0 : text.trim().split(/\\s+/).length;\n  });\n  \n  const $charCount = $derived.by(() => {\n    return text.length;\n  });\n  \n  const $isLong = $derived.by(() => {\n    return $wordCount > 15;\n  });\n</script>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/derived-by_sample5_ec3300cd010d291d/Component.svelte:16:8 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
+          "/svelte-bench/tmp/samples/openrouter/derived-by_sample5_ec3300cd010d291d/Component.svelte:16:8 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
         ]
       },
       {
@@ -226,7 +226,7 @@
         "code": "<svelte:options runes={true} />\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n  <button data-testid=\"clear-button\" onclick={() => text = \"\"}>Clear</button>\n  <div>\n    <p data-testid=\"word-count\">Words: {$wordCount}</p>\n    <p data-testid=\"char-count\">Characters: {$charCount}</p>\n    <p data-testid=\"length-indicator\">Status: {$isLong ? \"Long text\" : \"Short text\"}</p>\n  </div>\n</div>\n\n<script>\n  let text = $state(\"\");\n\n  const $wordCount = $derived.by(() => {\n    return text.trim() === \"\" ? 0 : text.trim().split(/\\s+/).length;\n  });\n\n  const $charCount = $derived.by(() => text.length);\n\n  const $isLong = $derived.by(() => $wordCount > 15);\n</script>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/derived-by_sample6_795ad123d82666ea/Component.svelte:16:8 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
+          "/svelte-bench/tmp/samples/openrouter/derived-by_sample6_795ad123d82666ea/Component.svelte:16:8 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
         ]
       },
       {
@@ -234,7 +234,7 @@
         "code": "<svelte:options runes={true} />\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n  <button data-testid=\"clear-button\" onclick={() => text = \"\"}>Clear</button>\n  <div>\n    <p data-testid=\"word-count\">Words: {$wordCount}</p>\n    <p data-testid=\"char-count\">Characters: {$charCount}</p>\n    <p data-testid=\"length-indicator\">Status: {$isLong ? \"Long text\" : \"Short text\"}</p>\n  </div>\n</div>\n\n<script>\n  let text = $state(\"\");\n\n  const $wordCount = $derived.by(() => {\n    if (!text.trim()) return 0;\n    return text.trim().split(/\\s+/).length;\n  });\n\n  const $charCount = $derived.by(() => text.length);\n\n  const $isLong = $derived.by(() => $wordCount > 15);\n</script>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/derived-by_sample7_bc10e8d81336e62f/Component.svelte:16:8 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
+          "/svelte-bench/tmp/samples/openrouter/derived-by_sample7_bc10e8d81336e62f/Component.svelte:16:8 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
         ]
       },
       {
@@ -242,7 +242,7 @@
         "code": "<svelte:options runes={true} />\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n  <button data-testid=\"clear-button\" onclick={() => text = \"\"}>Clear</button>\n  <div>\n    <p data-testid=\"word-count\">Words: {$wordCount}</p>\n    <p data-testid=\"char-count\">Characters: {$charCount}</p>\n    <p data-testid=\"length-indicator\">Status: {$isLong ? \"Long text\" : \"Short text\"}</p>\n  </div>\n</div>\n\n<script>\n  let text = $state(\"\");\n  \n  const $wordCount = $derived.by(() => {\n    return text.trim() === \"\" ? 0 : text.trim().split(/\\s+/).length;\n  });\n  \n  const $charCount = $derived.by(() => {\n    return text.length;\n  });\n  \n  const $isLong = $derived.by(() => {\n    return $wordCount > 15;\n  });\n</script>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/derived-by_sample8_fac85540f4a10d98/Component.svelte:16:8 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
+          "/svelte-bench/tmp/samples/openrouter/derived-by_sample8_fac85540f4a10d98/Component.svelte:16:8 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
         ]
       },
       {
@@ -250,7 +250,7 @@
         "code": "<svelte:options runes={true} />\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n  <button data-testid=\"clear-button\" on:click={() => text = \"\"}>Clear</button>\n  <div>\n    <p data-testid=\"word-count\">Words: {$words}</p>\n    <p data-testid=\"char-count\">Characters: {$charCount}</p>\n    <p data-testid=\"length-indicator\">Status: {$isLong ? \"Long text\" : \"Short text\"}</p>\n  </div>\n</div>\n\n<script>\n  let text = $state(\"\");\n  \n  const $words = $derived.by(() => {\n    return text.trim() === \"\" ? 0 : text.trim().split(/\\s+/).length;\n  });\n  \n  const $charCount = $derived.by(() => {\n    return text.length;\n  });\n  \n  const $isLong = $derived.by(() => {\n    return $words > 15;\n  });\n</script>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/derived-by_sample9_14f7213bf6d34d25/Component.svelte:16:8 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
+          "/svelte-bench/tmp/samples/openrouter/derived-by_sample9_14f7213bf6d34d25/Component.svelte:16:8 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
         ]
       }
     ],
@@ -326,17 +326,13 @@
         "index": 7,
         "code": "<svelte:options runes={true} />\n\n<script>\n    let characters = [\"Jerry\", \"Elaine\", \"Kramer\"];\n    \n    function addGeorge() {\n        characters = [...characters, \"George\"];\n    }\n</script>\n\n<div>\n    <ul data-testid=\"characters-list\">\n        {#each characters as character}\n            <li data-testid=\"character\">{character}</li>\n        {/each}\n    </ul>\n    <button data-testid=\"add-george-button\" on:click={addGeorge}>Add George</button>\n</div>",
         "success": false,
-        "errors": [
-          "expected 3 to be 4 // Object.is equality"
-        ]
+        "errors": ["expected 3 to be 4 // Object.is equality"]
       },
       {
         "index": 8,
         "code": "<svelte:options runes={true} />\n\n<script>\n  let characters = [\"Jerry\", \"Elaine\", \"Kramer\"];\n  \n  function addGeorge() {\n    characters = [...characters, \"George\"];\n  }\n</script>\n\n<div>\n  <ul data-testid=\"characters-list\">\n    {#each characters as character (character)}\n      <li data-testid=\"character\">{character}</li>\n    {/each}\n  </ul>\n  <button data-testid=\"add-george-button\" on:click={addGeorge}>Add George</button>\n</div>",
         "success": false,
-        "errors": [
-          "expected 3 to be 4 // Object.is equality"
-        ]
+        "errors": ["expected 3 to be 4 // Object.is equality"]
       },
       {
         "index": 9,
@@ -410,7 +406,7 @@
         "code": "<svelte:options runes={true} />\n\n<div>\n  <p data-testid=\"number-value\">Number: {$state}</p>\n  <p data-testid=\"doubled-value\">Doubled: {doubled}</p>\n  <button data-testid=\"increment-button\" onclick={() => $state += 1}>Increment</button>\n</div>\n\n<script>\n  let $state = 5;\n  let doubled = $state * 2;\n\n  $effect(() => {\n    doubled = $state * 2;\n  });\n</script>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/effect_sample7_78d98666016a393e/Component.svelte:10:6 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
+          "/svelte-bench/tmp/samples/openrouter/effect_sample7_78d98666016a393e/Component.svelte:10:6 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
         ]
       },
       {
@@ -542,7 +538,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n    let text = $state(\"Hello world\");\n    \n    $inspect(text); // Basic inspect to log the input value\n    \n    $inspect(text).with((newValue, oldValue) => {\n        console.log(Text updated from \"${oldValue}\" to \"${newValue}\");\n    }); // Custom callback to track updates\n    \n    $effect(() => {\n        $inspect.trace(); // Trace this effect when text changes\n        text; // Dependency\n    });\n</script>\n\n<div>\n    <input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n    <p data-testid=\"text-value\">Current text: \"{text}\"</p>\n    <p data-testid=\"char-count\">Character count: {text.length}</p>\n</div>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/inspect_sample3_794c448a8a6ea602/Component.svelte:9:25 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+          "/svelte-bench/tmp/samples/openrouter/inspect_sample3_794c448a8a6ea602/Component.svelte:9:25 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
         ]
       },
       {
@@ -582,7 +578,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n  const text = $state(\"Hello world\");\n  const charCount = $derived(text.length);\n\n  $inspect(text);\n\n  $inspect(text).with((newValue, oldValue) => {\n    console.log(Text updated from \"${oldValue}\" to \"${newValue}\");\n  });\n\n  $effect(() => {\n    $inspect.trace();\n  });\n</script>\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n  <p data-testid=\"text-value\">Current text: \"{text}\"</p>\n  <p data-testid=\"char-count\">Character count: {charCount}</p>\n</div>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/inspect_sample9_d461b8eff796071d/Component.svelte:10:21 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+          "/svelte-bench/tmp/samples/openrouter/inspect_sample9_d461b8eff796071d/Component.svelte:10:21 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
         ]
       }
     ],
@@ -657,7 +653,7 @@
         "code": "<svelte:options runes={true} />\n\n<div>\n  <h1 data-testid=\"name-display\">Hello, {$name}!</h1>\n  <p data-testid=\"count-display\">Count: {$count}</p>\n  <button data-testid=\"increment-button\" onclick={() => $count++}>Increment</button>\n\n  {#if $showDetails}\n    <div data-testid=\"details\">\n      <p>Name is {$name}</p>\n      <p>Count is {$count}</p>\n      <p>ShowDetails is {$showDetails}</p>\n    </div>\n  {/if}\n</div>\n\n<script>\n  let { name = \"World\", count = 0, showDetails = false } = $props();\n  let $count = $state(count);\n</script>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/props_sample8_56e15ae97937809a/Component.svelte:19:6 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
+          "/svelte-bench/tmp/samples/openrouter/props_sample8_56e15ae97937809a/Component.svelte:19:6 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
         ]
       },
       {
@@ -694,7 +690,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n  const books = [\"The Lord of the Rings\", \"To Kill a Mockingbird\", \"1984\"];\n  \n  let title = (bookTitle) => {\n    return <span data-testid=\"book-title\">${bookTitle}</span>;\n  };\n</script>\n\n<ul>\n  {#each books as book}\n    <li data-testid=\"book-item\">\n      {@render title(book)}\n    </li>\n  {/each}\n</ul>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/snippets_sample1_86d41baa8ac3e9e0/Component.svelte:7:11 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+          "/svelte-bench/tmp/samples/openrouter/snippets_sample1_86d41baa8ac3e9e0/Component.svelte:7:11 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
         ]
       },
       {
@@ -708,7 +704,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n\tconst books = [\"The Lord of the Rings\", \"To Kill a Mockingbird\", \"1984\"];\n\n\t// Create the title snippet\n\tconst { title } = $state.snippet(\n\t\t(bookTitle) => <span data-testid=\"book-title\">${bookTitle}</span>\n\t);\n</script>\n\n<ul>\n\t{#each books as book}\n\t\t<li data-testid=\"book-item\">\n\t\t\t{@render title(book)}\n\t\t</li>\n\t{/each}\n</ul>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/snippets_sample3_af831d4a8fbfd895/Component.svelte:8:17 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+          "/svelte-bench/tmp/samples/openrouter/snippets_sample3_af831d4a8fbfd895/Component.svelte:8:17 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
         ]
       },
       {
@@ -716,7 +712,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n  let books = [\"The Lord of the Rings\", \"To Kill a Mockingbird\", \"1984\"];\n\n  function title(title) {\n    return snippet(title);\n  }\n\n  {#snippet title(bookTitle)}\n    <span data-testid=\"book-title\">{bookTitle}</span>\n  {/snippet}\n</script>\n\n<ul>\n  {#each books as book}\n    <li data-testid=\"book-item\">{@render title(book)}</li>\n  {/each}\n</ul>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/snippets_sample4_cdaffa39ff8b7da5/Component.svelte:10:3 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+          "/svelte-bench/tmp/samples/openrouter/snippets_sample4_cdaffa39ff8b7da5/Component.svelte:10:3 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
         ]
       },
       {
@@ -724,7 +720,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n\tconst books = [\"The Lord of the Rings\", \"To Kill a Mockingbird\", \"1984\"];\n\t\n\t// Snippet that renders a book title in a span\n\tlet title = (bookTitle) => {\n\t\t<span data-testid=\"book-title\">{bookTitle}</span>\n\t};\n</script>\n\n<ul>\n\t{#each books as book}\n\t\t<li data-testid=\"book-item\">\n\t\t\t{@render title(book)}\n\t\t</li>\n\t{/each}\n</ul>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/snippets_sample5_451cc687c8d6f4e2/Component.svelte:8:2 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+          "/svelte-bench/tmp/samples/openrouter/snippets_sample5_451cc687c8d6f4e2/Component.svelte:8:2 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
         ]
       },
       {
@@ -732,7 +728,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n  const books = [\"The Lord of the Rings\", \"To Kill a Mockingbird\", \"1984\"];\n  \n  const title = (title) => {\n    return <span data-testid=\"book-title\">${title}</span>;\n  };\n</script>\n\n<ul>\n  {#each books as book}\n    <li data-testid=\"book-item\">\n      {@render title(book)}\n    </li>\n  {/each}\n</ul>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/snippets_sample6_61d65b01893b82da/Component.svelte:7:11 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+          "/svelte-bench/tmp/samples/openrouter/snippets_sample6_61d65b01893b82da/Component.svelte:7:11 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
         ]
       },
       {
@@ -746,7 +742,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n  let books = $state(['The Lord of the Rings', 'To Kill a Mockingbird', '1984']);\n  \n  let titleSnippet = (title) => {\n    return <span data-testid=\"book-title\">${title}</span>;\n  };\n</script>\n\n<ul>\n  {#each books as book}\n    <li data-testid=\"book-item\">\n      {@html titleSnippet(book)}\n    </li>\n  {/each}\n</ul>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/snippets_sample8_3ea924924972d998/Component.svelte:7:11 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+          "/svelte-bench/tmp/samples/openrouter/snippets_sample8_3ea924924972d998/Component.svelte:7:11 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
         ]
       },
       {

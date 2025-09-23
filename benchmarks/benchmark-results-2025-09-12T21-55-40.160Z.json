@@ -192,7 +192,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n  import { onMount } from 'svelte';\n\n  let $text = $state('');\n  let wordCount = $derived.by(() => {\n    return $text.trim().split(/\\s+/).filter(Boolean).length;\n  });\n  let charCount = $derived.by(() => {\n    return $text.length;\n  });\n  let isLongText = $derived.by(() => {\n    return wordCount() > 15;\n  });\n\n  function clearText() {\n    $text = '';\n  }\n</script>\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" bind:value={$text} />\n  <button data-testid=\"clear-button\" on:click={clearText}>Clear</button>\n  <div>\n    <p data-testid=\"word-count\">Words: {wordCount()}</p>\n    <p data-testid=\"char-count\">Characters: {charCount()}</p>\n    <p data-testid=\"length-indicator\">Status: {isLongText() ? 'Long text' : 'Short text'}</p>\n  </div>\n</div>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/z.ai/derived-by_sample3_929fa79f7b2aa7cd/Component.svelte:6:6 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
+          "/svelte-bench/tmp/samples/z.ai/derived-by_sample3_929fa79f7b2aa7cd/Component.svelte:6:6 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
         ]
       },
       {
@@ -257,82 +257,62 @@
         "index": 0,
         "code": "<svelte:options runes={true} />\n\n<script>\n  let characters = [\"Jerry\", \"Elaine\", \"Kramer\"];\n\n  function addGeorge() {\n    characters = [...characters, \"George\"];\n  }\n</script>\n\n<div>\n  <ul data-testid=\"characters-list\">\n    {#each characters as character}\n      <li data-testid=\"character\">{character}</li>\n    {/each}\n  </ul>\n  <button data-testid=\"add-george-button\" on:click={addGeorge}>Add George</button>\n</div>",
         "success": false,
-        "errors": [
-          "expected 3 to be 4 // Object.is equality"
-        ],
+        "errors": ["expected 3 to be 4 // Object.is equality"],
         "temperature": 0
       },
       {
         "index": 1,
         "code": "<svelte:options runes={true} />\n\n<script>\n  let characters = [\"Jerry\", \"Elaine\", \"Kramer\"];\n\n  function addGeorge() {\n    characters = [...characters, \"George\"];\n  }\n</script>\n\n<div>\n  <ul data-testid=\"characters-list\">\n    {#each characters as character}\n      <li data-testid=\"character\">{character}</li>\n    {/each}\n  </ul>\n  <button data-testid=\"add-george-button\" on:click={addGeorge}>Add George</button>\n</div>",
         "success": false,
-        "errors": [
-          "expected 3 to be 4 // Object.is equality"
-        ]
+        "errors": ["expected 3 to be 4 // Object.is equality"]
       },
       {
         "index": 2,
         "code": "<svelte:options runes={true} />\n\n<script>\n  let characters = [\"Jerry\", \"Elaine\", \"Kramer\"];\n  \n  function addGeorge() {\n    characters = [...characters, \"George\"];\n  }\n</script>\n\n<div>\n  <ul data-testid=\"characters-list\">\n    {#each characters as character}\n      <li data-testid=\"character\">{character}</li>\n    {/each}\n  </ul>\n  <button data-testid=\"add-george-button\" on:click={addGeorge}>Add George</button>\n</div>",
         "success": false,
-        "errors": [
-          "expected 3 to be 4 // Object.is equality"
-        ]
+        "errors": ["expected 3 to be 4 // Object.is equality"]
       },
       {
         "index": 3,
         "code": "<svelte:options runes={true} />\n\n<script>\n  let characters = [\"Jerry\", \"Elaine\", \"Kramer\"];\n\n  function addGeorge() {\n    characters = [...characters, \"George\"];\n  }\n</script>\n\n<div>\n  <ul data-testid=\"characters-list\">\n    {#each characters as character}\n      <li data-testid=\"character\">{character}</li>\n    {/each}\n  </ul>\n  <button data-testid=\"add-george-button\" on:click={addGeorge}>Add George</button>\n</div>",
         "success": false,
-        "errors": [
-          "expected 3 to be 4 // Object.is equality"
-        ]
+        "errors": ["expected 3 to be 4 // Object.is equality"]
       },
       {
         "index": 4,
         "code": "<svelte:options runes={true} />\n\n<script>\n  let characters = [\"Jerry\", \"Elaine\", \"Kramer\"];\n\n  function addGeorge() {\n    characters = [...characters, \"George\"];\n  }\n</script>\n\n<div>\n  <ul data-testid=\"characters-list\">\n    {#each characters as character}\n      <li data-testid=\"character\">{character}</li>\n    {/each}\n  </ul>\n  <button data-testid=\"add-george-button\" on:click={addGeorge}>Add George</button>\n</div>",
         "success": false,
-        "errors": [
-          "expected 3 to be 4 // Object.is equality"
-        ]
+        "errors": ["expected 3 to be 4 // Object.is equality"]
       },
       {
         "index": 5,
         "code": "<svelte:options runes={true} />\n\n<script>\n  import { onMount } from 'svelte';\n\n  let characters = [\"Jerry\", \"Elaine\", \"Kramer\"];\n\n  function addGeorge() {\n    characters = [...characters, \"George\"];\n  }\n</script>\n\n<div>\n  <ul data-testid=\"characters-list\">\n    {#each characters as character}\n      <li data-testid=\"character\">{character}</li>\n    {/each}\n  </ul>\n  <button data-testid=\"add-george-button\" on:click={addGeorge}>Add George</button>\n</div>",
         "success": false,
-        "errors": [
-          "expected 3 to be 4 // Object.is equality"
-        ]
+        "errors": ["expected 3 to be 4 // Object.is equality"]
       },
       {
         "index": 6,
         "code": "<svelte:options runes={true} />\n\n<script>\n  let characters = [\"Jerry\", \"Elaine\", \"Kramer\"];\n\n  function addGeorge() {\n    characters = [...characters, \"George\"];\n  }\n</script>\n\n<div>\n  <ul data-testid=\"characters-list\">\n    {#each characters as character}\n      <li data-testid=\"character\">{character}</li>\n    {/each}\n  </ul>\n  <button data-testid=\"add-george-button\" on:click={addGeorge}>Add George</button>\n</div>",
         "success": false,
-        "errors": [
-          "expected 3 to be 4 // Object.is equality"
-        ]
+        "errors": ["expected 3 to be 4 // Object.is equality"]
       },
       {
         "index": 7,
         "code": "<svelte:options runes={true} />\n\n<script>\n  let characters = [\"Jerry\", \"Elaine\", \"Kramer\"];\n\n  function addGeorge() {\n    characters = [...characters, \"George\"];\n  }\n</script>\n\n<div>\n  <ul data-testid=\"characters-list\">\n    {#each characters as character}\n      <li data-testid=\"character\">{character}</li>\n    {/each}\n  </ul>\n  <button data-testid=\"add-george-button\" on:click={addGeorge}>Add George</button>\n</div>",
         "success": false,
-        "errors": [
-          "expected 3 to be 4 // Object.is equality"
-        ]
+        "errors": ["expected 3 to be 4 // Object.is equality"]
       },
       {
         "index": 8,
         "code": "<svelte:options runes={true} />\n\n<script>\n  let characters = [\"Jerry\", \"Elaine\", \"Kramer\"];\n\n  function addGeorge() {\n    characters = [...characters, \"George\"];\n  }\n</script>\n\n<div>\n  <ul data-testid=\"characters-list\">\n    {#each characters as character}\n      <li data-testid=\"character\">{character}</li>\n    {/each}\n  </ul>\n  <button data-testid=\"add-george-button\" on:click={addGeorge}>Add George</button>\n</div>",
         "success": false,
-        "errors": [
-          "expected 3 to be 4 // Object.is equality"
-        ]
+        "errors": ["expected 3 to be 4 // Object.is equality"]
       },
       {
         "index": 9,
         "code": "<svelte:options runes={true} />\n\n<script>\n  let characters = [\"Jerry\", \"Elaine\", \"Kramer\"];\n  \n  function addGeorge() {\n    characters = [...characters, \"George\"];\n  }\n</script>\n\n<div>\n  <ul data-testid=\"characters-list\">\n    {#each characters as character}\n      <li data-testid=\"character\">{character}</li>\n    {/each}\n  </ul>\n  <button data-testid=\"add-george-button\" on:click={addGeorge}>Add George</button>\n</div>",
         "success": false,
-        "errors": [
-          "expected 3 to be 4 // Object.is equality"
-        ]
+        "errors": ["expected 3 to be 4 // Object.is equality"]
       }
     ],
     "timestamp": "2025-09-12T21:55:40.160Z"
@@ -355,7 +335,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n  import { $state, $effect } from 'svelte';\n\n  let number = $state(5);\n  let doubled = $state(10);\n\n  $effect(() => {\n    doubled = number * 2;\n  });\n\n  function increment() {\n    number++;\n  }\n</script>\n\n<div>\n  <p data-testid=\"number-value\">Number: {number}</p>\n  <p data-testid=\"doubled-value\">Doubled: {doubled}</p>\n  <button data-testid=\"increment-button\" on:click={increment}>Increment</button>\n</div>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/z.ai/effect_sample0_401714a549683480/Component.svelte:4:11 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
+          "/svelte-bench/tmp/samples/z.ai/effect_sample0_401714a549683480/Component.svelte:4:11 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
         ],
         "temperature": 0
       },
@@ -364,7 +344,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n  import { $state, $effect } from 'svelte';\n\n  let number = $state(5);\n  let doubled = $state(0);\n\n  $effect(() => {\n    doubled = number * 2;\n  });\n\n  function increment() {\n    number++;\n  }\n</script>\n\n<div>\n  <p data-testid=\"number-value\">Number: {number}</p>\n  <p data-testid=\"doubled-value\">Doubled: {doubled}</p>\n  <button data-testid=\"increment-button\" on:click={increment}>Increment</button>\n</div>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/z.ai/effect_sample1_632834f4b4a30233/Component.svelte:4:11 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
+          "/svelte-bench/tmp/samples/z.ai/effect_sample1_632834f4b4a30233/Component.svelte:4:11 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
         ]
       },
       {
@@ -372,7 +352,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n  import { $state, $effect } from 'svelte';\n\n  let number = $state(5);\n  let doubled = $state(10);\n\n  $effect(() => {\n    doubled = number * 2;\n  });\n\n  function increment() {\n    number++;\n  }\n</script>\n\n<div>\n  <p data-testid=\"number-value\">Number: {number}</p>\n  <p data-testid=\"doubled-value\">Doubled: {doubled}</p>\n  <button data-testid=\"increment-button\" on:click={increment}>Increment</button>\n</div>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/z.ai/effect_sample2_16d13038303c624f/Component.svelte:4:11 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
+          "/svelte-bench/tmp/samples/z.ai/effect_sample2_16d13038303c624f/Component.svelte:4:11 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
         ]
       },
       {
@@ -404,7 +384,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n  import { $state, $effect } from 'svelte';\n\n  let number = $state(5);\n  let doubled;\n\n  $effect(() => {\n    doubled = number * 2;\n  });\n\n  const increment = () => {\n    number += 1;\n  };\n</script>\n\n<div>\n  <p data-testid=\"number-value\">Number: {number}</p>\n  <p data-testid=\"doubled-value\">Doubled: {doubled}</p>\n  <button data-testid=\"increment-button\" on:click={increment}>Increment</button>\n</div>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/z.ai/effect_sample6_e2cfc1920c433c5c/Component.svelte:4:11 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
+          "/svelte-bench/tmp/samples/z.ai/effect_sample6_e2cfc1920c433c5c/Component.svelte:4:11 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
         ]
       },
       {
@@ -412,7 +392,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n  import { $state, $effect } from 'svelte';\n\n  let number = $state(5);\n  let doubled = $state(0);\n\n  $effect(() => {\n    doubled = number * 2;\n  });\n\n  const increment = () => {\n    number += 1;\n  };\n</script>\n\n<div>\n  <p data-testid=\"number-value\">Number: {number}</p>\n  <p data-testid=\"doubled-value\">Doubled: {doubled}</p>\n  <button data-testid=\"increment-button\" on:click={increment}>Increment</button>\n</div>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/z.ai/effect_sample7_94a8b2b29c3e35bc/Component.svelte:4:11 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
+          "/svelte-bench/tmp/samples/z.ai/effect_sample7_94a8b2b29c3e35bc/Component.svelte:4:11 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
         ]
       },
       {
@@ -420,7 +400,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n  import { $state, $effect } from 'svelte';\n\n  let number = $state(5);\n  let doubled = $effect(() => {\n    return number * 2;\n  });\n\n  const increment = () => {\n    number += 1;\n  };\n</script>\n\n<div>\n  <p data-testid=\"number-value\">Number: {number}</p>\n  <p data-testid=\"doubled-value\">Doubled: {doubled}</p>\n  <button data-testid=\"increment-button\" on:click={increment}>Increment</button>\n</div>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/z.ai/effect_sample8_dc0b716ea74a17e0/Component.svelte:4:11 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
+          "/svelte-bench/tmp/samples/z.ai/effect_sample8_dc0b716ea74a17e0/Component.svelte:4:11 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
         ]
       },
       {
@@ -532,7 +512,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n  let text = $state('Hello world');\n  let charCount = $state(text.length);\n\n  $inspect(text);\n\n  $inspect(text).with((value, previous) => {\n    console.log(Text changed from \"${previous}\" to \"${value}\");\n  });\n\n  $effect(() => {\n    $inspect.trace();\n    charCount = text.length;\n  });\n</script>\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n  <p data-testid=\"text-value\">Current text: \"{text}\"</p>\n  <p data-testid=\"char-count\">Character count: {charCount}</p>\n</div>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/z.ai/inspect_sample0_e5d06f78322aff20/Component.svelte:10:21 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+          "/svelte-bench/tmp/samples/z.ai/inspect_sample0_e5d06f78322aff20/Component.svelte:10:21 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
         ],
         "temperature": 0
       },
@@ -547,7 +527,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n  let text = $state('Hello world');\n  let charCount = $state(11);\n\n  $inspect(text);\n\n  $inspect(text).with((newValue, oldValue) => {\n    console.log(Input changed from \"${oldValue}\" to \"${newValue}\");\n  });\n\n  $effect(() => {\n    $inspect.trace();\n    charCount = text.length;\n  });\n</script>\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n  <p data-testid=\"text-value\">Current text: \"{text}\"</p>\n  <p data-testid=\"char-count\">Character count: {charCount}</p>\n</div>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/z.ai/inspect_sample2_787eed6654ddd4e3/Component.svelte:10:22 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+          "/svelte-bench/tmp/samples/z.ai/inspect_sample2_787eed6654ddd4e3/Component.svelte:10:22 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
         ]
       },
       {
@@ -555,7 +535,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n  let text = $state('Hello world');\n  \n  $inspect(text);\n  \n  $inspect(text).with((newValue, oldValue) => {\n    console.log(Text changed from \"${oldValue}\" to \"${newValue}\");\n  });\n  \n  $effect(() => {\n    $inspect.trace();\n    console.log(Effect ran with text: \"${text}\");\n    return () => {\n      console.log('Effect cleanup');\n    };\n  });\n  \n  let charCount = $derived(text.length);\n</script>\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n  <p data-testid=\"text-value\">Current text: \"{text}\"</p>\n  <p data-testid=\"char-count\">Character count: {charCount}</p>\n</div>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/z.ai/inspect_sample3_00777e40304a87d7/Component.svelte:9:21 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+          "/svelte-bench/tmp/samples/z.ai/inspect_sample3_00777e40304a87d7/Component.svelte:9:21 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
         ]
       },
       {
@@ -563,7 +543,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n  let text = $state('Hello world');\n  let charCount = $state(text.length);\n\n  $inspect(text);\n\n  $inspect(text).with((value, previous) => {\n    console.log(Input updated from \"${previous}\" to \"${value}\");\n  });\n\n  $effect(() => {\n    $inspect.trace();\n    charCount = text.length;\n  });\n\n  $effect(() => {\n    text = 'Hello world';\n  });\n</script>\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n  <p data-testid=\"text-value\">Current text: \"{text}\"</p>\n  <p data-testid=\"char-count\">Character count: {charCount}</p>\n</div>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/z.ai/inspect_sample4_dafbd783fce49b10/Component.svelte:10:22 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+          "/svelte-bench/tmp/samples/z.ai/inspect_sample4_dafbd783fce49b10/Component.svelte:10:22 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
         ]
       },
       {
@@ -571,7 +551,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n  let text = $state('Hello world');\n  let charCount = $state(text.length);\n\n  $inspect(text);\n\n  $inspect(text).with((newValue, oldValue) => {\n    console.log(Text updated from \"${oldValue}\" to \"${newValue}\");\n  });\n\n  $effect(() => {\n    $inspect.trace();\n    charCount = text.length;\n  });\n</script>\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n  <p data-testid=\"text-value\">Current text: \"{text}\"</p>\n  <p data-testid=\"char-count\">Character count: {charCount}</p>\n</div>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/z.ai/inspect_sample5_c6c1ac09bcfe5e4e/Component.svelte:10:21 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+          "/svelte-bench/tmp/samples/z.ai/inspect_sample5_c6c1ac09bcfe5e4e/Component.svelte:10:21 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
         ]
       },
       {
@@ -585,7 +565,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n  let text = $state('Hello world');\n  let charCount = $state(text.length);\n\n  $inspect(text);\n\n  $inspect(...).with((value, key) => {\n    if (key === 'text') {\n      console.log('Input updated:', value);\n    }\n  });\n\n  $effect(() => {\n    $inspect.trace();\n    charCount = text.length;\n  });\n</script>\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n  <p data-testid=\"text-value\">Current text: \"{text}\"</p>\n  <p data-testid=\"char-count\">Character count: {charCount}</p>\n</div>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/z.ai/inspect_sample7_0a87a37875c48794/Component.svelte:9:14 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+          "/svelte-bench/tmp/samples/z.ai/inspect_sample7_0a87a37875c48794/Component.svelte:9:14 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
         ]
       },
       {
@@ -593,7 +573,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n  let text = $state('Hello world');\n  let charCount = $state(text.length);\n\n  $inspect(text);\n\n  $inspect(text).with((value, previousValue) => {\n    console.log(Text updated from \"${previousValue}\" to \"${value}\");\n  });\n\n  $effect(() => {\n    $inspect.trace();\n    charCount = text.length;\n  });\n</script>\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n  <p data-testid=\"text-value\">Current text: \"{text}\"</p>\n  <p data-testid=\"char-count\">Character count: {charCount}</p>\n</div>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/z.ai/inspect_sample8_9326c2352615769e/Component.svelte:10:21 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+          "/svelte-bench/tmp/samples/z.ai/inspect_sample8_9326c2352615769e/Component.svelte:10:21 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
         ]
       },
       {
@@ -601,7 +581,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n  let text = $state('Hello world');\n  let charCount = $state(text.length);\n\n  $inspect(text);\n\n  $inspect(...).with((value, rune) => {\n    console.log(Value ${value} was inspected from rune:, rune);\n  });\n\n  $effect(() => {\n    $inspect.trace();\n    charCount = text.length;\n  });\n</script>\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n  <p data-testid=\"text-value\">Current text: \"{text}\"</p>\n  <p data-testid=\"char-count\">Character count: {charCount}</p>\n</div>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/z.ai/inspect_sample9_675c36e8684ac3b6/Component.svelte:9:14 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+          "/svelte-bench/tmp/samples/z.ai/inspect_sample9_675c36e8684ac3b6/Component.svelte:9:14 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
         ]
       }
     ],
@@ -625,7 +605,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n  import { $props, $state } from 'svelte';\n\n  const { name = \"World\", count = 0, showDetails = false } = $props();\n  const localCount = $state(count);\n\n  function increment() {\n    localCount++;\n  }\n</script>\n\n<div>\n  <h1 data-testid=\"name-display\">Hello, {name}!</h1>\n  <p data-testid=\"count-display\">Count: {localCount}</p>\n  <button data-testid=\"increment-button\" on:click={increment}>Increment</button>\n\n  {#if showDetails}\n    <div data-testid=\"details\">\n      <p>Name is {name}</p>\n      <p>Count is {localCount}</p>\n      <p>ShowDetails is {showDetails}</p>\n    </div>\n  {/if}\n</div>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/z.ai/props_sample0_235bef6cd0556ced/Component.svelte:4:11 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
+          "/svelte-bench/tmp/samples/z.ai/props_sample0_235bef6cd0556ced/Component.svelte:4:11 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
         ],
         "temperature": 0
       },
@@ -634,7 +614,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n  import { $props, $state } from 'svelte';\n\n  const { name = \"World\", count = 0, showDetails = false } = $props();\n  const localCount = $state(count);\n\n  function increment() {\n    localCount++;\n  }\n</script>\n\n<div>\n  <h1 data-testid=\"name-display\">Hello, {name}!</h1>\n  <p data-testid=\"count-display\">Count: {localCount}</p>\n  <button data-testid=\"increment-button\" on:click={increment}>Increment</button>\n\n  {#if showDetails}\n    <div data-testid=\"details\">\n      <p>Name is {name}</p>\n      <p>Count is {localCount}</p>\n      <p>ShowDetails is {showDetails}</p>\n    </div>\n  {/if}\n</div>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/z.ai/props_sample1_9dd0edeeae70dd70/Component.svelte:4:11 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
+          "/svelte-bench/tmp/samples/z.ai/props_sample1_9dd0edeeae70dd70/Component.svelte:4:11 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
         ]
       },
       {
@@ -642,7 +622,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n  let $props = $props({\n    name: 'World',\n    count: 0,\n    showDetails: false\n  });\n\n  let localCount = $state($props.count);\n\n  function increment() {\n    localCount++;\n  }\n</script>\n\n<div>\n  <h1 data-testid=\"name-display\">Hello, {$props.name}!</h1>\n  <p data-testid=\"count-display\">Count: {localCount}</p>\n  <button data-testid=\"increment-button\" on:click={increment}>Increment</button>\n\n  {#if $props.showDetails}\n    <div data-testid=\"details\">\n      <p>Name is {$props.name}</p>\n      <p>Count is {localCount}</p>\n      <p>ShowDetails is {$props.showDetails}</p>\n    </div>\n  {/if}\n</div>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/z.ai/props_sample2_af4f7ca7a938730b/Component.svelte:4:6 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
+          "/svelte-bench/tmp/samples/z.ai/props_sample2_af4f7ca7a938730b/Component.svelte:4:6 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
         ]
       },
       {
@@ -650,7 +630,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n  import { $props, $state } from 'svelte';\n\n  const { name = \"World\", count = 0, showDetails = false } = $props();\n  const reactiveCount = $state(count);\n\n  function increment() {\n    reactiveCount++;\n  }\n</script>\n\n<div>\n  <h1 data-testid=\"name-display\">Hello, {name}!</h1>\n  <p data-testid=\"count-display\">Count: {reactiveCount}</p>\n  <button data-testid=\"increment-button\" on:click={increment}>Increment</button>\n\n  {#if showDetails}\n    <div data-testid=\"details\">\n      <p>Name is {name}</p>\n      <p>Count is {reactiveCount}</p>\n      <p>ShowDetails is {showDetails}</p>\n    </div>\n  {/if}\n</div>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/z.ai/props_sample3_1ee31c5c53440967/Component.svelte:4:11 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
+          "/svelte-bench/tmp/samples/z.ai/props_sample3_1ee31c5c53440967/Component.svelte:4:11 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
         ]
       },
       {
@@ -664,7 +644,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n  import { $props, $state } from 'svelte';\n\n  const { name = \"World\", count = 0, showDetails = false } = $props();\n  const localCount = $state(count);\n\n  function increment() {\n    localCount++;\n  }\n</script>\n\n<div>\n  <h1 data-testid=\"name-display\">Hello, {name}!</h1>\n  <p data-testid=\"count-display\">Count: {localCount}</p>\n  <button data-testid=\"increment-button\" on:click={increment}>Increment</button>\n\n  {#if showDetails}\n    <div data-testid=\"details\">\n      <p>Name is {name}</p>\n      <p>Count is {localCount}</p>\n      <p>ShowDetails is {showDetails}</p>\n    </div>\n  {/if}\n</div>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/z.ai/props_sample5_e429e4cb837cb39a/Component.svelte:4:11 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
+          "/svelte-bench/tmp/samples/z.ai/props_sample5_e429e4cb837cb39a/Component.svelte:4:11 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
         ]
       },
       {
@@ -672,7 +652,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n  import { $props, $state } from 'svelte';\n\n  const { name = \"World\", count = 0, showDetails = false } = $props();\n\n  let localCount = $state(count);\n\n  function increment() {\n    localCount++;\n  }\n</script>\n\n<div>\n  <h1 data-testid=\"name-display\">Hello, {name}!</h1>\n  <p data-testid=\"count-display\">Count: {localCount}</p>\n  <button data-testid=\"increment-button\" on:click={increment}>Increment</button>\n\n  {#if showDetails}\n    <div data-testid=\"details\">\n      <p>Name is {name}</p>\n      <p>Count is {localCount}</p>\n      <p>ShowDetails is {showDetails}</p>\n    </div>\n  {/if}\n</div>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/z.ai/props_sample6_2ac42ce772127e90/Component.svelte:4:11 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
+          "/svelte-bench/tmp/samples/z.ai/props_sample6_2ac42ce772127e90/Component.svelte:4:11 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
         ]
       },
       {
@@ -680,7 +660,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n  import { $props, $state } from 'svelte';\n\n  const { name = \"World\", count = 0, showDetails = false } = $props();\n  const localCount = $state(count);\n\n  function increment() {\n    localCount++;\n  }\n</script>\n\n<div>\n  <h1 data-testid=\"name-display\">Hello, {name}!</h1>\n  <p data-testid=\"count-display\">Count: {localCount}</p>\n  <button data-testid=\"increment-button\" on:click={increment}>Increment</button>\n\n  {#if showDetails}\n    <div data-testid=\"details\">\n      <p>Name is {name}</p>\n      <p>Count is {localCount}</p>\n      <p>ShowDetails is {showDetails}</p>\n    </div>\n  {/if}\n</div>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/z.ai/props_sample7_47bcb8b29960b053/Component.svelte:4:11 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
+          "/svelte-bench/tmp/samples/z.ai/props_sample7_47bcb8b29960b053/Component.svelte:4:11 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
         ]
       },
       {
@@ -688,7 +668,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n  import { $props, $state } from 'svelte';\n\n  const { name = \"World\", count = 0, showDetails = false } = $props();\n  const reactiveCount = $state(count);\n\n  function increment() {\n    reactiveCount++;\n  }\n</script>\n\n<div>\n  <h1 data-testid=\"name-display\">Hello, {name}!</h1>\n  <p data-testid=\"count-display\">Count: {reactiveCount}</p>\n  <button data-testid=\"increment-button\" on:click={increment}>Increment</button>\n\n  {#if showDetails}\n    <div data-testid=\"details\">\n      <p>Name is {name}</p>\n      <p>Count is {reactiveCount}</p>\n      <p>ShowDetails is {showDetails}</p>\n    </div>\n  {/if}\n</div>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/z.ai/props_sample8_5de51069beb4215c/Component.svelte:4:11 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
+          "/svelte-bench/tmp/samples/z.ai/props_sample8_5de51069beb4215c/Component.svelte:4:11 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
         ]
       },
       {
@@ -718,7 +698,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n  let books = [\"The Lord of the Rings\", \"To Kill a Mockingbird\", \"1984\"];\n\n  function title(bookTitle) {\n    return <span data-testid=\"book-title\">{bookTitle}</span>;\n  }\n</script>\n\n<ul>\n  {@each books as book}\n    <li data-testid=\"book-item\">{@render title(book)}</li>\n  {@/each}\n</ul>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/z.ai/snippets_sample0_91058a02fb0842a6/Component.svelte:7:11 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+          "/svelte-bench/tmp/samples/z.ai/snippets_sample0_91058a02fb0842a6/Component.svelte:7:11 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
         ],
         "temperature": 0
       },
@@ -727,7 +707,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n  import { onMount } from 'svelte';\n\n  const books = [\"The Lord of the Rings\", \"To Kill a Mockingbird\", \"1984\"];\n\n  function title(bookTitle) {\n    return <span data-testid=\"book-title\">{bookTitle}</span>;\n  }\n\n  onMount(() => {\n    // This is where you would typically use the snippet in a more complex way\n    // For demonstration, we're using {@render} in the markup instead\n  });\n</script>\n\n<ul>\n  {#each books as book}\n    <li data-testid=\"book-item\">\n      {@render title(book)}\n    </li>\n  {/each}\n</ul>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/z.ai/snippets_sample1_e0c3c3a4f7f1c252/Component.svelte:9:11 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+          "/svelte-bench/tmp/samples/z.ai/snippets_sample1_e0c3c3a4f7f1c252/Component.svelte:9:11 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
         ]
       },
       {
@@ -735,7 +715,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n  let books = [\"The Lord of the Rings\", \"To Kill a Mockingbird\", \"1984\"];\n  \n  const title = (bookTitle) => {\n    return <span data-testid=\"book-title\">{bookTitle}</span>;\n  };\n</script>\n\n<ul>\n  {@each books as book}\n    <li data-testid=\"book-item\">{@render title(book)}</li>\n  {/each}\n</ul>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/z.ai/snippets_sample2_e7c203f4c1d1f8e2/Component.svelte:7:11 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+          "/svelte-bench/tmp/samples/z.ai/snippets_sample2_e7c203f4c1d1f8e2/Component.svelte:7:11 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
         ]
       },
       {
@@ -743,7 +723,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n  let books = [\"The Lord of the Rings\", \"To Kill a Mockingbird\", \"1984\"];\n\n  function title(bookTitle) {\n    return <span data-testid=\"book-title\">{bookTitle}</span>;\n  }\n</script>\n\n<ul>\n  {@each books as book}\n    <li data-testid=\"book-item\">{@render title(book)}</li>\n  {@/each}\n</ul>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/z.ai/snippets_sample3_e0c8d8260fb978fc/Component.svelte:7:11 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+          "/svelte-bench/tmp/samples/z.ai/snippets_sample3_e0c8d8260fb978fc/Component.svelte:7:11 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
         ]
       },
       {
@@ -751,7 +731,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n  import { createSnippet } from 'svelte';\n\n  const books = [\n    \"The Lord of the Rings\",\n    \"To Kill a Mockingbird\",\n    \"1984\"\n  ];\n\n  const title = createSnippet((bookTitle) => {\n    return <span data-testid=\"book-title\">{bookTitle}</span>;\n  });\n</script>\n\n<ul>\n  {#each books as book}\n    <li data-testid=\"book-item\">{@render title(book)}</li>\n  {/each}\n</ul>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/z.ai/snippets_sample4_b8621d3c4ead0de9/Component.svelte:13:11 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+          "/svelte-bench/tmp/samples/z.ai/snippets_sample4_b8621d3c4ead0de9/Component.svelte:13:11 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
         ]
       },
       {
@@ -759,7 +739,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n  import { createComponent } from 'svelte';\n\n  const books = [\"The Lord of the Rings\", \"To Kill a Mockingbird\", \"1984\"];\n\n  const title = (bookTitle) => {\n    return <span data-testid=\"book-title\">{bookTitle}</span>;\n  };\n</script>\n\n<ul>\n  {#each books as book}\n    <li data-testid=\"book-item\">{@render title(book)}</li>\n  {/each}\n</ul>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/z.ai/snippets_sample5_dcf7f52b9e2d25f9/Component.svelte:9:11 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+          "/svelte-bench/tmp/samples/z.ai/snippets_sample5_dcf7f52b9e2d25f9/Component.svelte:9:11 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
         ]
       },
       {
@@ -767,7 +747,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n  let books = [\"The Lord of the Rings\", \"To Kill a Mockingbird\", \"1984\"];\n  \n  function title(bookTitle) {\n    return <span data-testid=\"book-title\">{bookTitle}</span>;\n  }\n</script>\n\n<ul>\n  {@each books as book}\n    <li data-testid=\"book-item\">{@render title(book)}</li>\n  {@/each}\n</ul>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/z.ai/snippets_sample6_8fb3578ef27c2709/Component.svelte:7:11 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+          "/svelte-bench/tmp/samples/z.ai/snippets_sample6_8fb3578ef27c2709/Component.svelte:7:11 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
         ]
       },
       {
@@ -775,7 +755,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n  let books = [\"The Lord of the Rings\", \"To Kill a Mockingbird\", \"1984\"];\n\n  function title(bookTitle) {\n    return <span data-testid=\"book-title\">{bookTitle}</span>;\n  }\n</script>\n\n<ul>\n  {@each books as book}\n    <li data-testid=\"book-item\">{@render title(book)}</li>\n  {@/each}\n</ul>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/z.ai/snippets_sample7_24b46c886ef53e06/Component.svelte:7:11 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+          "/svelte-bench/tmp/samples/z.ai/snippets_sample7_24b46c886ef53e06/Component.svelte:7:11 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
         ]
       },
       {
@@ -783,7 +763,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n  let books = [\"The Lord of the Rings\", \"To Kill a Mockingbird\", \"1984\"];\n\n  function title(bookTitle) {\n    return <span data-testid=\"book-title\">{bookTitle}</span>;\n  }\n</script>\n\n<ul>\n  {@each books as book}\n    <li data-testid=\"book-item\">{@render title(book)}</li>\n  {@/each}\n</ul>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/z.ai/snippets_sample8_63f712b1628bbda6/Component.svelte:7:11 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+          "/svelte-bench/tmp/samples/z.ai/snippets_sample8_63f712b1628bbda6/Component.svelte:7:11 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
         ]
       },
       {
@@ -791,7 +771,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n  import { createSnippet } from 'svelte';\n\n  const books = [\n    \"The Lord of the Rings\",\n    \"To Kill a Mockingbird\",\n    \"1984\"\n  ];\n\n  const title = createSnippet((book) => (\n    <span data-testid=\"book-title\">{book}</span>\n  ));\n</script>\n\n<ul>\n  {#each books as book}\n    <li data-testid=\"book-item\">{@render title(book)}</li>\n  {/each}\n</ul>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/z.ai/snippets_sample9_557c4223f9eff415/Component.svelte:13:4 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+          "/svelte-bench/tmp/samples/z.ai/snippets_sample9_557c4223f9eff415/Component.svelte:13:4 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
         ]
       }
     ],

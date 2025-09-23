@@ -263,7 +263,7 @@
         "code": "<svelte:options runes={true} />\n\nLet's think about this. The task is to create a Svelte 5 component that demonstrates the {#each} block with specific requirements. First, I need to remember that Svelte 5 uses runes like $state for reactive state.\n\nFirst, the component needs a hardcoded array of 3 Seinfeld characters: \"Jerry\", \"Elaine\", \"Kramer\". Since the array needs to be mutable (we're adding \"George\" to it), I'll use $state to make it reactive. So I'll declare const characters = $state([\"Jerry\", \"Elaine\", \"Kramer\"]).\n\nNext, I need to use the {#each} block to render all characters in a list. The list container should have data-testid=\"characters-list\", so I'll use a <ul> with that attribute. Inside it, map over the characters array with {#each characters as character}, and each <li> should have data-testid=\"character\" and display the character name.\n\nThen, add a button that adds \"George\" to the array when clicked. The button needs data-testid=\"add-george-button\". The click handler will push \"George\" into the characters array. Since characters is a $state variable, pushing to it will trigger a reactive update, re-rendering the list with the new character.\n\nWait, do I need to import anything? No, because Svelte 5 runes like $state are built-in and don't need to be imported.\n\nLet me structure the component:\n\n- Start with the script tag (though in Svelte, if it's inline, but usually we use <script>). Wait, the user said \"Svelte component code\", so the standard structure is a .svelte file with <script> and markup.\n\nWait, the user said \"implement this component using Svelte 5 runes\". So the script will use $state.\n\nPutting it all together:\n\n<script>\n  const characters = $state([\"Jerry\", \"Elaine\", \"Kramer\"]);\n  \n  function addGeorge() {\n    characters.push(\"George\");\n  }\n</script>\n\n<div>\n  <ul data-testid=\"characters-list\">\n    {#each characters as character}\n      <li data-testid=\"character\">{character}</li>\n    {/each}\n  </ul>\n  <button data-testid=\"add-george-button\" on:click={addGeorge}>Add George</button>\n</div>\n\nWait, does that cover all requirements? Let's check:\n\n1. Hardcoded array of 3 characters: Yes, initial state is [\"Jerry\", \"Elaine\", \"Kramer\"].\n2. Use {#each} block: Yes, {#each characters as character}.\n3. Button to add \"George\": Yes, addGeorge function pushes \"George\" to the array, button with on:click={addGeorge}.\n4. Each item displays character name: Yes, <li>{character}</li>.\n5. Data-testid attributes: All present: \"characters-list\" on <ul>, \"character\" on each <li>, \"add-george-button\" on <button>.\n\nYes, that should do it.</seed:think><script>\n  const characters = $state([\"Jerry\", \"Elaine\", \"Kramer\"]);\n\n  function addGeorge() {\n    characters.push(\"George\");\n  }\n</script>\n\n<div>\n  <ul data-testid=\"characters-list\">\n    {#each characters as character}\n      <li data-testid=\"character\">{character}</li>\n    {/each}\n  </ul>\n  <button data-testid=\"add-george-button\" on:click={addGeorge}>Add George</button>\n</div>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/each_sample2_8a6974ec05cde39b/Component.svelte:3:95 Expected whitespace\nhttps://svelte.dev/e/expected_whitespace"
+          "/svelte-bench/tmp/samples/openrouter/each_sample2_8a6974ec05cde39b/Component.svelte:3:95 Expected whitespace\nhttps://svelte.dev/e/expected_whitespace"
         ]
       },
       {
@@ -653,7 +653,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n    let books = [\"The Lord of the Rings\", \"To Kill a Mockingbird\", \"1984\"];\n    \n    let { title } = snippet($$props => {\n        return <span data-testid=\"book-title\">{$$props.title}</span>;\n    });\n</script>\n\n<ul>\n    {#each books as book}\n        <li data-testid=\"book-item\">\n            {@render title({ title: book })}\n        </li>\n    {/each}\n</ul>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/snippets_sample0_3494fad169688971/Component.svelte:7:15 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+          "/svelte-bench/tmp/samples/openrouter/snippets_sample0_3494fad169688971/Component.svelte:7:15 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
         ],
         "temperature": 0
       },
@@ -672,7 +672,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n  let books = [\"The Lord of the Rings\", \"To Kill a Mockingbird\", \"1984\"];\n  \n  let { title } = snippet((title) => {\n    return <span data-testid=\"book-title\">{title}</span>;\n  });\n</script>\n\n<ul>\n  {#each books as book}\n    <li data-testid=\"book-item\">{@render title(book)}</li>\n  {/each}\n</ul>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/snippets_sample2_a7152dbc2f8e0416/Component.svelte:7:11 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+          "/svelte-bench/tmp/samples/openrouter/snippets_sample2_a7152dbc2f8e0416/Component.svelte:7:11 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
         ]
       },
       {
@@ -680,7 +680,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n  let books = [\"The Lord of the Rings\", \"To Kill a Mockingbird\", \"1984\"];\n\n  let { title } = $render(() => ({\n    title: (bookTitle) => {\n      return {\n        $$render: () => (\n          <span data-testid=\"book-title\">{bookTitle}</span>\n        )\n      };\n    }\n  }));\n</script>\n\n<ul>\n  {@render books.map(book => (\n    <li data-testid=\"book-item\">\n      {@render title(book)}\n    </li>\n  ))}\n</ul>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/snippets_sample3_2e031727d74bcd32/Component.svelte:10:10 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+          "/svelte-bench/tmp/samples/openrouter/snippets_sample3_2e031727d74bcd32/Component.svelte:10:10 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
         ]
       },
       {
@@ -688,7 +688,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n  let books = [\"The Lord of the Rings\", \"To Kill a Mockingbird\", \"1984\"];\n  \n  let { title } = $snippet((title) => {\n    return <span data-testid=\"book-title\">{title}</span>;\n  });\n</script>\n\n<ul>\n  {#each books as book}\n    <li data-testid=\"book-item\">{@render title(book)}</li>\n  {/each}\n</ul>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/snippets_sample4_933ac3f3d32bfe84/Component.svelte:7:11 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+          "/svelte-bench/tmp/samples/openrouter/snippets_sample4_933ac3f3d32bfe84/Component.svelte:7:11 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
         ]
       },
       {
@@ -696,7 +696,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n  let books = [\"The Lord of the Rings\", \"To Kill a Mockingbird\", \"1984\"];\n  \n  let { title } = $snippet((title) => {\n    return <span data-testid=\"book-title\">{title}</span>;\n  });\n</script>\n\n<ul>\n  {#each books as book}\n    <li data-testid=\"book-item>{@render title(book)}</li>\n  {/each}\n</ul>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/snippets_sample5_ad2f74dd130e58f6/Component.svelte:7:11 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+          "/svelte-bench/tmp/samples/openrouter/snippets_sample5_ad2f74dd130e58f6/Component.svelte:7:11 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
         ]
       },
       {
@@ -704,7 +704,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n    let books = [\"The Lord of the Rings\", \"To Kill a Mockingbird\", \"1984\"];\n    \n    let { title } = $snippet(() => {\n        let { title } = $props();\n        return {\n            $$render: () => {\n                return <span data-testid=\"book-title\">${title}</span>;\n            }\n        };\n    });\n</script>\n\n<ul>\n    {#each books as book}\n        <li data-testid=\"book-item\">\n            {@render title({ title: book })}\n        </li>\n    {/each}\n</ul>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/snippets_sample6_87620ddeee8af2ad/Component.svelte:10:23 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+          "/svelte-bench/tmp/samples/openrouter/snippets_sample6_87620ddeee8af2ad/Component.svelte:10:23 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
         ]
       },
       {
@@ -712,7 +712,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n\tlet books = [\"The Lord of the Rings\", \"To Kill a Mockingbird\", \"1984\"];\n\t\n\tfunction title($props) {\n\t\tlet { bookTitle } = $props();\n\t\treturn {\n\t\t\thtml: <span data-testid=\"book-title\">${bookTitle}</span>\n\t\t};\n\t}\n</script>\n\n<ul>\n\t{#each books as book}\n\t\t<li data-testid=\"book-item\">{@render title() { bookTitle: book }}</li>\n\t{/each}\n</ul>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/snippets_sample7_39e97fd449175e4d/Component.svelte:9:9 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+          "/svelte-bench/tmp/samples/openrouter/snippets_sample7_39e97fd449175e4d/Component.svelte:9:9 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
         ]
       },
       {
@@ -730,7 +730,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n  let books = [\"The Lord of the Rings\", \"To Kill a Mockingbird\", \"1984\"];\n  \n  let { title } = snippet($$props, () => {\n    return <span data-testid=\"book-title\">{title}</span>;\n  });\n</script>\n\n<ul>\n  {#each books as book}\n    <li data-testid=\"book-item\">{@render title(book)}</li>\n  {/each}\n</ul>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/snippets_sample9_60a4e0194f3946a2/Component.svelte:7:11 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+          "/svelte-bench/tmp/samples/openrouter/snippets_sample9_60a4e0194f3946a2/Component.svelte:7:11 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
         ]
       }
     ],

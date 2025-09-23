@@ -498,7 +498,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n\tlet text = $state(\"Hello world\");\n\t\n\t$inspect(text, { name: \"input value\" });\n\t\n\t$inspect(text).with((value, { timestamp, changes }) => {\n\t\tconsole.log(Input updated at ${timestamp}: \"${value}\" (changes: ${changes}));\n\t});\n\t\n\t$effect(() => {\n\t\t$inspect.trace(text, { name: \"input trace\" });\n\t});\n</script>\n\n<div>\n\t<input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n\t<p data-testid=\"text-value\">Current text: \"{text}\"</p>\n\t<p data-testid=\"char-count\">Character count: {text.length}</p>\n</div>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/inspect_sample1_4094c09ed4598a4c/Component.svelte:9:20 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+          "/svelte-bench/tmp/samples/openrouter/inspect_sample1_4094c09ed4598a4c/Component.svelte:9:20 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
         ]
       },
       {
@@ -506,7 +506,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n  let text = $state(\"Hello world\");\n\n  $inspect(text, {\n    onChange(value, oldValue, info) {\n      console.log(text changed from \"${oldValue}\" to \"${value}\", info);\n    }\n  });\n\n  $effect(() => {\n    $inspect.trace(text, ({ value, oldValue, info }) => {\n      console.log(Effect trace: ${value} (was ${oldValue}), info);\n    });\n  });\n</script>\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n  <p data-testid=\"text-value\">Current text: \"{text}\"</p>\n  <p data-testid=\"char-count\">Character count: {text.length}</p>\n</div>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/inspect_sample2_c72cd5a6e6d05711/Component.svelte:8:23 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+          "/svelte-bench/tmp/samples/openrouter/inspect_sample2_c72cd5a6e6d05711/Component.svelte:8:23 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
         ]
       },
       {
@@ -514,7 +514,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n  let text = $state(\"Hello world\");\n\n  $inspect(text, {\n    onChange({ newValue }) {\n      console.log(\"Basic inspect - text changed to:\", newValue);\n    }\n  });\n\n  $inspect(text).with((value, { type }) => {\n    console.log(Custom inspect - ${type}: ${value});\n  });\n\n  $effect(() => {\n    $inspect.trace(text);\n    console.log(\"Trace effect ran for text:\", text);\n  });\n</script>\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n  <p data-testid=\"text-value\">Current text: \"{text}\"</p>\n  <p data-testid=\"char-count\">Character count: {text.length}</p>\n</div>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/inspect_sample3_8cd5965414ec7762/Component.svelte:13:23 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+          "/svelte-bench/tmp/samples/openrouter/inspect_sample3_8cd5965414ec7762/Component.svelte:13:23 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
         ]
       },
       {
@@ -522,7 +522,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n  let text = $state(\"Hello world\");\n\n  $inspect(text, {\n    onSet(newValue, oldValue) {\n      console.log(Text changed from \"${oldValue}\" to \"${newValue}\");\n    }\n  });\n\n  $effect(() => {\n    $inspect(text).trace();\n  });\n</script>\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n  <p data-testid=\"text-value\">Current text: \"{text}\"</p>\n  <p data-testid=\"char-count\">Character count: {text.length}</p>\n</div>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/inspect_sample4_0b2e2eb1921520ae/Component.svelte:8:23 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+          "/svelte-bench/tmp/samples/openrouter/inspect_sample4_0b2e2eb1921520ae/Component.svelte:8:23 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
         ]
       },
       {
@@ -546,7 +546,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n  let text = $state('Hello world');\n\n  $inspect('basic', text);\n\n  $inspect('custom', text).with((value, { type, previous }) => {\n    console.log(Input ${type}ed: \"${value}\" (previously: \"${previous}\"));\n  });\n\n  $effect(() => {\n    $inspect.trace('effect', text);\n  });\n</script>\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n  <p data-testid=\"text-value\">Current text: \"{text}\"</p>\n  <p data-testid=\"char-count\">Character count: {text.length}</p>\n</div>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/inspect_sample7_d379fb70ba95ebce/Component.svelte:9:22 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+          "/svelte-bench/tmp/samples/openrouter/inspect_sample7_d379fb70ba95ebce/Component.svelte:9:22 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
         ]
       },
       {
@@ -565,7 +565,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n\tlet text = $state(\"Hello world\");\n\t\n\t$inspect('input value', text, {\n\t\tonSourceUpdate: (value, options) => {\n\t\t\tconsole.log(Input value updated to: ${value});\n\t\t}\n\t});\n\t\n\t$effect(() => {\n\t\t$inspect.trace('input change trace', text, {\n\t\t\tonSourceUpdate: (value) => {\n\t\t\t\tconsole.log(Trace: input changed to \"${value}\");\n\t\t\t}\n\t\t});\n\t});\n</script>\n\n<div>\n\t<input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n\t<p data-testid=\"text-value\">Current text: \"{text}\"</p>\n\t<p data-testid=\"char-count\">Character count: {text.length}</p>\n</div>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/inspect_sample9_37c967f9916fc2d3/Component.svelte:8:21 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+          "/svelte-bench/tmp/samples/openrouter/inspect_sample9_37c967f9916fc2d3/Component.svelte:8:21 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
         ]
       }
     ],
@@ -673,7 +673,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n\tlet books = [\"The Lord of the Rings\", \"To Kill a Mockingbird\", \"1984\"];\n\t\n\t$: title = ({ title }) => {\n\t\t<span data-testid=\"book-title\">{title}</span>\n\t};\n</script>\n\n<ul>\n\t{#each books as book}\n\t\t<li data-testid=\"book-item\">\n\t\t\t{@render title({ title: book })}\n\t\t</li>\n\t{/each}\n</ul>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/snippets_sample1_432293175842e930/Component.svelte:7:2 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+          "/svelte-bench/tmp/samples/openrouter/snippets_sample1_432293175842e930/Component.svelte:7:2 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
         ]
       },
       {
@@ -693,7 +693,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n\tlet books = [\"The Lord of the Rings\", \"To Kill a Mockingbird\", \"1984\"];\n\t\n\t$: title = ({ title }) => {\n\t\t{@render <span data-testid=\"book-title\">{title}</span>}\n\t};\n</script>\n\n<ul>\n\t{#each books as book}\n\t\t<li data-testid=\"book-item\">\n\t\t\t{@render title({ title: book })}\n\t\t</li>\n\t{/each}\n</ul>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/snippets_sample4_1555520f8ae418a6/Component.svelte:7:3 Unexpected character '@'\nhttps://svelte.dev/e/js_parse_error"
+          "/svelte-bench/tmp/samples/openrouter/snippets_sample4_1555520f8ae418a6/Component.svelte:7:3 Unexpected character '@'\nhttps://svelte.dev/e/js_parse_error"
         ]
       },
       {
@@ -707,7 +707,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n\tlet books = [\n\t\t\"The Lord of the Rings\",\n\t\t\"To Kill a Mockingbird\",\n\t\t\"1984\"\n\t];\n\n\t$: title(bookTitle) = {\n\t\t<span data-testid=\"book-title\">{bookTitle}</span>\n\t}\n</script>\n\n<ul>\n\t{#each books as book}\n\t\t<li data-testid=\"book-item\">\n\t\t\t{@render title(book)}\n\t\t</li>\n\t{/each}\n</ul>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/snippets_sample6_685e55c7fda69bb6/Component.svelte:10:4 Assigning to rvalue\nhttps://svelte.dev/e/js_parse_error"
+          "/svelte-bench/tmp/samples/openrouter/snippets_sample6_685e55c7fda69bb6/Component.svelte:10:4 Assigning to rvalue\nhttps://svelte.dev/e/js_parse_error"
         ]
       },
       {
@@ -715,7 +715,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n\tlet books = [\"The Lord of the Rings\", \"To Kill a Mockingbird\", \"1984\"];\n\n\t$: function title(bookTitle) {\n\t\t{#if bookTitle}\n\t\t\t<span data-testid=\"book-title\">{bookTitle}</span>\n\t\t{/if}\n\t}\n</script>\n\n<ul>\n\t{#each books as book}\n\t\t<li data-testid=\"book-item\">\n\t\t\t{@render title(book)}\n\t\t</li>\n\t{/each}\n</ul>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/snippets_sample7_9ba31484492215f9/Component.svelte:6:4 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+          "/svelte-bench/tmp/samples/openrouter/snippets_sample7_9ba31484492215f9/Component.svelte:6:4 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
         ]
       },
       {
@@ -723,7 +723,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n    let books = [\n        \"The Lord of the Rings\",\n        \"To Kill a Mockingbird\",\n        \"1984\"\n    ];\n\n    $: titleSnippet = ({ title }) => {\n        <span data-testid=\"book-title\">{title}</span>\n    };\n</script>\n\n<ul>\n    {#each books as book (book)}\n        <li data-testid=\"book-item\">\n            {@render titleSnippet({ title: book })}\n        </li>\n    {/each}\n</ul>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/snippets_sample8_deeaa378b8507065/Component.svelte:11:8 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+          "/svelte-bench/tmp/samples/openrouter/snippets_sample8_deeaa378b8507065/Component.svelte:11:8 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
         ]
       },
       {

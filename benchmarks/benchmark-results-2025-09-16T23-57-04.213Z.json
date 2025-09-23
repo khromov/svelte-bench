@@ -48,7 +48,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n\t$state count = 0;\n\n\tfunction increment() {\n\t\tcount += 1;\n\t}\n\n\tfunction decrement() {\n\t\tcount -= 1;\n\t}\n</script>\n\n<div class=\"counter\">\n\t<button data-testid=\"decrement-button\" on:click={decrement}>-</button>\n\t<span data-testid=\"count-value\">{count}</span>\n\t<button data-testid=\"increment-button\" on:click={increment}>+</button>\n</div>\n\n<style>\n\t.counter {\n\t\tdisplay: flex;\n\t\talign-items: center;\n\t\tgap: 0.5rem;\n\t}\n</style>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openai/counter_sample4_8df0388f65414657/Component.svelte:4:8 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+          "/svelte-bench/tmp/samples/openai/counter_sample4_8df0388f65414657/Component.svelte:4:8 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
         ]
       },
       {
@@ -56,7 +56,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n\t$state count = 0;\n\n\tfunction increment() {\n\t\tcount += 1;\n\t}\n\n\tfunction decrement() {\n\t\tcount -= 1;\n\t}\n</script>\n\n<div class=\"counter\">\n\t<button data-testid=\"decrement-button\" on:click={decrement}>-</button>\n\t<span data-testid=\"count-value\">{count}</span>\n\t<button data-testid=\"increment-button\" on:click={increment}>+</button>\n</div>\n\n<style>\n\t.counter {\n\t\tdisplay: flex;\n\t\talign-items: center;\n\t\tgap: 0.5rem;\n\t}\n</style>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openai/counter_sample5_49d27e1550f80354/Component.svelte:4:8 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+          "/svelte-bench/tmp/samples/openai/counter_sample5_49d27e1550f80354/Component.svelte:4:8 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
         ]
       },
       {
@@ -88,7 +88,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n\t$state count = 0;\n</script>\n\n<div class=\"counter\">\n\t<button data-testid=\"decrement-button\" on:click={() => count--}>-</button>\n\t<span data-testid=\"count-value\">{count}</span>\n\t<button data-testid=\"increment-button\" on:click={() => count++}>+</button>\n</div>\n\n<style>\n\t.counter {\n\t\tdisplay: flex;\n\t\talign-items: center;\n\t\tgap: 0.5rem;\n\t}\n</style>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openai/counter_sample9_016a5e35c5942abe/Component.svelte:4:8 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+          "/svelte-bench/tmp/samples/openai/counter_sample9_016a5e35c5942abe/Component.svelte:4:8 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
         ]
       }
     ],
@@ -155,7 +155,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n\t$state number = 5;\n\t$derived doubled = number * 2;\n</script>\n\n<div>\n\t<p data-testid=\"number-value\">Number: {number}</p>\n\t<p data-testid=\"doubled-value\">Doubled: {doubled}</p>\n\t<button data-testid=\"increment-button\" on:click={() => number += 1}>Increment</button>\n</div>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openai/derived_sample5_b23ec6b7e9011023/Component.svelte:4:8 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+          "/svelte-bench/tmp/samples/openai/derived_sample5_b23ec6b7e9011023/Component.svelte:4:8 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
         ]
       },
       {
@@ -214,7 +214,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n$state text = ''\n\n$derived wordCount = by(() => {\n\tconst trimmed = text.trim()\n\treturn trimmed ? trimmed.split(/\\s+/).length : 0\n}, [text])\n\n$derived charCount = by(() => text.length, [text])\n\n$derived isLong = by(() => wordCount > 15, [wordCount])\n\nfunction clear() {\n\ttext = ''\n}\n</script>\n\n<div>\n\t<input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n\t<button data-testid=\"clear-button\" on:click={clear}>Clear</button>\n\t<div>\n\t\t<p data-testid=\"word-count\">Words: {wordCount}</p>\n\t\t<p data-testid=\"char-count\">Characters: {charCount}</p>\n\t\t<p data-testid=\"length-indicator\">Status: {isLong ? 'Long text' : 'Short text'}</p>\n\t</div>\n</div>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openai/derived-by_sample0_59e3973b41941b6d/Component.svelte:4:7 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+          "/svelte-bench/tmp/samples/openai/derived-by_sample0_59e3973b41941b6d/Component.svelte:4:7 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
         ],
         "temperature": 0
       },
@@ -231,7 +231,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n\t$state text = '';\n\t$state wordCount = 0;\n\t$state charCount = 0;\n\t$state isLong = false;\n\n\t$derived.by(({ assign }) => {\n\t\tconst words = text.trim().split(/\\s+/).filter(Boolean);\n\t\tassign('wordCount', words.length);\n\t\tassign('charCount', text.length);\n\t\tassign('isLong', words.length > 15);\n\t}, ['text']);\n</script>\n\n<div>\n\t<input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n\t<button data-testid=\"clear-button\" on:click={() => (text = '')}>Clear</button>\n\t<div>\n\t\t<p data-testid=\"word-count\">Words: {wordCount}</p>\n\t\t<p data-testid=\"char-count\">Characters: {charCount}</p>\n\t\t<p data-testid=\"length-indicator\">Status: {isLong ? 'Long text' : 'Short text'}</p>\n\t</div>\n</div>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openai/derived-by_sample2_e10d73ffa2711668/Component.svelte:4:8 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+          "/svelte-bench/tmp/samples/openai/derived-by_sample2_e10d73ffa2711668/Component.svelte:4:8 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
         ]
       },
       {
@@ -760,7 +760,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\nsnippet title(name) {\n\t<span data-testid=\"book-title\">{name}</span>\n}\n\nconst books = [\n\t'The Lord of the Rings',\n\t'To Kill a Mockingbird',\n\t'1984'\n];\n</script>\n\n<ul>\n\t{#each books as book}\n\t\t<li data-testid=\"book-item\">\n\t\t\t{@render title(book)}\n\t\t</li>\n\t{/each}\n</ul>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openai/snippets_sample0_dafc78c9c708cd48/Component.svelte:4:8 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+          "/svelte-bench/tmp/samples/openai/snippets_sample0_dafc78c9c708cd48/Component.svelte:4:8 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
         ],
         "temperature": 0
       },
@@ -769,7 +769,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n\tconst books = [\"The Lord of the Rings\", \"To Kill a Mockingbird\", \"1984\"];\n</script>\n\n<:snippet title let:name>\n\t<span data-testid=\"book-title\">{name}</span>\n</:snippet>\n\n<ul>\n\t{#each books as book}\n\t\t<li data-testid=\"book-item\">\n\t\t\t{@render title(book)}\n\t\t</li>\n\t{/each}\n</ul>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openai/snippets_sample1_01af58ba5e2d98ef/Component.svelte:7:1 Expected a valid element or component name. Components must have a valid variable name or dot notation expression\nhttps://svelte.dev/e/tag_invalid_name"
+          "/svelte-bench/tmp/samples/openai/snippets_sample1_01af58ba5e2d98ef/Component.svelte:7:1 Expected a valid element or component name. Components must have a valid variable name or dot notation expression\nhttps://svelte.dev/e/tag_invalid_name"
         ]
       },
       {
@@ -777,7 +777,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\nconst books = [\"The Lord of the Rings\", \"To Kill a Mockingbird\", \"1984\"];\n\nsnippet title(book) {\n\t<span data-testid=\"book-title\">{book}</span>\n}\n</script>\n\n<ul>\n\t{#each books as book}\n\t\t<li data-testid=\"book-item\">\n\t\t\t{@render title(book)}\n\t\t</li>\n\t{/each}\n</ul>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openai/snippets_sample2_54aea3559cadad3a/Component.svelte:6:8 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+          "/svelte-bench/tmp/samples/openai/snippets_sample2_54aea3559cadad3a/Component.svelte:6:8 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
         ]
       },
       {
@@ -785,7 +785,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n\tconst books = [\"The Lord of the Rings\", \"To Kill a Mockingbird\", \"1984\"];\n</script>\n\n@snippet title(name) {\n\t<span data-testid=\"book-title\">{name}</span>\n}\n\n<ul>\n\t{#each books as book}\n\t\t<li data-testid=\"book-item\">\n\t\t\t{@render title(book)}\n\t\t</li>\n\t{/each}\n</ul>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openai/snippets_sample3_58f132da84fde290/Component.svelte:8:1 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+          "/svelte-bench/tmp/samples/openai/snippets_sample3_58f132da84fde290/Component.svelte:8:1 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
         ]
       },
       {
@@ -793,7 +793,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n\tconst books = [\n\t\t\"The Lord of the Rings\",\n\t\t\"To Kill a Mockingbird\",\n\t\t\"1984\"\n\t];\n</script>\n\n{@snippet title(name)}\n\t<span data-testid=\"book-title\">{name}</span>\n{/snippet}\n\n<ul>\n\t{#each books as book}\n\t\t<li data-testid=\"book-item\">\n\t\t\t{@render title(book)}\n\t\t</li>\n\t{/each}\n</ul>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openai/snippets_sample4_418deff45f8d01f9/Component.svelte:13:1 Unexpected block closing tag\nhttps://svelte.dev/e/block_unexpected_close"
+          "/svelte-bench/tmp/samples/openai/snippets_sample4_418deff45f8d01f9/Component.svelte:13:1 Unexpected block closing tag\nhttps://svelte.dev/e/block_unexpected_close"
         ]
       },
       {
@@ -801,7 +801,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n\tconst books = [\n\t\t'The Lord of the Rings',\n\t\t'To Kill a Mockingbird',\n\t\t'1984'\n\t];\n</script>\n\nsnippet title(book) {\n\t<span data-testid=\"book-title\">{book}</span>\n}\n\n<ul>\n\t{#each books as book}\n\t\t<li data-testid=\"book-item\">\n\t\t\t{@render title(book)}\n\t\t</li>\n\t{/each}\n</ul>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openai/snippets_sample5_723331a0e253485d/Component.svelte:12:1 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+          "/svelte-bench/tmp/samples/openai/snippets_sample5_723331a0e253485d/Component.svelte:12:1 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
         ]
       },
       {
@@ -809,7 +809,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n\tconst books = [\"The Lord of the Rings\", \"To Kill a Mockingbird\", \"1984\"];\n</script>\n\n{@snippet title book}\n\t<span data-testid=\"book-title\">{book}</span>\n{/snippet}\n\n<ul>\n\t{#each books as book}\n\t\t<li data-testid=\"book-item\">\n\t\t\t{@render title book}\n\t\t</li>\n\t{/each}\n</ul>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openai/snippets_sample6_ebe043f400e4a0f9/Component.svelte:9:1 Unexpected block closing tag\nhttps://svelte.dev/e/block_unexpected_close"
+          "/svelte-bench/tmp/samples/openai/snippets_sample6_ebe043f400e4a0f9/Component.svelte:9:1 Unexpected block closing tag\nhttps://svelte.dev/e/block_unexpected_close"
         ]
       },
       {
@@ -817,7 +817,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n\tconst books = ['The Lord of the Rings', 'To Kill a Mockingbird', '1984'];\n\n\tsnippet title(name) {\n\t\t<span data-testid=\"book-title\">{name}</span>\n\t}\n</script>\n\n<ul>\n\t{#each books as book}\n\t\t<li data-testid=\"book-item\">{@render title(book)}</li>\n\t{/each}\n</ul>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openai/snippets_sample7_c203a072d78fe435/Component.svelte:6:9 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+          "/svelte-bench/tmp/samples/openai/snippets_sample7_c203a072d78fe435/Component.svelte:6:9 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
         ]
       },
       {
@@ -825,7 +825,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n  const books = ['The Lord of the Rings', 'To Kill a Mockingbird', '1984'];\n\n  snippet title(text) {\n    <span data-testid=\"book-title\">{text}</span>\n  }\n</script>\n\n<ul>\n  {#each books as book}\n    <li data-testid=\"book-item\">\n      {@render title(book)}\n    </li>\n  {/each}\n</ul>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openai/snippets_sample8_1b7ebd0dd62582ee/Component.svelte:6:10 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+          "/svelte-bench/tmp/samples/openai/snippets_sample8_1b7ebd0dd62582ee/Component.svelte:6:10 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
         ]
       },
       {
@@ -833,7 +833,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n$state books = [\"The Lord of the Rings\", \"To Kill a Mockingbird\", \"1984\"];\n</script>\n\n{#snippet title book}\n\t<span data-testid=\"book-title\">{book}</span>\n{/snippet}\n\n<ul>\n\t{#each books as book}\n\t\t<li data-testid=\"book-item\">\n\t\t\t{@render title book}\n\t\t</li>\n\t{/each}\n</ul>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openai/snippets_sample9_34a30fd9973e45a2/Component.svelte:4:7 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+          "/svelte-bench/tmp/samples/openai/snippets_sample9_34a30fd9973e45a2/Component.svelte:4:7 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
         ]
       }
     ],

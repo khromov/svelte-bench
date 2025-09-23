@@ -220,7 +220,7 @@
         "code": "<svelte:options runes={true} />\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" bind:value={$text} />\n  <button data-testid=\"clear-button\" onclick={() => $text = ''}>Clear</button>\n  <div>\n    <p data-testid=\"word-count\">Words: {wordCount}</p>\n    <p data-testid=\"char-count\">Characters: {charCount}</p>\n    <p data-testid=\"length-indicator\">Status: {isLong ? 'Long text' : 'Short text'}</p>\n  </div>\n</div>\n\n<script>\n  let $text = $state('');\n\n  const { wordCount, charCount, isLong } = $derived.by(() => {\n    const trimmed = $text.trim();\n    const words = trimmed ? trimmed.split(/\\s+/) : [];\n    return {\n      wordCount: words.length,\n      charCount: $text.length,\n      isLong: words.length > 15\n    };\n  });\n</script>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/derived-by_sample8_8f58cccdfa7082df/Component.svelte:14:6 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
+          "/svelte-bench/tmp/samples/openrouter/derived-by_sample8_8f58cccdfa7082df/Component.svelte:14:6 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
         ]
       },
       {
@@ -486,7 +486,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n  let text = $state(\"Hello world\");\n  \n  $inspect(text);\n  $inspect(text).with((type, data) => {\n    console.log([${type}] Text updated to:, data);\n  });\n  \n  $effect(() => {\n    $inspect.trace();\n    text;\n  });\n</script>\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n  <p data-testid=\"text-value\">Current text: \"{text}\"</p>\n  <p data-testid=\"char-count\">Character count: {text.length}</p>\n</div>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/inspect_sample0_4dccbe0530c28e94/Component.svelte:8:18 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+          "/svelte-bench/tmp/samples/openrouter/inspect_sample0_4dccbe0530c28e94/Component.svelte:8:18 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
         ],
         "temperature": 0
       },
@@ -495,7 +495,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n\tlet text = $state(\"Hello world\");\n\t\n\t$inspect(text);\n\t$inspect(text).with((type, data) => {\n\t\tconsole.log(Custom logger - ${type}:, data);\n\t});\n\t\n\t$effect(() => {\n\t\t$inspect.trace();\n\t\tconsole.log(\"Effect triggered by text change:\", text);\n\t});\n</script>\n\n<div>\n\t<input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n\t<p data-testid=\"text-value\">Current text: \"{text}\"</p>\n\t<p data-testid=\"char-count\">Character count: {text.length}</p>\n</div>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/inspect_sample1_2f0dca9a99581fe2/Component.svelte:8:21 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+          "/svelte-bench/tmp/samples/openrouter/inspect_sample1_2f0dca9a99581fe2/Component.svelte:8:21 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
         ]
       },
       {
@@ -509,7 +509,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n\tlet text = $state(\"Hello world\");\n\t\n\t$inspect(text);\n\t$inspect(text).with((type, data) => {\n\t\tconsole.log([${type}] Custom inspect:, data);\n\t});\n\t\n\t$effect(() => {\n\t\ttext;\n\t\t$inspect.trace();\n\t});\n</script>\n\n<div>\n\t<input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n\t<p data-testid=\"text-value\">Current text: \"{text}\"</p>\n\t<p data-testid=\"char-count\">Character count: {text.length}</p>\n</div>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/inspect_sample3_14ada985c631d3fe/Component.svelte:8:16 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+          "/svelte-bench/tmp/samples/openrouter/inspect_sample3_14ada985c631d3fe/Component.svelte:8:16 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
         ]
       },
       {
@@ -525,7 +525,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n\tlet text = $state(\"Hello world\");\n\n\t$inspect(text);\n\t$inspect(text).with((type, value) => {\n\t\tconsole.log([custom] ${type}:, value);\n\t});\n\n\t$effect(() => {\n\t\t$inspect.trace(text);\n\t});\n</script>\n\n<div>\n\t<input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n\t<p data-testid=\"text-value\">Current text: \"{text}\"</p>\n\t<p data-testid=\"char-count\">Character count: {text.length}</p>\n</div>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/inspect_sample5_39de93bbb186695b/Component.svelte:8:23 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+          "/svelte-bench/tmp/samples/openrouter/inspect_sample5_39de93bbb186695b/Component.svelte:8:23 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
         ]
       },
       {
@@ -551,7 +551,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n\tlet text = $state('Hello world');\n\n\t$inspect(text);\n\n\t$inspect(text).with((type, value) => {\n\t\tconsole.log(Custom ${type}:, value);\n\t});\n\n\t$effect(() => {\n\t\t$inspect.trace();\n\t\ttext;\n\t});\n</script>\n\n<div>\n\t<input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n\t<p data-testid=\"text-value\">Current text: \"{text}\"</p>\n\t<p data-testid=\"char-count\">Character count: {text.length}</p>\n</div>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/inspect_sample9_cccb8339c414d2cb/Component.svelte:9:21 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+          "/svelte-bench/tmp/samples/openrouter/inspect_sample9_cccb8339c414d2cb/Component.svelte:9:21 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
         ]
       }
     ],

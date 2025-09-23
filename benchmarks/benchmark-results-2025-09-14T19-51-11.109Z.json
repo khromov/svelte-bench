@@ -119,7 +119,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n  let $state(number) = 5;\n  let $derived(doubled) = number * 2;\n\n  function increment() {\n    number++;\n  }\n</script>\n\n<div>\n  <p data-testid=\"number-value\">Number: {number}</p>\n  <p data-testid=\"doubled-value\">Doubled: {doubled}</p>\n  <button data-testid=\"increment-button\" on:click={increment}>Increment</button>\n</div>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/google/derived_sample4_d2173a086a3b5607/Component.svelte:4:12 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+          "/svelte-bench/tmp/samples/google/derived_sample4_d2173a086a3b5607/Component.svelte:4:12 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
         ]
       },
       {
@@ -506,7 +506,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n  let text = $state('Hello world');\n\n  // Requirement 2: Use basic $inspect to log the input value\n  // This will log the current value of 'text' whenever it changes.\n  $inspect(text);\n\n  // Requirement 3: Implement $inspect(...).with to track updates with a custom callback\n  $inspect(text).with((currentValue, oldValue) => {\n    console.log([$inspect.with] Text updated from \"${oldValue}\" to \"${currentValue}\");\n  });\n\n  // Requirement 4: Implement $inspect.trace() inside an effect that runs when the input changes\n  $effect(() => {\n    // This effect runs whenever 'text' changes.\n    // $inspect.trace() will log the call stack that led to this effect running,\n    // useful for debugging reactivity flows.\n    console.log([$effect] Text value is: \"${text}\");\n    $inspect.trace('[Effect] Text change detected');\n  });\n</script>\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n  <p data-testid=\"text-value\">Current text: \"{text}\"</p>\n  <!-- Requirement 5: Display the character count of the input text -->\n  <p data-testid=\"char-count\">Character count: {text.length}</p>\n</div>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/google/inspect_sample2_2a658a7be62a4754/Component.svelte:12:32 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+          "/svelte-bench/tmp/samples/google/inspect_sample2_2a658a7be62a4754/Component.svelte:12:32 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
         ]
       },
       {
@@ -528,7 +528,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n  let text = $state('Hello world');\n\n  $inspect(text);\n\n  const logTextUpdate = (newValue, oldValue) => {\n    console.log($inspect.with custom callback: Text changed from \"${oldValue}\" to \"${newValue}\");\n  };\n\n  $inspect(text).with(logTextUpdate);\n\n  $effect(() => {\n    $inspect.trace('Input text changed effect', text);\n  });\n</script>\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n  <p data-testid=\"text-value\">Current text: \"{text}\"</p>\n  <p data-testid=\"char-count\">Character count: {text.length}</p>\n</div>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/google/inspect_sample5_238dc2297ff24cd0/Component.svelte:9:30 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+          "/svelte-bench/tmp/samples/google/inspect_sample5_238dc2297ff24cd0/Component.svelte:9:30 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
         ]
       },
       {
@@ -552,7 +552,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n  let text = $state(\"Hello world\");\n\n  // Use basic $inspect to log the input value\n  // This will log the initial value and all subsequent updates to the console.\n  $inspect(text);\n\n  // Implement $inspect(...).with to track updates to the input with a custom callback\n  // The callback receives the new value of the inspected state.\n  $inspect(text).with((newValue) => {\n    console.log($inspect.with: Text updated to: \"${newValue}\");\n  });\n\n  // Implement $inspect.trace() inside an effect that runs when the input changes\n  // This effect reacts to changes in text. When it runs, $inspect.trace() will log\n  // the call stack that led to this effect's execution.\n  $effect(() => {\n    console.log($effect: Current text value is: \"${text}\");\n    $inspect.trace(); // Logs the call stack that triggered this effect\n  });\n</script>\n\n<div>\n  <!-- Input field with data-testid=\"text-input\" -->\n  <input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n\n  <!-- Display the input value with data-testid=\"text-value\" -->\n  <p data-testid=\"text-value\">Current text: \"{text}\"</p>\n\n  <!-- Display the character count of the input text (derived value) with data-testid=\"char-count\" -->\n  <p data-testid=\"char-count\">Character count: {text.length}</p>\n</div>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/google/inspect_sample8_bbc8edabcf3fb027/Component.svelte:13:29 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+          "/svelte-bench/tmp/samples/google/inspect_sample8_bbc8edabcf3fb027/Component.svelte:13:29 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
         ]
       },
       {
@@ -560,7 +560,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n  let text = $state(\"Hello world\");\n\n  // Requirement 2: Basic $inspect to log the input value\n  // This will log the value of 'text' to the console every time it changes.\n  $inspect(text);\n\n  // Requirement 3: Implement $inspect(...).with to track updates with a custom callback\n  // This will log a custom message to the console every time 'text' changes.\n  $inspect(text).with((currentValue) => {\n    console.log($inspect.with: Input text changed to \"${currentValue}\");\n  });\n\n  // Requirement 4: Implement $inspect.trace() inside an effect that runs when the input changes\n  // This effect runs whenever 'text' changes. $inspect.trace() will show the call stack\n  // that led to this effect running, useful for debugging reactivity.\n  $effect(() => {\n    console.log($effect: Text value is now \"${text}\");\n    $inspect.trace('Cause of text effect update:'); // This will print the stack trace to the console\n  });\n\n  // Requirement 5: Display the character count of the input text\n  // The character count is directly derived in the template, demonstrating reactivity.\n</script>\n\n<div>\n  <label for=\"text-input-field\">Input Text:</label>\n  <input\n    id=\"text-input-field\"\n    data-testid=\"text-input\"\n    type=\"text\"\n    bind:value={text}\n  />\n  <p data-testid=\"text-value\">Current text: \"{text}\"</p>\n  <p data-testid=\"char-count\">Character count: {text.length}</p>\n</div>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/google/inspect_sample9_5c332d5cb00422f1/Component.svelte:13:29 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+          "/svelte-bench/tmp/samples/google/inspect_sample9_5c332d5cb00422f1/Component.svelte:13:29 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
         ]
       }
     ],
@@ -661,7 +661,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n  const books = [\"The Lord of the Rings\", \"To Kill a Mockingbird\", \"1984\"];\n\n  snippet title(bookTitle) {\n    return <span data-testid=\"book-title\">{bookTitle}</span>;\n  }\n</script>\n\n<ul>\n  {#each books as book}\n    <li data-testid=\"book-item\">\n      {@render title(book)}\n    </li>\n  {/each}\n</ul>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/google/snippets_sample0_781338b14eb4d15a/Component.svelte:6:10 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+          "/svelte-bench/tmp/samples/google/snippets_sample0_781338b14eb4d15a/Component.svelte:6:10 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
         ],
         "temperature": 0
       },
@@ -670,7 +670,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n  const books = [\n    \"The Lord of the Rings\",\n    \"To Kill a Mockingbird\",\n    \"1984\"\n  ];\n</script>\n\n{@snippet title(bookTitle)}\n  <span data-testid=\"book-title\">{bookTitle}</span>\n{/snippet}\n\n<ul>\n  {#each books as book}\n    <li data-testid=\"book-item\">\n      {@render title(book)}\n    </li>\n  {/each}\n</ul>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/google/snippets_sample1_ba6c7440b23d897c/Component.svelte:13:1 Unexpected block closing tag\nhttps://svelte.dev/e/block_unexpected_close"
+          "/svelte-bench/tmp/samples/google/snippets_sample1_ba6c7440b23d897c/Component.svelte:13:1 Unexpected block closing tag\nhttps://svelte.dev/e/block_unexpected_close"
         ]
       },
       {
@@ -678,7 +678,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n  const bookTitles = [\n    \"The Lord of the Rings\",\n    \"To Kill a Mockingbird\",\n    \"1984\"\n  ];\n</script>\n\n{@snippet title(bookTitle)}\n  <span data-testid=\"book-title\">{bookTitle}</span>\n{/snippet}\n\n<ul>\n  {#each bookTitles as titleItem}\n    <li data-testid=\"book-item\">{@render title(titleItem)}</li>\n  {/each}\n</ul>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/google/snippets_sample2_2e54b08bba88eba9/Component.svelte:13:1 Unexpected block closing tag\nhttps://svelte.dev/e/block_unexpected_close"
+          "/svelte-bench/tmp/samples/google/snippets_sample2_2e54b08bba88eba9/Component.svelte:13:1 Unexpected block closing tag\nhttps://svelte.dev/e/block_unexpected_close"
         ]
       },
       {
@@ -686,7 +686,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n  const bookTitles = [\n    \"The Lord of the Rings\",\n    \"To Kill a Mockingbird\",\n    \"1984\"\n  ];\n\n  snippet title(bookTitle) {\n    return (\n      <span data-testid=\"book-title\">{bookTitle}</span>\n    );\n  }\n</script>\n\n<ul>\n  {#each bookTitles as bookTitle}\n    <li data-testid=\"book-item\">\n      {@render title(bookTitle)}\n    </li>\n  {/each}\n</ul>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/google/snippets_sample3_a842ab11d8418786/Component.svelte:10:10 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+          "/svelte-bench/tmp/samples/google/snippets_sample3_a842ab11d8418786/Component.svelte:10:10 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
         ]
       },
       {
@@ -694,7 +694,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n  const books = [\"The Lord of the Rings\", \"To Kill a Mockingbird\", \"1984\"];\n\n  $snippet(title, bookTitle) {\n    <span data-testid=\"book-title\">{bookTitle}</span>\n  }\n</script>\n\n<ul>\n  {#each books as book}\n    <li data-testid=\"book-item\">\n      {@render title(book)}\n    </li>\n  {/each}\n</ul>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/google/snippets_sample4_595126ee0cd89501/Component.svelte:6:29 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+          "/svelte-bench/tmp/samples/google/snippets_sample4_595126ee0cd89501/Component.svelte:6:29 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
         ]
       },
       {
@@ -702,7 +702,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n  const books = [\n    \"The Lord of the Rings\",\n    \"To Kill a Mockingbird\",\n    \"1984\"\n  ];\n\n  snippet title(bookTitle) {\n    <span data-testid=\"book-title\">{bookTitle}</span>\n  }\n</script>\n\n<ul>\n  {#each books as book}\n    <li data-testid=\"book-item\">\n      {@render title(book)}\n    </li>\n  {/each}\n</ul>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/google/snippets_sample5_a460d1ed8e2b3714/Component.svelte:10:10 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+          "/svelte-bench/tmp/samples/google/snippets_sample5_a460d1ed8e2b3714/Component.svelte:10:10 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
         ]
       },
       {
@@ -710,7 +710,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n  const bookTitles = [\n    \"The Lord of the Rings\",\n    \"To Kill a Mockingbird\",\n    \"1984\"\n  ];\n\n  snippet title(bookTitle) {\n    return (\n      <span data-testid=\"book-title\">{bookTitle}</span>\n    );\n  }\n</script>\n\n<ul>\n  {#each bookTitles as book}\n    <li data-testid=\"book-item\">\n      {@render title(book)}\n    </li>\n  {/each}\n</ul>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/google/snippets_sample6_632b52513a59386d/Component.svelte:10:10 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+          "/svelte-bench/tmp/samples/google/snippets_sample6_632b52513a59386d/Component.svelte:10:10 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
         ]
       },
       {
@@ -718,7 +718,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n\tconst books = [\"The Lord of the Rings\", \"To Kill a Mockingbird\", \"1984\"];\n\n\tsnippet title(bookTitle) {\n\t\t<span data-testid=\"book-title\">{bookTitle}</span>\n\t}\n</script>\n\n<ul>\n\t{#each books as book}\n\t\t<li data-testid=\"book-item\">\n\t\t\t{@render title(book)}\n\t\t</li>\n\t{/each}\n</ul>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/google/snippets_sample7_0622d73aefd4552c/Component.svelte:6:9 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+          "/svelte-bench/tmp/samples/google/snippets_sample7_0622d73aefd4552c/Component.svelte:6:9 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
         ]
       },
       {
@@ -726,7 +726,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n  const bookTitles = [\n    \"The Lord of the Rings\",\n    \"To Kill a Mockingbird\",\n    \"1984\"\n  ];\n\n  snippet title(bookTitle) {\n    return <span data-testid=\"book-title\">{bookTitle}</span>;\n  }\n</script>\n\n<ul>\n  {#each bookTitles as book}\n    <li data-testid=\"book-item\">\n      {@render title(book)}\n    </li>\n  {/each}\n</ul>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/google/snippets_sample8_0967cddf324fa94d/Component.svelte:10:10 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+          "/svelte-bench/tmp/samples/google/snippets_sample8_0967cddf324fa94d/Component.svelte:10:10 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
         ]
       },
       {
@@ -734,7 +734,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n  const books = [\n    \"The Lord of the Rings\",\n    \"To Kill a Mockingbird\",\n    \"1984\"\n  ];\n\n  #snippet title(bookTitle)\n    <span data-testid=\"book-title\">{bookTitle}</span>\n  /snippet\n</script>\n\n<ul>\n  {#each books as book}\n    <li data-testid=\"book-item\">\n      {@render title(book)}\n    </li>\n  {/each}\n</ul>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/google/snippets_sample9_7315f60b527eca19/Component.svelte:10:2 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+          "/svelte-bench/tmp/samples/google/snippets_sample9_7315f60b527eca19/Component.svelte:10:2 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
         ]
       }
     ],
