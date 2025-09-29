@@ -72,6 +72,9 @@ export async function getLLMProvider(
     case "zai":
       const { ZAIProvider } = await import("./zai");
       return new ZAIProvider(modelId);
+    case "moonshot":
+      const { MoonshotProvider } = await import("./moonshot");
+      return new MoonshotProvider(modelId);
     default:
       throw new Error(`Unknown LLM provider: ${providerName}`);
   }
@@ -146,6 +149,17 @@ export async function getAllLLMProviders(): Promise<ProviderWithModel[]> {
     providers.push({
       provider,
       name: "Z.ai",
+      modelId,
+    });
+  }
+
+  // Moonshot provider
+  const moonshotProvider = await getLLMProvider("moonshot");
+  for (const modelId of moonshotProvider.getModels()) {
+    const provider = await getLLMProvider("moonshot", modelId);
+    providers.push({
+      provider,
+      name: "Moonshot AI",
       modelId,
     });
   }
