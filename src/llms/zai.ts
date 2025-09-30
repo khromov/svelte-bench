@@ -16,6 +16,7 @@ export class ZAIProvider implements LLMProvider {
     "glm-4.5-airx",
     "glm-4.5-flash",
     "glm-4-32b-0414-128k",
+    "glm-4.6",
   ];
 
   constructor(modelId?: string) {
@@ -37,10 +38,12 @@ export class ZAIProvider implements LLMProvider {
   async generateCode(
     prompt: string,
     temperature?: number,
-    contextContent?: string,
+    contextContent?: string
   ): Promise<string> {
     console.log(
-      `🤖 Generating code with Z.ai using model: ${this.modelId} (temp: ${temperature ?? "default"})...`,
+      `🤖 Generating code with Z.ai using model: ${this.modelId} (temp: ${
+        temperature ?? "default"
+      })...`
     );
 
     const systemPrompt = contextContent
@@ -98,7 +101,7 @@ export class ZAIProvider implements LLMProvider {
               },
               body: JSON.stringify(requestBody),
               signal: controller.signal,
-            },
+            }
           );
 
           clearTimeout(timeoutId);
@@ -107,32 +110,36 @@ export class ZAIProvider implements LLMProvider {
             // Check for rate limiting or temporary errors
             if (response.status === 429 || response.status >= 500) {
               throw new Error(
-                `Z.ai API temporary error: ${response.status} ${response.statusText}`,
+                `Z.ai API temporary error: ${response.status} ${response.statusText}`
               );
             }
             // Non-retryable error
             throw new Error(
-              `Z.ai API request failed: ${response.status} ${response.statusText}`,
+              `Z.ai API request failed: ${response.status} ${response.statusText}`
             );
           }
 
           const data = await response.json();
           const content = data.choices?.[0]?.message?.content;
-          
+
           if (!content) {
             throw new Error("Z.ai returned empty response");
           }
-          
+
           return content;
         } catch (error) {
           clearTimeout(timeoutId);
-          
+
           // Check if it's an abort error (timeout)
-          if (error instanceof Error && error.name === 'AbortError') {
-            console.error(`Z.ai request timed out after 2 minutes for model: ${this.modelId}`);
-            throw new Error(`Request timed out after 2 minutes: ${this.modelId}`);
+          if (error instanceof Error && error.name === "AbortError") {
+            console.error(
+              `Z.ai request timed out after 2 minutes for model: ${this.modelId}`
+            );
+            throw new Error(
+              `Request timed out after 2 minutes: ${this.modelId}`
+            );
           }
-          
+
           throw error;
         }
       },
@@ -143,22 +150,34 @@ export class ZAIProvider implements LLMProvider {
         backoffFactor: 2,
         onRetry: (error, attempt) => {
           console.warn(
-            `⚠️  Z.ai retry attempt ${attempt}/10 for model ${this.modelId} after error: ${error.message}`,
+            `⚠️  Z.ai retry attempt ${attempt}/10 for model ${this.modelId} after error: ${error.message}`
           );
-          
+
           // On final retry attempt, provide helpful message before failing
           if (attempt === 10) {
-            console.error(`\n❌ Z.ai model ${this.modelId} failed after 10 retry attempts.`);
-            console.error(`📝 The benchmark will resume from where it left off when you restart.`);
-            console.error(`⏳ This appears to be a rate limit issue. Please wait before retrying.`);
-            console.error(`💾 Progress has been saved to the checkpoint file.\n`);
+            console.error(
+              `\n❌ Z.ai model ${this.modelId} failed after 10 retry attempts.`
+            );
+            console.error(
+              `📝 The benchmark will resume from where it left off when you restart.`
+            );
+            console.error(
+              `⏳ This appears to be a rate limit issue. Please wait before retrying.`
+            );
+            console.error(
+              `💾 Progress has been saved to the checkpoint file.\n`
+            );
           }
         },
-      },
+      }
     ).catch((error) => {
       // If all retries failed, exit the process with error
-      console.error(`\n🛑 Stopping benchmark due to persistent Z.ai API failures.`);
-      console.error(`ℹ️  To resume, run the same command again. The benchmark will continue from the last checkpoint.`);
+      console.error(
+        `\n🛑 Stopping benchmark due to persistent Z.ai API failures.`
+      );
+      console.error(
+        `ℹ️  To resume, run the same command again. The benchmark will continue from the last checkpoint.`
+      );
       process.exit(1);
     });
   }
