@@ -4,6 +4,7 @@ import {
 } from "../utils/prompt";
 import type { LLMProvider } from "./index";
 import { withRetry } from "../utils/retry-wrapper";
+import { log } from "../utils/tui-events";
 
 interface MoonshotMessage {
   role: "system" | "user" | "assistant";
@@ -74,7 +75,7 @@ export class MoonshotProvider implements LLMProvider {
       ? Math.max(0, Math.min(1, temperature))
       : 0.7;
 
-    console.log(`🤖 Generating code with Moonshot using model: ${this.modelId} (temp: ${validTemperature})...`);
+    log(`🤖 Generating code with Moonshot using model: ${this.modelId} (temp: ${validTemperature})...`);
 
     const systemPrompt = contextContent
       ? DEFAULT_SYSTEM_PROMPT_WITH_CONTEXT

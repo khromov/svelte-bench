@@ -4,6 +4,7 @@
  */
 
 import { createProviderRegistry } from 'ai';
+import { log } from '../../utils/tui-events';
 
 // Lazy imports to avoid loading unused providers
 let registry: ReturnType<typeof createProviderRegistry> | null = null;
@@ -260,7 +261,7 @@ export function getRegistry() {
 
   // Log registered providers
   const providerNames = Object.keys(providers);
-  console.log(`✓ Registered ${providerNames.length} AI SDK providers:`, providerNames.join(', '));
+  log(`✓ Registered ${providerNames.length} AI SDK providers:`, providerNames.join(', '));
 
   // Create and cache registry
   registry = createProviderRegistry(providers);

@@ -4,6 +4,7 @@ import {
 } from "../utils/prompt";
 import type { LLMProvider } from "./index";
 import { withRetry } from "../utils/retry-wrapper";
+import { log } from "../utils/tui-events";
 
 export class ZAIProvider implements LLMProvider {
   private apiKey: string;
@@ -39,7 +40,7 @@ export class ZAIProvider implements LLMProvider {
     temperature?: number,
     contextContent?: string,
   ): Promise<string> {
-    console.log(
+    log(
       `🤖 Generating code with Z.ai using model: ${this.modelId} (temp: ${temperature ?? "default"})...`,
     );
 

@@ -5,6 +5,7 @@ import {
 } from "../utils/prompt";
 import type { LLMProvider } from "./index";
 import { Ollama, type ChatRequest } from "ollama";
+import { log } from "../utils/tui-events";
 
 // https://github.com/ollama/ollama-js/issues/103
 const noTimeoutFetch = (
@@ -48,7 +49,7 @@ export class OllamaProvider implements LLMProvider {
     contextContent?: string
   ): Promise<string> {
     try {
-      console.log(
+      log(
         `🤖 Generating code with Ollama using model: ${this.modelId} (temp: ${
           temperature ?? "default"
         })...`

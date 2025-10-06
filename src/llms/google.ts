@@ -4,6 +4,7 @@ import {
 } from "../utils/prompt";
 import type { LLMProvider } from "./index";
 import { GoogleGenAI } from "@google/genai";
+import { log } from "../utils/tui-events";
 
 export class GoogleGenAIProvider implements LLMProvider {
   private client: GoogleGenAI;
@@ -33,7 +34,7 @@ export class GoogleGenAIProvider implements LLMProvider {
     contextContent?: string,
   ): Promise<string> {
     try {
-      console.log(
+      log(
         `🤖 Generating code with Google Gemini using model: ${
           this.modelId
         } (temp: ${temperature ?? "default"})...`,

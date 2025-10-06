@@ -5,6 +5,7 @@ import {
 import type { LLMProvider } from "./index";
 import OpenAI from "openai";
 import type { ChatCompletionMessageParam } from "openai/resources/chat/completions";
+import { log } from "../utils/tui-events";
 
 export class OpenRouterProvider implements LLMProvider {
   private client: OpenAI;
@@ -56,7 +57,7 @@ export class OpenRouterProvider implements LLMProvider {
     ); // 5 minutes
 
     try {
-      console.log(
+      log(
         `🤖 Generating code with OpenRouter using model: ${
           this.modelId
         } (temp: ${temperature ?? "default"})...`,
@@ -118,7 +119,7 @@ export class OpenRouterProvider implements LLMProvider {
       } catch (quantizationError) {
         // If no providers match the quantization requirements, fall back to default
         if (this.isQuantizationError(quantizationError)) {
-          console.warn(
+          log(
             "⚠️  WARNING: NO MODELS FOUND WITH REQUIRED PRECISION (bf16+). FALLING BACK TO DEFAULT MODEL WITHOUT QUANTIZATION FILTERING.",
           );
           

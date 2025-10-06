@@ -1,3 +1,5 @@
+import { log } from "../utils/tui-events";
+
 /**
  * Interface for LLM providers
  * Defines the common functionality that all LLM providers must implement
@@ -155,7 +157,7 @@ export async function getAllLLMProviders(): Promise<ProviderWithModel[]> {
   const { getAvailableProviders } = await import("./ai-sdk/unified-registry");
   const availableProviders = getAvailableProviders();
 
-  console.log(`📋 Found ${availableProviders.length} available AI SDK providers:`, availableProviders.join(', '));
+  log(`📋 Found ${availableProviders.length} available AI SDK providers:`, availableProviders.join(', '));
 
   // Note: AI SDK providers don't expose model lists by default
   // Models must be specified explicitly in DEBUG_MODE

@@ -4,6 +4,7 @@ import {
 } from "../utils/prompt";
 import type { LLMProvider } from "./index";
 import { Anthropic } from "@anthropic-ai/sdk";
+import { log } from "../utils/tui-events";
 
 export class AnthropicProvider implements LLMProvider {
   private client: Anthropic;
@@ -33,7 +34,7 @@ export class AnthropicProvider implements LLMProvider {
     contextContent?: string
   ): Promise<string> {
     try {
-      console.log(
+      log(
         `🤖 Generating code with Anthropic using model: ${
           this.modelId
         } (temp: ${temperature ?? "default"})...`

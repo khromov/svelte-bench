@@ -7,6 +7,7 @@ import type { TestResult } from "./test-runner";
 import { calculatePassAtK, type HumanEvalResult } from "./humaneval";
 import { cleanCodeMarkdown } from "./code-cleaner";
 import { withRetry } from "./retry-wrapper";
+import { emitTestStart, emitSampleProgress, emitTestComplete, log } from "./tui-events";
 
 export interface TestDefinition {
   name: string;
@@ -93,7 +94,7 @@ export async function runSingleTest(
     const prompt = await readFile(test.promptPath);
 
     // Generate code with the LLM
-    console.log(
+    log(
       `🔄 Generating ${test.name} component with ${providerName} (sample ${
         sampleIndex + 1
       }, temp: ${temperature ?? 'default'})...`
@@ -215,6 +216,9 @@ export async function runHumanEvalTest(
     const actualModelId = modelId || llmProvider.getModelIdentifier();
     const samples: BenchmarkResult[] = [...existingSamples];
 
+    // Emit test start event
+    emitTestStart(test.name, 0, numSamples);
+
     // Run samples starting from startSampleIndex with checkpointing after each API call
     for (let i = startSampleIndex; i < numSamples; i++) {
       try {
@@ -224,8 +228,8 @@ export async function runHumanEvalTest(
         // Determine temperature: 0 for first sample, undefined for others
         const temperature = i === 0 ? 0 : undefined;
 
-        console.log(`🔄 Running sample ${i + 1}/${numSamples} for ${test.name} with ${actualProviderName}...`);
-        
+        log(`🔄 Running sample ${i + 1}/${numSamples} for ${test.name} with ${actualProviderName}...`);
+
         // Run the test with the current sample index and appropriate temperature
         const result = await runSingleTest(
           test,
@@ -234,7 +238,7 @@ export async function runHumanEvalTest(
           temperature,
           contextContent
         );
-        
+
         // Only add to samples if the API call was successful (has generated code)
         if (result.generatedCode.trim() !== "") {
           samples.push(result);
@@ -242,6 +246,9 @@ export async function runHumanEvalTest(
         } else {
           console.log(`⚠️ API failure for sample ${i + 1}/${numSamples} for ${test.name} - not adding to results`);
         }
+
+        // Emit sample progress event
+        emitSampleProgress(test.name, i + 1, numSamples);
 
         // Save checkpoint after each API call (successful or not)
         if (testIndex !== undefined && completedResults !== undefined) {
@@ -323,6 +330,10 @@ export async function runHumanEvalTest(
       numCorrect,
       Math.min(10, numValidSamples)
     );
+
+    // Emit test complete event
+    const passed = numCorrect > 0;
+    emitTestComplete(test.name, numValidSamples, numValidSamples, passed, pass1, pass10);
 
     // Format the results
     return {
@@ -443,7 +454,7 @@ export async function runAllTestsHumanEval(
       const test = tests[i];
       
       try {
-        console.log(`\n🧪 Running test: ${test.name} with ${providerName} (${i + 1}/${tests.length})`);
+        log(`\n🧪 Running test: ${test.name} with ${providerName} (${i + 1}/${tests.length})`);
         
         // Determine starting sample index (0 for new tests, checkpoint value for resumed tests)
         const sampleStartIndex = (i === startTestIndex) ? startSampleIndex : 0;
@@ -612,7 +623,7 @@ export async function saveBenchmarkResults(
     });
 
     await fs.writeFile(filePath, JSON.stringify(resultsWithContext, null, 2));
-    console.log(`📊 Saved benchmark results to ${filePath}`);
+    log(`📊 Saved benchmark results to ${filePath}`);
 
     return filePath;
   } catch (error) {

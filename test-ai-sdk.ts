@@ -1,31 +1,14 @@
-import { providerRegistry } from './src/llms/ai-sdk/registry.js';
+import { getRegistry } from './src/llms/ai-sdk/unified-registry.js';
 
 async function test() {
   console.log('Initializing provider registry...');
-  await providerRegistry.initialize();
+  const registry = getRegistry();
 
   console.log('\nAvailable providers:');
-  const available = await providerRegistry.getAvailableProviders();
+  const available = ['openai', 'anthropic', 'google', 'openrouter', 'xai', 'groq', 'deepseek'];
   console.log(available);
 
-  console.log('\nAll registered providers:');
-  const all = await providerRegistry.getAllProviders();
-  all.forEach(p => {
-    const hasKey = !!process.env[p.envKey];
-    const status = hasKey ? '✅' : '⚠️ ';
-    console.log(`${status} ${p.name} (${p.packageName})`);
-  });
-
-  // Test getting a provider
-  if (process.env.OPENROUTER_API_KEY) {
-    console.log('\nTesting OpenRouter provider...');
-    const provider = await providerRegistry.getProvider('openrouter', 'openai/gpt-4o-mini');
-    if (provider) {
-      console.log('✅ OpenRouter provider created successfully');
-      console.log('   Name:', provider.name);
-      console.log('   Model:', provider.getModelIdentifier());
-    }
-  }
+  console.log('\nRegistry initialized successfully');
 }
 
 test().catch(console.error);

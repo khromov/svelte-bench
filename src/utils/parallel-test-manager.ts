@@ -8,6 +8,7 @@ import { calculatePassAtK, type HumanEvalResult } from "./humaneval";
 import { cleanCodeMarkdown } from "./code-cleaner";
 import { withRetry } from "./retry-wrapper";
 import crypto from "crypto";
+import { isTUIMode, emitTestStart, emitTestComplete, emitSampleProgress, log } from "./tui-events";
 
 export interface TestDefinition {
   name: string;
@@ -284,7 +285,12 @@ async function runTestSamplesInParallelWithCheckpointing(
   }
   
   console.log(`🔄 Running ${samplePromises.length} samples in parallel for ${test.name}...`);
-  
+
+  // Emit test start event for TUI
+  if (isTUIMode()) {
+    emitTestStart(test.name, startSampleIndex + 1, numSamples);
+  }
+
   // Wait for all samples to complete and process them as they finish
   const completedSamples = await Promise.all(samplePromises);
   
@@ -297,6 +303,11 @@ async function runTestSamplesInParallelWithCheckpointing(
     if (result.generatedCode.trim() !== "") {
       samples.push(result);
       console.log(`✅ Completed sample ${index + 1}/${numSamples} for ${test.name}`);
+
+      // Emit sample progress for TUI
+      if (isTUIMode()) {
+        emitSampleProgress(test.name, index + 1, numSamples);
+      }
     } else {
       console.log(`⚠️ API failure for sample ${index + 1}/${numSamples} for ${test.name} - not adding to results`);
     }
@@ -359,7 +370,7 @@ export async function runHumanEvalTest(
     
     // Show completion status
     const successCount = samples.filter(s => s.testResult.success).length;
-    console.log(`   ✅ Completed ${samples.length}/${numSamples} samples (${successCount} passed)`);
+    log(`   ✅ Completed ${samples.length}/${numSamples} samples (${successCount} passed)`);
     
     // Calculate metrics
     const validSamples = samples.filter((s) => s !== null && s !== undefined);
@@ -390,7 +401,7 @@ export async function runHumanEvalTest(
       Math.min(10, numValidSamples)
     );
 
-    return {
+    const result = {
       testName: test.name,
       provider: providerName,
       modelId,
@@ -410,6 +421,13 @@ export async function runHumanEvalTest(
         temperature: s.temperature,
       })),
     };
+
+    // Emit test complete event for TUI
+    if (isTUIMode()) {
+      emitTestComplete(test.name, numValidSamples, numValidSamples, numCorrect > 0, pass1, pass10);
+    }
+
+    return result;
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     console.error(
@@ -502,7 +520,7 @@ export async function runAllTestsHumanEval(
       const test = tests[i];
       
       try {
-        console.log(`\n🧪 Running test: ${test.name} with ${providerName} (${i + 1}/${tests.length})`);
+        log(`\n🧪 Running test: ${test.name} with ${providerName} (${i + 1}/${tests.length})`);
         
         // Determine starting sample index (0 for new tests, checkpoint value for resumed tests)
         const sampleStartIndex = (i === startTestIndex) ? startSampleIndex : 0;
@@ -525,16 +543,16 @@ export async function runAllTestsHumanEval(
           results.push(result);
 
           // Log the pass@k metrics
-          console.log(
+          log(
             `📊 ${test.name} (${providerName}) - pass@1: ${result.pass1.toFixed(
               4
             )}, pass@10: ${result.pass10.toFixed(4)}`
           );
-          console.log(
+          log(
             `   Samples: ${result.numSamples}, Correct: ${result.numCorrect}`
           );
         } else {
-          console.log(`⚠️ Skipping ${test.name} - no successful API calls, not adding to final results`);
+          log(`⚠️ Skipping ${test.name} - no successful API calls, not adding to final results`);
         }
 
         // Save checkpoint after each test completion (reset sample tracking)
@@ -601,9 +619,9 @@ export async function runAllTestsHumanEval(
     // Filter out empty results and log metrics in a compact format
     const validResults = results.filter(r => r.numSamples > 0);
     
-    console.log(`\n📊 Results for ${providerName}:`);
+    log(`\n📊 Results for ${providerName}:`);
     for (const result of validResults) {
-      console.log(
+      log(
         `   ${result.testName}: pass@1=${result.pass1.toFixed(3)}, pass@10=${result.pass10.toFixed(3)} (${result.numCorrect}/${result.numSamples})`
       );
     }
@@ -676,7 +694,7 @@ export async function saveBenchmarkResults(
     });
 
     await fs.writeFile(filePath, JSON.stringify(resultsWithContext, null, 2));
-    console.log(`📊 Saved benchmark results to ${filePath}`);
+    log(`📊 Saved benchmark results to ${filePath}`);
 
     return filePath;
   } catch (error) {

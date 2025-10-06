@@ -9,6 +9,7 @@ import type {
   ResponseCreateParamsNonStreaming,
 } from "openai/resources/responses/responses";
 import type { ReasoningEffort } from "openai/resources/shared";
+import { log } from "../utils/tui-events";
 
 export class OpenAIProvider implements LLMProvider {
   private client: OpenAI;
@@ -79,8 +80,8 @@ export class OpenAIProvider implements LLMProvider {
         logMessage += ` (temp: default)`;
       }
       logMessage += `...`;
-      
-      console.log(logMessage);
+
+      log(logMessage);
 
       const systemPrompt = contextContent
         ? DEFAULT_SYSTEM_PROMPT_WITH_CONTEXT

@@ -10,6 +10,7 @@ import {
   type ValidationResult,
 } from './model-validator';
 import { getRegistry } from './unified-registry';
+import { log } from '../../utils/tui-events';
 
 /**
  * Unified AI SDK Provider Wrapper
@@ -46,7 +47,7 @@ export class AISDKProviderWrapper implements LLMProvider {
     contextContent?: string
   ): Promise<string> {
     try {
-      console.log(
+      log(
         `🤖 Generating code with ${this.providerName} using model: ${
           this.modelId
         } (temp: ${temperature ?? 'default'})...`
@@ -80,7 +81,7 @@ export class AISDKProviderWrapper implements LLMProvider {
 
       // Get model from unified registry (lazy-loaded on first use)
       const registry = getRegistry();
-      const model = registry.languageModel(this.fullModelId);
+      const model = (registry as any).languageModel(this.fullModelId);
 
       // Build request options
       const requestOptions: any = {
@@ -140,10 +141,10 @@ export class AISDKProviderWrapper implements LLMProvider {
       console.error(formatted);
       validation.errors.forEach((err) => console.error(`  ${err}`));
     } else if (validation.warnings.length > 0) {
-      console.warn(formatted);
-      validation.warnings.forEach((warn) => console.warn(`  ${warn}`));
+      log(formatted);
+      validation.warnings.forEach((warn) => log(`  ${warn}`));
     } else {
-      console.log(formatted);
+      log(formatted);
     }
 
     return validation;
