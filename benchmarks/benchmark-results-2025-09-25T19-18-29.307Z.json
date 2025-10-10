@@ -259,7 +259,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n    import { $state } from 'svelte/state';\n\n    let characters = $state([\"Jerry\", \"Elaine\", \"Kramer\"]);\n\n    const addGeorge = () => {\n        characters = [...characters, \"George\"];\n    };\n</script>\n\n<div>\n    <ul data-testid=\"characters-list\">\n        {#each characters as character}\n            <li data-testid=\"character\">{character}</li>\n        {/each}\n    </ul>\n    <button data-testid=\"add-george-button\" onclick={addGeorge}>Add George</button>\n</div>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/google/each_sample1_9e0560971585be68/Component.svelte:4:13 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
+          "/svelte-bench/tmp/samples/google/each_sample1_9e0560971585be68/Component.svelte:4:13 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
         ]
       },
       {
@@ -267,7 +267,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n  import { $state } from 'svelte/state';\n\n  const characters = $state([\"Jerry\", \"Elaine\", \"Kramer\"]);\n\n  function addGeorge() {\n    // Svelte 5 $state allows direct mutation of arrays and objects\n    characters.push(\"George\");\n  }\n</script>\n\n<div>\n  <ul data-testid=\"characters-list\">\n    {#each characters as character}\n      <li data-testid=\"character\">{character}</li>\n    {/each}\n  </ul>\n\n  <button data-testid=\"add-george-button\" on:click={addGeorge}>\n    Add George\n  </button>\n</div>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/google/each_sample2_25ba77cada138bde/Component.svelte:4:11 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
+          "/svelte-bench/tmp/samples/google/each_sample2_25ba77cada138bde/Component.svelte:4:11 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
         ]
       },
       {
@@ -275,7 +275,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n  import { $state } from 'svelte/state';\n\n  // 1. Hardcoded array of 3 characters\n  let characters = $state([\"Jerry\", \"Elaine\", \"Kramer\"]);\n\n  // 3. Function to add 'George'\n  const addGeorge = () => {\n    // Add 'George' to the reactive array\n    // Svelte 5 detects array mutation via $state\n    if (!characters.includes(\"George\")) {\n      characters.push(\"George\");\n    }\n  };\n</script>\n\n<div>\n  <!-- 2. Use {#each} block to render list -->\n  <ul data-testid=\"characters-list\">\n    {#each characters as character}\n      <li data-testid=\"character\">{character}</li>\n    {/each}\n  </ul>\n\n  <!-- 3. Button to add George -->\n  <button data-testid=\"add-george-button\" onclick={addGeorge}>\n    Add George\n  </button>\n</div>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/google/each_sample3_9e9093b066c1e23b/Component.svelte:4:11 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
+          "/svelte-bench/tmp/samples/google/each_sample3_9e9093b066c1e23b/Component.svelte:4:11 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
         ]
       },
       {
@@ -283,7 +283,7 @@
         "code": "<svelte:options runes={true} />\n\n$state.url = import.meta.url;\n\nlet characters = $state([\"Jerry\", \"Elaine\", \"Kramer\"]);\n\nconst addGeorge = () => {\n  characters = [...characters, \"George\"];\n};\n\n$effect(() => {\n  // Console log to satisfy any linter expectations if the variable isn't used elsewhere\n  // In a real Svelte component, this might be omitted, but keeping it as a place marker\n  // for typical Svelte 5 structure.\n});\n</script>\n\n<div>\n  <ul data-testid=\"characters-list\">\n    {#each characters as character}\n      <li data-testid=\"character\">{character}</li>\n    {/each}\n  </ul>\n  <button data-testid=\"add-george-button\" onclick={addGeorge}>Add George</button>\n</div>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/google/each_sample4_8869926f2f63ae94/Component.svelte:8:40 Expected token }\nhttps://svelte.dev/e/expected_token"
+          "/svelte-bench/tmp/samples/google/each_sample4_8869926f2f63ae94/Component.svelte:8:40 Expected token }\nhttps://svelte.dev/e/expected_token"
         ]
       },
       {
@@ -291,7 +291,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n  import { $state } from 'svelte/state';\n\n  let characters = $state([\"Jerry\", \"Elaine\", \"Kramer\"]);\n\n  const addGeorge = () => {\n    // Note: Mutating the array directly works fine with Svelte 5 runes\n    characters.push(\"George\");\n    // Ensure reactivity by forcing an update if George hasn't been added yet\n    // Since we only need to add him once per click, and state updates automatically, \n    // a simple push is sufficient. To handle the case where \"George\" might already exist \n    // and we want to prevent duplicates, we'd check first, but the requirement is just to add him.\n  };\n</script>\n\n<div>\n  <ul data-testid=\"characters-list\">\n    {#each characters as character}\n      <li data-testid=\"character\">{character}</li>\n    {/each}\n  </ul>\n\n  <button data-testid=\"add-george-button\" onclick={addGeorge}>\n    Add George\n  </button>\n</div>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/google/each_sample5_dc30471478194a50/Component.svelte:4:11 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
+          "/svelte-bench/tmp/samples/google/each_sample5_dc30471478194a50/Component.svelte:4:11 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
         ]
       },
       {
@@ -299,7 +299,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n    import { $state } from 'svelte/state';\n\n    let characters = $state([\"Jerry\", \"Elaine\", \"Kramer\"]);\n\n    function addGeorge() {\n        characters = [...characters, \"George\"];\n    }\n</script>\n\n<div>\n    <ul data-testid=\"characters-list\">\n        {#each characters as character}\n            <li data-testid=\"character\">{character}</li>\n        {/each}\n    </ul>\n    <button data-testid=\"add-george-button\" onclick={addGeorge}>Add George</button>\n</div>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/google/each_sample6_4dd39bf350eeda0b/Component.svelte:4:13 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
+          "/svelte-bench/tmp/samples/google/each_sample6_4dd39bf350eeda0b/Component.svelte:4:13 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
         ]
       },
       {
@@ -307,7 +307,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n    import { $state } from 'svelte/state';\n\n    let characters = $state([\"Jerry\", \"Elaine\", \"Kramer\"]);\n\n    const addGeorge = () => {\n        // Svelte 5 mutation handling\n        characters.push(\"George\");\n    };\n</script>\n\n<div>\n    <ul data-testid=\"characters-list\">\n        {#each characters as character}\n            <li data-testid=\"character\">{character}</li>\n        {/each}\n    </ul>\n    <button data-testid=\"add-george-button\" onclick={addGeorge}>Add George</button>\n</div>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/google/each_sample7_84e1dd1fc508c1a9/Component.svelte:4:13 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
+          "/svelte-bench/tmp/samples/google/each_sample7_84e1dd1fc508c1a9/Component.svelte:4:13 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
         ]
       },
       {
@@ -350,7 +350,7 @@
         "code": "<svelte:options runes={true} />\n\n$:$:\n$let number = $state(5);\n$let doubled = $state(0);\n\n$effect(() => {\n  doubled = number * 2;\n});\n\nfunction increment() {\n  number++;\n}\n$:$\n\n<div>\n  <p data-testid=\"number-value\">Number: {number}</p>\n  <p data-testid=\"doubled-value\">Doubled: {doubled}</p>\n  <button data-testid=\"increment-button\" onclick={increment}>Increment</button>\n</div>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/google/effect_sample1_50ff1cb477d7bacb/Component.svelte:8:22 Expected token }\nhttps://svelte.dev/e/expected_token"
+          "/svelte-bench/tmp/samples/google/effect_sample1_50ff1cb477d7bacb/Component.svelte:8:22 Expected token }\nhttps://svelte.dev/e/expected_token"
         ]
       },
       {
@@ -388,7 +388,7 @@
         "code": "<svelte:options runes={true} />\n\n$query = $state(5);\n$doubled = $state(0);\n\n$effect(() => {\n\t$doubled = $query * 2;\n});\n\nfunction increment() {\n\t$query++;\n}\n<p data-testid=\"number-value\">Number: {$query}</p>\n<p data-testid=\"doubled-value\">Doubled: {$doubled}</p>\n<button data-testid=\"increment-button\" on:click={increment}>Increment</button>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/google/effect_sample7_d41280031d306c91/Component.svelte:7:22 Expected token }\nhttps://svelte.dev/e/expected_token"
+          "/svelte-bench/tmp/samples/google/effect_sample7_d41280031d306c91/Component.svelte:7:22 Expected token }\nhttps://svelte.dev/e/expected_token"
         ]
       },
       {
@@ -396,7 +396,7 @@
         "code": "<svelte:options runes={true} />\n\n$runes\n$state\n$effect\n\nlet number = $state(5);\nlet doubled = $state(0);\n\n$effect(() => {\n\tdoubled = number * 2;\n});\n\nfunction increment() {\n\tnumber++;\n}\n<div>\n\t<p data-testid=\"number-value\">Number: {number}</p>\n\t<p data-testid=\"doubled-value\">Doubled: {doubled}</p>\n\t<button data-testid=\"increment-button\" onclick={increment}>Increment</button>\n</div>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/google/effect_sample8_b6256fa00d0c30d4/Component.svelte:11:21 Expected token }\nhttps://svelte.dev/e/expected_token"
+          "/svelte-bench/tmp/samples/google/effect_sample8_b6256fa00d0c30d4/Component.svelte:11:21 Expected token }\nhttps://svelte.dev/e/expected_token"
         ]
       },
       {
@@ -503,7 +503,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n    let text = $state('Hello world');\n\n    // 2. Basic $inspect: Logs the value whenever it changes\n    $inspect(text);\n\n    // 3. $inspect(...).with: Tracks updates with a custom callback\n    const handleTextUpdate = (newValue) => {\n        console.log([INSPECT.WITH] Text updated to: \"${newValue}\");\n    };\n    $inspect(text).with(handleTextUpdate);\n\n    // 4. $inspect.trace() inside an $effect\n    $effect(() => {\n        // Logs the call stack showing why this effect ran (due to 'text' change)\n        $inspect.trace();\n        console.log([EFFECT] Text changed. Current length: ${text.length});\n    });\n</script>\n\n<div>\n    <input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n    <p data-testid=\"text-value\">Current text: \"{text}\"</p>\n    <p data-testid=\"char-count\">Character count: {text.length}</p>\n</div>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/google/inspect_sample0_a786a5fac80f8702/Component.svelte:11:35 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+          "/svelte-bench/tmp/samples/google/inspect_sample0_a786a5fac80f8702/Component.svelte:11:35 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
         ],
         "temperature": 0
       },
@@ -512,7 +512,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n  let text = $state('Hello world');\n\n  // 1. Basic $inspect: Logs the value of 'text' whenever it changes\n  $inspect(text);\n\n  // 2. $inspect(...).with: Tracks updates using a custom callback\n  function logUpdate(newValue, oldValue) {\n    console.log([Custom Inspector] Text updated from \"${oldValue}\" to \"${newValue}\");\n  }\n  $inspect(text).with(logUpdate);\n\n  // 3. $inspect.trace() inside an effect\n  $effect(() => {\n    // When 'text' changes, this trace outputs the call stack that triggered the update\n    $inspect.trace();\n    console.log(Effect ran. Current value: ${text});\n  });\n</script>\n\n<div>\n  <!-- 6. Input field -->\n  <input \n    data-testid=\"text-input\" \n    type=\"text\" \n    bind:value={text} \n  />\n\n  <!-- 7. Display input value -->\n  <p data-testid=\"text-value\">Current text: \"{text}\"</p>\n\n  <!-- 8. Display character count (derived value demonstration) -->\n  <p data-testid=\"char-count\">Character count: {text.length}</p>\n</div>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/google/inspect_sample1_79b348884cca7e87/Component.svelte:11:24 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+          "/svelte-bench/tmp/samples/google/inspect_sample1_79b348884cca7e87/Component.svelte:11:24 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
         ]
       },
       {
@@ -520,7 +520,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n  let text = $state('Hello world');\n\n  // 1. Basic $inspect logging\n  // Logs the initial value and every update to 'text'\n  $inspect(text);\n\n  // 2. $inspect with custom callback (.with)\n  // Provides custom logging logic whenever 'text' updates\n  $inspect(text).with((value) => {\n    console.log([Custom .with Callback] Text updated to: \"${value}\");\n  });\n\n  // 3. $inspect.trace() inside an effect\n  // This effect runs whenever 'text' changes. trace() shows the reactive dependency path.\n  $effect(() => {\n    console.log([Effect Run] Current text length: ${text.length});\n    // Traces the dependency graph that caused this effect to rerun\n    $inspect.trace();\n  });\n</script>\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n  \n  <p data-testid=\"text-value\">Current text: \"{text}\"</p>\n  \n  <!-- Derived value demonstration -->\n  <p data-testid=\"char-count\">Character count: {text.length}</p>\n</div>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/google/inspect_sample2_78f9c0348bf741f1/Component.svelte:13:30 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+          "/svelte-bench/tmp/samples/google/inspect_sample2_78f9c0348bf741f1/Component.svelte:13:30 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
         ]
       },
       {
@@ -528,7 +528,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n    let text = $state(\"Hello world\");\n\n    $inspect(text);\n\n    const handleUpdate = (newValue) => {\n        console.log([Custom Inspector Handler] 'text' updated to: \"${newValue}\");\n    };\n\n    $inspect(text).with(handleUpdate);\n\n    $effect(() => {\n        console.log([Effect running] Current text length: ${text.length});\n        $inspect.trace();\n    });\n</script>\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n  \n  <p data-testid=\"text-value\">Current text: \"{text}\"</p>\n  <p data-testid=\"char-count\">Character count: {text.length}</p>\n</div>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/google/inspect_sample3_975b51536b1b3e60/Component.svelte:9:28 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+          "/svelte-bench/tmp/samples/google/inspect_sample3_975b51536b1b3e60/Component.svelte:9:28 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
         ]
       },
       {
@@ -536,7 +536,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n    let text = $state('Hello world');\n\n    // 1. Basic inspect: Logs state changes to the console under 'text'\n    $inspect(text);\n\n    // 2. Custom inspection callback\n    $inspect(text).with((newValue) => {\n        console.log([Custom Watcher] Text updated: \"${newValue}\");\n    });\n\n    // 3. Effect with trace: Runs and traces its execution whenever 'text' changes\n    $effect(() => {\n        // Accessing 'text' causes this effect to re-run when 'text' updates.\n        $inspect.trace('Tracing Text Change Effect');\n    });\n</script>\n\n<div>\n    <input \n        data-testid=\"text-input\" \n        type=\"text\" \n        bind:value={text} \n    />\n    \n    <p data-testid=\"text-value\">Current text: \"{text}\"</p>\n    \n    <!-- 4. Display character count (derived value) -->\n    <p data-testid=\"char-count\">Character count: {text.length}</p>\n</div>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/google/inspect_sample4_54dbc0d0ebb1dc72/Component.svelte:11:28 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+          "/svelte-bench/tmp/samples/google/inspect_sample4_54dbc0d0ebb1dc72/Component.svelte:11:28 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
         ]
       },
       {
@@ -544,7 +544,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n  let text = $state('Hello world');\n\n  const customLogger = (newValue, oldValue) => {\n    console.log('--- Custom Update Trace (using .with) ---');\n    console.log(Old value: \"${oldValue}\");\n    console.log(New value: \"${newValue}\");\n    console.log('-----------------------------------------');\n  };\n\n  // 3. Implement $inspect(...).with\n  $inspect(text).with(customLogger);\n\n  // 4. Implement $inspect.trace() inside an effect\n  $effect(() => {\n    $inspect.trace('text change effect trigger');\n    console.log(Effect triggered. Current length: ${text.length});\n  });\n\n  // 2. Basic $inspect (implicitly available via devtools, but explicit declaration helps)\n  // $inspect(text);\n</script>\n\n<div>\n  <!-- 6. Input field -->\n  <input \n    data-testid=\"text-input\" \n    type=\"text\" \n    bind:value={text} \n  />\n  \n  <!-- 7. Display the input value -->\n  <p data-testid=\"text-value\">Current text: \"{text}\"</p>\n  \n  <!-- 5. and 8. Display the character count -->\n  <p data-testid=\"char-count\">Character count: {text.length}</p>\n</div>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/google/inspect_sample5_0d088e747dfc9819/Component.svelte:8:20 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+          "/svelte-bench/tmp/samples/google/inspect_sample5_0d088e747dfc9819/Component.svelte:8:20 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
         ]
       },
       {
@@ -552,7 +552,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n\tlet text = $state(\"Hello world\");\n\n\t// 1. Basic $inspect: Logs the value of text whenever it changes.\n\t$inspect(text);\n\n\t// 2. $inspect(...).with: Tracks updates with a custom callback function.\n\t$inspect(text).with((oldValue, newValue) => {\n\t\tconsole.log([Custom Inspector] Text updated. Old: \"${oldValue}\", New: \"${newValue}\");\n\t});\n\n\t// 3. $inspect.trace() inside an effect: Logs the call stack whenever the effect re-runs (i.e., when 'text' changes).\n\t$effect(() => {\n\t\t$inspect.trace();\n\t\tconsole.log([Effect Run] Tracing updates based on text dependency.);\n\t});\n</script>\n\n<div>\n\t<input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n\t<p data-testid=\"text-value\">Current text: \"{text}\"</p>\n\t<p data-testid=\"char-count\">Character count: {text.length}</p>\n</div>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/google/inspect_sample6_e46200093acdd311/Component.svelte:11:22 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+          "/svelte-bench/tmp/samples/google/inspect_sample6_e46200093acdd311/Component.svelte:11:22 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
         ]
       },
       {
@@ -560,7 +560,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n    let text = $state('Hello world');\n\n    // 2. Basic $inspect: Logs the value of 'text' whenever it changes.\n    $inspect(text);\n\n    // 3. $inspect.with: Tracks updates with a custom logging callback.\n    $inspect(text).with((current, previous) => {\n        console.log([INSPECT.WITH] Text updated. Previous: \"${previous}\" | Current: \"${current}\");\n    });\n\n    // 4. $inspect.trace(): Traces the dependency graph when the effect runs.\n    $effect(() => {\n        // Accessing 'text' here makes the effect dependent on it.\n        console.log([EFFECT] Running because text changed. Current length: ${text.length});\n        $inspect.trace('Tracing Text Dependency Update');\n    });\n</script>\n\n<div>\n    <h2>$inspect Rune Demo</h2>\n\n    <!-- 6. Input field -->\n    <input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n    \n    <!-- 7. Display the input value -->\n    <p data-testid=\"text-value\">Current text: \"{text}\"</p>\n    \n    <!-- 5, 8. Display the character count (derived value) -->\n    <p data-testid=\"char-count\">Character count: {text.length}</p>\n</div>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/google/inspect_sample7_330521e2218dcc5e/Component.svelte:11:35 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+          "/svelte-bench/tmp/samples/google/inspect_sample7_330521e2218dcc5e/Component.svelte:11:35 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
         ]
       },
       {
@@ -568,7 +568,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n  let text = $state('Hello world');\n\n  // 2. Use basic $inspect to log the input value on every change\n  $inspect(text);\n\n  // 3. Implement $inspect(...).with to track updates with a custom callback\n  $inspect(text).with((currentValue) => {\n    console.log('--- Custom $inspect hook ---');\n    console.log(Text updated via .with: \"${currentValue}\");\n    console.log('----------------------------');\n  });\n\n  // 4. Implement $inspect.trace() inside an effect\n  $effect(() => {\n    // This traces the reactive dependencies that caused this effect to run.\n    $inspect.trace('Text change effect trace');\n    // We access text here to ensure the dependency is established\n    console.log(Effect runs: Text length is ${text.length});\n  });\n</script>\n\n<div>\n  <input \n    data-testid=\"text-input\" \n    type=\"text\" \n    bind:value={text} \n  />\n  \n  <!-- 7. Display the input value -->\n  <p data-testid=\"text-value\">Current text: \"{text}\"</p>\n  \n  <!-- 8. Display the character count (5. derived value) -->\n  <p data-testid=\"char-count\">Character count: {text.length}</p>\n</div>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/google/inspect_sample8_0801ce0607bce1b3/Component.svelte:12:21 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+          "/svelte-bench/tmp/samples/google/inspect_sample8_0801ce0607bce1b3/Component.svelte:12:21 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
         ]
       },
       {
@@ -576,7 +576,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n  let text = $state('Hello world');\n\n  // 1. Basic $inspect\n  $inspect(text);\n\n  // 2. $inspect with custom callback\n  $inspect(text).with((newValue, oldValue) => {\n    console.log([Custom Inspect .with]: Value changed from \"${oldValue}\" to \"${newValue}\");\n  });\n\n  // 3. $inspect.trace() inside an $effect\n  $effect(() => {\n    // Log the dependency trace whenever the effect runs (i.e., when 'text' changes)\n    $inspect.trace();\n    // Optional: Confirm effect ran\n    console.log([Effect Ran]: Current text state is observed.);\n  });\n</script>\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n  \n  <p data-testid=\"text-value\">Current text: \"{text}\"</p>\n  \n  <p data-testid=\"char-count\">Character count: {text.length}</p>\n</div>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/google/inspect_sample9_cac7d52dcb3f986a/Component.svelte:11:24 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+          "/svelte-bench/tmp/samples/google/inspect_sample9_cac7d52dcb3f986a/Component.svelte:11:24 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
         ]
       }
     ],
@@ -686,7 +686,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n\tconst books = [\"The Lord of the Rings\", \"To Kill a Mockingbird\", \"1984\"];\n\n\tconst title = $snippet((bookTitle) => {\n\t\treturn (\n\t\t\t<span data-testid=\"book-title\">{bookTitle}</span>\n\t\t);\n\t});\n</script>\n\n<ul>\n\t{#each books as book}\n\t\t<li data-testid=\"book-item\">\n\t\t\t{@render title(book)}\n\t\t</li>\n\t{/each}\n</ul>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/google/snippets_sample1_6b40c1c75d0e4dcf/Component.svelte:8:3 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+          "/svelte-bench/tmp/samples/google/snippets_sample1_6b40c1c75d0e4dcf/Component.svelte:8:3 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
         ]
       },
       {
@@ -694,7 +694,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n\tconst books = [\"The Lord of the Rings\", \"To Kill a Mockingbird\", \"1984\"];\n\n\t// Define the snippet\n\tconst snippet title(bookTitle) {\n\t\treturn <span data-testid=\"book-title\">{bookTitle}</span>;\n\t}\n</script>\n\n<ul>\n\t{#each books as book}\n\t\t<li data-testid=\"book-item\">\n\t\t\t{@render title(book)}\n\t\t</li>\n\t{/each}\n</ul>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/google/snippets_sample2_983ff4c67f0eb6e0/Component.svelte:7:15 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+          "/svelte-bench/tmp/samples/google/snippets_sample2_983ff4c67f0eb6e0/Component.svelte:7:15 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
         ]
       },
       {
@@ -714,7 +714,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n\tconst books = [\"The Lord of the Rings\", \"To Kill a Mockingbird\", \"1984\"];\n\n\t$snippet(title(bookTitle)) {\n\t\t<span data-testid=\"book-title\">{bookTitle}</span>\n\t}\n</script>\n\n<ul>\n\t{#each books as book}\n\t\t<li data-testid=\"book-item\">\n\t\t\t{@render title(book)}\n\t\t</li>\n\t{/each}\n</ul>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/google/snippets_sample5_c0bb5e4e89c3ced7/Component.svelte:6:28 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+          "/svelte-bench/tmp/samples/google/snippets_sample5_c0bb5e4e89c3ced7/Component.svelte:6:28 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
         ]
       },
       {
@@ -722,7 +722,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n\tconst books = [\"The Lord of the Rings\", \"To Kill a Mockingbird\", \"1984\"];\n\n\t// Snippet definition\n\tconst title = snippet((bookTitle) => {\n\t\treturn <span data-testid=\"book-title\">{bookTitle}</span>;\n\t});\n</script>\n\n<ul>\n\t{#each books as book}\n\t\t<li data-testid=\"book-item\">\n\t\t\t{@render title(book)}\n\t\t</li>\n\t{/each}\n</ul>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/google/snippets_sample6_86173e7fd3c8db78/Component.svelte:8:9 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+          "/svelte-bench/tmp/samples/google/snippets_sample6_86173e7fd3c8db78/Component.svelte:8:9 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
         ]
       },
       {
@@ -730,7 +730,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n  const books = [\n    \"The Lord of the Rings\",\n    \"To Kill a Mockingbird\",\n    \"1984\"\n  ];\n</script>\n\n{@snippet title(bookTitle)}\n  <span data-testid=\"book-title\">{bookTitle}</span>\n{/snippet}\n\n<ul>\n  {#each books as book}\n    <li data-testid=\"book-item\">\n      {@render title(book)}\n    </li>\n  {/each}\n</ul>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/google/snippets_sample7_e7a6bc898166ba3f/Component.svelte:13:1 Unexpected block closing tag\nhttps://svelte.dev/e/block_unexpected_close"
+          "/svelte-bench/tmp/samples/google/snippets_sample7_e7a6bc898166ba3f/Component.svelte:13:1 Unexpected block closing tag\nhttps://svelte.dev/e/block_unexpected_close"
         ]
       },
       {
@@ -738,7 +738,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n\tconst books = [\"The Lord of the Rings\", \"To Kill a Mockingbird\", \"1984\"];\n\n\t$snippet(bookTitle) {\n\t\t<span data-testid=\"book-title\">{bookTitle}</span>\n\t}\n</script>\n\n<ul>\n\t{#each books as book}\n\t\t<li data-testid=\"book-item\">\n\t\t\t{@render title(book)}\n\t\t</li>\n\t{/each}\n</ul>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/google/snippets_sample8_d3088849a8aa1aae/Component.svelte:6:21 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+          "/svelte-bench/tmp/samples/google/snippets_sample8_d3088849a8aa1aae/Component.svelte:6:21 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
         ]
       },
       {
@@ -746,7 +746,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n    const books = [\n        \"The Lord of the Rings\",\n        \"To Kill a Mockingbird\",\n        \"1984\"\n    ];\n</script>\n\n{@snippet title(bookTitle)}\n    <span data-testid=\"book-title\">{bookTitle}</span>\n{/snippet}\n\n<ul>\n    {#each books as book}\n        <li data-testid=\"book-item\">\n            {@render title(book)}\n        </li>\n    {/each}\n</ul>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/google/snippets_sample9_6e2615ec4f6b6c40/Component.svelte:13:1 Unexpected block closing tag\nhttps://svelte.dev/e/block_unexpected_close"
+          "/svelte-bench/tmp/samples/google/snippets_sample9_6e2615ec4f6b6c40/Component.svelte:13:1 Unexpected block closing tag\nhttps://svelte.dev/e/block_unexpected_close"
         ]
       }
     ],
