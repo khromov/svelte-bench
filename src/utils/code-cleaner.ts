@@ -19,8 +19,10 @@ export function cleanCodeMarkdown(code: string): string {
   // Remove any standalone triple backticks
   cleanedCode = cleanedCode.replace(/```/g, "");
 
-  // Handle potential single or double backticks that might be leftover
-  cleanedCode = cleanedCode.replace(/``|`/g, "");
+  // Note: We do NOT remove single or double backticks as they are used in:
+  // - JavaScript template literals (e.g., `string ${var}`)
+  // - Inline code in markdown (e.g., `code`)
+  // Only the triple backtick code fences should be removed
 
   // Trim whitespace from the beginning and end
   return cleanedCode.trim();
