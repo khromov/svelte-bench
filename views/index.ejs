@@ -47,7 +47,7 @@
     <% if (benchmarkFiles.length === 0) { %>
       <div class="no-results">
         <h2>No benchmark results found</h2>
-        <p>Run the benchmark first using <code>npm start</code></p>
+        <p>Run the benchmark first using <code>pnpm start</code></p>
       </div>
     <% } else { %>
       <%
@@ -114,7 +114,7 @@
         <!-- This shouldn't happen, but just in case -->
         <div class="no-results">
           <h2>No valid benchmark results found</h2>
-          <p>Run the benchmark first using <code>npm start</code></p>
+          <p>Run the benchmark first using <code>pnpm start</code></p>
         </div>
       <% } %>
 
@@ -417,7 +417,7 @@
                         <tr>
                           <td><%= result.testName %></td>
                           <td>
-                            <% 
+                            <%
                               const pass1Percentage = Math.round(result.pass1 * 100);
                               let badgeClass = 'badge-error';
                               if (result.numCorrect === result.numSamples) {
@@ -477,7 +477,7 @@
     <% } else { %>
       <div class="no-results">
         <h2>No benchmark results found</h2>
-        <p>Run the benchmark first using <code>npm start</code></p>
+        <p>Run the benchmark first using <code>pnpm start</code></p>
       </div>
     <% } %>
 
@@ -1013,11 +1013,11 @@
           function expandProvidersAndModels() {
             // Find all provider sections and their model subsections
             const providerSections = document.querySelectorAll('.provider-section');
-            
+
             providerSections.forEach(providerSection => {
               const providerTrigger = providerSection.querySelector('.accordion-trigger');
               const providerContent = providerSection.querySelector('.accordion-content');
-              
+
               // Expand provider if collapsed
               if (providerTrigger && providerTrigger.getAttribute('data-state') === 'closed') {
                 providerTrigger.setAttribute('data-state', 'open');
@@ -1025,13 +1025,13 @@
                   providerContent.setAttribute('data-state', 'open');
                 }
               }
-              
+
               // Expand all model sections within this provider
               const modelSections = providerSection.querySelectorAll('.accordion-item:not(.provider-section)');
               modelSections.forEach(modelSection => {
                 const modelTrigger = modelSection.querySelector('.accordion-trigger');
                 const modelContent = modelSection.querySelector('.accordion-content');
-                
+
                 if (modelTrigger && modelTrigger.getAttribute('data-state') === 'closed') {
                   modelTrigger.setAttribute('data-state', 'open');
                   if (modelContent) {
@@ -1047,10 +1047,10 @@
             const modelLink = event.target.closest('.model-name-link');
             if (modelLink) {
               event.preventDefault(); // Prevent immediate navigation
-              
+
               // Expand all providers and models
               expandProvidersAndModels();
-              
+
               // Wait 150ms then navigate to the hash
               setTimeout(() => {
                 window.location.hash = modelLink.getAttribute('href').substring(1);
@@ -1103,15 +1103,15 @@
           window.smoothScrollToModel = function(event, link) {
             event.preventDefault();
             event.stopPropagation(); // Prevent event bubbling
-            
+
             const targetId = link.getAttribute('href').substring(1);
             let targetElement = document.getElementById(targetId);
-            
+
             // If not found, try alternative approaches
             if (!targetElement) {
               const allModelElements = document.querySelectorAll('[id^="model-"]');
               const targetIdParts = targetId.split('-');
-              
+
               // Look for a partial match
               for (const element of allModelElements) {
                 const elementIdParts = element.id.split('-');
@@ -1121,7 +1121,7 @@
                   const targetModel = targetIdParts.slice(-1)[0];
                   const elementProvider = elementIdParts.slice(1, -1).join('-');
                   const targetProvider = targetIdParts.slice(1, -1).join('-');
-                  
+
                   if (elementModel === targetModel && elementProvider === targetProvider) {
                     targetElement = element;
                     break;
@@ -1129,39 +1129,39 @@
                 }
               }
             }
-            
+
             if (!targetElement) {
               console.warn('Could not find target element for ID:', targetId);
               return;
             }
-            
+
             // Find and open all parent accordions
             let currentElement = targetElement;
             const accordionsToOpen = [];
-            
+
             // Walk up the DOM tree to find all accordion items that need to be opened
             while (currentElement && currentElement !== document.body) {
               if (currentElement.classList.contains('accordion-item')) {
                 const trigger = currentElement.querySelector('.accordion-trigger');
                 const content = currentElement.querySelector('.accordion-content');
-                
+
                 if (trigger && content && content.getAttribute('data-state') === 'closed') {
                   accordionsToOpen.push(trigger);
                 }
               }
               currentElement = currentElement.parentElement;
             }
-            
+
             // Open all accordions that need to be opened (in reverse order - parent first)
             accordionsToOpen.reverse().forEach(trigger => trigger.click());
-            
+
             // Smooth scroll to the target with proper offset
             setTimeout(() => {
               // Ensure the element is visible after accordions open
               const rect = targetElement.getBoundingClientRect();
               const offset = 120;
               const targetY = window.scrollY + rect.top - offset;
-              
+
               window.scrollTo({
                 top: Math.max(0, targetY),
                 behavior: 'smooth'
@@ -1174,28 +1174,28 @@
           // ============================================
           const searchInput = document.getElementById('model-search-input');
           const clearButton = document.getElementById('clear-search-btn');
-          
+
           if (searchInput && clearButton) {
             // Show/hide clear button based on input content
             function toggleClearButton() {
               clearButton.style.display = searchInput.value ? 'block' : 'none';
             }
-            
+
             // Clear search and hide button
             function clearSearch() {
               searchInput.value = '';
               clearButton.style.display = 'none';
               searchInput.focus();
-              
+
               // Trigger input event to update search results
               const event = new Event('input', { bubbles: true });
               searchInput.dispatchEvent(event);
             }
-            
+
             // Add event listeners
             searchInput.addEventListener('input', toggleClearButton);
             clearButton.addEventListener('click', clearSearch);
-            
+
             // Initial state
             toggleClearButton();
           }
