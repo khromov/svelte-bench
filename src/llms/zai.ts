@@ -5,7 +5,7 @@ import {
 import type { LLMProvider } from "./index";
 import { withRetry } from "../utils/retry-wrapper";
 
-export class ZAIProvider implements LLMProvider {
+export class LEGACY_ZAIProvider implements LLMProvider {
   private apiKey: string;
   private modelId: string;
   name = "Z.ai";

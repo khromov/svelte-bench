@@ -84,7 +84,8 @@ export async function runSingleTest(
   llmProvider: LLMProvider,
   sampleIndex: number = 0,
   temperature?: number,
-  contextContent?: string
+  contextContent?: string,
+  enableMCP?: boolean
 ): Promise<BenchmarkResult> {
   try {
     const providerName = llmProvider.name;
@@ -100,8 +101,8 @@ export async function runSingleTest(
     );
     let generatedCode = await withRetry(
       async () => {
-        const rawCode = await llmProvider.generateCode(prompt, temperature, contextContent);
-        
+        const rawCode = await llmProvider.generateCode(prompt, temperature, contextContent, enableMCP);
+
         // Apply cleaning to remove markdown code blocks
         const cleanedCode = cleanCodeMarkdown(rawCode);
         
@@ -208,7 +209,8 @@ export async function runHumanEvalTest(
   testIndex?: number,
   completedResults?: HumanEvalResult[],
   existingSamples: BenchmarkResult[] = [],
-  startSampleIndex: number = 0
+  startSampleIndex: number = 0,
+  enableMCP?: boolean
 ): Promise<HumanEvalResult> {
   try {
     const actualProviderName = providerName || llmProvider.name;
@@ -232,7 +234,8 @@ export async function runHumanEvalTest(
           llmProvider,
           i,
           temperature,
-          contextContent
+          contextContent,
+          enableMCP
         );
         
         // Only add to samples if the API call was successful (has generated code)
@@ -377,12 +380,14 @@ export async function runHumanEvalTest(
  * @param numSamples Number of samples to generate for each test (default: 10)
  * @param specificTests Optional array of test definitions to run (default: all tests)
  * @param contextContent Optional context content to include in prompts
+ * @param enableMCP Optional flag to enable MCP tools
  */
 export async function runAllTestsHumanEval(
   llmProvider: LLMProvider,
   numSamples: number = 10,
   specificTests?: TestDefinition[],
-  contextContent?: string
+  contextContent?: string,
+  enableMCP?: boolean
 ): Promise<HumanEvalResult[]> {
   try {
     const providerName = llmProvider.name;
@@ -460,7 +465,8 @@ export async function runAllTestsHumanEval(
           i,
           results,
           existingSamples,
-          sampleStartIndex
+          sampleStartIndex,
+          enableMCP
         );
         
         // Only add result if it has valid samples (not just API failures)

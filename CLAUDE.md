@@ -24,6 +24,29 @@ SvelteBench supports two execution modes:
 
 ## Common Commands
 
+### New AI SDK CLI Interface
+
+```bash
+# Basic syntax: pnpm start [provider] [model] [mcp?] [parallel?] [--context file]
+
+# Run with Anthropic Claude Haiku
+pnpm start anthropic haiku-4-5
+
+# Run with Anthropic Claude Haiku and MCP tools (Svelte-specific enhancements)
+pnpm start anthropic haiku-4-5 mcp
+
+# Run with OpenAI GPT-4o and parallel execution
+pnpm start openai gpt-4o parallel
+
+# Run with Anthropic, Haiku, MCP tools, and parallel execution
+pnpm start anthropic haiku-4-5 mcp parallel
+
+# Run with context file and MCP
+pnpm start anthropic haiku-4-5 mcp --context ./context/svelte.dev/llms-small.txt
+```
+
+### Legacy Environment Variable Interface (Still Supported)
+
 ```bash
 # Run full benchmark (sequential execution)
 pnpm start
@@ -55,16 +78,44 @@ pnpm run verify
 Set environment variables to control execution behavior:
 
 ```bash
-# Debug mode for faster development testing
+# Debug mode for faster development testing (legacy, still supported)
 DEBUG_MODE=true
 DEBUG_PROVIDER=openrouter
 DEBUG_MODEL=openai/gpt-oss-20b:free
 
-# Enable parallel execution for faster benchmark runs
+# Enable parallel execution for faster benchmark runs (works with both CLI and DEBUG_MODE)
 PARALLEL_EXECUTION=true
 ```
 
 Multiple models can be specified: `DEBUG_MODEL=model1,model2,model3`
+
+### AI SDK Providers Configuration
+
+All AI SDK providers are now available through a unified interface. Configure API keys in `.env`:
+
+**Language Model Providers:**
+- `ANTHROPIC_API_KEY` - Anthropic Claude models
+- `OPENAI_API_KEY` - OpenAI GPT models
+- `GOOGLE_API_KEY` - Google Generative AI
+- `GOOGLE_VERTEX_PROJECT` - Google Vertex AI
+- `AZURE_API_KEY` + `AZURE_RESOURCE_NAME` - Azure OpenAI
+- `XAI_API_KEY` - xAI Grok models
+- `MISTRAL_API_KEY` - Mistral AI
+- `GROQ_API_KEY` - Groq
+- `DEEPSEEK_API_KEY` - DeepSeek
+- `CEREBRAS_API_KEY` - Cerebras
+- `FIREWORKS_API_KEY` - Fireworks
+- `TOGETHER_API_KEY` - Together.ai
+- `PERPLEXITY_API_KEY` - Perplexity
+- `DEEPINFRA_API_KEY` - DeepInfra
+- `COHERE_API_KEY` - Cohere
+- `AWS_ACCESS_KEY_ID` + `AWS_REGION` - Amazon Bedrock
+
+### MCP Integration
+
+Enable Svelte-specific tooling through Model Context Protocol:
+- `pnpm start anthropic haiku-4-5 mcp` - Enables MCP tools from https://mcp.svelte.dev/mcp
+- MCP tools are loaded via HTTP transport for enhanced Svelte development capabilities
 
 ## Test Structure
 

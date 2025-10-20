@@ -18,23 +18,82 @@ import path from "path";
 
 /**
  * Parse command line arguments
+ * Supports both new CLI syntax and legacy DEBUG_MODE environment variables
+ * New syntax: pnpm start [provider] [model] [mcp?] [parallel?] [--context file]
+ * Example: pnpm start anthropic haiku-4-5 mcp parallel --context ./context.txt
+ *
+ * Legacy: DEBUG_MODE=true DEBUG_PROVIDER=anthropic DEBUG_MODEL=haiku-4-5 pnpm start
+ *
  * @returns Parsed command line arguments
  */
 function parseCommandLineArgs(): {
+  provider?: string;
+  model?: string;
+  enableMCP: boolean;
+  parallel: boolean;
   contextFile?: string;
 } {
   const args = process.argv.slice(2);
+  let provider: string | undefined;
+  let model: string | undefined;
+  let enableMCP = false;
+  let parallel = false;
   let contextFile: string | undefined;
 
-  // Parse arguments
+  // Parse positional and named arguments
+  let positionalIndex = 0;
   for (let i = 0; i < args.length; i++) {
-    if (args[i] === "--context" && i + 1 < args.length) {
+    const arg = args[i];
+
+    // Handle named flags and options
+    if (arg === "--context" && i + 1 < args.length) {
       contextFile = args[i + 1];
       i++; // Skip the next argument as it's the value for --context
+      continue;
+    }
+
+    // Skip other flags
+    if (arg.startsWith("--")) {
+      continue;
+    }
+
+    // Parse positional arguments
+    switch (positionalIndex) {
+      case 0: // provider
+        provider = arg;
+        positionalIndex++;
+        break;
+      case 1: // model
+        model = arg;
+        positionalIndex++;
+        break;
+      case 2: // mcp flag
+        if (arg.toLowerCase() === "mcp") {
+          enableMCP = true;
+        } else if (arg.toLowerCase() === "parallel") {
+          parallel = true;
+        }
+        positionalIndex++;
+        break;
+      case 3: // parallel flag or other
+        if (arg.toLowerCase() === "parallel") {
+          parallel = true;
+        }
+        positionalIndex++;
+        break;
     }
   }
 
+  // Check for parallel execution environment variable (can override CLI arg)
+  if (process.env.PARALLEL_EXECUTION === "true") {
+    parallel = true;
+  }
+
   return {
+    provider,
+    model,
+    enableMCP,
+    parallel,
     contextFile,
   };
 }
@@ -44,14 +103,15 @@ function parseCommandLineArgs(): {
  */
 async function runBenchmark() {
   try {
-    // Parse command line arguments
-    const { contextFile } = parseCommandLineArgs();
-    
-    // Check for parallel execution environment variable
-    const parallel = process.env.PARALLEL_EXECUTION === "true";
-    
+    // Parse command line arguments (includes both new CLI syntax and legacy DEBUG_MODE support)
+    const { provider: cliProvider, model: cliModel, enableMCP, parallel, contextFile } = parseCommandLineArgs();
+
     const executionMode = parallel ? "PARALLEL EXECUTION" : "SEQUENTIAL EXECUTION";
     console.log(`🚀 Starting SvelteBench with HumanEval methodology (${executionMode})...`);
+
+    if (enableMCP) {
+      console.log("🔌 MCP tools enabled for Svelte support");
+    }
 
     // Load context file if specified
     let contextContent = "";
@@ -72,8 +132,8 @@ async function runBenchmark() {
 
     // Note: We don't clean sample directories at startup anymore - only checkpoints are cleared
 
-    // Check if we're in debug mode
-    const isDebugMode = process.env.DEBUG_MODE === "true";
+    // Determine debug mode: either from CLI args or DEBUG_MODE environment variable
+    const isDebugMode = process.env.DEBUG_MODE === "true" || (cliProvider && cliModel);
 
     // Initialize provider models array
     let selectedProviderModels: any[] = [];
@@ -81,9 +141,10 @@ async function runBenchmark() {
     if (isDebugMode) {
       console.log("🐛 Running in DEBUG_MODE");
 
-      // Get debug settings
-      const debugProvider = process.env.DEBUG_PROVIDER;
-      const debugModel = process.env.DEBUG_MODEL;
+      // Get provider/model from CLI args or DEBUG_MODE environment variables
+      // CLI args take precedence over environment variables
+      const debugProvider = cliProvider || process.env.DEBUG_PROVIDER;
+      const debugModel = cliModel || process.env.DEBUG_MODEL;
 
       if (!debugProvider) {
         throw new Error("DEBUG_PROVIDER must be specified in debug mode");
@@ -122,6 +183,7 @@ async function runBenchmark() {
           provider,
           name: debugProvider.charAt(0).toUpperCase() + debugProvider.slice(1),
           modelId,
+          enableMCP, // Include MCP flag with this provider
         });
       }
 
@@ -220,7 +282,8 @@ async function runBenchmark() {
             providerWithModel.provider,
             modelNumSamples,
             testDefinitions, // Pass specific tests if in debug mode
-            contextContent // Pass context content if available
+            contextContent, // Pass context content if available
+            providerWithModel.enableMCP // Pass MCP flag
           );
 
           // Save individual model results immediately to prevent loss if later models fail
@@ -275,7 +338,8 @@ async function runBenchmark() {
             providerWithModel.provider,
             modelNumSamples,
             testDefinitions, // Pass specific tests if in debug mode
-            contextContent // Pass context content if available
+            contextContent, // Pass context content if available
+            providerWithModel.enableMCP // Pass MCP flag
           );
 
           // Add results to combined array

@@ -122,7 +122,8 @@ async function runSingleTestSample(
   llmProvider: LLMProvider,
   sampleIndex: number,
   temperature: number | undefined,
-  contextContent?: string
+  contextContent?: string,
+  enableMCP?: boolean
 ): Promise<BenchmarkResult> {
   const providerName = llmProvider.name;
   const testDir = getUniqueTestDir(providerName, test.name, sampleIndex);
@@ -141,7 +142,7 @@ async function runSingleTestSample(
     
     let generatedCode = await withRetry(
       async () => {
-        const rawCode = await llmProvider.generateCode(prompt, temperature, contextContent);
+        const rawCode = await llmProvider.generateCode(prompt, temperature, contextContent, enableMCP);
         const cleanedCode = cleanCodeMarkdown(rawCode);
         
         if (!cleanedCode.trim()) {
@@ -234,7 +235,8 @@ async function runTestSamplesInParallelWithCheckpointing(
   testIndex?: number,
   completedResults?: HumanEvalResult[],
   existingSamples: BenchmarkResult[] = [],
-  startSampleIndex: number = 0
+  startSampleIndex: number = 0,
+  enableMCP?: boolean
 ): Promise<BenchmarkResult[]> {
   const providerName = llmProvider.name;
   const modelId = llmProvider.getModelIdentifier();
@@ -247,7 +249,7 @@ async function runTestSamplesInParallelWithCheckpointing(
     const temperature = i === 0 ? 0 : undefined;
     const sampleIndex = i;
     
-    const samplePromise = runSingleTestSample(test, llmProvider, sampleIndex, temperature, contextContent)
+    const samplePromise = runSingleTestSample(test, llmProvider, sampleIndex, temperature, contextContent, enableMCP)
       .then(result => ({ index: sampleIndex, result }))
       .catch(error => {
         console.error(`Error running sample ${sampleIndex + 1} for ${test.name}:`, error);
@@ -333,7 +335,8 @@ export async function runHumanEvalTest(
   testIndex?: number,
   completedResults?: HumanEvalResult[],
   existingSamples: BenchmarkResult[] = [],
-  startSampleIndex: number = 0
+  startSampleIndex: number = 0,
+  enableMCP?: boolean
 ): Promise<HumanEvalResult> {
   try {
     const providerName = llmProvider.name;
@@ -347,14 +350,15 @@ export async function runHumanEvalTest(
     
     // Run samples in parallel with checkpointing
     const samples = await runTestSamplesInParallelWithCheckpointing(
-      test, 
-      llmProvider, 
-      numSamples, 
+      test,
+      llmProvider,
+      numSamples,
       contextContent,
       testIndex,
       completedResults,
       existingSamples,
-      startSampleIndex
+      startSampleIndex,
+      enableMCP
     );
     
     // Show completion status
@@ -441,7 +445,8 @@ export async function runAllTestsHumanEval(
   llmProvider: LLMProvider,
   numSamples: number = 10,
   specificTests?: TestDefinition[],
-  contextContent?: string
+  contextContent?: string,
+  enableMCP?: boolean
 ): Promise<HumanEvalResult[]> {
   try {
     const providerName = llmProvider.name;
@@ -517,7 +522,8 @@ export async function runAllTestsHumanEval(
           i,
           results,
           existingSamples,
-          sampleStartIndex
+          sampleStartIndex,
+          enableMCP
         );
         
         // Only add result if it has valid samples (not just API failures)

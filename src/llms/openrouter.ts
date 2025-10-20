@@ -6,7 +6,7 @@ import type { LLMProvider } from "./index";
 import OpenAI from "openai";
 import type { ChatCompletionMessageParam } from "openai/resources/chat/completions";
 
-export class OpenRouterProvider implements LLMProvider {
+export class LEGACY_OpenRouterProvider implements LLMProvider {
   private client: OpenAI;
   private modelId: string;
   name = "OpenRouter";

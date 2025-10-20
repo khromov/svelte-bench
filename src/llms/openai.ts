@@ -10,7 +10,7 @@ import type {
 } from "openai/resources/responses/responses";
 import type { ReasoningEffort } from "openai/resources/shared";
 
-export class OpenAIProvider implements LLMProvider {
+export class LEGACY_OpenAIProvider implements LLMProvider {
   private client: OpenAI;
   private modelId: string;
   name = "OpenAI";

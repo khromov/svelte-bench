@@ -40,7 +40,7 @@ interface MoonshotResponse {
   };
 }
 
-export class MoonshotProvider implements LLMProvider {
+export class LEGACY_MoonshotProvider implements LLMProvider {
   private apiKey: string;
   private baseUrl: string;
   private modelId: string;

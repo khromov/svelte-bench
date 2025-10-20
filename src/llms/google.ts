@@ -5,7 +5,7 @@ import {
 import type { LLMProvider } from "./index";
 import { GoogleGenAI } from "@google/genai";
 
-export class GoogleGenAIProvider implements LLMProvider {
+export class LEGACY_GoogleGenAIProvider implements LLMProvider {
   private client: GoogleGenAI;
   private modelId: string;
   name = "Google";

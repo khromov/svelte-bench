@@ -13,12 +13,14 @@ export interface LLMProvider {
    * @param prompt The prompt to send to the LLM
    * @param temperature Optional temperature parameter for controlling randomness
    * @param contextContent Optional context content to include in the prompt
+   * @param enableMCP Optional flag to enable MCP tools
    * @returns The generated code
    */
   generateCode(
     prompt: string,
     temperature?: number,
     contextContent?: string,
+    enableMCP?: boolean,
   ): Promise<string>;
 
   /**
@@ -71,33 +73,7 @@ export async function getLLMProvider(
     );
   }
 
-  // Use native SDK providers for better feature parity
-  // These have special features (reasoning, max_tokens, timeouts, etc.)
-  switch (actualProvider.toLowerCase()) {
-    case "openai":
-      const { OpenAIProvider } = await import("./openai");
-      return new OpenAIProvider(actualModel);
-    case "anthropic":
-      const { AnthropicProvider } = await import("./anthropic");
-      return new AnthropicProvider(actualModel);
-    case "google":
-      const { GoogleGenAIProvider } = await import("./google");
-      return new GoogleGenAIProvider(actualModel);
-    case "openrouter":
-      const { OpenRouterProvider } = await import("./openrouter");
-      return new OpenRouterProvider(actualModel);
-    case "ollama":
-      const { OllamaProvider } = await import("./ollama");
-      return new OllamaProvider(actualModel);
-    case "zai":
-      const { ZAIProvider } = await import("./zai");
-      return new ZAIProvider(actualModel);
-    case "moonshot":
-      const { MoonshotProvider } = await import("./moonshot");
-      return new MoonshotProvider(actualModel);
-  }
-
-  // Try AI SDK unified registry for other official providers
+  // Try AI SDK unified registry first for all official providers
   const { getAvailableProviders } = await import("./ai-sdk/unified-registry");
   const { AISDKProviderWrapper } = await import("./ai-sdk/base-provider");
 
@@ -106,11 +82,37 @@ export async function getLLMProvider(
     return new AISDKProviderWrapper(actualProvider.toLowerCase(), actualModel);
   }
 
+  // Fallback to legacy native SDK providers (for reference/special cases)
+  // These legacy providers are maintained for backward compatibility only
+  switch (actualProvider.toLowerCase()) {
+    case "openai":
+      const { LEGACY_OpenAIProvider } = await import("./openai");
+      return new LEGACY_OpenAIProvider(actualModel);
+    case "anthropic":
+      const { LEGACY_AnthropicProvider } = await import("./anthropic");
+      return new LEGACY_AnthropicProvider(actualModel);
+    case "google":
+      const { LEGACY_GoogleGenAIProvider } = await import("./google");
+      return new LEGACY_GoogleGenAIProvider(actualModel);
+    case "openrouter":
+      const { LEGACY_OpenRouterProvider } = await import("./openrouter");
+      return new LEGACY_OpenRouterProvider(actualModel);
+    case "ollama":
+      const { LEGACY_OllamaProvider } = await import("./ollama");
+      return new LEGACY_OllamaProvider(actualModel);
+    case "zai":
+      const { LEGACY_ZAIProvider } = await import("./zai");
+      return new LEGACY_ZAIProvider(actualModel);
+    case "moonshot":
+      const { LEGACY_MoonshotProvider } = await import("./moonshot");
+      return new LEGACY_MoonshotProvider(actualModel);
+  }
+
   // Provider not found
   throw new Error(
     `Unknown LLM provider: ${actualProvider}. ` +
-    `Native providers: openai, anthropic, google, openrouter, ollama, zai, moonshot. ` +
-    `AI SDK providers: ${availableProviders.join(', ')}`
+    `Available AI SDK providers: ${availableProviders.join(', ')}. ` +
+    `Legacy providers (deprecated): openai, anthropic, google, openrouter, ollama, zai, moonshot.`
   );
 }
 
@@ -118,27 +120,34 @@ export async function getLLMProvider(
  * Function to get all available LLM providers
  * @returns Array of available LLM providers with their models
  *
- * Note: This function returns providers from the AI SDK unified registry.
+ * Note: This function primarily returns legacy providers for compatibility.
+ * All new usage should route through AI SDK unified registry instead.
  * Individual models must be specified by the user in DEBUG_MODE.
  */
 export async function getAllLLMProviders(): Promise<ProviderWithModel[]> {
   const providers: ProviderWithModel[] = [];
 
-  // Native providers with special features
-  const nativeProviders = [
-    { name: "openai", displayName: "OpenAI" },
-    { name: "anthropic", displayName: "Anthropic" },
-    { name: "google", displayName: "Google" },
-    { name: "openrouter", displayName: "OpenRouter" },
-    { name: "ollama", displayName: "Ollama" },
-    { name: "zai", displayName: "Z.ai" },
-    { name: "moonshot", displayName: "Moonshot AI" },
+  // Get AI SDK providers from unified registry
+  const { getAvailableProviders } = await import("./ai-sdk/unified-registry");
+  const availableProviders = getAvailableProviders();
+
+  console.log(`📋 Found ${availableProviders.length} available AI SDK providers:`, availableProviders.join(', '));
+
+  // Legacy providers (maintained for backward compatibility only)
+  const legacyProviders = [
+    { name: "openai", displayName: "OpenAI (Legacy)" },
+    { name: "anthropic", displayName: "Anthropic (Legacy)" },
+    { name: "google", displayName: "Google (Legacy)" },
+    { name: "openrouter", displayName: "OpenRouter (Legacy)" },
+    { name: "ollama", displayName: "Ollama (Legacy)" },
+    { name: "zai", displayName: "Z.ai (Legacy)" },
+    { name: "moonshot", displayName: "Moonshot AI (Legacy)" },
   ];
 
-  for (const { name, displayName } of nativeProviders) {
+  for (const { name, displayName } of legacyProviders) {
     try {
-      const nativeProvider = await getLLMProvider(name, "default");
-      for (const modelId of nativeProvider.getModels()) {
+      const legacyProvider = await getLLMProvider(name, "default");
+      for (const modelId of legacyProvider.getModels()) {
         const provider = await getLLMProvider(name, modelId);
         providers.push({
           provider,
@@ -150,12 +159,6 @@ export async function getAllLLMProviders(): Promise<ProviderWithModel[]> {
       // Provider not configured, skip
     }
   }
-
-  // Get AI SDK providers from unified registry
-  const { getAvailableProviders } = await import("./ai-sdk/unified-registry");
-  const availableProviders = getAvailableProviders();
-
-  console.log(`📋 Found ${availableProviders.length} available AI SDK providers:`, availableProviders.join(', '));
 
   // Note: AI SDK providers don't expose model lists by default
   // Models must be specified explicitly in DEBUG_MODE

@@ -38,12 +38,14 @@ export class AISDKProviderWrapper implements LLMProvider {
    * @param prompt The prompt to send to the LLM
    * @param temperature Optional temperature parameter for controlling randomness (default: 0.7)
    * @param contextContent Optional context content to include in prompts
+   * @param enableMCP Optional flag to enable MCP tools from Svelte server
    * @returns The generated code
    */
   async generateCode(
     prompt: string,
     temperature?: number,
-    contextContent?: string
+    contextContent?: string,
+    enableMCP?: boolean
   ): Promise<string> {
     try {
       console.log(
@@ -91,6 +93,21 @@ export class AISDKProviderWrapper implements LLMProvider {
       // Only add temperature if it's defined
       if (temperature !== undefined) {
         requestOptions.temperature = temperature;
+      }
+
+      // Add MCP tools if enabled
+      if (enableMCP) {
+        try {
+          const { getMCPTools } = await import("../mcp/svelte-mcp-client");
+          const mcpTools = await getMCPTools();
+          if (mcpTools && mcpTools.length > 0) {
+            requestOptions.tools = mcpTools;
+            console.log(`✓ Added ${mcpTools.length} MCP tools to request`);
+          }
+        } catch (mcpError) {
+          console.warn("⚠️  Failed to load MCP tools:", mcpError);
+          // Continue without MCP tools if loading fails
+        }
       }
 
       // Generate text using AI SDK
