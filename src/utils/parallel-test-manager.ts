@@ -628,8 +628,10 @@ export async function runAllTestsHumanEval(
 /**
  * Ensure the benchmarks directory exists
  */
-export async function ensureBenchmarksDir(): Promise<void> {
-  const benchmarksDir = path.resolve(process.cwd(), "benchmarks");
+export async function ensureBenchmarksDir(useMCPDir: boolean = false): Promise<void> {
+  const benchmarksDir = useMCPDir 
+    ? path.resolve(process.cwd(), "benchmarks", "mcp")
+    : path.resolve(process.cwd(), "benchmarks");
   try {
     await fs.mkdir(benchmarksDir, { recursive: true });
   } catch (error) {
@@ -645,15 +647,19 @@ export async function saveBenchmarkResults(
   results: HumanEvalResult[],
   contextFile?: string,
   contextContent?: string,
-  customFilenamePrefix?: string
+  customFilenamePrefix?: string,
+  useMCPDir: boolean = false
 ): Promise<string> {
   try {
-    await ensureBenchmarksDir();
+    await ensureBenchmarksDir(useMCPDir);
 
     const timestamp = new Date().toISOString().replace(/:/g, "-");
     let filenamePrefix: string;
     
-    if (customFilenamePrefix) {
+    // Add "mcp-" prefix for MCP benchmarks
+    if (useMCPDir) {
+      filenamePrefix = "mcp-";
+    } else if (customFilenamePrefix) {
       const cleanPrefix = customFilenamePrefix.replace(/[^a-zA-Z0-9\-_]/g, '-');
       filenamePrefix = contextFile
         ? `benchmark-results-with-context-${cleanPrefix}-`
@@ -665,7 +671,7 @@ export async function saveBenchmarkResults(
     }
     
     const filename = `${filenamePrefix}${timestamp}.json`;
-    const filePath = path.resolve(process.cwd(), "benchmarks", filename);
+    const filePath = path.resolve(process.cwd(), "benchmarks", useMCPDir ? "mcp" : "", filename);
 
     const resultsWithContext = results.map((result) => {
       if (!result.context) {
