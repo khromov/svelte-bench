@@ -7,14 +7,24 @@ const MAX_RETRIES = 3;
 const RETRY_DELAY = 500; // milliseconds
 
 /**
- * Get the directory for temporary sample files for a specific provider
+ * Helper function to add delay between retries
+ * @param ms milliseconds to delay
+ */
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+/**
+ * Get the temporary directory for storing generated components
  * @param provider The provider name (optional)
+ * @param useMCP Whether to use MCP-specific directory (optional)
  * @returns The path to the temporary samples directory
  */
-export function getTmpDir(provider?: string): string {
+export function getTmpDir(provider?: string, useMCP: boolean = false): string {
   const baseDir = path.resolve(process.cwd(), "tmp");
   if (provider) {
-    return path.join(baseDir, "samples", provider.toLowerCase());
+    const providerDir = useMCP 
+      ? path.join("samples", "mcp", provider.toLowerCase())
+      : path.join("samples", provider.toLowerCase());
+    return path.join(baseDir, providerDir);
   }
   return baseDir;
 }
@@ -22,20 +32,25 @@ export function getTmpDir(provider?: string): string {
 /**
  * Get the directory for checkpoint files for a specific provider
  * @param provider The provider name
+ * @param useMCP Whether to use MCP-specific directory (optional)
  * @returns The path to the checkpoint directory
  */
-export function getCheckpointDir(provider: string): string {
+export function getCheckpointDir(provider: string, useMCP: boolean = false): string {
   const baseDir = path.resolve(process.cwd(), "tmp");
-  return path.join(baseDir, "checkpoint", provider.toLowerCase());
+  const checkpointDir = useMCP
+    ? path.join("checkpoint", "mcp", provider.toLowerCase())
+    : path.join("checkpoint", provider.toLowerCase());
+  return path.join(baseDir, checkpointDir);
 }
 
 /**
  * Ensure the temporary directory exists for a specific provider
  * @param provider The provider name (optional)
+ * @param useMCP Whether to use MCP-specific directory (optional)
  */
-export async function ensureTmpDir(provider?: string): Promise<void> {
+export async function ensureTmpDir(provider?: string, useMCP: boolean = false): Promise<void> {
   try {
-    const tmpDir = getTmpDir(provider);
+    const tmpDir = getTmpDir(provider, useMCP);
     await fs.mkdir(tmpDir, { recursive: true });
   } catch (error) {
     console.error(
@@ -49,10 +64,11 @@ export async function ensureTmpDir(provider?: string): Promise<void> {
 /**
  * Ensure the checkpoint directory exists for a specific provider
  * @param provider The provider name
+ * @param useMCP Whether to use MCP-specific directory (optional)
  */
-export async function ensureCheckpointDir(provider: string): Promise<void> {
+export async function ensureCheckpointDir(provider: string, useMCP: boolean = false): Promise<void> {
   try {
-    const checkpointDir = getCheckpointDir(provider);
+    const checkpointDir = getCheckpointDir(provider, useMCP);
     await fs.mkdir(checkpointDir, { recursive: true });
   } catch (error) {
     console.error(
@@ -64,58 +80,13 @@ export async function ensureCheckpointDir(provider: string): Promise<void> {
 }
 
 /**
- * Helper function to add delay between retries
- * @param ms milliseconds to delay
- */
-const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-
-/**
- * Clean the checkpoint directory for a specific provider with retry logic
- * This is used when starting a new run to clear previous checkpoints
- * @param provider The provider name
- */
-export async function cleanCheckpointDir(provider: string): Promise<void> {
-  let retries = 0;
-  const checkpointDir = getCheckpointDir(provider);
-
-  while (retries < MAX_RETRIES) {
-    try {
-      // Use rimraf to recursively remove directory contents
-      await rimraf(checkpointDir);
-
-      // Re-create the empty directory
-      await ensureCheckpointDir(provider);
-
-      console.log(`✨ Cleaned checkpoint directory for ${provider}`);
-      return;
-    } catch (error) {
-      retries++;
-      console.warn(
-        `Warning: Failed to clean checkpoint directory for ${provider} (attempt ${retries}/${MAX_RETRIES}):`,
-        error
-      );
-
-      if (retries < MAX_RETRIES) {
-        // Wait a bit before retrying to allow any file locks to clear
-        await delay(RETRY_DELAY * retries);
-      } else {
-        console.error(
-          `Failed to clean checkpoint directory for ${provider} after ${MAX_RETRIES} attempts`
-        );
-        // Don't throw the error, just log it and continue
-      }
-    }
-  }
-}
-
-/**
- * Clean the samples directory for a specific provider with retry logic
- * This is used during test execution to clear old sample files
+ * Clean the temporary directory for a specific provider with retry logic
  * @param provider The provider name (optional)
+ * @param useMCP Whether to use MCP-specific directory (optional)
  */
-export async function cleanTmpDir(provider?: string): Promise<void> {
+export async function cleanTmpDir(provider?: string, useMCP: boolean = false): Promise<void> {
   let retries = 0;
-  const tmpDir = getTmpDir(provider);
+  const tmpDir = getTmpDir(provider, useMCP);
 
   while (retries < MAX_RETRIES) {
     try {
@@ -124,7 +95,7 @@ export async function cleanTmpDir(provider?: string): Promise<void> {
       await rimraf(tmpDir);
 
       // Re-create the empty directory
-      await ensureTmpDir(provider);
+      await ensureTmpDir(provider, useMCP);
 
       console.log(`✨ Cleaned samples directory for ${provider || "base"}`);
       return;
@@ -153,6 +124,42 @@ export async function cleanTmpDir(provider?: string): Promise<void> {
 }
 
 /**
+ * Clean the checkpoint directory for a specific provider with retry logic
+ * This is used when starting a new run to clear previous checkpoints
+ * @param provider The provider name
+ * @param useMCP Whether to use MCP-specific directory (optional)
+ */
+export async function cleanCheckpointDir(provider: string, useMCP: boolean = false): Promise<void> {
+  let retries = 0;
+  const checkpointDir = getCheckpointDir(provider, useMCP);
+
+  while (retries < MAX_RETRIES) {
+    try {
+      // Use rimraf to recursively remove directory contents
+      await rimraf(checkpointDir);
+      
+      console.log(`✨ Cleaned checkpoint directory for ${provider}`);
+      return;
+    } catch (error) {
+      retries++;
+      console.warn(
+        `Warning: Failed to clean checkpoint directory for ${provider} (attempt ${retries}/${MAX_RETRIES}):`,
+        error
+      );
+
+      if (retries < MAX_RETRIES) {
+        await delay(RETRY_DELAY * retries);
+      } else {
+        console.error(
+          `Failed to clean checkpoint directory for ${provider} after ${MAX_RETRIES} attempts`
+        );
+        // Don't throw the error, just log it and continue
+      }
+    }
+  }
+}
+
+/**
  * Write content to a file in the temporary directory for a specific provider with retry logic
  * @param filename The name of the file
  * @param content The content to write
@@ -161,14 +168,15 @@ export async function cleanTmpDir(provider?: string): Promise<void> {
 export async function writeToTmpFile(
   filename: string,
   content: string,
-  provider?: string
+  provider?: string,
+  useMCP: boolean = false
 ): Promise<string> {
   let retries = 0;
 
   while (retries < MAX_RETRIES) {
     try {
-      await ensureTmpDir(provider);
-      const tmpDir = getTmpDir(provider);
+      await ensureTmpDir(provider, useMCP);
+      const tmpDir = getTmpDir(provider, useMCP);
       const filePath = path.join(tmpDir, filename);
       await fs.writeFile(filePath, content);
       console.log(`📝 Wrote to ${filePath}`);
@@ -210,14 +218,15 @@ export async function writeToTmpFile(
 export async function copyToTmpDir(
   sourcePath: string,
   destFilename: string,
-  provider?: string
+  provider?: string,
+  useMCP: boolean = false
 ): Promise<string> {
   let retries = 0;
 
   while (retries < MAX_RETRIES) {
     try {
-      await ensureTmpDir(provider);
-      const tmpDir = getTmpDir(provider);
+      await ensureTmpDir(provider, useMCP);
+      const tmpDir = getTmpDir(provider, useMCP);
       const destPath = path.join(tmpDir, destFilename);
       await fs.copyFile(sourcePath, destPath);
       console.log(`📋 Copied ${sourcePath} to ${destPath}`);
@@ -313,10 +322,11 @@ export async function loadContextFile(filePath: string): Promise<string> {
  * Get the checkpoint file path for a specific provider and model
  * @param provider The provider name
  * @param modelId The model identifier
+ * @param useMCP Whether to use MCP-specific directory (optional)
  * @returns The checkpoint file path
  */
-export function getCheckpointPath(provider: string, modelId: string): string {
-  const checkpointDir = getCheckpointDir(provider);
+export function getCheckpointPath(provider: string, modelId: string, useMCP: boolean = false): string {
+  const checkpointDir = getCheckpointDir(provider, useMCP);
   const safeModelId = modelId.replace(/[^a-zA-Z0-9\-_]/g, '-');
   return path.join(checkpointDir, `checkpoint-${safeModelId}.json`);
 }
@@ -326,15 +336,17 @@ export function getCheckpointPath(provider: string, modelId: string): string {
  * @param provider The provider name
  * @param modelId The model identifier  
  * @param checkpointData The checkpoint data to save
+ * @param useMCP Whether to use MCP-specific directory (optional)
  */
 export async function saveCheckpoint(
   provider: string,
   modelId: string,
-  checkpointData: any
+  checkpointData: any,
+  useMCP: boolean = false
 ): Promise<void> {
   try {
-    await ensureCheckpointDir(provider);
-    const checkpointPath = getCheckpointPath(provider, modelId);
+    await ensureCheckpointDir(provider, useMCP);
+    const checkpointPath = getCheckpointPath(provider, modelId, useMCP);
     await fs.writeFile(checkpointPath, JSON.stringify(checkpointData, null, 2));
     console.log(`💾 Saved checkpoint for ${provider}/${modelId}`);
   } catch (error) {
@@ -347,14 +359,16 @@ export async function saveCheckpoint(
  * Load checkpoint data from file
  * @param provider The provider name
  * @param modelId The model identifier
+ * @param useMCP Whether to use MCP-specific directory (optional)
  * @returns The checkpoint data or null if not found
  */
 export async function loadCheckpoint(
   provider: string,
-  modelId: string
+  modelId: string,
+  useMCP: boolean = false
 ): Promise<any | null> {
   try {
-    const checkpointPath = getCheckpointPath(provider, modelId);
+    const checkpointPath = getCheckpointPath(provider, modelId, useMCP);
     await fs.access(checkpointPath);
     const data = await fs.readFile(checkpointPath, "utf-8");
     const checkpoint = JSON.parse(data);

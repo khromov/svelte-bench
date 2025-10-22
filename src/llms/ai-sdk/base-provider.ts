@@ -95,8 +95,9 @@ export class AISDKProviderWrapper implements LLMProvider {
         requestOptions.temperature = temperature;
       }
 
-      // Add MCP tools if enabled
-      if (enableMCP) {
+      // Add MCP tools if enabled, but not for benchmark generation
+      // MCP tools interfere with benchmark code generation as LLM prefers tools over direct generation
+      if (enableMCP && false) { // Disabled for benchmark generation
         try {
           const { getMCPTools } = await import("../mcp/svelte-mcp-client");
           const mcpTools = await getMCPTools();

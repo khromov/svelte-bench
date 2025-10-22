@@ -65,7 +65,15 @@ export async function getMCPTools(): Promise<Tool[]> {
 
     // Get tools from MCP client using AI SDK adapter
     const tools = await client.tools();
-    mcpTools = Object.values(tools);
+    
+    // Extract tools while preserving their names
+    mcpTools = Object.entries(tools).map(([name, tool]) => {
+      const toolObj = tool as any; // Type assertion for tool access
+      return {
+        ...tool,
+        name: toolObj.name || name // Ensure the tool has the correct name
+      };
+    });
 
     console.log(`✓ Loaded ${mcpTools.length} tools from Svelte MCP server`);
 

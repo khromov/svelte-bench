@@ -175,7 +175,7 @@ async function runSingleTestSample(
     await fs.writeFile(path.join(testDir, `${test.name}.test.ts`), testContent);
 
     // Run the test with the unique directory
-    const testResult = await runTest(test.name, providerName, testDir);
+    const testResult = await runTest(test.name, providerName, testDir, enableMCP);
 
     // Clean up the unique directory
     await cleanUniqueTestDir(testDir);
@@ -316,7 +316,7 @@ async function runTestSamplesInParallelWithCheckpointing(
         numSamples,
         timestamp: new Date().toISOString(),
       };
-      await saveCheckpoint(providerName, modelId, checkpointData);
+      await saveCheckpoint(providerName, modelId, checkpointData, enableMCP);
       console.log(`💾 Saved checkpoint after sample ${index + 1}/${numSamples}`);
     }
   }
@@ -465,7 +465,7 @@ export async function runAllTestsHumanEval(
     }
 
     // Check for existing checkpoint and resume if possible
-    const checkpoint = await loadCheckpoint(providerName, modelId);
+    const checkpoint = await loadCheckpoint(providerName, modelId, enableMCP);
     let results: HumanEvalResult[] = [];
     let startTestIndex = 0;
     let startSampleIndex = 0;
@@ -495,11 +495,11 @@ export async function runAllTestsHumanEval(
         startSampleIndex = 0;
         currentTestSamples = [];
         // Clear checkpoints for fresh start
-        await cleanCheckpointDir(providerName);
+        await cleanCheckpointDir(providerName, enableMCP);
       }
     } else {
       // Clear checkpoints at the beginning for new runs
-      await cleanCheckpointDir(providerName);
+      await cleanCheckpointDir(providerName, enableMCP);
     }
 
     // Run remaining tests from checkpoint or start
@@ -579,8 +579,8 @@ export async function runAllTestsHumanEval(
             contextContent,
             numSamples,
             timestamp: new Date().toISOString(),
-          };
-          await saveCheckpoint(providerName, modelId, checkpointData);
+        };
+        await saveCheckpoint(providerName, modelId, checkpointData, enableMCP);
           
           // Don't continue with other tests, abort
           throw error;
@@ -598,7 +598,7 @@ export async function runAllTestsHumanEval(
           numSamples,
           timestamp: new Date().toISOString(),
         };
-        await saveCheckpoint(providerName, modelId, checkpointData);
+        await saveCheckpoint(providerName, modelId, checkpointData, enableMCP);
         
         // Continue with other tests rather than failing completely
       }
