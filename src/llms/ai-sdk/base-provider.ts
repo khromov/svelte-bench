@@ -81,7 +81,7 @@ export class AISDKProviderWrapper implements LLMProvider {
         });
 
       // Get model from unified registry (lazy-loaded on first use)
-      const registry = getRegistry();
+      const registry = await getRegistry();
       const model = registry.languageModel(this.fullModelId);
 
       // Build request options

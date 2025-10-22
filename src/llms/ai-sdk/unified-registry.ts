@@ -13,7 +13,7 @@ let registry: ReturnType<typeof createProviderRegistry> | null = null;
  * Only includes OFFICIAL AI SDK providers with configured API keys
  * Providers are lazy-loaded on first use for efficiency
  */
-export function getRegistry() {
+export async function getRegistry() {
   if (registry) return registry;
 
   const providers: Record<string, any> = {};
@@ -22,7 +22,7 @@ export function getRegistry() {
 
   // OpenAI
   if (process.env.OPENAI_API_KEY) {
-    const { createOpenAI } = require('@ai-sdk/openai');
+    const { createOpenAI } = await import('@ai-sdk/openai');
     providers.openai = createOpenAI({
       apiKey: process.env.OPENAI_API_KEY,
     });
@@ -30,7 +30,7 @@ export function getRegistry() {
 
   // Anthropic
   if (process.env.ANTHROPIC_API_KEY) {
-    const { createAnthropic } = require('@ai-sdk/anthropic');
+    const { createAnthropic } = await import('@ai-sdk/anthropic');
     providers.anthropic = createAnthropic({
       apiKey: process.env.ANTHROPIC_API_KEY,
     });
@@ -38,7 +38,7 @@ export function getRegistry() {
 
   // Google Generative AI
   if (process.env.GOOGLE_API_KEY) {
-    const { createGoogleGenerativeAI } = require('@ai-sdk/google');
+    const { createGoogleGenerativeAI } = await import('@ai-sdk/google');
     providers.google = createGoogleGenerativeAI({
       apiKey: process.env.GOOGLE_API_KEY,
     });
@@ -46,7 +46,7 @@ export function getRegistry() {
 
   // Google Vertex AI
   if (process.env.GOOGLE_VERTEX_PROJECT) {
-    const { createVertex } = require('@ai-sdk/google-vertex');
+    const { createVertex } = await import('@ai-sdk/google-vertex');
     providers['google-vertex'] = createVertex({
       project: process.env.GOOGLE_VERTEX_PROJECT,
       location: process.env.GOOGLE_VERTEX_LOCATION || 'us-central1',
@@ -55,7 +55,7 @@ export function getRegistry() {
 
   // Azure OpenAI
   if (process.env.AZURE_API_KEY && process.env.AZURE_RESOURCE_NAME) {
-    const { createAzure } = require('@ai-sdk/azure');
+    const { createAzure } = await import('@ai-sdk/azure');
     providers.azure = createAzure({
       apiKey: process.env.AZURE_API_KEY,
       resourceName: process.env.AZURE_RESOURCE_NAME,
@@ -64,7 +64,7 @@ export function getRegistry() {
 
   // xAI (Grok)
   if (process.env.XAI_API_KEY) {
-    const { createXai } = require('@ai-sdk/xai');
+    const { createXai } = await import('@ai-sdk/xai');
     providers.xai = createXai({
       apiKey: process.env.XAI_API_KEY,
     });
@@ -72,7 +72,7 @@ export function getRegistry() {
 
   // Vercel
   if (process.env.VERCEL_API_KEY) {
-    const { createVercel } = require('@ai-sdk/vercel');
+    const { createVercel } = await import('@ai-sdk/vercel');
     providers.vercel = createVercel({
       apiKey: process.env.VERCEL_API_KEY,
     });
@@ -80,7 +80,7 @@ export function getRegistry() {
 
   // Mistral
   if (process.env.MISTRAL_API_KEY) {
-    const { createMistral } = require('@ai-sdk/mistral');
+    const { createMistral } = await import('@ai-sdk/mistral');
     providers.mistral = createMistral({
       apiKey: process.env.MISTRAL_API_KEY,
     });
@@ -88,7 +88,7 @@ export function getRegistry() {
 
   // Cohere
   if (process.env.COHERE_API_KEY) {
-    const { createCohere } = require('@ai-sdk/cohere');
+    const { createCohere } = await import('@ai-sdk/cohere');
     providers.cohere = createCohere({
       apiKey: process.env.COHERE_API_KEY,
     });
@@ -96,7 +96,7 @@ export function getRegistry() {
 
   // Amazon Bedrock
   if (process.env.AWS_ACCESS_KEY_ID) {
-    const { createAmazonBedrock } = require('@ai-sdk/amazon-bedrock');
+    const { createAmazonBedrock } = await import('@ai-sdk/amazon-bedrock');
     providers.bedrock = createAmazonBedrock({
       region: process.env.AWS_REGION || 'us-east-1',
     });
@@ -104,7 +104,7 @@ export function getRegistry() {
 
   // Groq
   if (process.env.GROQ_API_KEY) {
-    const { createGroq } = require('@ai-sdk/groq');
+    const { createGroq } = await import('@ai-sdk/groq');
     providers.groq = createGroq({
       apiKey: process.env.GROQ_API_KEY,
     });
@@ -112,7 +112,7 @@ export function getRegistry() {
 
   // DeepSeek
   if (process.env.DEEPSEEK_API_KEY) {
-    const { createDeepSeek } = require('@ai-sdk/deepseek');
+    const { createDeepSeek } = await import('@ai-sdk/deepseek');
     providers.deepseek = createDeepSeek({
       apiKey: process.env.DEEPSEEK_API_KEY,
     });
@@ -120,7 +120,7 @@ export function getRegistry() {
 
   // Cerebras
   if (process.env.CEREBRAS_API_KEY) {
-    const { createCerebras } = require('@ai-sdk/cerebras');
+    const { createCerebras } = await import('@ai-sdk/cerebras');
     providers.cerebras = createCerebras({
       apiKey: process.env.CEREBRAS_API_KEY,
     });
@@ -128,7 +128,7 @@ export function getRegistry() {
 
   // Fireworks
   if (process.env.FIREWORKS_API_KEY) {
-    const { createFireworks } = require('@ai-sdk/fireworks');
+    const { createFireworks } = await import('@ai-sdk/fireworks');
     providers.fireworks = createFireworks({
       apiKey: process.env.FIREWORKS_API_KEY,
     });
@@ -136,7 +136,7 @@ export function getRegistry() {
 
   // Together.ai
   if (process.env.TOGETHER_API_KEY) {
-    const { createTogetherAI } = require('@ai-sdk/togetherai');
+    const { createTogetherAI } = await import('@ai-sdk/togetherai');
     providers.togetherai = createTogetherAI({
       apiKey: process.env.TOGETHER_API_KEY,
     });
@@ -144,7 +144,7 @@ export function getRegistry() {
 
   // Perplexity
   if (process.env.PERPLEXITY_API_KEY) {
-    const { createPerplexity } = require('@ai-sdk/perplexity');
+    const { createPerplexity } = await import('@ai-sdk/perplexity');
     providers.perplexity = createPerplexity({
       apiKey: process.env.PERPLEXITY_API_KEY,
     });
@@ -152,7 +152,7 @@ export function getRegistry() {
 
   // DeepInfra
   if (process.env.DEEPINFRA_API_KEY) {
-    const { createDeepInfra } = require('@ai-sdk/deepinfra');
+    const { createDeepInfra } = await import('@ai-sdk/deepinfra');
     providers.deepinfra = createDeepInfra({
       apiKey: process.env.DEEPINFRA_API_KEY,
     });
@@ -160,7 +160,7 @@ export function getRegistry() {
 
   // Baseten
   if (process.env.BASETEN_API_KEY) {
-    const { createBaseten } = require('@ai-sdk/baseten');
+    const { createBaseten } = await import('@ai-sdk/baseten');
     providers.baseten = createBaseten({
       apiKey: process.env.BASETEN_API_KEY,
     });
@@ -168,7 +168,7 @@ export function getRegistry() {
 
   // Hugging Face
   if (process.env.HUGGINGFACE_API_KEY) {
-    const { createOpenAICompatible } = require('@ai-sdk/openai-compatible');
+    const { createOpenAICompatible } = await import('@ai-sdk/openai-compatible');
     providers.huggingface = createOpenAICompatible({
       name: 'huggingface',
       apiKey: process.env.HUGGINGFACE_API_KEY,
@@ -180,7 +180,7 @@ export function getRegistry() {
 
   // Replicate
   if (process.env.REPLICATE_API_KEY) {
-    const { createReplicate } = require('@ai-sdk/replicate');
+    const { createReplicate } = await import('@ai-sdk/replicate');
     providers.replicate = createReplicate({
       apiKey: process.env.REPLICATE_API_KEY,
     });
@@ -188,7 +188,7 @@ export function getRegistry() {
 
   // Fal
   if (process.env.FAL_API_KEY) {
-    const { createFal } = require('@ai-sdk/fal');
+    const { createFal } = await import('@ai-sdk/fal');
     providers.fal = createFal({
       apiKey: process.env.FAL_API_KEY,
     });
@@ -196,7 +196,7 @@ export function getRegistry() {
 
   // Luma
   if (process.env.LUMA_API_KEY) {
-    const { createLuma } = require('@ai-sdk/luma');
+    const { createLuma } = await import('@ai-sdk/luma');
     providers.luma = createLuma({
       apiKey: process.env.LUMA_API_KEY,
     });
@@ -204,7 +204,7 @@ export function getRegistry() {
 
   // ElevenLabs
   if (process.env.ELEVENLABS_API_KEY) {
-    const { createElevenLabs } = require('@ai-sdk/elevenlabs');
+    const { createElevenLabs } = await import('@ai-sdk/elevenlabs');
     providers.elevenlabs = createElevenLabs({
       apiKey: process.env.ELEVENLABS_API_KEY,
     });
@@ -212,7 +212,7 @@ export function getRegistry() {
 
   // AssemblyAI
   if (process.env.ASSEMBLYAI_API_KEY) {
-    const { createAssemblyAI } = require('@ai-sdk/assemblyai');
+    const { createAssemblyAI } = await import('@ai-sdk/assemblyai');
     providers.assemblyai = createAssemblyAI({
       apiKey: process.env.ASSEMBLYAI_API_KEY,
     });
@@ -220,7 +220,7 @@ export function getRegistry() {
 
   // Deepgram
   if (process.env.DEEPGRAM_API_KEY) {
-    const { createDeepgram } = require('@ai-sdk/deepgram');
+    const { createDeepgram } = await import('@ai-sdk/deepgram');
     providers.deepgram = createDeepgram({
       apiKey: process.env.DEEPGRAM_API_KEY,
     });
@@ -228,7 +228,7 @@ export function getRegistry() {
 
   // Gladia
   if (process.env.GLADIA_API_KEY) {
-    const { createGladia } = require('@ai-sdk/gladia');
+    const { createGladia } = await import('@ai-sdk/gladia');
     providers.gladia = createGladia({
       apiKey: process.env.GLADIA_API_KEY,
     });
@@ -236,7 +236,7 @@ export function getRegistry() {
 
   // LMNT
   if (process.env.LMNT_API_KEY) {
-    const { createLMNT } = require('@ai-sdk/lmnt');
+    const { createLMNT } = await import('@ai-sdk/lmnt');
     providers.lmnt = createLMNT({
       apiKey: process.env.LMNT_API_KEY,
     });
@@ -244,7 +244,7 @@ export function getRegistry() {
 
   // Hume
   if (process.env.HUME_API_KEY) {
-    const { createHume } = require('@ai-sdk/hume');
+    const { createHume } = await import('@ai-sdk/hume');
     providers.hume = createHume({
       apiKey: process.env.HUME_API_KEY,
     });
@@ -252,7 +252,7 @@ export function getRegistry() {
 
   // Rev.ai
   if (process.env.REVAI_API_KEY) {
-    const { createRevAI } = require('@ai-sdk/revai');
+    const { createRevAI } = await import('@ai-sdk/revai');
     providers.revai = createRevAI({
       apiKey: process.env.REVAI_API_KEY,
     });
