@@ -37,10 +37,10 @@ export async function getRegistry() {
   }
 
   // Google Generative AI
-  if (process.env.GOOGLE_API_KEY) {
+  if (process.env.GOOGLE_API_KEY || process.env.GEMINI_API_KEY) {
     const { createGoogleGenerativeAI } = await import('@ai-sdk/google');
     providers.google = createGoogleGenerativeAI({
-      apiKey: process.env.GOOGLE_API_KEY,
+      apiKey: process.env.GOOGLE_API_KEY || process.env.GEMINI_API_KEY,
     });
   }
 
@@ -176,15 +176,23 @@ export async function getRegistry() {
     });
   }
 
-  // MEDIA PROVIDERS (Image/Video/Audio Generation - included for completeness)
-
-  // Replicate
-  if (process.env.REPLICATE_API_KEY) {
-    const { createReplicate } = await import('@ai-sdk/replicate');
-    providers.replicate = createReplicate({
-      apiKey: process.env.REPLICATE_API_KEY,
+  // OpenRouter
+  if (process.env.OPENROUTER_API_KEY) {
+    const { createOpenRouter } = await import('@openrouter/ai-sdk-provider');
+    providers.openrouter = createOpenRouter({
+      apiKey: process.env.OPENROUTER_API_KEY,
     });
   }
+
+  // MEDIA PROVIDERS (Image/Video/Audio Generation - included for completeness)
+
+  // Replicate - TODO: Fix configuration
+  // if (process.env.REPLICATE_API_KEY) {
+  //   const { createReplicate } = await import('@ai-sdk/replicate');
+  //   providers.replicate = createReplicate({
+  //     // TODO: Check correct configuration options
+  //   });
+  // }
 
   // Fal
   if (process.env.FAL_API_KEY) {
@@ -252,8 +260,8 @@ export async function getRegistry() {
 
   // Rev.ai
   if (process.env.REVAI_API_KEY) {
-    const { createRevAI } = await import('@ai-sdk/revai');
-    providers.revai = createRevAI({
+    const { createRevai } = await import('@ai-sdk/revai');
+    providers.revai = createRevai({
       apiKey: process.env.REVAI_API_KEY,
     });
   }
@@ -277,7 +285,7 @@ export function getAvailableProviders(): string[] {
   // Language Models
   if (process.env.OPENAI_API_KEY) providers.push('openai');
   if (process.env.ANTHROPIC_API_KEY) providers.push('anthropic');
-  if (process.env.GOOGLE_API_KEY) providers.push('google');
+  if (process.env.GOOGLE_API_KEY || process.env.GEMINI_API_KEY) providers.push('google');
   if (process.env.GOOGLE_VERTEX_PROJECT) providers.push('google-vertex');
   if (process.env.AZURE_API_KEY && process.env.AZURE_RESOURCE_NAME) providers.push('azure');
   if (process.env.XAI_API_KEY) providers.push('xai');
@@ -294,6 +302,7 @@ export function getAvailableProviders(): string[] {
   if (process.env.DEEPINFRA_API_KEY) providers.push('deepinfra');
   if (process.env.BASETEN_API_KEY) providers.push('baseten');
   if (process.env.HUGGINGFACE_API_KEY) providers.push('huggingface');
+  if (process.env.OPENROUTER_API_KEY) providers.push('openrouter');
 
   // Media Providers (for completeness)
   if (process.env.REPLICATE_API_KEY) providers.push('replicate');

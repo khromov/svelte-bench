@@ -82,7 +82,7 @@ export class AISDKProviderWrapper implements LLMProvider {
 
       // Get model from unified registry (lazy-loaded on first use)
       const registry = await getRegistry();
-      const model = registry.languageModel(this.fullModelId);
+      const model = registry.languageModel(this.fullModelId as any);
 
       // Build request options
       const requestOptions: any = {
@@ -101,6 +101,31 @@ export class AISDKProviderWrapper implements LLMProvider {
           const { getMCPTools } = await import("../mcp/svelte-mcp-client");
           const mcpTools = await getMCPTools();
           if (mcpTools && mcpTools.length > 0) {
+            // Debug: Log tool details for Google compatibility check
+            console.log(`🔍 Debugging MCP tools for ${this.providerName}:`);
+            mcpTools.forEach((tool: any, index: number) => {
+              const toolName = tool.name || `tool_${index}`;
+              console.log(`  Tool ${index + 1}: "${toolName}"`);
+              if (this.providerName === 'google') {
+                // Check Google's naming requirements
+                const issues = [];
+                if (!/^[a-zA-Z_]/.test(toolName)) {
+                  issues.push('Does not start with letter or underscore');
+                }
+                if (!/^[a-zA-Z0-9_.:-]+$/.test(toolName)) {
+                  issues.push('Contains invalid characters');
+                }
+                if (toolName.length > 64) {
+                  issues.push('Exceeds 64 character limit');
+                }
+                if (issues.length > 0) {
+                  console.log(`    ❌ Google naming issues: ${issues.join(', ')}`);
+                } else {
+                  console.log(`    ✅ Valid for Google`);
+                }
+              }
+            });
+            
             requestOptions.tools = mcpTools;
             console.log(`✓ Added ${mcpTools.length} MCP tools to request`);
           }

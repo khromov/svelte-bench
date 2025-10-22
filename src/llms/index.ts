@@ -91,12 +91,6 @@ export async function getLLMProvider(
     case "anthropic":
       const { LEGACY_AnthropicProvider } = await import("./anthropic");
       return new LEGACY_AnthropicProvider(actualModel);
-    case "google":
-      const { LEGACY_GoogleGenAIProvider } = await import("./google");
-      return new LEGACY_GoogleGenAIProvider(actualModel);
-    case "openrouter":
-      const { LEGACY_OpenRouterProvider } = await import("./openrouter");
-      return new LEGACY_OpenRouterProvider(actualModel);
     case "ollama":
       const { LEGACY_OllamaProvider } = await import("./ollama");
       return new LEGACY_OllamaProvider(actualModel);
@@ -112,7 +106,7 @@ export async function getLLMProvider(
   throw new Error(
     `Unknown LLM provider: ${actualProvider}. ` +
     `Available AI SDK providers: ${availableProviders.join(', ')}. ` +
-    `Legacy providers (deprecated): openai, anthropic, google, openrouter, ollama, zai, moonshot.`
+    `Legacy providers (deprecated): openai, anthropic, ollama, zai, moonshot.`
   );
 }
 
@@ -137,8 +131,6 @@ export async function getAllLLMProviders(): Promise<ProviderWithModel[]> {
   const legacyProviders = [
     { name: "openai", displayName: "OpenAI (Legacy)" },
     { name: "anthropic", displayName: "Anthropic (Legacy)" },
-    { name: "google", displayName: "Google (Legacy)" },
-    { name: "openrouter", displayName: "OpenRouter (Legacy)" },
     { name: "ollama", displayName: "Ollama (Legacy)" },
     { name: "zai", displayName: "Z.ai (Legacy)" },
     { name: "moonshot", displayName: "Moonshot AI (Legacy)" },
