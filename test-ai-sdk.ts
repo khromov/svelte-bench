@@ -1,29 +1,23 @@
-import { providerRegistry } from './src/llms/ai-sdk/registry.js';
+import { getRegistry, getAvailableProviders } from './src/llms/ai-sdk/unified-registry.js';
 
 async function test() {
-  console.log('Initializing provider registry...');
-  await providerRegistry.initialize();
+  console.log('Getting available providers...');
+  const available = getAvailableProviders();
+  console.log('Available providers:', available);
 
-  console.log('\nAvailable providers:');
-  const available = await providerRegistry.getAvailableProviders();
-  console.log(available);
+  console.log('\nInitializing registry...');
+  const registry = await getRegistry();
+  console.log('✅ Registry initialized successfully');
 
-  console.log('\nAll registered providers:');
-  const all = await providerRegistry.getAllProviders();
-  all.forEach(p => {
-    const hasKey = !!process.env[p.envKey];
-    const status = hasKey ? '✅' : '⚠️ ';
-    console.log(`${status} ${p.name} (${p.packageName})`);
-  });
-
-  // Test getting a provider
+  // Test getting a language model
   if (process.env.OPENROUTER_API_KEY) {
-    console.log('\nTesting OpenRouter provider...');
-    const provider = await providerRegistry.getProvider('openrouter', 'openai/gpt-4o-mini');
-    if (provider) {
-      console.log('✅ OpenRouter provider created successfully');
-      console.log('   Name:', provider.name);
-      console.log('   Model:', provider.getModelIdentifier());
+    console.log('\nTesting OpenRouter model...');
+    try {
+      const model = (registry as any).languageModel('openrouter:openai/gpt-4o-mini');
+      console.log('✅ OpenRouter model created successfully');
+      console.log('   Model:', model);
+    } catch (error) {
+      console.error('❌ Failed to create OpenRouter model:', error);
     }
   }
 }
