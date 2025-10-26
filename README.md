@@ -71,6 +71,35 @@ pnpm run run-tests
 
 **NOTE: This will run all providers and models that are available!**
 
+### New CLI Interface
+
+You can also use the new CLI interface with provider:model syntax:
+
+```bash
+# Basic syntax: pnpm start [provider:model] [options]
+
+# Run with specific provider and model
+pnpm start anthropic:claude-3-haiku
+
+# Run with MCP tools for Svelte enhancements
+pnpm start google:gemini-2.5-flash --mcp
+
+# Run with parallel execution
+pnpm start openai:gpt-4o --parallel
+
+# Run with context file and short flags
+pnpm start moonshot:kimi-k2 -m -c ./context/svelte.dev/llms-small.txt
+
+# Show help
+pnpm start --help
+```
+
+**Available Options:**
+- `-h, --help` - Show help message
+- `-p, --parallel` - Enable parallel execution
+- `-m, --mcp` - Enable MCP tools for Svelte support
+- `-c, --context <file>` - Load context file
+
 ### Execution Modes
 
 SvelteBench supports two execution modes:

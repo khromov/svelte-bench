@@ -17,10 +17,49 @@ import { validateModels } from "./src/utils/model-validator";
 import path from "path";
 
 /**
+ * Display help information
+ */
+function showHelp() {
+  console.log(`
+SvelteBench - LLM Benchmark Tool for Svelte 5 Components
+
+USAGE:
+  pnpm start [provider:model] [options]
+
+EXAMPLES:
+  pnpm start google:gemini-2.5-flash --mcp
+  pnpm start anthropic:claude-3-haiku --parallel --context ./context.txt
+  pnpm start moonshot:kimi-k2 -p -m
+  pnpm start openai:gpt-4o --parallel
+
+OPTIONS:
+  -h, --help              Show this help message
+  -p, --parallel          Enable parallel execution for faster benchmark runs
+  -m, --mcp               Enable MCP tools for Svelte-specific enhancements
+  -c, --context <file>    Load context file for additional model guidance
+  --context <file>        Same as -c
+
+ENVIRONMENT VARIABLES:
+  PARALLEL_EXECUTION=true Enable parallel execution (same as --parallel)
+  DEBUG_MODE=true         Enable debug mode with single provider/model
+  DEBUG_PROVIDER=<name>   Provider for debug mode
+  DEBUG_MODEL=<name>      Model for debug mode
+  DEBUG_TEST=<name>       Run specific test in debug mode
+  DEBUG_SAMPLES=<number>  Number of samples in debug mode
+
+PROVIDERS:
+  anthropic, openai, google, moonshot, ollama, openrouter, zai
+  (and all AI SDK supported providers)
+
+For more information, see the README.md file.
+`);
+  process.exit(0);
+}
+
+/**
  * Parse command line arguments
- * Supports both new CLI syntax and legacy DEBUG_MODE environment variables
- * New syntax: pnpm start [provider] [model] [mcp?] [parallel?] [--context file]
- * Example: pnpm start anthropic haiku-4-5 mcp parallel --context ./context.txt
+ * New syntax: pnpm start [provider:model] [options]
+ * Example: pnpm start google:gemini-2.5-flash --mcp --parallel
  *
  * Legacy: DEBUG_MODE=true DEBUG_PROVIDER=anthropic DEBUG_MODEL=haiku-4-5 pnpm start
  *
@@ -40,47 +79,43 @@ function parseCommandLineArgs(): {
   let parallel = false;
   let contextFile: string | undefined;
 
-  // Parse positional and named arguments
-  let positionalIndex = 0;
+  // Check for help flags first
+  if (args.includes('-h') || args.includes('--help')) {
+    showHelp();
+    // This will exit, so no need to return
+  }
+
+  // Parse arguments
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];
 
-    // Handle named flags and options
-    if (arg === "--context" && i + 1 < args.length) {
+    // Handle flags
+    if (arg === '-m' || arg === '--mcp') {
+      enableMCP = true;
+      continue;
+    }
+
+    if (arg === '-p' || arg === '--parallel') {
+      parallel = true;
+      continue;
+    }
+
+    if ((arg === '-c' || arg === '--context') && i + 1 < args.length) {
       contextFile = args[i + 1];
-      i++; // Skip the next argument as it's the value for --context
+      i++; // Skip the next argument as it's the value
       continue;
     }
 
-    // Skip other flags
-    if (arg.startsWith("--")) {
-      continue;
-    }
-
-    // Parse positional arguments
-    switch (positionalIndex) {
-      case 0: // provider
+    // Handle provider:model format (positional argument)
+    if (!arg.startsWith('-') && !provider) {
+      const parts = arg.split(':');
+      if (parts.length === 2) {
+        provider = parts[0];
+        model = parts[1];
+      } else {
+        // If no colon, treat as provider (legacy support)
         provider = arg;
-        positionalIndex++;
-        break;
-      case 1: // model
-        model = arg;
-        positionalIndex++;
-        break;
-      case 2: // mcp flag
-        if (arg.toLowerCase() === "mcp") {
-          enableMCP = true;
-        } else if (arg.toLowerCase() === "parallel") {
-          parallel = true;
-        }
-        positionalIndex++;
-        break;
-      case 3: // parallel flag or other
-        if (arg.toLowerCase() === "parallel") {
-          parallel = true;
-        }
-        positionalIndex++;
-        break;
+      }
     }
   }
 

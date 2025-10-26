@@ -27,22 +27,25 @@ SvelteBench supports two execution modes:
 ### New AI SDK CLI Interface
 
 ```bash
-# Basic syntax: pnpm start [provider] [model] [mcp?] [parallel?] [--context file]
+# Basic syntax: pnpm start [provider:model] [options]
 
 # Run with Anthropic Claude Haiku
-pnpm start anthropic haiku-4-5
+pnpm start anthropic:claude-3-haiku
 
 # Run with Anthropic Claude Haiku and MCP tools (Svelte-specific enhancements)
-pnpm start anthropic haiku-4-5 mcp
+pnpm start anthropic:claude-3-haiku --mcp
 
 # Run with OpenAI GPT-4o and parallel execution
-pnpm start openai gpt-4o parallel
+pnpm start openai:gpt-4o --parallel
 
-# Run with Anthropic, Haiku, MCP tools, and parallel execution
-pnpm start anthropic haiku-4-5 mcp parallel
+# Run with Google Gemini Flash, MCP tools, and parallel execution
+pnpm start google:gemini-2.5-flash --mcp --parallel
 
-# Run with context file and MCP
-pnpm start anthropic haiku-4-5 mcp --context ./context/svelte.dev/llms-small.txt
+# Run with context file and MCP (short flags)
+pnpm start moonshot:kimi-k2 -m -c ./context/svelte.dev/llms-small.txt
+
+# Show help
+pnpm start --help
 ```
 
 ### Legacy Environment Variable Interface (Still Supported)
@@ -114,7 +117,7 @@ All AI SDK providers are now available through a unified interface. Configure AP
 ### MCP Integration
 
 Enable Svelte-specific tooling through Model Context Protocol:
-- `pnpm start anthropic haiku-4-5 mcp` - Enables MCP tools from https://mcp.svelte.dev/mcp
+- `pnpm start anthropic:claude-3-haiku --mcp` - Enables MCP tools from https://mcp.svelte.dev/mcp
 - MCP tools are loaded via HTTP transport for enhanced Svelte development capabilities
 
 ## Test Structure
