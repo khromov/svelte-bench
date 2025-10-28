@@ -15,11 +15,7 @@ export interface LLMProvider {
    * @param contextContent Optional context content to include in the prompt
    * @returns The generated code
    */
-  generateCode(
-    prompt: string,
-    temperature?: number,
-    contextContent?: string,
-  ): Promise<string>;
+  generateCode(prompt: string, temperature?: number, contextContent?: string): Promise<string>;
 
   /**
    * Get all available models for this provider
@@ -49,10 +45,7 @@ export interface ProviderWithModel {
  * @param providerName The name of the provider to get
  * @returns The LLM provider
  */
-export async function getLLMProvider(
-  providerName: string,
-  modelId?: string,
-): Promise<LLMProvider> {
+export async function getLLMProvider(providerName: string, modelId?: string): Promise<LLMProvider> {
   switch (providerName.toLowerCase()) {
     case "openai":
       const { OpenAIProvider } = await import("./openai");

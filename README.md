@@ -157,6 +157,7 @@ When running with a context file, the results filename will include "with-contex
 ### Versioning System
 
 **Current Results**: All new benchmark runs produce current results with:
+
 - Fixed test prompts and improved error handling
 - Corrected Svelte syntax examples
 - Standard naming without version suffixes
@@ -182,6 +183,7 @@ pnpm run build-v1
 ```
 
 This creates merged JSON and HTML files:
+
 - `pnpm run merge` → `benchmarks/benchmark-results-merged.{json,html}` (current results)
 - `pnpm run merge-v1` → `benchmarks/v1/benchmark-results-merged.{json,html}` (legacy results)
 

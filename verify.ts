@@ -44,10 +44,7 @@ async function verifyReferenceImplementations(): Promise<void> {
       await cleanTmpDir();
 
       // Check if the test has a reference implementation
-      const referenceFilePath = path.join(
-        path.dirname(test.promptPath),
-        "Reference.svelte"
-      );
+      const referenceFilePath = path.join(path.dirname(test.promptPath), "Reference.svelte");
 
       try {
         // Check if the reference file exists
@@ -85,11 +82,7 @@ async function verifyReferenceImplementations(): Promise<void> {
           console.log(`   Errors: ${testResult.errors.length}`);
         }
       } catch (error) {
-        if (
-          error instanceof Error &&
-          "code" in error &&
-          error.code === "ENOENT"
-        ) {
+        if (error instanceof Error && "code" in error && error.code === "ENOENT") {
           console.log(`⚠️ No reference implementation found for ${test.name}`);
         } else {
           console.error(`Error verifying ${test.name}:`, error);
@@ -116,11 +109,7 @@ async function verifyReferenceImplementations(): Promise<void> {
       for (const result of results) {
         console.log(`Test: ${result.testName}`);
         console.log(`  Status: ${result.success ? "✅ PASS" : "❌ FAIL"}`);
-        console.log(
-          `  Tests: ${result.totalTests - result.failedTests}/${
-            result.totalTests
-          }`
-        );
+        console.log(`  Tests: ${result.totalTests - result.failedTests}/${result.totalTests}`);
 
         if (result.errors.length > 0) {
           console.log("  Errors:");

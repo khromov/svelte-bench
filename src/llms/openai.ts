@@ -1,13 +1,7 @@
-import {
-  DEFAULT_SYSTEM_PROMPT,
-  DEFAULT_SYSTEM_PROMPT_WITH_CONTEXT,
-} from "../utils/prompt";
+import { DEFAULT_SYSTEM_PROMPT, DEFAULT_SYSTEM_PROMPT_WITH_CONTEXT } from "../utils/prompt";
 import type { LLMProvider } from "./index";
 import OpenAI from "openai";
-import type {
-  EasyInputMessage,
-  ResponseCreateParamsNonStreaming,
-} from "openai/resources/responses/responses";
+import type { EasyInputMessage, ResponseCreateParamsNonStreaming } from "openai/resources/responses/responses";
 import type { ReasoningEffort } from "openai/resources/shared";
 
 export class OpenAIProvider implements LLMProvider {
@@ -36,14 +30,14 @@ export class OpenAIProvider implements LLMProvider {
   } {
     const reasoningPattern = /-reasoning-(minimal|low|medium|high)$/;
     const match = modelName.match(reasoningPattern);
-    
+
     if (match) {
       return {
         model: modelName.replace(reasoningPattern, ""),
         reasoningEffort: match[1] as Exclude<ReasoningEffort, null>,
       };
     }
-    
+
     return { model: modelName };
   }
 
@@ -54,20 +48,15 @@ export class OpenAIProvider implements LLMProvider {
    * @param contextContent Optional context content to include in prompts
    * @returns The generated code
    */
-  async generateCode(
-    prompt: string,
-    temperature?: number,
-    contextContent?: string
-  ): Promise<string> {
+  async generateCode(prompt: string, temperature?: number, contextContent?: string): Promise<string> {
     try {
       // Extract reasoning effort from model name if present
       const { model: cleanModelId, reasoningEffort } = this.extractReasoningEffort(this.modelId);
-      
+
       // Check if the model supports temperature
-      const supportsTemperature = !cleanModelId.startsWith("o4") && 
-                                  !cleanModelId.startsWith("o3") && 
-                                  !cleanModelId.startsWith("gpt-5");
-      
+      const supportsTemperature =
+        !cleanModelId.startsWith("o4") && !cleanModelId.startsWith("o3") && !cleanModelId.startsWith("gpt-5");
+
       // Build the log message
       let logMessage = `🤖 Generating code with OpenAI using model: ${cleanModelId}`;
       if (reasoningEffort) {
@@ -79,12 +68,10 @@ export class OpenAIProvider implements LLMProvider {
         logMessage += ` (temp: default)`;
       }
       logMessage += `...`;
-      
+
       console.log(logMessage);
 
-      const systemPrompt = contextContent
-        ? DEFAULT_SYSTEM_PROMPT_WITH_CONTEXT
-        : DEFAULT_SYSTEM_PROMPT;
+      const systemPrompt = contextContent ? DEFAULT_SYSTEM_PROMPT_WITH_CONTEXT : DEFAULT_SYSTEM_PROMPT;
 
       // Standard chat completions
       const inputMessages: EasyInputMessage[] = [
@@ -130,11 +117,7 @@ export class OpenAIProvider implements LLMProvider {
       return response.output_text;
     } catch (error) {
       console.error("Error generating code with OpenAI:", error);
-      throw new Error(
-        `Failed to generate code: ${
-          error instanceof Error ? error.message : String(error)
-        }`
-      );
+      throw new Error(`Failed to generate code: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
