@@ -16,7 +16,7 @@ const expectCurrentTextToBe = (element: HTMLElement, expectedText: string) => {
 
   if (!hasWithQuotes && !hasWithoutQuotes) {
     throw new Error(
-      `Expected element to contain either "${withQuotes}" or "${withoutQuotes}", but got "${textContent}"`
+      `Expected element to contain either "${withQuotes}" or "${withoutQuotes}", but got "${textContent}"`,
     );
   }
 };
@@ -32,9 +32,7 @@ describe("InspectDemo component", () => {
 
     // Check initial text value and character count
     expectCurrentTextToBe(screen.getByTestId("text-value"), "Hello world");
-    expect(screen.getByTestId("char-count")).toHaveTextContent(
-      "Character count: 11"
-    );
+    expect(screen.getByTestId("char-count")).toHaveTextContent("Character count: 11");
   });
 
   test("updates text value and character count when input changes", async () => {
@@ -54,9 +52,7 @@ describe("InspectDemo component", () => {
     expectCurrentTextToBe(screen.getByTestId("text-value"), "Testing $inspect");
 
     // Check if character count updated
-    expect(screen.getByTestId("char-count")).toHaveTextContent(
-      "Character count: 16"
-    );
+    expect(screen.getByTestId("char-count")).toHaveTextContent("Character count: 16");
 
     // Verify $inspect features are being used (console.log was called)
     // This proves $inspect, $inspect.with, and $inspect.trace are working
@@ -86,9 +82,7 @@ describe("InspectDemo component", () => {
     expectCurrentTextToBe(screen.getByTestId("text-value"), "!@#$%^&*()");
 
     // Check if character count is correct
-    expect(screen.getByTestId("char-count")).toHaveTextContent(
-      "Character count: 10"
-    );
+    expect(screen.getByTestId("char-count")).toHaveTextContent("Character count: 10");
 
     // Verify $inspect features are working
     expect(consoleSpy).toHaveBeenCalled();
@@ -115,9 +109,7 @@ describe("InspectDemo component", () => {
     expectCurrentTextToBe(screen.getByTestId("text-value"), "");
 
     // Check if character count is zero
-    expect(screen.getByTestId("char-count")).toHaveTextContent(
-      "Character count: 0"
-    );
+    expect(screen.getByTestId("char-count")).toHaveTextContent("Character count: 0");
 
     // Verify $inspect features are working
     expect(consoleSpy).toHaveBeenCalled();

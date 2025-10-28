@@ -1,4 +1,4 @@
-import { getLLMProvider } from '../llms';
+import { getLLMProvider } from "../llms";
 
 /**
  * Validates if a model exists for a given provider by making a minimal API call
@@ -8,26 +8,27 @@ import { getLLMProvider } from '../llms';
  */
 export async function validateModel(provider: string, model: string): Promise<boolean> {
   const simplePrompt = "Return the word 'test'";
-  
+
   try {
     // Get the provider instance with the specified model
     const llmProvider = await getLLMProvider(provider, model);
-    
+
     // Make a minimal API call to validate model
     await llmProvider.generateCode(simplePrompt, 0.1);
     return true;
-    
   } catch (error: any) {
     // Check for model not found errors
-    if (error.message?.includes('does not exist') || 
-        error.message?.includes('not found') ||
-        error.message?.includes('model must be') ||
-        error.status === 404 ||
-        error.status === 400) {
+    if (
+      error.message?.includes("does not exist") ||
+      error.message?.includes("not found") ||
+      error.message?.includes("model must be") ||
+      error.status === 404 ||
+      error.status === 400
+    ) {
       console.error(`Invalid model '${model}' for provider ${provider}: ${error.message}`);
       return false;
     }
-    
+
     // For other errors (network, auth), throw them up
     console.error(`Validation error for ${provider}/${model}:`, error.message);
     throw error;
@@ -42,7 +43,7 @@ export async function validateModel(provider: string, model: string): Promise<bo
  */
 export async function validateModels(provider: string, models: string[]): Promise<string[]> {
   const validModels: string[] = [];
-  
+
   for (const model of models) {
     try {
       const isValid = await validateModel(provider, model);
@@ -56,6 +57,6 @@ export async function validateModels(provider: string, models: string[]): Promis
       console.error(`Failed to validate ${model} for ${provider}:`, error);
     }
   }
-  
+
   return validModels;
 }

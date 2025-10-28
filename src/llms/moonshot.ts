@@ -1,7 +1,4 @@
-import {
-  DEFAULT_SYSTEM_PROMPT,
-  DEFAULT_SYSTEM_PROMPT_WITH_CONTEXT,
-} from "../utils/prompt";
+import { DEFAULT_SYSTEM_PROMPT, DEFAULT_SYSTEM_PROMPT_WITH_CONTEXT } from "../utils/prompt";
 import type { LLMProvider } from "./index";
 import { withRetry } from "../utils/retry-wrapper";
 
@@ -64,21 +61,13 @@ export class MoonshotProvider implements LLMProvider {
    * @param contextContent Optional context content to include in prompts
    * @returns The generated code
    */
-  async generateCode(
-    prompt: string,
-    temperature?: number,
-    contextContent?: string
-  ): Promise<string> {
+  async generateCode(prompt: string, temperature?: number, contextContent?: string): Promise<string> {
     // Ensure temperature is within valid range [0, 1]
-    const validTemperature = temperature !== undefined
-      ? Math.max(0, Math.min(1, temperature))
-      : 0.7;
+    const validTemperature = temperature !== undefined ? Math.max(0, Math.min(1, temperature)) : 0.7;
 
     console.log(`🤖 Generating code with Moonshot using model: ${this.modelId} (temp: ${validTemperature})...`);
 
-    const systemPrompt = contextContent
-      ? DEFAULT_SYSTEM_PROMPT_WITH_CONTEXT
-      : DEFAULT_SYSTEM_PROMPT;
+    const systemPrompt = contextContent ? DEFAULT_SYSTEM_PROMPT_WITH_CONTEXT : DEFAULT_SYSTEM_PROMPT;
 
     const messages: MoonshotMessage[] = [
       {
@@ -114,16 +103,19 @@ export class MoonshotProvider implements LLMProvider {
       async () => {
         // Create AbortController for timeout (2 minutes for Moonshot models)
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => {
-          controller.abort();
-        }, 2 * 60 * 1000); // 2 minutes
+        const timeoutId = setTimeout(
+          () => {
+            controller.abort();
+          },
+          2 * 60 * 1000,
+        ); // 2 minutes
 
         try {
           const response = await fetch(`${this.baseUrl}/chat/completions`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
-              "Authorization": `Bearer ${this.apiKey}`,
+              Authorization: `Bearer ${this.apiKey}`,
             },
             body: JSON.stringify(requestBody),
             signal: controller.signal,
@@ -136,14 +128,10 @@ export class MoonshotProvider implements LLMProvider {
 
             // Check for rate limiting or temporary errors
             if (response.status === 429 || response.status >= 500) {
-              throw new Error(
-                `Moonshot API temporary error: ${response.status} ${response.statusText} - ${errorText}`
-              );
+              throw new Error(`Moonshot API temporary error: ${response.status} ${response.statusText} - ${errorText}`);
             }
             // Non-retryable error
-            throw new Error(
-              `Moonshot API request failed: ${response.status} ${response.statusText} - ${errorText}`
-            );
+            throw new Error(`Moonshot API request failed: ${response.status} ${response.statusText} - ${errorText}`);
           }
 
           const data: MoonshotResponse = await response.json();
@@ -157,7 +145,7 @@ export class MoonshotProvider implements LLMProvider {
           clearTimeout(timeoutId);
 
           // Check if it's an abort error (timeout)
-          if (error instanceof Error && error.name === 'AbortError') {
+          if (error instanceof Error && error.name === "AbortError") {
             console.error(`Moonshot request timed out after 2 minutes for model: ${this.modelId}`);
             throw new Error(`Request timed out after 2 minutes: ${this.modelId}`);
           }
@@ -172,7 +160,7 @@ export class MoonshotProvider implements LLMProvider {
         backoffFactor: 2,
         onRetry: (error, attempt) => {
           console.warn(
-            `⚠️  Moonshot retry attempt ${attempt}/10 for model ${this.modelId} after error: ${error.message}`
+            `⚠️  Moonshot retry attempt ${attempt}/10 for model ${this.modelId} after error: ${error.message}`,
           );
 
           // On final retry attempt, provide helpful message before failing
@@ -183,7 +171,7 @@ export class MoonshotProvider implements LLMProvider {
             console.error(`💾 Progress has been saved to the checkpoint file.\n`);
           }
         },
-      }
+      },
     ).catch((error) => {
       // If all retries failed, exit the process with error
       console.error(`\n🛑 Stopping benchmark due to persistent Moonshot API failures.`);
@@ -197,11 +185,7 @@ export class MoonshotProvider implements LLMProvider {
    * @returns Array of model identifiers
    */
   getModels(): string[] {
-    return [
-      "moonshot-v1-8k",
-      "moonshot-v1-32k",
-      "moonshot-v1-128k"
-    ];
+    return ["moonshot-v1-8k", "moonshot-v1-32k", "moonshot-v1-128k"];
   }
 
   /**

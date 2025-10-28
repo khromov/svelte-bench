@@ -9,9 +9,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 /**
  * Load all benchmark results from the benchmarks/v1 directory
  */
-async function loadBenchmarkFiles(): Promise<
-  Array<{ name: string; path: string; mtime: number }>
-> {
+async function loadBenchmarkFiles(): Promise<Array<{ name: string; path: string; mtime: number }>> {
   const benchmarksDir = path.resolve(process.cwd(), "benchmarks", "v1");
   const files = await fs.readdir(benchmarksDir);
 
@@ -24,11 +22,11 @@ async function loadBenchmarkFiles(): Promise<
       const filePath = path.join(benchmarksDir, file);
       const stats = await fs.stat(filePath);
       return {
-        name: file.replace(/^v1-/, ''), // Remove v1- prefix if present
+        name: file.replace(/^v1-/, ""), // Remove v1- prefix if present
         path: filePath,
         mtime: stats.mtime.getTime(),
       };
-    })
+    }),
   );
 
   // Sort all files by name using reverse natural sort order (Z to A)
@@ -75,9 +73,7 @@ function groupBenchmarkResults(results: HumanEvalResult[]): ProviderData[] {
   });
 
   // Sort providers alphabetically
-  const sortedProviders = Object.keys(byProvider).sort((a, b) =>
-    a.localeCompare(b)
-  );
+  const sortedProviders = Object.keys(byProvider).sort((a, b) => a.localeCompare(b));
 
   // Build the final structure
   const groupedResults: ProviderData[] = [];
@@ -99,10 +95,13 @@ function groupBenchmarkResults(results: HumanEvalResult[]): ProviderData[] {
     // Sort models alphabetically
     providerData.models = Object.entries(providerData.models)
       .sort(([modelA], [modelB]) => modelA.localeCompare(modelB))
-      .reduce((acc, [model, results]) => {
-        acc[model] = results;
-        return acc;
-      }, {} as Record<string, any[]>);
+      .reduce(
+        (acc, [model, results]) => {
+          acc[model] = results;
+          return acc;
+        },
+        {} as Record<string, any[]>,
+      );
 
     groupedResults.push(providerData);
   }
@@ -116,12 +115,10 @@ function groupBenchmarkResults(results: HumanEvalResult[]): ProviderData[] {
 async function generateBenchmarkHTML(
   benchmarkData: HumanEvalResult[],
   fileName: string,
-  benchmarkFiles: Array<{ name: string; path: string; mtime: number }>
+  benchmarkFiles: Array<{ name: string; path: string; mtime: number }>,
 ): Promise<string> {
   const groupedResults = groupBenchmarkResults(benchmarkData);
-  const benchmarkDataB64 = Buffer.from(JSON.stringify(groupedResults)).toString(
-    "base64"
-  );
+  const benchmarkDataB64 = Buffer.from(JSON.stringify(groupedResults)).toString("base64");
 
   // Format benchmark files for the template
   const formattedBenchmarkFiles = benchmarkFiles.map((file) => ({
@@ -130,9 +127,7 @@ async function generateBenchmarkHTML(
   }));
 
   // Check if context information is present in the results
-  const hasContext = benchmarkData.some(
-    (result) => result.context && result.context.used
-  );
+  const hasContext = benchmarkData.some((result) => result.context && result.context.used);
 
   const contextInfo = hasContext
     ? {
@@ -146,17 +141,21 @@ async function generateBenchmarkHTML(
   const template = await fs.readFile(templatePath, "utf-8");
 
   // Render the template with our data - include filename option for includes
-  const html = ejs.render(template, {
-    benchmarkFiles: formattedBenchmarkFiles,
-    selectedFile: fileName,
-    groupedResults,
-    benchmarkDataB64,
-    contextInfo,
-    isStaticBuild: true,
-    isV1Build: true, // Add flag for v1 builds
-  }, {
-    filename: templatePath, // This tells EJS where to resolve includes from
-  });
+  const html = ejs.render(
+    template,
+    {
+      benchmarkFiles: formattedBenchmarkFiles,
+      selectedFile: fileName,
+      groupedResults,
+      benchmarkDataB64,
+      contextInfo,
+      isStaticBuild: true,
+      isV1Build: true, // Add flag for v1 builds
+    },
+    {
+      filename: templatePath, // This tells EJS where to resolve includes from
+    },
+  );
 
   return html;
 }
@@ -184,20 +183,11 @@ async function buildStaticFiles(): Promise<void> {
       const benchmarkData = await loadBenchmarkData(file.path);
 
       // Generate HTML
-      const html = await generateBenchmarkHTML(
-        benchmarkData,
-        file.name,
-        benchmarkFiles
-      );
+      const html = await generateBenchmarkHTML(benchmarkData, file.name, benchmarkFiles);
 
       // Write HTML file with v1- prefix
       const htmlFileName = `v1-${file.name.replace(".json", ".html")}`;
-      const htmlFilePath = path.resolve(
-        process.cwd(),
-        "benchmarks",
-        "v1",
-        htmlFileName
-      );
+      const htmlFilePath = path.resolve(process.cwd(), "benchmarks", "v1", htmlFileName);
       await fs.writeFile(htmlFilePath, html);
 
       console.log(`📝 Created ${htmlFileName}`);
