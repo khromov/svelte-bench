@@ -1,15 +1,15 @@
-import { generateText } from 'ai';
-import type { LLMProvider } from '../index';
+import { generateText, type ModelMessage } from "ai";
+import type { LLMProvider } from "../index";
 import {
   DEFAULT_SYSTEM_PROMPT,
   DEFAULT_SYSTEM_PROMPT_WITH_CONTEXT,
-} from '../../utils/prompt';
+} from "../../utils/prompt";
 import {
   validateModel,
   formatValidationResult,
   type ValidationResult,
-} from './model-validator';
-import { getRegistry } from './unified-registry';
+} from "./model-validator";
+import { getRegistry } from "./unified-registry";
 
 /**
  * Unified AI SDK Provider Wrapper
@@ -51,7 +51,7 @@ export class AISDKProviderWrapper implements LLMProvider {
       console.log(
         `🤖 Generating code with ${this.providerName} using model: ${
           this.modelId
-        } (temp: ${temperature ?? 'default'})...`
+        } (temp: ${temperature ?? "default"})...`
       );
 
       const systemPrompt = contextContent
@@ -59,9 +59,9 @@ export class AISDKProviderWrapper implements LLMProvider {
         : DEFAULT_SYSTEM_PROMPT;
 
       // Build messages array
-      const messages: any[] = [
+      const messages: ModelMessage[] = [
         {
-          role: 'system',
+          role: "system",
           content: systemPrompt,
         },
       ];
@@ -69,23 +69,23 @@ export class AISDKProviderWrapper implements LLMProvider {
       // Add context message if available
       if (contextContent) {
         messages.push({
-          role: 'user',
+          role: "user",
           content: contextContent,
         });
       }
 
       // Add the main prompt
       messages.push({
-        role: 'user',
+        role: "user",
         content: prompt,
-        });
+      });
 
       // Get model from unified registry (lazy-loaded on first use)
       const registry = await getRegistry();
       const model = (registry as any).languageModel(this.fullModelId);
 
       // Build request options
-      const requestOptions: any = {
+      const requestOptions: Parameters<typeof generateText>[0] = {
         model,
         messages,
       };
@@ -97,7 +97,8 @@ export class AISDKProviderWrapper implements LLMProvider {
 
       // Add MCP tools if enabled, but not for benchmark generation
       // MCP tools interfere with benchmark code generation as LLM prefers tools over direct generation
-      if (enableMCP && false) { // Disabled for benchmark generation
+      if (enableMCP && false) {
+        // Disabled for benchmark generation
         try {
           const { getMCPTools } = await import("../mcp/svelte-mcp-client");
           const mcpTools = await getMCPTools();
@@ -107,27 +108,35 @@ export class AISDKProviderWrapper implements LLMProvider {
             mcpTools.forEach((tool: any, index: number) => {
               const toolName = tool.name || `tool_${index}`;
               console.log(`  Tool ${index + 1}: "${toolName}"`);
-              if (this.providerName === 'google') {
+              if (this.providerName === "google") {
                 // Check Google's naming requirements
                 const issues = [];
                 if (!/^[a-zA-Z_]/.test(toolName)) {
-                  issues.push('Does not start with letter or underscore');
+                  issues.push("Does not start with letter or underscore");
                 }
                 if (!/^[a-zA-Z0-9_.:-]+$/.test(toolName)) {
-                  issues.push('Contains invalid characters');
+                  issues.push("Contains invalid characters");
                 }
                 if (toolName.length > 64) {
-                  issues.push('Exceeds 64 character limit');
+                  issues.push("Exceeds 64 character limit");
                 }
                 if (issues.length > 0) {
-                  console.log(`    ❌ Google naming issues: ${issues.join(', ')}`);
+                  console.log(
+                    `    ❌ Google naming issues: ${issues.join(", ")}`
+                  );
                 } else {
                   console.log(`    ✅ Valid for Google`);
                 }
               }
             });
-            
-            requestOptions.tools = mcpTools;
+
+            // Convert tools array to ToolSet object format
+            const toolSet = mcpTools.reduce((acc: Record<string, any>, tool: any) => {
+              const toolName = tool.name || `tool_${Object.keys(acc).length}`;
+              acc[toolName] = tool;
+              return acc;
+            }, {});
+            requestOptions.tools = toolSet;
             console.log(`✓ Added ${mcpTools.length} MCP tools to request`);
           }
         } catch (mcpError) {
@@ -141,10 +150,7 @@ export class AISDKProviderWrapper implements LLMProvider {
 
       return result.text;
     } catch (error) {
-      console.error(
-        `Error generating code with ${this.providerName}:`,
-        error
-      );
+      console.error(`Error generating code with ${this.providerName}:`, error);
       throw new Error(
         `Failed to generate code: ${
           error instanceof Error ? error.message : String(error)
