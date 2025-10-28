@@ -8,9 +8,7 @@ import {
   saveBenchmarkResults,
   loadTestDefinitions,
 } from "./src/utils/parallel-test-manager";
-import {
-  runAllTestsHumanEval as runAllTestsHumanEvalSequential,
-} from "./src/utils/test-manager";
+import { runAllTestsHumanEval as runAllTestsHumanEvalSequential } from "./src/utils/test-manager";
 import type { HumanEvalResult } from "./src/utils/humaneval";
 import { ensureRequiredDirectories } from "./src/utils/ensure-dirs";
 import { validateModels } from "./src/utils/model-validator";
@@ -80,7 +78,7 @@ function parseCommandLineArgs(): {
   let contextFile: string | undefined;
 
   // Check for help flags first
-  if (args.includes('-h') || args.includes('--help')) {
+  if (args.includes("-h") || args.includes("--help")) {
     showHelp();
     // This will exit, so no need to return
   }
@@ -90,25 +88,25 @@ function parseCommandLineArgs(): {
     const arg = args[i];
 
     // Handle flags
-    if (arg === '-m' || arg === '--mcp') {
+    if (arg === "-m" || arg === "--mcp") {
       enableMCP = true;
       continue;
     }
 
-    if (arg === '-p' || arg === '--parallel') {
+    if (arg === "-p" || arg === "--parallel") {
       parallel = true;
       continue;
     }
 
-    if ((arg === '-c' || arg === '--context') && i + 1 < args.length) {
+    if ((arg === "-c" || arg === "--context") && i + 1 < args.length) {
       contextFile = args[i + 1];
       i++; // Skip the next argument as it's the value
       continue;
     }
 
     // Handle provider:model format (positional argument)
-    if (!arg.startsWith('-') && !provider) {
-      const parts = arg.split(':');
+    if (!arg.startsWith("-") && !provider) {
+      const parts = arg.split(":");
       if (parts.length === 2) {
         provider = parts[0];
         model = parts[1];
@@ -186,9 +184,7 @@ async function runBenchmark() {
       }
 
       if (!debugModel) {
-        throw new Error(
-          `No model specified for provider "${debugProvider}". Use DEBUG_MODEL to specify models.`
-        );
+        throw new Error(`No model specified for provider "${debugProvider}". Use DEBUG_MODEL to specify models.`);
       }
 
       // Parse comma-separated list of models
@@ -207,7 +203,7 @@ async function runBenchmark() {
 
       if (validModels.length === 0) {
         throw new Error(
-          `None of the requested models are valid for provider "${debugProvider}". Models tested: ${requestedModels.join(", ")}`
+          `None of the requested models are valid for provider "${debugProvider}". Models tested: ${requestedModels.join(", ")}`,
         );
       }
 
@@ -227,7 +223,7 @@ async function runBenchmark() {
           selectedProviderModels.length === 1
             ? selectedProviderModels[0].modelId
             : `${selectedProviderModels.length} models`
-        })`
+        })`,
       );
     } else {
       // Non-debug mode: Get all available LLM providers and models
@@ -239,9 +235,7 @@ async function runBenchmark() {
         throw new Error("No LLM provider/model combinations found. Use DEBUG_MODE to specify models.");
       }
 
-      console.log(
-        `👉 Found ${providerModels.length} provider/model combinations`
-      );
+      console.log(`👉 Found ${providerModels.length} provider/model combinations`);
 
       selectedProviderModels = providerModels;
     }
@@ -287,16 +281,14 @@ async function runBenchmark() {
       numSamples = debugTest ? 1 : 10;
     }
 
-    console.log(
-      `👉 Running with ${numSamples} samples per test (for pass@k metrics)`
-    );
+    console.log(`👉 Running with ${numSamples} samples per test (for pass@k metrics)`);
 
     const allResults: HumanEvalResult[] = [];
 
     if (parallel) {
       // Run all provider/model combinations in parallel
       console.log(
-        `\n👉 Running tests with ${selectedProviderModels.length} provider/model combinations in parallel...`
+        `\n👉 Running tests with ${selectedProviderModels.length} provider/model combinations in parallel...`,
       );
 
       // Create a promise for each provider/model combination
@@ -307,9 +299,9 @@ async function runBenchmark() {
           // Determine number of samples for this model
           // Use only 1 sample for expensive o1-pro models
           const modelNumSamples = providerWithModel.modelId.startsWith("o1-pro") ? 1 : numSamples;
-          
+
           if (modelNumSamples !== numSamples) {
-            console.log(`  ⚠️  Using ${modelNumSamples} sample${modelNumSamples > 1 ? 's' : ''} for expensive model`);
+            console.log(`  ⚠️  Using ${modelNumSamples} sample${modelNumSamples > 1 ? "s" : ""} for expensive model`);
           }
 
           // Run tests with this provider model using parallel HumanEval methodology
@@ -318,7 +310,7 @@ async function runBenchmark() {
             modelNumSamples,
             testDefinitions, // Pass specific tests if in debug mode
             contextContent, // Pass context content if available
-            providerWithModel.enableMCP // Pass MCP flag
+            providerWithModel.enableMCP, // Pass MCP flag
           );
 
           // Save individual model results immediately to prevent loss if later models fail
@@ -334,10 +326,7 @@ async function runBenchmark() {
 
           return results;
         } catch (error) {
-          console.error(
-            `Error running tests with ${providerWithModel.name} (${providerWithModel.modelId}):`,
-            error
-          );
+          console.error(`Error running tests with ${providerWithModel.name} (${providerWithModel.modelId}):`, error);
           // Return empty results rather than throwing
           return [];
         }
@@ -353,7 +342,7 @@ async function runBenchmark() {
     } else {
       // Run provider/model combinations sequentially
       console.log(
-        `\n👉 Running tests with ${selectedProviderModels.length} provider/model combinations sequentially...`
+        `\n👉 Running tests with ${selectedProviderModels.length} provider/model combinations sequentially...`,
       );
 
       for (const providerWithModel of selectedProviderModels) {
@@ -363,9 +352,9 @@ async function runBenchmark() {
           // Determine number of samples for this model
           // Use only 1 sample for expensive o1-pro models
           const modelNumSamples = providerWithModel.modelId.startsWith("o1-pro") ? 1 : numSamples;
-          
+
           if (modelNumSamples !== numSamples) {
-            console.log(`  ⚠️  Using ${modelNumSamples} sample${modelNumSamples > 1 ? 's' : ''} for expensive model`);
+            console.log(`  ⚠️  Using ${modelNumSamples} sample${modelNumSamples > 1 ? "s" : ""} for expensive model`);
           }
 
           // Run tests with this provider model using sequential HumanEval methodology
@@ -374,7 +363,7 @@ async function runBenchmark() {
             modelNumSamples,
             testDefinitions, // Pass specific tests if in debug mode
             contextContent, // Pass context content if available
-            providerWithModel.enableMCP // Pass MCP flag
+            providerWithModel.enableMCP, // Pass MCP flag
           );
 
           // Add results to combined array
@@ -391,15 +380,11 @@ async function runBenchmark() {
             }
           }
         } catch (error) {
-          console.error(
-            `Error running tests with ${providerWithModel.name} (${providerWithModel.modelId}):`,
-            error
-          );
+          console.error(`Error running tests with ${providerWithModel.name} (${providerWithModel.modelId}):`, error);
           // Continue with next provider instead of failing completely
         }
       }
     }
-
 
     // Print summary
     console.log(`\n📊 ${isDebugMode ? "Debug" : "Benchmark"} Summary:`);
@@ -426,11 +411,9 @@ async function runBenchmark() {
         console.log(
           `    pass@1: ${result.pass1.toFixed(4)}${
             result.numSamples > 1 ? `, pass@10: ${result.pass10.toFixed(4)}` : ""
-          }`
+          }`,
         );
-        console.log(
-          `    Samples: ${result.numSamples}, Correct: ${result.numCorrect}`
-        );
+        console.log(`    Samples: ${result.numSamples}, Correct: ${result.numCorrect}`);
 
         totalSuccess += result.numCorrect;
         totalSamples += result.numSamples;
@@ -438,11 +421,7 @@ async function runBenchmark() {
     }
 
     console.log("\n===========================================");
-    console.log(
-      `Total Samples: ${totalSamples}, Passed: ${totalSuccess}, Failed: ${
-        totalSamples - totalSuccess
-      }`
-    );
+    console.log(`Total Samples: ${totalSamples}, Passed: ${totalSuccess}, Failed: ${totalSamples - totalSuccess}`);
 
     // Note: We no longer clean sample directories at the end - they're preserved for inspection
 

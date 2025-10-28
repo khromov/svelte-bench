@@ -24,7 +24,7 @@ export async function runTest(
   testName: string,
   provider?: string,
   testDir?: string,
-  enableMCP?: boolean
+  enableMCP?: boolean,
 ): Promise<TestResult> {
   // Create timeout error message
   const timeoutMessage = `Test timeout: ${testName} (${
@@ -51,9 +51,7 @@ export async function runTest(
   });
 
   try {
-    console.log(
-      `🧪 Running tests for ${testName}${provider ? ` (${provider})` : ""}...`
-    );
+    console.log(`🧪 Running tests for ${testName}${provider ? ` (${provider})` : ""}...`);
 
     const tmpDir = testDir || getTmpDir(provider, enableMCP);
     const testFilePath = path.resolve(tmpDir, `${testName}.test.ts`);
@@ -83,8 +81,7 @@ export async function runTest(
         // Get unhandled errors
         const unhandledErrors = vitest.state.getUnhandledErrors();
         for (const error of unhandledErrors) {
-          const errorMessage =
-            error instanceof Error ? error.message : String(error);
+          const errorMessage = error instanceof Error ? error.message : String(error);
           allErrors.push(errorMessage);
         }
 
@@ -142,14 +139,8 @@ export async function runTest(
 
             failedTests += moduleFailedTests.length;
           } catch (err) {
-            console.error(
-              `Error processing module tests for ${testName}${
-                provider ? ` (${provider})` : ""
-              }:`,
-              err
-            );
-            const errorMessage =
-              err instanceof Error ? err.message : String(err);
+            console.error(`Error processing module tests for ${testName}${provider ? ` (${provider})` : ""}:`, err);
+            const errorMessage = err instanceof Error ? err.message : String(err);
             allErrors.push(errorMessage);
             success = false;
           }
@@ -164,9 +155,7 @@ export async function runTest(
           errors: allErrors,
         };
 
-        console.log(
-          `📊 Test results for ${testName}${provider ? ` (${provider})` : ""}:`
-        );
+        console.log(`📊 Test results for ${testName}${provider ? ` (${provider})` : ""}:`);
         console.log(`   Success: ${result.success ? "Yes ✅" : "No ❌"}`);
         console.log(`   Total Tests: ${result.totalTests}`);
         console.log(`   Failed Tests: ${result.failedTests}`);
@@ -186,10 +175,7 @@ export async function runTest(
     abortController.abort();
 
     const errorMessage = error instanceof Error ? error.message : String(error);
-    console.error(
-      `Error running tests for ${testName}${provider ? ` (${provider})` : ""}:`,
-      errorMessage
-    );
+    console.error(`Error running tests for ${testName}${provider ? ` (${provider})` : ""}:`, errorMessage);
 
     return {
       testName,

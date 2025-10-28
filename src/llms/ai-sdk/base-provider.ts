@@ -1,14 +1,7 @@
 import { generateText, type ModelMessage } from "ai";
 import type { LLMProvider } from "../index";
-import {
-  DEFAULT_SYSTEM_PROMPT,
-  DEFAULT_SYSTEM_PROMPT_WITH_CONTEXT,
-} from "../../utils/prompt";
-import {
-  validateModel,
-  formatValidationResult,
-  type ValidationResult,
-} from "./model-validator";
+import { DEFAULT_SYSTEM_PROMPT, DEFAULT_SYSTEM_PROMPT_WITH_CONTEXT } from "../../utils/prompt";
+import { validateModel, formatValidationResult, type ValidationResult } from "./model-validator";
 import { getRegistry } from "./unified-registry";
 
 /**
@@ -45,18 +38,16 @@ export class AISDKProviderWrapper implements LLMProvider {
     prompt: string,
     temperature?: number,
     contextContent?: string,
-    enableMCP?: boolean
+    enableMCP?: boolean,
   ): Promise<string> {
     try {
       console.log(
         `🤖 Generating code with ${this.providerName} using model: ${
           this.modelId
-        } (temp: ${temperature ?? "default"})...`
+        } (temp: ${temperature ?? "default"})...`,
       );
 
-      const systemPrompt = contextContent
-        ? DEFAULT_SYSTEM_PROMPT_WITH_CONTEXT
-        : DEFAULT_SYSTEM_PROMPT;
+      const systemPrompt = contextContent ? DEFAULT_SYSTEM_PROMPT_WITH_CONTEXT : DEFAULT_SYSTEM_PROMPT;
 
       // Build messages array
       const messages: ModelMessage[] = [
@@ -121,9 +112,7 @@ export class AISDKProviderWrapper implements LLMProvider {
                   issues.push("Exceeds 64 character limit");
                 }
                 if (issues.length > 0) {
-                  console.log(
-                    `    ❌ Google naming issues: ${issues.join(", ")}`
-                  );
+                  console.log(`    ❌ Google naming issues: ${issues.join(", ")}`);
                 } else {
                   console.log(`    ✅ Valid for Google`);
                 }
@@ -151,11 +140,7 @@ export class AISDKProviderWrapper implements LLMProvider {
       return result.text;
     } catch (error) {
       console.error(`Error generating code with ${this.providerName}:`, error);
-      throw new Error(
-        `Failed to generate code: ${
-          error instanceof Error ? error.message : String(error)
-        }`
-      );
+      throw new Error(`Failed to generate code: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 

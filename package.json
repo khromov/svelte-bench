@@ -11,7 +11,9 @@
     "@types/express": "^5.0.5",
     "jsdom": "^27.0.1",
     "openai": "^6.7.0",
-    "vitest": "^4.0.4"
+    "vitest": "^4.0.4",
+    "prettier": "^3.6.2",
+    "prettier-plugin-svelte": "^3.4.0"
   },
   "scripts": {
     "start": "sh -c 'pnpm run-tests \"$@\" && pnpm build' --",
@@ -25,7 +27,9 @@
     "verify": "tsx ./verify.ts",
     "merge": "tsx ./merge.ts",
     "merge-v1": "tsx ./merge-v1.ts",
-    "open": "node -e \"require('child_process').spawn('open', ['benchmarks/benchmark-results-merged.html'], { stdio: 'inherit' })\""
+    "open": "node -e \"require('child_process').spawn('open', ['benchmarks/benchmark-results-merged.html'], { stdio: 'inherit' })\"",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "peerDependencies": {
     "typescript": "^5"

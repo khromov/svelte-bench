@@ -8,25 +8,25 @@ export default defineConfig({
       hot: !process.env.VITEST,
       compilerOptions: {
         // Enable runes mode for Svelte 5
-        runes: true
-      }
+        runes: true,
+      },
     }),
-    svelteTesting()
+    svelteTesting(),
   ],
   test: {
     environment: "jsdom",
     setupFiles: ["./vitest-setup.js"],
     server: {
       deps: {
-        inline: ['@testing-library/svelte']
-      }
-    }
+        inline: ["@testing-library/svelte"],
+      },
+    },
   },
   // Ensure Svelte files in node_modules are transformed
   optimizeDeps: {
-    exclude: ['@testing-library/svelte']
+    exclude: ["@testing-library/svelte"],
   },
   ssr: {
-    noExternal: ['@testing-library/svelte']
-  }
+    noExternal: ["@testing-library/svelte"],
+  },
 });

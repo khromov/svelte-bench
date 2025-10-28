@@ -16,10 +16,7 @@ const DEFAULT_OPTIONS: Required<RetryOptions> = {
   },
 };
 
-export async function withRetry<T>(
-  fn: () => Promise<T>,
-  options?: RetryOptions
-): Promise<T> {
+export async function withRetry<T>(fn: () => Promise<T>, options?: RetryOptions): Promise<T> {
   const opts = { ...DEFAULT_OPTIONS, ...options };
   let lastError: Error;
 
@@ -30,18 +27,13 @@ export async function withRetry<T>(
       lastError = error instanceof Error ? error : new Error(String(error));
 
       if (attempt === opts.maxAttempts) {
-        console.error(
-          `❌ Failed after ${opts.maxAttempts} attempts: ${lastError.message}`
-        );
+        console.error(`❌ Failed after ${opts.maxAttempts} attempts: ${lastError.message}`);
         throw lastError;
       }
 
       opts.onRetry(lastError, attempt);
 
-      const baseDelayMs = Math.min(
-        opts.initialDelayMs * Math.pow(opts.backoffFactor, attempt - 1),
-        opts.maxDelayMs
-      );
+      const baseDelayMs = Math.min(opts.initialDelayMs * Math.pow(opts.backoffFactor, attempt - 1), opts.maxDelayMs);
 
       // Add random jitter between 10-250ms to prevent thundering herd
       const jitterMs = Math.floor(Math.random() * 241) + 10; // 10-250ms

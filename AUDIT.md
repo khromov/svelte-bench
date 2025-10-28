@@ -7,12 +7,14 @@
 ## Architecture
 
 ### Hybrid Approach
+
 - **Native SDKs** for providers with special features (7 providers)
 - **AI SDK Registry** for official providers with standard features (29 providers)
 
 ### Design Decisions
 
 **Why Hybrid?**
+
 1. **Feature Parity**: Native SDKs have provider-specific features not exposed by AI SDK
    - OpenAI: Reasoning effort extraction, temperature filtering for o3/o4/gpt-5
    - Anthropic: max_tokens=4000, system prompt in user content
@@ -29,37 +31,46 @@
 ## Provider Coverage
 
 ### Native SDK Providers (7) - Full Feature Parity
+
 ✅ **openai** - OpenAI native SDK
+
 - Reasoning effort extraction (`-reasoning-(minimal|low|medium|high)`)
 - Temperature filtering for o3/o4/gpt-5 models
 - Uses OpenAI Responses API
 
 ✅ **anthropic** - Anthropic native SDK
+
 - Fixed max_tokens: 4000
 - System prompt concatenated into user message
 - Native SDK client
 
 ✅ **google** - Google Generative AI native SDK
+
 - Native SDK features preserved
 
 ✅ **openrouter** - OpenAI-compatible with special features
+
 - Quantization filtering (prefers bf16/fp16/fp32)
 - Fallback logic when no unquantized models available
 - 5-minute timeout with AbortController
 - OPENROUTER_PROVIDER env var support
 
 ✅ **ollama** - Ollama native SDK
+
 - Local model support
 
 ✅ **zai** - Z.ai (legacy)
+
 - Preserved for backward compatibility
 
 ✅ **moonshot** - Moonshot AI (legacy)
+
 - Preserved for backward compatibility
 
 ### AI SDK Registry Providers (29) - Official Only
 
 **Language Models (18):**
+
 1. xAI (Grok)
 2. Vercel
 3. Azure OpenAI
@@ -77,49 +88,42 @@
 15. Baseten
 16. Hugging Face
 
-**Media/Audio Providers (11):**
-17. Replicate
-18. Fal
-19. Luma
-20. ElevenLabs
-21. AssemblyAI
-22. Deepgram
-23. Gladia
-24. LMNT
-25. Hume
-26. Rev.ai
+**Media/Audio Providers (11):** 17. Replicate 18. Fal 19. Luma 20. ElevenLabs 21. AssemblyAI 22. Deepgram 23. Gladia 24. LMNT 25. Hume 26. Rev.ai
 
 **Note**: AI Gateway was not included (no provider package found)
 
 ## Feature Comparison
 
-| Feature | Native SDKs | AI SDK Registry | Status |
-|---------|------------|-----------------|---------|
-| Text generation | ✅ | ✅ | Identical |
-| Temperature control | ✅ | ✅ | Identical |
-| System prompts | ✅ | ✅ | Identical |
-| Context injection | ✅ | ✅ | Identical |
-| Reasoning effort | ✅ OpenAI | ❌ | Native only |
-| max_tokens | ✅ Anthropic | ⚠️ AI SDK default | Native better |
-| Quantization filtering | ✅ OpenRouter | ❌ | Native only |
-| Timeout control | ✅ OpenRouter | ❌ | Native only |
-| Provider routing | ✅ OpenRouter | ❌ | Native only |
-| Lazy loading | ✅ | ✅ | Both |
-| Model validation | ✅ | ✅ | Both |
+| Feature                | Native SDKs   | AI SDK Registry   | Status        |
+| ---------------------- | ------------- | ----------------- | ------------- |
+| Text generation        | ✅            | ✅                | Identical     |
+| Temperature control    | ✅            | ✅                | Identical     |
+| System prompts         | ✅            | ✅                | Identical     |
+| Context injection      | ✅            | ✅                | Identical     |
+| Reasoning effort       | ✅ OpenAI     | ❌                | Native only   |
+| max_tokens             | ✅ Anthropic  | ⚠️ AI SDK default | Native better |
+| Quantization filtering | ✅ OpenRouter | ❌                | Native only   |
+| Timeout control        | ✅ OpenRouter | ❌                | Native only   |
+| Provider routing       | ✅ OpenRouter | ❌                | Native only   |
+| Lazy loading           | ✅            | ✅                | Both          |
+| Model validation       | ✅            | ✅                | Both          |
 
 ## Code Metrics
 
 ### Before Migration
+
 - Files: N/A (planned 21 provider configs)
 - Lines: N/A
 
 ### After Migration
+
 - **Total files**: 10 provider files + 3 AI SDK files = 13 files
 - **Native providers**: 7 files (openai, anthropic, google, openrouter, ollama, zai, moonshot)
 - **AI SDK files**: 3 files (unified-registry, base-provider, model-validator)
 - **Total LOC**: ~1,500 lines (estimated)
 
 ### Efficiency Gains
+
 - **Lazy Loading**: ✅ Providers only loaded when used
 - **Memory**: ✅ Native SDKs loaded on-demand, AI SDK providers loaded in batch on first use
 - **Startup**: ✅ Zero overhead until first provider request
@@ -127,6 +131,7 @@
 ## Functional Equivalence
 
 ### ✅ Verified Working
+
 1. **Provider selection**: Both `getLLMProvider('provider', 'model')` and `getLLMProvider('provider:model')` work
 2. **Code generation**: Native providers generate code successfully
 3. **Special features**: OpenRouter quantization filtering confirmed working
@@ -134,6 +139,7 @@
 5. **Error handling**: Providers fail gracefully when API keys missing
 
 ### ⚠️ Known Differences
+
 1. **Anthropic max_tokens**: Native SDK uses 4000, AI SDK uses default
    - **Impact**: AI SDK may generate less output
    - **Resolution**: Native SDK preserved
@@ -149,11 +155,13 @@
 ## Testing Results
 
 ### Test: OpenRouter with Native SDK
+
 ```bash
 DEBUG_MODE=true DEBUG_PROVIDER=openrouter DEBUG_MODEL=openai/gpt-4o-mini pnpm start
 ```
 
 **Results**:
+
 - ✅ Provider loaded successfully
 - ✅ Quantization filtering applied
 - ✅ Fallback logic triggered (no bf16+ models)
@@ -161,6 +169,7 @@ DEBUG_MODE=true DEBUG_PROVIDER=openrouter DEBUG_MODEL=openai/gpt-4o-mini pnpm st
 - ✅ Test execution completed
 
 **Output Confirmed**:
+
 ```
 ⚠️  WARNING: NO MODELS FOUND WITH REQUIRED PRECISION (bf16+).
     FALLING BACK TO DEFAULT MODEL WITHOUT QUANTIZATION FILTERING.
@@ -172,6 +181,7 @@ DEBUG_MODE=true DEBUG_PROVIDER=openrouter DEBUG_MODEL=openai/gpt-4o-mini pnpm st
 ### ✅ Current State is Production-Ready
 
 **Advantages**:
+
 1. Full feature parity with existing implementations
 2. Lazy loading for efficiency
 3. 29 official AI SDK providers supported
@@ -188,6 +198,7 @@ DEBUG_MODE=true DEBUG_PROVIDER=openrouter DEBUG_MODEL=openai/gpt-4o-mini pnpm st
    - Wait for AI SDK to support quantization preferences
 
 2. **Add AI SDK providers as fallback** if native SDK fails:
+
    ```typescript
    // Try native SDK first (with special features)
    // Fall back to AI SDK if native fails
@@ -201,6 +212,7 @@ DEBUG_MODE=true DEBUG_PROVIDER=openrouter DEBUG_MODEL=openai/gpt-4o-mini pnpm st
 ## Migration Checklist
 
 ### Completed ✅
+
 - [x] Install all official AI SDK packages (29 providers)
 - [x] Create unified AI SDK registry with lazy loading
 - [x] Preserve native SDK providers (7 providers)
@@ -212,6 +224,7 @@ DEBUG_MODE=true DEBUG_PROVIDER=openrouter DEBUG_MODEL=openai/gpt-4o-mini pnpm st
 - [x] Audit implementation
 
 ### Not Needed ❌
+
 - [ ] ~~Migrate native providers to AI SDK~~ (would lose features)
 - [ ] ~~Remove native SDKs~~ (needed for special features)
 - [ ] ~~Add AI SDK wrappers for special features~~ (complex, unnecessary)
@@ -221,6 +234,7 @@ DEBUG_MODE=true DEBUG_PROVIDER=openrouter DEBUG_MODEL=openai/gpt-4o-mini pnpm st
 **Status**: ✅ **APPROVED FOR PRODUCTION**
 
 The hybrid architecture successfully:
+
 1. Supports 36 total providers (7 native + 29 AI SDK)
 2. Maintains full feature parity
 3. Implements lazy loading for efficiency

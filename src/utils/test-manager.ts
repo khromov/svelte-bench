@@ -1,7 +1,16 @@
 import path from "path";
 import fs from "fs/promises";
 import type { LLMProvider } from "../llms";
-import { cleanTmpDir, cleanCheckpointDir, writeToTmpFile, readFile, saveCheckpoint, loadCheckpoint, removeCheckpoint, getTmpDir } from "./file";
+import {
+  cleanTmpDir,
+  cleanCheckpointDir,
+  writeToTmpFile,
+  readFile,
+  saveCheckpoint,
+  loadCheckpoint,
+  removeCheckpoint,
+  getTmpDir,
+} from "./file";
 import { runTest } from "./test-runner";
 import type { TestResult } from "./test-runner";
 import { calculatePassAtK, type HumanEvalResult } from "./humaneval";
@@ -85,7 +94,7 @@ export async function runSingleTest(
   sampleIndex: number = 0,
   temperature?: number,
   contextContent?: string,
-  enableMCP?: boolean
+  enableMCP?: boolean,
 ): Promise<BenchmarkResult> {
   try {
     const providerName = llmProvider.name;
@@ -97,7 +106,7 @@ export async function runSingleTest(
     console.log(
       `🔄 Generating ${test.name} component with ${providerName} (sample ${
         sampleIndex + 1
-      }, temp: ${temperature ?? 'default'})...`
+      }, temp: ${temperature ?? "default"})...`,
     );
     let generatedCode = await withRetry(
       async () => {
@@ -105,22 +114,27 @@ export async function runSingleTest(
 
         // Apply cleaning to remove markdown code blocks
         const cleanedCode = cleanCodeMarkdown(rawCode);
-        
+
         // Check if the cleaned code is empty or only whitespace
         if (!cleanedCode.trim()) {
-          console.warn(`⚠️ Generated code is empty after cleaning for ${test.name} with ${providerName}. Raw code was:`, rawCode);
-          throw new Error("Generated code is empty after cleaning. This indicates an empty response from the LLM provider.");
+          console.warn(
+            `⚠️ Generated code is empty after cleaning for ${test.name} with ${providerName}. Raw code was:`,
+            rawCode,
+          );
+          throw new Error(
+            "Generated code is empty after cleaning. This indicates an empty response from the LLM provider.",
+          );
         }
-        
+
         return cleanedCode;
       },
       {
         onRetry: (error, attempt) => {
           console.warn(
-            `⚠️  Retry attempt ${attempt} for ${test.name} with ${providerName} after error: ${error.message}`
+            `⚠️  Retry attempt ${attempt} for ${test.name} with ${providerName} after error: ${error.message}`,
           );
         },
-      }
+      },
     );
 
     // Check if the generated code already includes <svelte:options runes={true} />
@@ -160,10 +174,7 @@ export async function runSingleTest(
     };
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    console.error(
-      `Error running test ${test.name} with ${llmProvider.name}:`,
-      errorMessage
-    );
+    console.error(`Error running test ${test.name} with ${llmProvider.name}:`, errorMessage);
 
     return {
       testName: test.name,
@@ -205,7 +216,7 @@ export async function runHumanEvalTest(
   completedResults?: HumanEvalResult[],
   existingSamples: BenchmarkResult[] = [],
   startSampleIndex: number = 0,
-  enableMCP?: boolean
+  enableMCP?: boolean,
 ): Promise<HumanEvalResult> {
   try {
     const actualProviderName = providerName || llmProvider.name;
@@ -222,17 +233,9 @@ export async function runHumanEvalTest(
         const temperature = i === 0 ? 0 : undefined;
 
         console.log(`🔄 Running sample ${i + 1}/${numSamples} for ${test.name} with ${actualProviderName}...`);
-        
+
         // Run the test with the current sample index and appropriate temperature
-        const result = await runSingleTest(
-          test,
-          llmProvider,
-          i,
-          temperature,
-          contextContent,
-          enableMCP
-        );
-        
+        const result = await runSingleTest(test, llmProvider, i, temperature, contextContent, enableMCP);
         // Only add to samples if the API call was successful (has generated code)
         if (result.generatedCode.trim() !== "") {
           samples.push(result);
@@ -257,13 +260,9 @@ export async function runHumanEvalTest(
           await saveCheckpoint(actualProviderName, actualModelId, checkpointData, enableMCP);
           console.log(`💾 Saved checkpoint after sample ${i + 1}/${numSamples}`);
         }
-
       } catch (error) {
-        console.error(
-          `Error running sample ${i + 1} for ${test.name} with ${actualProviderName}:`,
-          error
-        );
-        
+        console.error(`Error running sample ${i + 1} for ${test.name} with ${actualProviderName}:`, error);
+
         // Save checkpoint even for failed samples to track progress
         if (testIndex !== undefined && completedResults !== undefined) {
           const checkpointData: CheckpointData = {
@@ -280,14 +279,14 @@ export async function runHumanEvalTest(
           await saveCheckpoint(actualProviderName, actualModelId, checkpointData, enableMCP);
           console.log(`💾 Saved checkpoint after failed sample ${i + 1}/${numSamples}`);
         }
-        
+
         // If this was due to retry exhaustion, abort the entire run
         const errorMessage = error instanceof Error ? error.message : String(error);
-        if (errorMessage.includes('Failed after')) {
+        if (errorMessage.includes("Failed after")) {
           console.error(`❌ Aborting run after exhausting retries for ${test.name}`);
           throw error;
         }
-        
+
         // Continue with other samples for other types of errors
       }
     }
@@ -316,11 +315,7 @@ export async function runHumanEvalTest(
     }
 
     const pass1 = calculatePassAtK(numValidSamples, numCorrect, 1);
-    const pass10 = calculatePassAtK(
-      numValidSamples,
-      numCorrect,
-      Math.min(10, numValidSamples)
-    );
+    const pass10 = calculatePassAtK(numValidSamples, numCorrect, Math.min(10, numValidSamples));
 
     // Format the results
     return {
@@ -345,10 +340,7 @@ export async function runHumanEvalTest(
     };
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    console.error(
-      `Error running HumanEval test ${test.name} with ${llmProvider.name}:`,
-      errorMessage
-    );
+    console.error(`Error running HumanEval test ${test.name} with ${llmProvider.name}:`, errorMessage);
 
     // Return a failed result
     return {
@@ -382,7 +374,7 @@ export async function runAllTestsHumanEval(
   numSamples: number = 10,
   specificTests?: TestDefinition[],
   contextContent?: string,
-  enableMCP?: boolean
+  enableMCP?: boolean,
 ): Promise<HumanEvalResult[]> {
   try {
     const providerName = llmProvider.name;
@@ -392,9 +384,7 @@ export async function runAllTestsHumanEval(
     let tests: TestDefinition[];
     if (specificTests && specificTests.length > 0) {
       tests = specificTests;
-      console.log(
-        `📋 Running ${tests.length} specific tests for ${providerName}`
-      );
+      console.log(`📋 Running ${tests.length} specific tests for ${providerName}`);
     } else {
       tests = await loadTestDefinitions();
       console.log(`📋 Found ${tests.length} tests to run for ${providerName}`);
@@ -409,19 +399,21 @@ export async function runAllTestsHumanEval(
 
     if (checkpoint) {
       console.log(`🔄 Found checkpoint for ${providerName}/${modelId}`);
-      console.log(`🔄 Resuming from checkpoint at test ${checkpoint.currentTestIndex + 1}/${tests.length}, sample ${checkpoint.currentSampleIndex + 1}`);
+      console.log(
+        `🔄 Resuming from checkpoint at test ${checkpoint.currentTestIndex + 1}/${tests.length}, sample ${checkpoint.currentSampleIndex + 1}`,
+      );
       results = checkpoint.completedResults || [];
       startTestIndex = checkpoint.currentTestIndex;
       startSampleIndex = checkpoint.currentSampleIndex + 1; // Resume from next sample
       currentTestSamples = checkpoint.currentTestSamples || [];
-      
+
       // If we finished all samples for the current test, move to next test
       if (startSampleIndex >= numSamples) {
         startTestIndex = checkpoint.currentTestIndex + 1;
         startSampleIndex = 0;
         currentTestSamples = [];
       }
-      
+
       // Verify checkpoint context matches current run
       if (checkpoint.contextContent !== contextContent || checkpoint.numSamples !== numSamples) {
         console.warn(`⚠️ Checkpoint context/samples mismatch - starting fresh`);
@@ -441,14 +433,14 @@ export async function runAllTestsHumanEval(
     // Run remaining tests from checkpoint or start
     for (let i = startTestIndex; i < tests.length; i++) {
       const test = tests[i];
-      
+
       try {
         console.log(`\n🧪 Running test: ${test.name} with ${providerName} (${i + 1}/${tests.length})`);
-        
+
         // Determine starting sample index (0 for new tests, checkpoint value for resumed tests)
-        const sampleStartIndex = (i === startTestIndex) ? startSampleIndex : 0;
-        const existingSamples = (i === startTestIndex) ? currentTestSamples : [];
-        
+        const sampleStartIndex = i === startTestIndex ? startSampleIndex : 0;
+        const existingSamples = i === startTestIndex ? currentTestSamples : [];
+
         // Run the test with sample-level checkpointing
         const result = await runHumanEvalTest(
           test,
@@ -461,9 +453,9 @@ export async function runAllTestsHumanEval(
           results,
           existingSamples,
           sampleStartIndex,
-          enableMCP
+          enableMCP,
         );
-        
+
         // Only add result if it has valid samples (not just API failures)
         if (result.numSamples > 0) {
           results.push(result);
@@ -471,12 +463,10 @@ export async function runAllTestsHumanEval(
           // Log the pass@k metrics
           console.log(
             `📊 ${test.name} (${providerName}) - pass@1: ${result.pass1.toFixed(
-              4
-            )}, pass@10: ${result.pass10.toFixed(4)}`
+              4,
+            )}, pass@10: ${result.pass10.toFixed(4)}`,
           );
-          console.log(
-            `   Samples: ${result.numSamples}, Correct: ${result.numCorrect}`
-          );
+          console.log(`   Samples: ${result.numSamples}, Correct: ${result.numCorrect}`);
         } else {
           console.log(`⚠️ Skipping ${test.name} - no successful API calls, not adding to final results`);
         }
@@ -494,18 +484,14 @@ export async function runAllTestsHumanEval(
           timestamp: new Date().toISOString(),
         };
         await saveCheckpoint(providerName, modelId, checkpointData);
-
       } catch (error) {
-        console.error(
-          `Error running test ${test.name} with ${providerName}:`,
-          error
-        );
-        
+        console.error(`Error running test ${test.name} with ${providerName}:`, error);
+
         // If this was due to retry exhaustion, abort the entire run
         const errorMessage = error instanceof Error ? error.message : String(error);
-        if (errorMessage.includes('Failed after')) {
+        if (errorMessage.includes("Failed after")) {
           console.error(`❌ Aborting entire run due to repeated API failures`);
-          
+
           // Save final checkpoint before aborting
           const checkpointData: CheckpointData = {
             modelId,
@@ -517,13 +503,13 @@ export async function runAllTestsHumanEval(
             contextContent,
             numSamples,
             timestamp: new Date().toISOString(),
-        };
-        await saveCheckpoint(providerName, modelId, checkpointData, enableMCP);
-          
+          };
+          await saveCheckpoint(providerName, modelId, checkpointData, enableMCP);
+
           // Don't continue with other tests, abort
           throw error;
         }
-        
+
         // Save checkpoint for non-fatal errors and continue
         const checkpointData: CheckpointData = {
           modelId,
@@ -537,7 +523,7 @@ export async function runAllTestsHumanEval(
           timestamp: new Date().toISOString(),
         };
         await saveCheckpoint(providerName, modelId, checkpointData, enableMCP);
-        
+
         // Continue with other tests rather than failing completely
       }
     }
@@ -557,7 +543,7 @@ export async function runAllTestsHumanEval(
  * Ensure the benchmarks directory exists
  */
 export async function ensureBenchmarksDir(useMCPDir: boolean = false): Promise<void> {
-  const benchmarksDir = useMCPDir 
+  const benchmarksDir = useMCPDir
     ? path.resolve(process.cwd(), "benchmarks", "mcp")
     : path.resolve(process.cwd(), "benchmarks");
   try {
@@ -576,7 +562,7 @@ export async function saveBenchmarkResults(
   contextFile?: string,
   contextContent?: string,
   customFilenamePrefix?: string,
-  useMCPDir: boolean = false
+  useMCPDir: boolean = false,
 ): Promise<string> {
   try {
     // Ensure the benchmarks directory exists
@@ -584,22 +570,20 @@ export async function saveBenchmarkResults(
 
     const timestamp = new Date().toISOString().replace(/:/g, "-");
     let filenamePrefix: string;
-    
+
     // Add "mcp-" prefix for MCP benchmarks
     if (useMCPDir) {
       filenamePrefix = "mcp-";
     } else if (customFilenamePrefix) {
       // Clean the custom filename prefix to be filesystem-safe
-      const cleanPrefix = customFilenamePrefix.replace(/[^a-zA-Z0-9\-_]/g, '-');
+      const cleanPrefix = customFilenamePrefix.replace(/[^a-zA-Z0-9\-_]/g, "-");
       filenamePrefix = contextFile
         ? `benchmark-results-with-context-${cleanPrefix}-`
         : `benchmark-results-${cleanPrefix}-`;
     } else {
-      filenamePrefix = contextFile
-        ? `benchmark-results-with-context-`
-        : `benchmark-results-`;
+      filenamePrefix = contextFile ? `benchmark-results-with-context-` : `benchmark-results-`;
     }
-    
+
     const filename = `${filenamePrefix}${timestamp}.json`;
     const filePath = path.resolve(process.cwd(), "benchmarks", useMCPDir ? "mcp" : "", filename);
 

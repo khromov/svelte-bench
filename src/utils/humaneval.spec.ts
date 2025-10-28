@@ -127,9 +127,7 @@ describe("HumanEval pass@k calculation", () => {
 
     // The difference between the two estimates should be smaller
     const smallNDifference = Math.abs(unbiasedEstimate - naiveEstimate);
-    const largeNDifference = Math.abs(
-      unbiasedEstimateLargerN - naiveEstimateLargerN
-    );
+    const largeNDifference = Math.abs(unbiasedEstimateLargerN - naiveEstimateLargerN);
 
     expect(largeNDifference).toBeLessThan(smallNDifference);
   });

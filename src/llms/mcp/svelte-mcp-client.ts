@@ -1,6 +1,6 @@
-import { experimental_createMCPClient as createMCPClient } from '@ai-sdk/mcp';
-import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
-import type { Tool } from 'ai';
+import { experimental_createMCPClient as createMCPClient } from "@ai-sdk/mcp";
+import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
+import type { Tool } from "ai";
 
 /**
  * Svelte MCP Client
@@ -26,12 +26,9 @@ async function initializeMCPClient() {
 
     // Create HTTP transport for remote MCP server
     // The Svelte MCP server is hosted at https://mcp.svelte.dev/mcp
-    const transport = new StreamableHTTPClientTransport(
-      new URL("https://mcp.svelte.dev/mcp"),
-      {
-        sessionId: `svelte-bench-${Date.now()}`,
-      }
-    );
+    const transport = new StreamableHTTPClientTransport(new URL("https://mcp.svelte.dev/mcp"), {
+      sessionId: `svelte-bench-${Date.now()}`,
+    });
 
     // Create MCP client using AI SDK
     mcpClient = await createMCPClient({
@@ -43,11 +40,7 @@ async function initializeMCPClient() {
     return mcpClient;
   } catch (error) {
     console.error("❌ Failed to connect to Svelte MCP server:", error);
-    throw new Error(
-      `Failed to initialize MCP client: ${
-        error instanceof Error ? error.message : String(error)
-      }`
-    );
+    throw new Error(`Failed to initialize MCP client: ${error instanceof Error ? error.message : String(error)}`);
   }
 }
 
@@ -65,13 +58,13 @@ export async function getMCPTools(): Promise<Tool[]> {
 
     // Get tools from MCP client using AI SDK adapter
     const tools = await client.tools();
-    
+
     // Extract tools while preserving their names
     mcpTools = Object.entries(tools).map(([name, tool]) => {
       const toolObj = tool as any; // Type assertion for tool access
       return {
         ...tool,
-        name: toolObj.name || name // Ensure the tool has the correct name
+        name: toolObj.name || name, // Ensure the tool has the correct name
       };
     });
 
@@ -93,10 +86,7 @@ export async function getMCPTools(): Promise<Tool[]> {
  * @param toolInput Input parameters for the tool
  * @returns Tool execution result
  */
-export async function processMCPToolCall(
-  toolName: string,
-  toolInput: Record<string, unknown>
-): Promise<string> {
+export async function processMCPToolCall(toolName: string, toolInput: Record<string, unknown>): Promise<string> {
   try {
     if (!mcpClient) {
       throw new Error("MCP client not initialized");
@@ -107,7 +97,7 @@ export async function processMCPToolCall(
     const tools = await mcpClient.tools();
     const toolEntries = Object.entries(tools);
     const tool = toolEntries.find(([name, tool]) => name === toolName);
-    
+
     if (!tool) {
       throw new Error(`Tool "${toolName}" not found`);
     }
@@ -117,11 +107,7 @@ export async function processMCPToolCall(
     return `Tool "${toolName}" execution handled by AI SDK MCP integration`;
   } catch (error) {
     console.error(`❌ Error calling MCP tool "${toolName}":`, error);
-    throw new Error(
-      `MCP tool execution failed: ${
-        error instanceof Error ? error.message : String(error)
-      }`
-    );
+    throw new Error(`MCP tool execution failed: ${error instanceof Error ? error.message : String(error)}`);
   }
 }
 

@@ -7,12 +7,15 @@ Successfully migrated SvelteBench to use Vercel's AI SDK unified provider regist
 ## Before vs After
 
 ### Code Reduction
+
 - **Before**: 21 separate provider config files + registry + template = ~2,500 lines
 - **After**: 3 files (unified-registry, base-provider, model-validator) = **702 lines**
 - **Reduction**: **72% less code** (~1,800 lines eliminated)
 
 ### Architecture
+
 **Before**:
+
 ```
 src/llms/ai-sdk/
   ├── registry.ts (auto-discovery system)
@@ -28,6 +31,7 @@ src/llms/ai-sdk/
 ```
 
 **After**:
+
 ```
 src/llms/ai-sdk/
   ├── unified-registry.ts (single registry with all providers)
@@ -38,6 +42,7 @@ src/llms/ai-sdk/
 ## Supported Providers (29 total)
 
 ### Language Model Providers (21)
+
 ✅ All providers integrated via AI SDK's `createProviderRegistry()`:
 
 1. **openai** - OpenAI (GPT models)
@@ -63,45 +68,55 @@ src/llms/ai-sdk/
 21. **openai-compatible** - Generic OpenAI-compatible APIs
 
 ### Legacy Providers (2)
+
 Still supported for backward compatibility:
+
 - **zai** - Z.ai
 - **moonshot** - Moonshot AI
 
 ## Usage
 
 ### New Format (Recommended)
+
 ```typescript
 // Single string with provider:model format
-await getLLMProvider('openai:gpt-4o')
-await getLLMProvider('anthropic:claude-3-5-sonnet')
-await getLLMProvider('openrouter:openai/gpt-4o-mini')
+await getLLMProvider("openai:gpt-4o");
+await getLLMProvider("anthropic:claude-3-5-sonnet");
+await getLLMProvider("openrouter:openai/gpt-4o-mini");
 ```
 
 ### Legacy Format (Still Supported)
+
 ```typescript
 // Separate provider and model arguments
-await getLLMProvider('openai', 'gpt-4o')
-await getLLMProvider('anthropic', 'claude-3-5-sonnet')
+await getLLMProvider("openai", "gpt-4o");
+await getLLMProvider("anthropic", "claude-3-5-sonnet");
 ```
 
 ## Key Features
 
 ### 1. Unified Registry
+
 Uses AI SDK's built-in `createProviderRegistry()` instead of custom discovery system.
 
 ### 2. Automatic Provider Detection
+
 Providers are automatically registered if their API keys are configured:
+
 ```bash
 OPENAI_API_KEY=... → openai provider available
 ANTHROPIC_API_KEY=... → anthropic provider available
 ```
 
 ### 3. Model Validation
+
 All models are validated for:
+
 - **Text-only**: Blocks multimodal models (images/audio/video)
 - **Quantization**: Warns about quantized models (int4, int8, fp8, etc.)
 
 Environment controls:
+
 ```bash
 STRICT_TEXT_ONLY=true         # Default: block non-text models
 ALLOW_QUANTIZED_MODELS=false  # Default: warn on quantization
@@ -111,6 +126,7 @@ PREFER_UNQUANTIZED=true       # OpenRouter: prefer bf16+ models
 ### 4. Special Provider Configs
 
 **OpenRouter** - Quantization preferences:
+
 ```typescript
 // Automatically prefers unquantized models (bf16, fp16, fp32)
 // Fallback to quantized if needed
@@ -121,6 +137,7 @@ provider: {
 ```
 
 **Ollama** - Always available (no API key required):
+
 ```typescript
 // Default: http://localhost:11434
 // Override with: OLLAMA_BASE_URL=http://custom:port

@@ -21,7 +21,7 @@ const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 export function getTmpDir(provider?: string, useMCP: boolean = false): string {
   const baseDir = path.resolve(process.cwd(), "tmp");
   if (provider) {
-    const providerDir = useMCP 
+    const providerDir = useMCP
       ? path.join("samples", "mcp", provider.toLowerCase())
       : path.join("samples", provider.toLowerCase());
     return path.join(baseDir, providerDir);
@@ -53,10 +53,7 @@ export async function ensureTmpDir(provider?: string, useMCP: boolean = false): 
     const tmpDir = getTmpDir(provider, useMCP);
     await fs.mkdir(tmpDir, { recursive: true });
   } catch (error) {
-    console.error(
-      `Error creating tmp directory for ${provider || "base"}:`,
-      error
-    );
+    console.error(`Error creating tmp directory for ${provider || "base"}:`, error);
     throw error;
   }
 }
@@ -71,16 +68,14 @@ export async function ensureCheckpointDir(provider: string, useMCP: boolean = fa
     const checkpointDir = getCheckpointDir(provider, useMCP);
     await fs.mkdir(checkpointDir, { recursive: true });
   } catch (error) {
-    console.error(
-      `Error creating checkpoint directory for ${provider}:`,
-      error
-    );
+    console.error(`Error creating checkpoint directory for ${provider}:`, error);
     throw error;
   }
 }
 
 /**
- * Clean the temporary directory for a specific provider with retry logic
+ * Clean the samples directory for a specific provider with retry logic
+ * This is used during test execution to clear old sample files
  * @param provider The provider name (optional)
  * @param useMCP Whether to use MCP-specific directory (optional)
  */
@@ -102,21 +97,15 @@ export async function cleanTmpDir(provider?: string, useMCP: boolean = false): P
     } catch (error) {
       retries++;
       console.warn(
-        `Warning: Failed to clean samples directory for ${
-          provider || "base"
-        } (attempt ${retries}/${MAX_RETRIES}):`,
-        error
+        `Warning: Failed to clean samples directory for ${provider || "base"} (attempt ${retries}/${MAX_RETRIES}):`,
+        error,
       );
 
       if (retries < MAX_RETRIES) {
         // Wait a bit before retrying to allow any file locks to clear
         await delay(RETRY_DELAY * retries);
       } else {
-        console.error(
-          `Failed to clean samples directory for ${
-            provider || "base"
-          } after ${MAX_RETRIES} attempts`
-        );
+        console.error(`Failed to clean samples directory for ${provider || "base"} after ${MAX_RETRIES} attempts`);
         // Don't throw the error, just log it and continue
       }
     }
@@ -137,22 +126,20 @@ export async function cleanCheckpointDir(provider: string, useMCP: boolean = fal
     try {
       // Use rimraf to recursively remove directory contents
       await rimraf(checkpointDir);
-      
+
       console.log(`✨ Cleaned checkpoint directory for ${provider}`);
       return;
     } catch (error) {
       retries++;
       console.warn(
         `Warning: Failed to clean checkpoint directory for ${provider} (attempt ${retries}/${MAX_RETRIES}):`,
-        error
+        error,
       );
 
       if (retries < MAX_RETRIES) {
         await delay(RETRY_DELAY * retries);
       } else {
-        console.error(
-          `Failed to clean checkpoint directory for ${provider} after ${MAX_RETRIES} attempts`
-        );
+        console.error(`Failed to clean checkpoint directory for ${provider} after ${MAX_RETRIES} attempts`);
         // Don't throw the error, just log it and continue
       }
     }
@@ -169,7 +156,7 @@ export async function writeToTmpFile(
   filename: string,
   content: string,
   provider?: string,
-  useMCP: boolean = false
+  useMCP: boolean = false,
 ): Promise<string> {
   let retries = 0;
 
@@ -184,29 +171,20 @@ export async function writeToTmpFile(
     } catch (error) {
       retries++;
       console.warn(
-        `Warning: Failed to write to ${filename} for ${
-          provider || "base"
-        } (attempt ${retries}/${MAX_RETRIES}):`,
-        error
+        `Warning: Failed to write to ${filename} for ${provider || "base"} (attempt ${retries}/${MAX_RETRIES}):`,
+        error,
       );
 
       if (retries < MAX_RETRIES) {
         await delay(RETRY_DELAY * retries);
       } else {
-        console.error(
-          `Error writing to ${filename} for ${
-            provider || "base"
-          } after ${MAX_RETRIES} attempts:`,
-          error
-        );
+        console.error(`Error writing to ${filename} for ${provider || "base"} after ${MAX_RETRIES} attempts:`, error);
         throw error;
       }
     }
   }
 
-  throw new Error(
-    `Failed to write to ${filename} after ${MAX_RETRIES} attempts`
-  );
+  throw new Error(`Failed to write to ${filename} after ${MAX_RETRIES} attempts`);
 }
 
 /**
@@ -219,7 +197,7 @@ export async function copyToTmpDir(
   sourcePath: string,
   destFilename: string,
   provider?: string,
-  useMCP: boolean = false
+  useMCP: boolean = false,
 ): Promise<string> {
   let retries = 0;
 
@@ -234,29 +212,20 @@ export async function copyToTmpDir(
     } catch (error) {
       retries++;
       console.warn(
-        `Warning: Failed to copy ${sourcePath} for ${
-          provider || "base"
-        } (attempt ${retries}/${MAX_RETRIES}):`,
-        error
+        `Warning: Failed to copy ${sourcePath} for ${provider || "base"} (attempt ${retries}/${MAX_RETRIES}):`,
+        error,
       );
 
       if (retries < MAX_RETRIES) {
         await delay(RETRY_DELAY * retries);
       } else {
-        console.error(
-          `Error copying ${sourcePath} for ${
-            provider || "base"
-          } after ${MAX_RETRIES} attempts:`,
-          error
-        );
+        console.error(`Error copying ${sourcePath} for ${provider || "base"} after ${MAX_RETRIES} attempts:`, error);
         throw error;
       }
     }
   }
 
-  throw new Error(
-    `Failed to copy to ${destFilename} after ${MAX_RETRIES} attempts`
-  );
+  throw new Error(`Failed to copy to ${destFilename} after ${MAX_RETRIES} attempts`);
 }
 
 /**
@@ -272,18 +241,12 @@ export async function readFile(filePath: string): Promise<string> {
       return await fs.readFile(filePath, "utf-8");
     } catch (error) {
       retries++;
-      console.warn(
-        `Warning: Failed to read ${filePath} (attempt ${retries}/${MAX_RETRIES}):`,
-        error
-      );
+      console.warn(`Warning: Failed to read ${filePath} (attempt ${retries}/${MAX_RETRIES}):`, error);
 
       if (retries < MAX_RETRIES) {
         await delay(RETRY_DELAY * retries);
       } else {
-        console.error(
-          `Error reading ${filePath} after ${MAX_RETRIES} attempts:`,
-          error
-        );
+        console.error(`Error reading ${filePath} after ${MAX_RETRIES} attempts:`, error);
         throw error;
       }
     }
@@ -310,11 +273,7 @@ export async function loadContextFile(filePath: string): Promise<string> {
     return contextContent;
   } catch (error) {
     console.error(`Error loading context file ${filePath}:`, error);
-    throw new Error(
-      `Failed to load context file: ${
-        error instanceof Error ? error.message : String(error)
-      }`
-    );
+    throw new Error(`Failed to load context file: ${error instanceof Error ? error.message : String(error)}`);
   }
 }
 
@@ -327,14 +286,14 @@ export async function loadContextFile(filePath: string): Promise<string> {
  */
 export function getCheckpointPath(provider: string, modelId: string, useMCP: boolean = false): string {
   const checkpointDir = getCheckpointDir(provider, useMCP);
-  const safeModelId = modelId.replace(/[^a-zA-Z0-9\-_]/g, '-');
+  const safeModelId = modelId.replace(/[^a-zA-Z0-9\-_]/g, "-");
   return path.join(checkpointDir, `checkpoint-${safeModelId}.json`);
 }
 
 /**
  * Save checkpoint data to file
  * @param provider The provider name
- * @param modelId The model identifier  
+ * @param modelId The model identifier
  * @param checkpointData The checkpoint data to save
  * @param useMCP Whether to use MCP-specific directory (optional)
  */
@@ -342,7 +301,7 @@ export async function saveCheckpoint(
   provider: string,
   modelId: string,
   checkpointData: any,
-  useMCP: boolean = false
+  useMCP: boolean = false,
 ): Promise<void> {
   try {
     await ensureCheckpointDir(provider, useMCP);
@@ -362,11 +321,7 @@ export async function saveCheckpoint(
  * @param useMCP Whether to use MCP-specific directory (optional)
  * @returns The checkpoint data or null if not found
  */
-export async function loadCheckpoint(
-  provider: string,
-  modelId: string,
-  useMCP: boolean = false
-): Promise<any | null> {
+export async function loadCheckpoint(provider: string, modelId: string, useMCP: boolean = false): Promise<any | null> {
   try {
     const checkpointPath = getCheckpointPath(provider, modelId, useMCP);
     await fs.access(checkpointPath);
@@ -385,10 +340,7 @@ export async function loadCheckpoint(
  * @param provider The provider name
  * @param modelId The model identifier
  */
-export async function removeCheckpoint(
-  provider: string,
-  modelId: string
-): Promise<void> {
+export async function removeCheckpoint(provider: string, modelId: string): Promise<void> {
   try {
     const checkpointPath = getCheckpointPath(provider, modelId);
     await fs.unlink(checkpointPath);

@@ -16,12 +16,7 @@ export interface LLMProvider {
    * @param enableMCP Optional flag to enable MCP tools
    * @returns The generated code
    */
-  generateCode(
-    prompt: string,
-    temperature?: number,
-    contextContent?: string,
-    enableMCP?: boolean,
-  ): Promise<string>;
+  generateCode(prompt: string, temperature?: number, contextContent?: string, enableMCP?: boolean): Promise<string>;
 
   /**
    * Get all available models for this provider
@@ -52,16 +47,13 @@ export interface ProviderWithModel {
  * @param modelId The model identifier (optional if using "provider:model" format)
  * @returns The LLM provider
  */
-export async function getLLMProvider(
-  providerName: string,
-  modelId?: string,
-): Promise<LLMProvider> {
+export async function getLLMProvider(providerName: string, modelId?: string): Promise<LLMProvider> {
   // Parse provider:model format if provided
   let actualProvider = providerName;
   let actualModel = modelId;
 
-  if (providerName.includes(':') && !modelId) {
-    const [provider, model] = providerName.split(':', 2);
+  if (providerName.includes(":") && !modelId) {
+    const [provider, model] = providerName.split(":", 2);
     actualProvider = provider;
     actualModel = model;
   }
@@ -69,7 +61,7 @@ export async function getLLMProvider(
   // Ensure model ID is provided
   if (!actualModel) {
     throw new Error(
-      `Model ID is required. Use either getLLMProvider('provider', 'model') or getLLMProvider('provider:model')`
+      `Model ID is required. Use either getLLMProvider('provider', 'model') or getLLMProvider('provider:model')`,
     );
   }
 
@@ -105,8 +97,8 @@ export async function getLLMProvider(
   // Provider not found
   throw new Error(
     `Unknown LLM provider: ${actualProvider}. ` +
-    `Available AI SDK providers: ${availableProviders.join(', ')}. ` +
-    `Legacy providers (deprecated): openai, anthropic, ollama, zai, moonshot.`
+      `Available AI SDK providers: ${availableProviders.join(", ")}. ` +
+      `Legacy providers (deprecated): openai, anthropic, ollama, zai, moonshot.`,
   );
 }
 
@@ -125,7 +117,7 @@ export async function getAllLLMProviders(): Promise<ProviderWithModel[]> {
   const { getAvailableProviders } = await import("./ai-sdk/unified-registry");
   const availableProviders = getAvailableProviders();
 
-  console.log(`📋 Found ${availableProviders.length} available AI SDK providers:`, availableProviders.join(', '));
+  console.log(`📋 Found ${availableProviders.length} available AI SDK providers:`, availableProviders.join(", "));
 
   // Legacy providers (maintained for backward compatibility only)
   const legacyProviders = [

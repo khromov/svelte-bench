@@ -7,6 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 SvelteBench is an LLM benchmark tool for Svelte 5 components based on the HumanEval methodology. It evaluates LLM-generated Svelte components by testing them against predefined test suites and calculates pass@k metrics.
 
 **Core Architecture:**
+
 - `index.ts` - Main benchmark orchestrator that manages the full test cycle
 - `src/llms/` - Provider abstraction layer supporting OpenAI, Anthropic, Google, and OpenRouter
 - `src/tests/` - Test definitions with `prompt.md` and `test.ts` pairs
@@ -97,6 +98,7 @@ Multiple models can be specified: `DEBUG_MODEL=model1,model2,model3`
 All AI SDK providers are now available through a unified interface. Configure API keys in `.env`:
 
 **Language Model Providers:**
+
 - `ANTHROPIC_API_KEY` - Anthropic Claude models
 - `OPENAI_API_KEY` - OpenAI GPT models
 - `GOOGLE_API_KEY` - Google Generative AI
@@ -117,12 +119,14 @@ All AI SDK providers are now available through a unified interface. Configure AP
 ### MCP Integration
 
 Enable Svelte-specific tooling through Model Context Protocol:
+
 - `pnpm start anthropic:claude-3-haiku --mcp` - Enables MCP tools from https://mcp.svelte.dev/mcp
 - MCP tools are loaded via HTTP transport for enhanced Svelte development capabilities
 
 ## Test Structure
 
 Each test in `src/tests/` requires:
+
 - `prompt.md` - Instructions for the LLM to generate a Svelte component
 - `test.ts` - Vitest tests that validate the generated component functionality
 - `Reference.svelte` - Reference implementation for validation
@@ -132,6 +136,7 @@ The benchmark generates components in `tmp/{provider}/` directories and runs tes
 ## Versioning System
 
 **Current Results:** Results generated with fixed test prompts and improved error handling. All new benchmark runs produce results with:
+
 - Fixed quotation mark issues in test prompts that were causing model confusion
 - Corrected Svelte binding syntax examples (e.g., `bind:value={text}` instead of `bind:value="{text}"`)
 - Improved test reliability and accuracy
@@ -142,6 +147,7 @@ The benchmark generates components in `tmp/{provider}/` directories and runs tes
 ## Environment Setup
 
 Copy `.env.example` to `.env` and configure API keys for desired providers:
+
 - `OPENAI_API_KEY` - For GPT models
 - `ANTHROPIC_API_KEY` - For Claude models
 - `GEMINI_API_KEY` - For Gemini models
