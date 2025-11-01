@@ -13,7 +13,7 @@ const noTimeoutFetch = (input: string | URL | globalThis.Request, init?: Request
   } as any);
 };
 
-export class OllamaProvider implements LLMProvider {
+export class LEGACY_OllamaProvider implements LLMProvider {
   private client: Ollama;
   private modelId: string;
   name = "Ollama";

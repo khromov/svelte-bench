@@ -17,9 +17,15 @@ export interface TestResult {
  * @param testName The name of the test
  * @param provider The provider name (optional)
  * @param testDir Optional specific directory for test files (for parallel execution)
+ * @param enableMCP Whether MCP tools are enabled (affects directory structure)
  * @returns Test results
  */
-export async function runTest(testName: string, provider?: string, testDir?: string): Promise<TestResult> {
+export async function runTest(
+  testName: string,
+  provider?: string,
+  testDir?: string,
+  enableMCP?: boolean,
+): Promise<TestResult> {
   // Create timeout error message
   const timeoutMessage = `Test timeout: ${testName} (${
     provider || "unknown"
@@ -47,7 +53,7 @@ export async function runTest(testName: string, provider?: string, testDir?: str
   try {
     console.log(`🧪 Running tests for ${testName}${provider ? ` (${provider})` : ""}...`);
 
-    const tmpDir = testDir || getTmpDir(provider);
+    const tmpDir = testDir || getTmpDir(provider, enableMCP);
     const testFilePath = path.resolve(tmpDir, `${testName}.test.ts`);
 
     // Verify the test file exists before running the test

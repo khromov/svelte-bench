@@ -2,7 +2,7 @@ import { DEFAULT_SYSTEM_PROMPT, DEFAULT_SYSTEM_PROMPT_WITH_CONTEXT } from "../ut
 import type { LLMProvider } from "./index";
 import { withRetry } from "../utils/retry-wrapper";
 
-export class ZAIProvider implements LLMProvider {
+export class LEGACY_ZAIProvider implements LLMProvider {
   private apiKey: string;
   private modelId: string;
   name = "Z.ai";

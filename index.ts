@@ -15,24 +15,118 @@ import { validateModels } from "./src/utils/model-validator";
 import path from "path";
 
 /**
+ * Display help information
+ */
+function showHelp() {
+  console.log(`
+SvelteBench - LLM Benchmark Tool for Svelte 5 Components
+
+USAGE:
+  pnpm start [provider:model] [options]
+
+EXAMPLES:
+  pnpm start google:gemini-2.5-flash --mcp
+  pnpm start anthropic:claude-3-haiku --parallel --context ./context.txt
+  pnpm start moonshot:kimi-k2 -p -m
+  pnpm start openai:gpt-4o --parallel
+
+OPTIONS:
+  -h, --help              Show this help message
+  -p, --parallel          Enable parallel execution for faster benchmark runs
+  -m, --mcp               Enable MCP tools for Svelte-specific enhancements
+  -c, --context <file>    Load context file for additional model guidance
+  --context <file>        Same as -c
+
+ENVIRONMENT VARIABLES:
+  PARALLEL_EXECUTION=true Enable parallel execution (same as --parallel)
+  DEBUG_MODE=true         Enable debug mode with single provider/model
+  DEBUG_PROVIDER=<name>   Provider for debug mode
+  DEBUG_MODEL=<name>      Model for debug mode
+  DEBUG_TEST=<name>       Run specific test in debug mode
+  DEBUG_SAMPLES=<number>  Number of samples in debug mode
+
+PROVIDERS:
+  anthropic, openai, google, moonshot, ollama, openrouter, zai
+  (and all AI SDK supported providers)
+
+For more information, see the README.md file.
+`);
+  process.exit(0);
+}
+
+/**
  * Parse command line arguments
+ * New syntax: pnpm start [provider:model] [options]
+ * Example: pnpm start google:gemini-2.5-flash --mcp --parallel
+ *
+ * Legacy: DEBUG_MODE=true DEBUG_PROVIDER=anthropic DEBUG_MODEL=haiku-4-5 pnpm start
+ *
  * @returns Parsed command line arguments
  */
 function parseCommandLineArgs(): {
+  provider?: string;
+  model?: string;
+  enableMCP: boolean;
+  parallel: boolean;
   contextFile?: string;
 } {
   const args = process.argv.slice(2);
+  let provider: string | undefined;
+  let model: string | undefined;
+  let enableMCP = false;
+  let parallel = false;
   let contextFile: string | undefined;
+
+  // Check for help flags first
+  if (args.includes("-h") || args.includes("--help")) {
+    showHelp();
+    // This will exit, so no need to return
+  }
 
   // Parse arguments
   for (let i = 0; i < args.length; i++) {
-    if (args[i] === "--context" && i + 1 < args.length) {
+    const arg = args[i];
+
+    // Handle flags
+    if (arg === "-m" || arg === "--mcp") {
+      enableMCP = true;
+      continue;
+    }
+
+    if (arg === "-p" || arg === "--parallel") {
+      parallel = true;
+      continue;
+    }
+
+    if ((arg === "-c" || arg === "--context") && i + 1 < args.length) {
       contextFile = args[i + 1];
-      i++; // Skip the next argument as it's the value for --context
+      i++; // Skip the next argument as it's the value
+      continue;
+    }
+
+    // Handle provider:model format (positional argument)
+    if (!arg.startsWith("-") && !provider) {
+      const parts = arg.split(":");
+      if (parts.length === 2) {
+        provider = parts[0];
+        model = parts[1];
+      } else {
+        // If no colon, treat as provider (legacy support)
+        provider = arg;
+      }
     }
   }
 
+  // Check for parallel execution environment variable (can override CLI arg)
+  if (process.env.PARALLEL_EXECUTION === "true") {
+    parallel = true;
+  }
+
   return {
+    provider,
+    model,
+    enableMCP,
+    parallel,
     contextFile,
   };
 }
@@ -42,14 +136,15 @@ function parseCommandLineArgs(): {
  */
 async function runBenchmark() {
   try {
-    // Parse command line arguments
-    const { contextFile } = parseCommandLineArgs();
-
-    // Check for parallel execution environment variable
-    const parallel = process.env.PARALLEL_EXECUTION === "true";
+    // Parse command line arguments (includes both new CLI syntax and legacy DEBUG_MODE support)
+    const { provider: cliProvider, model: cliModel, enableMCP, parallel, contextFile } = parseCommandLineArgs();
 
     const executionMode = parallel ? "PARALLEL EXECUTION" : "SEQUENTIAL EXECUTION";
     console.log(`🚀 Starting SvelteBench with HumanEval methodology (${executionMode})...`);
+
+    if (enableMCP) {
+      console.log("🔌 MCP tools enabled for Svelte support");
+    }
 
     // Load context file if specified
     let contextContent = "";
@@ -70,8 +165,8 @@ async function runBenchmark() {
 
     // Note: We don't clean sample directories at startup anymore - only checkpoints are cleared
 
-    // Check if we're in debug mode
-    const isDebugMode = process.env.DEBUG_MODE === "true";
+    // Determine debug mode: either from CLI args or DEBUG_MODE environment variable
+    const isDebugMode = process.env.DEBUG_MODE === "true" || (cliProvider && cliModel);
 
     // Initialize provider models array
     let selectedProviderModels: any[] = [];
@@ -79,9 +174,10 @@ async function runBenchmark() {
     if (isDebugMode) {
       console.log("🐛 Running in DEBUG_MODE");
 
-      // Get debug settings
-      const debugProvider = process.env.DEBUG_PROVIDER;
-      const debugModel = process.env.DEBUG_MODEL;
+      // Get provider/model from CLI args or DEBUG_MODE environment variables
+      // CLI args take precedence over environment variables
+      const debugProvider = cliProvider || process.env.DEBUG_PROVIDER;
+      const debugModel = cliModel || process.env.DEBUG_MODEL;
 
       if (!debugProvider) {
         throw new Error("DEBUG_PROVIDER must be specified in debug mode");
@@ -118,6 +214,7 @@ async function runBenchmark() {
           provider,
           name: debugProvider.charAt(0).toUpperCase() + debugProvider.slice(1),
           modelId,
+          enableMCP, // Include MCP flag with this provider
         });
       }
 
@@ -213,12 +310,13 @@ async function runBenchmark() {
             modelNumSamples,
             testDefinitions, // Pass specific tests if in debug mode
             contextContent, // Pass context content if available
+            providerWithModel.enableMCP, // Pass MCP flag
           );
 
           // Save individual model results immediately to prevent loss if later models fail
           if (results.length > 0) {
             try {
-              await saveBenchmarkResults(results, contextFile, contextContent, undefined);
+              await saveBenchmarkResults(results, contextFile, contextContent, undefined, providerWithModel.enableMCP);
               console.log(`💾 Saved individual results for ${providerWithModel.modelId}`);
             } catch (saveError) {
               console.error(`⚠️  Failed to save individual results for ${providerWithModel.modelId}:`, saveError);
@@ -265,6 +363,7 @@ async function runBenchmark() {
             modelNumSamples,
             testDefinitions, // Pass specific tests if in debug mode
             contextContent, // Pass context content if available
+            providerWithModel.enableMCP, // Pass MCP flag
           );
 
           // Add results to combined array
@@ -273,7 +372,7 @@ async function runBenchmark() {
           // Save individual model results immediately to prevent loss if later models fail
           if (results.length > 0) {
             try {
-              await saveBenchmarkResults(results, contextFile, contextContent, undefined);
+              await saveBenchmarkResults(results, contextFile, contextContent, undefined, providerWithModel.enableMCP);
               console.log(`💾 Saved individual results for ${providerWithModel.modelId}`);
             } catch (saveError) {
               console.error(`⚠️  Failed to save individual results for ${providerWithModel.modelId}:`, saveError);

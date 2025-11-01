@@ -2,7 +2,7 @@ import { DEFAULT_SYSTEM_PROMPT, DEFAULT_SYSTEM_PROMPT_WITH_CONTEXT } from "../ut
 import type { LLMProvider } from "./index";
 import { Anthropic } from "@anthropic-ai/sdk";
 
-export class AnthropicProvider implements LLMProvider {
+export class LEGACY_AnthropicProvider implements LLMProvider {
   private client: Anthropic;
   private modelId: string;
   name = "Anthropic";

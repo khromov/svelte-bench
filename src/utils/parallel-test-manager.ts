@@ -127,6 +127,7 @@ async function runSingleTestSample(
   sampleIndex: number,
   temperature: number | undefined,
   contextContent?: string,
+  enableMCP?: boolean,
 ): Promise<BenchmarkResult> {
   const providerName = llmProvider.name;
   const testDir = getUniqueTestDir(providerName, test.name, sampleIndex);
@@ -145,7 +146,7 @@ async function runSingleTestSample(
 
     let generatedCode = await withRetry(
       async () => {
-        const rawCode = await llmProvider.generateCode(prompt, temperature, contextContent);
+        const rawCode = await llmProvider.generateCode(prompt, temperature, contextContent, enableMCP);
         const cleanedCode = cleanCodeMarkdown(rawCode);
 
         if (!cleanedCode.trim()) {
@@ -178,7 +179,7 @@ async function runSingleTestSample(
     await fs.writeFile(path.join(testDir, `${test.name}.test.ts`), testContent);
 
     // Run the test with the unique directory
-    const testResult = await runTest(test.name, providerName, testDir);
+    const testResult = await runTest(test.name, providerName, testDir, enableMCP);
 
     // Clean up the unique directory
     await cleanUniqueTestDir(testDir);
@@ -236,6 +237,7 @@ async function runTestSamplesInParallelWithCheckpointing(
   completedResults?: HumanEvalResult[],
   existingSamples: BenchmarkResult[] = [],
   startSampleIndex: number = 0,
+  enableMCP?: boolean,
 ): Promise<BenchmarkResult[]> {
   const providerName = llmProvider.name;
   const modelId = llmProvider.getModelIdentifier();
@@ -248,7 +250,7 @@ async function runTestSamplesInParallelWithCheckpointing(
     const temperature = i === 0 ? 0 : undefined;
     const sampleIndex = i;
 
-    const samplePromise = runSingleTestSample(test, llmProvider, sampleIndex, temperature, contextContent)
+    const samplePromise = runSingleTestSample(test, llmProvider, sampleIndex, temperature, contextContent, enableMCP)
       .then((result) => ({ index: sampleIndex, result }))
       .catch((error) => {
         console.error(`Error running sample ${sampleIndex + 1} for ${test.name}:`, error);
@@ -315,7 +317,7 @@ async function runTestSamplesInParallelWithCheckpointing(
         numSamples,
         timestamp: new Date().toISOString(),
       };
-      await saveCheckpoint(providerName, modelId, checkpointData);
+      await saveCheckpoint(providerName, modelId, checkpointData, enableMCP);
       console.log(`💾 Saved checkpoint after sample ${index + 1}/${numSamples}`);
     }
   }
@@ -335,6 +337,7 @@ export async function runHumanEvalTest(
   completedResults?: HumanEvalResult[],
   existingSamples: BenchmarkResult[] = [],
   startSampleIndex: number = 0,
+  enableMCP?: boolean,
 ): Promise<HumanEvalResult> {
   try {
     const providerName = llmProvider.name;
@@ -358,6 +361,7 @@ export async function runHumanEvalTest(
       completedResults,
       existingSamples,
       startSampleIndex,
+      enableMCP,
     );
 
     // Show completion status
@@ -438,6 +442,7 @@ export async function runAllTestsHumanEval(
   numSamples: number = 10,
   specificTests?: TestDefinition[],
   contextContent?: string,
+  enableMCP?: boolean,
 ): Promise<HumanEvalResult[]> {
   try {
     const providerName = llmProvider.name;
@@ -454,7 +459,7 @@ export async function runAllTestsHumanEval(
     }
 
     // Check for existing checkpoint and resume if possible
-    const checkpoint = await loadCheckpoint(providerName, modelId);
+    const checkpoint = await loadCheckpoint(providerName, modelId, enableMCP);
     let results: HumanEvalResult[] = [];
     let startTestIndex = 0;
     let startSampleIndex = 0;
@@ -486,11 +491,11 @@ export async function runAllTestsHumanEval(
         startSampleIndex = 0;
         currentTestSamples = [];
         // Clear checkpoints for fresh start
-        await cleanCheckpointDir(providerName);
+        await cleanCheckpointDir(providerName, enableMCP);
       }
     } else {
       // Clear checkpoints at the beginning for new runs
-      await cleanCheckpointDir(providerName);
+      await cleanCheckpointDir(providerName, enableMCP);
     }
 
     // Run remaining tests from checkpoint or start
@@ -514,6 +519,7 @@ export async function runAllTestsHumanEval(
           results,
           existingSamples,
           sampleStartIndex,
+          enableMCP,
         );
 
         // Only add result if it has valid samples (not just API failures)
@@ -564,7 +570,7 @@ export async function runAllTestsHumanEval(
             numSamples,
             timestamp: new Date().toISOString(),
           };
-          await saveCheckpoint(providerName, modelId, checkpointData);
+          await saveCheckpoint(providerName, modelId, checkpointData, enableMCP);
 
           // Don't continue with other tests, abort
           throw error;
@@ -582,7 +588,7 @@ export async function runAllTestsHumanEval(
           numSamples,
           timestamp: new Date().toISOString(),
         };
-        await saveCheckpoint(providerName, modelId, checkpointData);
+        await saveCheckpoint(providerName, modelId, checkpointData, enableMCP);
 
         // Continue with other tests rather than failing completely
       }
@@ -612,8 +618,10 @@ export async function runAllTestsHumanEval(
 /**
  * Ensure the benchmarks directory exists
  */
-export async function ensureBenchmarksDir(): Promise<void> {
-  const benchmarksDir = path.resolve(process.cwd(), "benchmarks");
+export async function ensureBenchmarksDir(useMCPDir: boolean = false): Promise<void> {
+  const benchmarksDir = useMCPDir
+    ? path.resolve(process.cwd(), "benchmarks", "mcp")
+    : path.resolve(process.cwd(), "benchmarks");
   try {
     await fs.mkdir(benchmarksDir, { recursive: true });
   } catch (error) {
@@ -630,14 +638,18 @@ export async function saveBenchmarkResults(
   contextFile?: string,
   contextContent?: string,
   customFilenamePrefix?: string,
+  useMCPDir: boolean = false,
 ): Promise<string> {
   try {
-    await ensureBenchmarksDir();
+    await ensureBenchmarksDir(useMCPDir);
 
     const timestamp = new Date().toISOString().replace(/:/g, "-");
     let filenamePrefix: string;
 
-    if (customFilenamePrefix) {
+    // Add "mcp-" prefix for MCP benchmarks
+    if (useMCPDir) {
+      filenamePrefix = "mcp-";
+    } else if (customFilenamePrefix) {
       const cleanPrefix = customFilenamePrefix.replace(/[^a-zA-Z0-9\-_]/g, "-");
       filenamePrefix = contextFile
         ? `benchmark-results-with-context-${cleanPrefix}-`
@@ -647,7 +659,7 @@ export async function saveBenchmarkResults(
     }
 
     const filename = `${filenamePrefix}${timestamp}.json`;
-    const filePath = path.resolve(process.cwd(), "benchmarks", filename);
+    const filePath = path.resolve(process.cwd(), "benchmarks", useMCPDir ? "mcp" : "", filename);
 
     const resultsWithContext = results.map((result) => {
       if (!result.context) {

@@ -9,6 +9,7 @@ import {
   saveCheckpoint,
   loadCheckpoint,
   removeCheckpoint,
+  getTmpDir,
 } from "./file";
 import { runTest } from "./test-runner";
 import type { TestResult } from "./test-runner";
@@ -93,6 +94,7 @@ export async function runSingleTest(
   sampleIndex: number = 0,
   temperature?: number,
   contextContent?: string,
+  enableMCP?: boolean,
 ): Promise<BenchmarkResult> {
   try {
     const providerName = llmProvider.name;
@@ -108,7 +110,7 @@ export async function runSingleTest(
     );
     let generatedCode = await withRetry(
       async () => {
-        const rawCode = await llmProvider.generateCode(prompt, temperature, contextContent);
+        const rawCode = await llmProvider.generateCode(prompt, temperature, contextContent, enableMCP);
 
         // Apply cleaning to remove markdown code blocks
         const cleanedCode = cleanCodeMarkdown(rawCode);
@@ -143,20 +145,20 @@ export async function runSingleTest(
 
     // Use standard Component.svelte name
     const componentFilename = "Component.svelte";
-    await writeToTmpFile(componentFilename, generatedCode, providerName);
+    await writeToTmpFile(componentFilename, generatedCode, providerName, enableMCP);
 
     // Copy the test file
     const testContent = await readFile(test.testPath);
     const testFilename = `${test.name}.test.ts`;
-    await writeToTmpFile(testFilename, testContent, providerName);
+    await writeToTmpFile(testFilename, testContent, providerName, enableMCP);
 
     // Make sure the files are fully written before proceeding
-    const tmpDir = path.resolve(process.cwd(), "tmp", "samples", providerName.toLowerCase());
+    const tmpDir = getTmpDir(providerName, enableMCP);
     await fs.access(path.join(tmpDir, componentFilename));
     await fs.access(path.join(tmpDir, testFilename));
 
     // Run the test with the standard test name
-    const testResult = await runTest(test.name, providerName);
+    const testResult = await runTest(test.name, providerName, undefined, enableMCP);
 
     return {
       testName: test.name,
@@ -214,6 +216,7 @@ export async function runHumanEvalTest(
   completedResults?: HumanEvalResult[],
   existingSamples: BenchmarkResult[] = [],
   startSampleIndex: number = 0,
+  enableMCP?: boolean,
 ): Promise<HumanEvalResult> {
   try {
     const actualProviderName = providerName || llmProvider.name;
@@ -232,8 +235,7 @@ export async function runHumanEvalTest(
         console.log(`🔄 Running sample ${i + 1}/${numSamples} for ${test.name} with ${actualProviderName}...`);
 
         // Run the test with the current sample index and appropriate temperature
-        const result = await runSingleTest(test, llmProvider, i, temperature, contextContent);
-
+        const result = await runSingleTest(test, llmProvider, i, temperature, contextContent, enableMCP);
         // Only add to samples if the API call was successful (has generated code)
         if (result.generatedCode.trim() !== "") {
           samples.push(result);
@@ -255,7 +257,7 @@ export async function runHumanEvalTest(
             numSamples,
             timestamp: new Date().toISOString(),
           };
-          await saveCheckpoint(actualProviderName, actualModelId, checkpointData);
+          await saveCheckpoint(actualProviderName, actualModelId, checkpointData, enableMCP);
           console.log(`💾 Saved checkpoint after sample ${i + 1}/${numSamples}`);
         }
       } catch (error) {
@@ -274,7 +276,7 @@ export async function runHumanEvalTest(
             numSamples,
             timestamp: new Date().toISOString(),
           };
-          await saveCheckpoint(actualProviderName, actualModelId, checkpointData);
+          await saveCheckpoint(actualProviderName, actualModelId, checkpointData, enableMCP);
           console.log(`💾 Saved checkpoint after failed sample ${i + 1}/${numSamples}`);
         }
 
@@ -365,12 +367,14 @@ export async function runHumanEvalTest(
  * @param numSamples Number of samples to generate for each test (default: 10)
  * @param specificTests Optional array of test definitions to run (default: all tests)
  * @param contextContent Optional context content to include in prompts
+ * @param enableMCP Optional flag to enable MCP tools
  */
 export async function runAllTestsHumanEval(
   llmProvider: LLMProvider,
   numSamples: number = 10,
   specificTests?: TestDefinition[],
   contextContent?: string,
+  enableMCP?: boolean,
 ): Promise<HumanEvalResult[]> {
   try {
     const providerName = llmProvider.name;
@@ -387,7 +391,7 @@ export async function runAllTestsHumanEval(
     }
 
     // Check for existing checkpoint
-    const checkpoint = await loadCheckpoint(providerName, modelId);
+    const checkpoint = await loadCheckpoint(providerName, modelId, enableMCP);
     let results: HumanEvalResult[] = [];
     let startTestIndex = 0;
     let startSampleIndex = 0;
@@ -418,12 +422,12 @@ export async function runAllTestsHumanEval(
         startSampleIndex = 0;
         currentTestSamples = [];
         // Clear checkpoints for fresh start
-        await cleanCheckpointDir(providerName);
+        await cleanCheckpointDir(providerName, enableMCP);
       }
       // No cleaning when resuming from valid checkpoint
     } else {
       // Clear checkpoints at the beginning for new runs (but leave samples intact)
-      await cleanCheckpointDir(providerName);
+      await cleanCheckpointDir(providerName, enableMCP);
     }
 
     // Run remaining tests from checkpoint or start
@@ -449,6 +453,7 @@ export async function runAllTestsHumanEval(
           results,
           existingSamples,
           sampleStartIndex,
+          enableMCP,
         );
 
         // Only add result if it has valid samples (not just API failures)
@@ -499,7 +504,7 @@ export async function runAllTestsHumanEval(
             numSamples,
             timestamp: new Date().toISOString(),
           };
-          await saveCheckpoint(providerName, modelId, checkpointData);
+          await saveCheckpoint(providerName, modelId, checkpointData, enableMCP);
 
           // Don't continue with other tests, abort
           throw error;
@@ -517,7 +522,7 @@ export async function runAllTestsHumanEval(
           numSamples,
           timestamp: new Date().toISOString(),
         };
-        await saveCheckpoint(providerName, modelId, checkpointData);
+        await saveCheckpoint(providerName, modelId, checkpointData, enableMCP);
 
         // Continue with other tests rather than failing completely
       }
@@ -537,8 +542,10 @@ export async function runAllTestsHumanEval(
 /**
  * Ensure the benchmarks directory exists
  */
-export async function ensureBenchmarksDir(): Promise<void> {
-  const benchmarksDir = path.resolve(process.cwd(), "benchmarks");
+export async function ensureBenchmarksDir(useMCPDir: boolean = false): Promise<void> {
+  const benchmarksDir = useMCPDir
+    ? path.resolve(process.cwd(), "benchmarks", "mcp")
+    : path.resolve(process.cwd(), "benchmarks");
   try {
     await fs.mkdir(benchmarksDir, { recursive: true });
   } catch (error) {
@@ -555,15 +562,19 @@ export async function saveBenchmarkResults(
   contextFile?: string,
   contextContent?: string,
   customFilenamePrefix?: string,
+  useMCPDir: boolean = false,
 ): Promise<string> {
   try {
     // Ensure the benchmarks directory exists
-    await ensureBenchmarksDir();
+    await ensureBenchmarksDir(useMCPDir);
 
     const timestamp = new Date().toISOString().replace(/:/g, "-");
     let filenamePrefix: string;
 
-    if (customFilenamePrefix) {
+    // Add "mcp-" prefix for MCP benchmarks
+    if (useMCPDir) {
+      filenamePrefix = "mcp-";
+    } else if (customFilenamePrefix) {
       // Clean the custom filename prefix to be filesystem-safe
       const cleanPrefix = customFilenamePrefix.replace(/[^a-zA-Z0-9\-_]/g, "-");
       filenamePrefix = contextFile
@@ -574,7 +585,7 @@ export async function saveBenchmarkResults(
     }
 
     const filename = `${filenamePrefix}${timestamp}.json`;
-    const filePath = path.resolve(process.cwd(), "benchmarks", filename);
+    const filePath = path.resolve(process.cwd(), "benchmarks", useMCPDir ? "mcp" : "", filename);
 
     // Add context information to the results if it's not already there
     const resultsWithContext = results.map((result) => {
