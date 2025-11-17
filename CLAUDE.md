@@ -31,13 +31,13 @@ SvelteBench supports two execution modes:
 # Basic syntax: pnpm start [provider:model] [options]
 
 # Run with Anthropic Claude Haiku
-pnpm start anthropic:claude-3-haiku
+pnpm start anthropic:claude-4-5-haiku
 
 # Run with Anthropic Claude Haiku and MCP tools (Svelte-specific enhancements)
 pnpm start anthropic:claude-3-haiku --mcp
 
 # Run with OpenAI GPT-4o and parallel execution
-pnpm start openai:gpt-4o --parallel
+pnpm start openai:gpt-5 --parallel
 
 # Run with Google Gemini Flash, MCP tools, and parallel execution
 pnpm start google:gemini-2.5-flash --mcp --parallel
@@ -120,7 +120,7 @@ All AI SDK providers are now available through a unified interface. Configure AP
 
 Enable Svelte-specific tooling through Model Context Protocol:
 
-- `pnpm start anthropic:claude-3-haiku --mcp` - Enables MCP tools from https://mcp.svelte.dev/mcp
+- `pnpm start anthropic:claude-4-5-haiku --mcp` - Enables MCP tools from https://mcp.svelte.dev/mcp
 - MCP tools are loaded via HTTP transport for enhanced Svelte development capabilities
 
 ## Test Structure

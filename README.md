@@ -48,7 +48,7 @@ Use `.env` for quick development testing:
 ```bash
 DEBUG_MODE=true
 DEBUG_PROVIDER=anthropic
-DEBUG_MODEL=claude-3-7-sonnet-20250219
+DEBUG_MODEL=claude-4-5-haiku
 DEBUG_TEST=counter  # Optional: specific test
 ```
 

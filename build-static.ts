@@ -354,6 +354,16 @@ async function buildStaticFiles(): Promise<void> {
   try {
     console.log("🔨 Building static HTML files...");
 
+    // Copy favicon to benchmarks directory
+    const faviconSourcePath = path.resolve(process.cwd(), "favicon.png");
+    const faviconTargetPath = path.resolve(process.cwd(), "benchmarks", "favicon.png");
+    try {
+      await fs.copyFile(faviconSourcePath, faviconTargetPath);
+      console.log("📋 Copied favicon.png to benchmarks directory");
+    } catch (error) {
+      console.warn("⚠️ Could not copy favicon.png:", error);
+    }
+
     // Get all benchmark files
     const benchmarkFiles = await loadBenchmarkFiles();
 
@@ -366,6 +376,16 @@ async function buildStaticFiles(): Promise<void> {
     // Create a v1/index.html file if v1 results exist
     const v1BenchmarkFiles = await loadV1BenchmarkFiles();
     if (v1BenchmarkFiles.length > 0) {
+      // Copy favicon to v1 directory
+      const faviconSourcePath = path.resolve(process.cwd(), "favicon.png");
+      const v1FaviconTargetPath = path.resolve(process.cwd(), "benchmarks", "v1", "favicon.png");
+      try {
+        await fs.copyFile(faviconSourcePath, v1FaviconTargetPath);
+        console.log("📋 Copied favicon.png to benchmarks/v1 directory");
+      } catch (error) {
+        console.warn("⚠️ Could not copy favicon.png to v1 directory:", error);
+      }
+
       const v1IndexHtml = await generateV1IndexHTML(v1BenchmarkFiles);
       const v1IndexHtmlPath = path.resolve(process.cwd(), "benchmarks", "v1", "index.html");
       await fs.writeFile(v1IndexHtmlPath, v1IndexHtml);
