@@ -364,6 +364,23 @@ async function buildStaticFiles(): Promise<void> {
       console.warn("⚠️ Could not copy favicon.png:", error);
     }
 
+    // Copy global CSS file to benchmarks directory
+    const stylesSourcePath = path.join(__dirname, "views", "styles.ejs");
+    const stylesTargetPath = path.resolve(process.cwd(), "benchmarks", "styles.css");
+    try {
+      const stylesContent = await fs.readFile(stylesSourcePath, "utf-8");
+      // Extract CSS content from EJS file
+      const cssMatch = stylesContent.match(/<style>([\s\S]*?)<\/style>/);
+      if (cssMatch && cssMatch[1]) {
+        await fs.writeFile(stylesTargetPath, cssMatch[1]);
+        console.log("🎨 Extracted styles.css to benchmarks directory");
+      } else {
+        console.warn("⚠️ Could not extract CSS from styles.ejs");
+      }
+    } catch (error) {
+      console.warn("⚠️ Could not copy styles.css:", error);
+    }
+
     // Get all benchmark files
     const benchmarkFiles = await loadBenchmarkFiles();
 
@@ -384,6 +401,20 @@ async function buildStaticFiles(): Promise<void> {
         console.log("📋 Copied favicon.png to benchmarks/v1 directory");
       } catch (error) {
         console.warn("⚠️ Could not copy favicon.png to v1 directory:", error);
+      }
+
+      // Copy global CSS file to v1 directory
+      const stylesSourcePath = path.join(__dirname, "views", "styles.ejs");
+      const v1StylesTargetPath = path.resolve(process.cwd(), "benchmarks", "v1", "styles.css");
+      try {
+        const stylesContent = await fs.readFile(stylesSourcePath, "utf-8");
+        const cssMatch = stylesContent.match(/<style>([\s\S]*?)<\/style>/);
+        if (cssMatch && cssMatch[1]) {
+          await fs.writeFile(v1StylesTargetPath, cssMatch[1]);
+          console.log("🎨 Extracted styles.css to benchmarks/v1 directory");
+        }
+      } catch (error) {
+        console.warn("⚠️ Could not copy styles.css to v1 directory:", error);
       }
 
       const v1IndexHtml = await generateV1IndexHTML(v1BenchmarkFiles);
