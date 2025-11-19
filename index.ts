@@ -26,9 +26,10 @@ USAGE:
 
 EXAMPLES:
   pnpm start google:gemini-2.5-flash --mcp
-  pnpm start anthropic:claude-3-haiku --parallel --context ./context.txt
+  pnpm start anthropic:claude-4-5-haiku --parallel --context ./context.txt
+  pnpm start xai:grok-3 --parallel
   pnpm start moonshot:kimi-k2 -p -m
-  pnpm start openai:gpt-4o --parallel
+  pnpm start openai:gpt-5 --parallel
 
 OPTIONS:
   -h, --help              Show this help message
@@ -46,7 +47,7 @@ ENVIRONMENT VARIABLES:
   DEBUG_SAMPLES=<number>  Number of samples in debug mode
 
 PROVIDERS:
-  anthropic, openai, google, moonshot, ollama, openrouter, zai
+  anthropic, openai, google, moonshot, ollama, openrouter, zai, xai
   (and all AI SDK supported providers)
 
 For more information, see the README.md file.

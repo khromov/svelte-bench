@@ -42,6 +42,9 @@ pnpm start openai:gpt-5 --parallel
 # Run with Google Gemini Flash, MCP tools, and parallel execution
 pnpm start google:gemini-2.5-flash --mcp --parallel
 
+# Run with xAI Grok and parallel execution
+pnpm start xai:grok-3 --parallel
+
 # Run with context file and MCP (short flags)
 pnpm start moonshot:kimi-k2 -m -c ./context/svelte.dev/llms-small.txt
 
