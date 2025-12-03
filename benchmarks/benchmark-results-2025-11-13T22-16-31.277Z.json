@@ -414,7 +414,7 @@
         "code": "<svelte:options runes={true} />\n\n<div>\n  {#state number = 5}\n  {#state doubled = number * 2}\n  <input type=\"number\" bind:value={number} />\n  {#effect doubled = number * 2}\n  <p data-testid=\"number-value\">Number: {number}</p>\n  <p data-testid=\"doubled-value\">Doubled: {doubled}</p>\n  <button data-testid=\"increment-button\" on:click={() => number++}>Increment</button>\n</div>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/effect_sample6_0c2c5c64bf31cd4c/Component.svelte:4:4 Expected 'if', 'each', 'await', 'key' or 'snippet'\nhttps://svelte.dev/e/expected_block_type"
+          "/svelte-bench/tmp/samples/openrouter/effect_sample6_0c2c5c64bf31cd4c/Component.svelte:4:4 Expected 'if', 'each', 'await', 'key' or 'snippet'\nhttps://svelte.dev/e/expected_block_type"
         ]
       },
       {
@@ -562,7 +562,7 @@
         "code": "<svelte:options runes={true} />\n\n<div>\n  {#const text = $state(\"Hello world\")}\n  {#const charCount = $derived(text.length)}\n  {$inspect(text)}\n  {$inspect(text).with(value => console.log(\"Custom inspect update:\", value))}\n  <input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n  {$effect(() => {\n    text;\n    $inspect.trace(\"Input changed\");\n  })}\n  <p data-testid=\"text-value\">Current text: \"{text}\"</p>\n  <p data-testid=\"char-count\">Character count: {charCount}</p>\n</div>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/inspect_sample3_e2fca7f9ffe9e517/Component.svelte:4:4 Expected 'if', 'each', 'await', 'key' or 'snippet'\nhttps://svelte.dev/e/expected_block_type"
+          "/svelte-bench/tmp/samples/openrouter/inspect_sample3_e2fca7f9ffe9e517/Component.svelte:4:4 Expected 'if', 'each', 'await', 'key' or 'snippet'\nhttps://svelte.dev/e/expected_block_type"
         ]
       },
       {
@@ -672,7 +672,7 @@
         "code": "<svelte:options runes={true} />\n\n<svelte:options tag=\"PropsDemo\" />\n<script>\nconst props = $props<{ name?: string; count?: number; showDetails?: boolean }>();\nlet count = $state(props.count ?? 0);\nconst nameLabel = () => props.name ?? 'World';\nconst detailsVisible = () => props.showDetails ?? false;\n</script>\n<div>\n  <h1 data-testid=\"name-display\">Hello, {nameLabel()}!</h1>\n  <p data-testid=\"count-display\">Count: {count}</p>\n  <button data-testid=\"increment-button\" on:click={() => count++}>Increment</button>\n  {#if detailsVisible()}\n    <div data-testid=\"details\">\n      <p>Name is {nameLabel()}</p>\n      <p>Count is {count}</p>\n      <p>ShowDetails is {detailsVisible() ? 'true' : 'false'}</p>\n    </div>\n  {/if}\n</div>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/props_sample5_cc922c03a35c8c33/Component.svelte:3:0 A component can only have one `<svelte:options>` element\nhttps://svelte.dev/e/svelte_meta_duplicate"
+          "/svelte-bench/tmp/samples/openrouter/props_sample5_cc922c03a35c8c33/Component.svelte:3:0 A component can only have one `<svelte:options>` element\nhttps://svelte.dev/e/svelte_meta_duplicate"
         ]
       },
       {
@@ -726,7 +726,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n  const books = ['The Lord of the Rings', 'To Kill a Mockingbird', '1984']\n\n  snippet title(book) {\n    <span data-testid=\"book-title\">{book}</span>\n  }\n</script>\n\n<ul>\n  {#each books as book}\n    <li data-testid=\"book-item\">\n      {@render title(book)}\n    </li>\n  {/each}\n</ul>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/snippets_sample0_2f88f3385781defa/Component.svelte:6:10 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+          "/svelte-bench/tmp/samples/openrouter/snippets_sample0_2f88f3385781defa/Component.svelte:6:10 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
         ],
         "temperature": 0
       },
@@ -735,7 +735,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n  const books = [\"The Lord of the Rings\", \"To Kill a Mockingbird\", \"1984\"];\n\n  snippet title(book) {\n    <span data-testid=\"book-title\">{book}</span>\n  }\n</script>\n\n<ul>\n  {#each books as book}\n    <li data-testid=\"book-item\">\n      {@render title book}\n    </li>\n  {/each}\n</ul>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/snippets_sample1_00b675d11dde48eb/Component.svelte:6:10 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+          "/svelte-bench/tmp/samples/openrouter/snippets_sample1_00b675d11dde48eb/Component.svelte:6:10 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
         ]
       },
       {
@@ -749,7 +749,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n  const books = [\"The Lord of the Rings\", \"To Kill a Mockingbird\", \"1984\"];\n  snippet title(name) {\n    <span data-testid=\"book-title\">{name}</span>\n  }\n</script>\n\n<ul>\n  {#each books as book}\n    <li data-testid=\"book-item\">\n      {@render title(book)}\n    </li>\n  {/each}\n</ul>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/snippets_sample3_459c22e824518dcf/Component.svelte:5:10 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+          "/svelte-bench/tmp/samples/openrouter/snippets_sample3_459c22e824518dcf/Component.svelte:5:10 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
         ]
       },
       {
@@ -781,7 +781,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n  const books = [\"The Lord of the Rings\", \"To Kill a Mockingbird\", \"1984\"];\n  snippet title(book) {\n    <span data-testid=\"book-title\">{book}</span>\n  }\n</script>\n\n<ul>\n  {#each books as book}\n    <li data-testid=\"book-item\">\n      {@render title(book)}\n    </li>\n  {/each}\n</ul>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/snippets_sample8_2cdb6262bc071c1b/Component.svelte:5:10 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+          "/svelte-bench/tmp/samples/openrouter/snippets_sample8_2cdb6262bc071c1b/Component.svelte:5:10 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
         ]
       },
       {
@@ -789,7 +789,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n  const books = [\"The Lord of the Rings\", \"To Kill a Mockingbird\", \"1984\"];\n</script>\n\n{@snippet title(book)}\n\t<span data-testid=\"book-title\">{book}</span>\n{/snippet}\n\n<ul>\n\t{#each books as book}\n\t\t<li data-testid=\"book-item\">\n\t\t\t{@render title(book)}\n\t\t</li>\n\t{/each}\n</ul>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/snippets_sample9_551e18df13db2f4a/Component.svelte:9:1 Unexpected block closing tag\nhttps://svelte.dev/e/block_unexpected_close"
+          "/svelte-bench/tmp/samples/openrouter/snippets_sample9_551e18df13db2f4a/Component.svelte:9:1 Unexpected block closing tag\nhttps://svelte.dev/e/block_unexpected_close"
         ]
       }
     ],

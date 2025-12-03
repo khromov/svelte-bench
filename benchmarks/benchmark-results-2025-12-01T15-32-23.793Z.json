@@ -17,7 +17,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n    import { $state } from 'svelte/state';\n\n    let count = $state(0);\n</script>\n\n<div class=\"counter\">\n    <button data-testid=\"decrement-button\" on:click={() => count--}>-</button>\n    <span data-testid=\"count-value\">{count}</span>\n    <button data-testid=\"increment-button\" on:click={() => count++}>+</button>\n</div>\n\n<style>\n    .counter {\n        display: flex;\n        align-items: center;\n        gap: 8px;\n    }\n</style>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/counter_sample0_55ff71436834b443/Component.svelte:4:13 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
+          "/svelte-bench/tmp/samples/openrouter/counter_sample0_55ff71436834b443/Component.svelte:4:13 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
         ],
         "temperature": 0
       },
@@ -61,7 +61,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n    import { $state } from 'svelte/state';\n\n    let count = $state(0);\n\n    function increment() {\n        count += 1;\n    }\n\n    function decrement() {\n        count -= 1;\n    }\n</script>\n\n<div class=\"counter\">\n    <button data-testid=\"decrement-button\" on:click={decrement}>-</button>\n    <span data-testid=\"count-value\">{count}</span>\n    <button data-testid=\"increment-button\" on:click={increment}>+</button>\n</div>\n\n<style>\n    .counter {\n        display: flex;\n        align-items: center;\n        justify-content: center;\n        gap: 10px;\n    }\n    button {\n        padding: 8px 16px;\n        font-size: 1rem;\n        cursor: pointer;\n    }\n    span {\n        font-size: 1.2rem;\n        min-width: 50px;\n        text-align: center;\n    }\n</style>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/counter_sample6_b55a62c0fa12bed6/Component.svelte:4:13 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
+          "/svelte-bench/tmp/samples/openrouter/counter_sample6_b55a62c0fa12bed6/Component.svelte:4:13 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
         ]
       },
       {
@@ -146,7 +146,7 @@
         "code": "<svelte:options runes={true} />\n\n<div>\n    <p data-testid=\"number-value\">Number: {number}</p>\n    <p data-testid=\"doubled-value\">Doubled: {doubled}</p>\n    <button data-testid=\"increment-button\" on:click={() => number += 1}>Increment</button>\n</div>\n\n<script>\n    import { $state, $derived } from 'svelte';\n\n    let number = $state(5);\n    let doubled = $derived(number * 2);\n</script>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/derived_sample7_784ddbe1f57e54c5/Component.svelte:10:13 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
+          "/svelte-bench/tmp/samples/openrouter/derived_sample7_784ddbe1f57e54c5/Component.svelte:10:13 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
         ]
       },
       {
@@ -182,7 +182,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n    import { $state, $derived } from 'svelte';\n\n    let text = $state('');\n    let derived = $derived.by(() => {\n        const words = text.split(/\\s+/).filter(word => word !== '');\n        const wordCount = words.length;\n        const charCount = text.length;\n        const isLong = wordCount > 15;\n        return {\n            wordCount,\n            charCount,\n            isLong\n        };\n    });\n</script>\n\n<div>\n    <input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n    <button data-testid=\"clear-button\" on:click={() => { text = ''; }}>Clear</button>\n    <div>\n        <p data-testid=\"word-count\">Words: {derived.wordCount}</p>\n        <p data-testid=\"char-count\">Characters: {derived.charCount}</p>\n        <p data-testid=\"length-indicator\">Status: {derived.isLong ? 'Long text' : 'Short text'}</p>\n    </div>\n</div>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/derived-by_sample0_a6d821b4336b81f6/Component.svelte:4:13 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
+          "/svelte-bench/tmp/samples/openrouter/derived-by_sample0_a6d821b4336b81f6/Component.svelte:4:13 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
         ],
         "temperature": 0
       },
@@ -203,7 +203,7 @@
         "code": "<svelte:options runes={true} />\n\n<div>\n\t<input data-testid=\"text-input\" bind:value={text} type=\"text\" />\n\t<button data-testid=\"clear-button\" on:click={() => (text = '')}>Clear</button>\n\t<div>\n\t\t<p data-testid=\"word-count\">Words: {derived.words}</p>\n\t\t<p data-testid=\"char-count\">Characters: {derived.characters}</p>\n\t\t<p data-testid=\"length-indicator\">Status: {derived.lengthStatus}</p>\n\t</div>\n</div>\n\n<script>\n\timport { $state, $derived } from 'svelte';\n\n\tconst text = $state('');\n\n\tconst derived = $derived.by(() => {\n\t\tconst words = text.split(/\\s+/).filter((w) => w !== '').length;\n\t\tconst characters = text.length;\n\t\tconst isLong = words > 15;\n\t\tconst lengthStatus = isLong ? 'Long text' : 'Short text';\n\n\t\treturn {\n\t\t\twords,\n\t\t\tcharacters,\n\t\t\tlengthStatus\n\t\t};\n\t});\n</script>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/derived-by_sample3_3dc4a9cc2e1bfbc5/Component.svelte:14:10 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
+          "/svelte-bench/tmp/samples/openrouter/derived-by_sample3_3dc4a9cc2e1bfbc5/Component.svelte:14:10 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
         ]
       },
       {
@@ -219,7 +219,7 @@
         "code": "<svelte:options runes={true} />\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n  <button data-testid=\"clear-button\" on:click={() => text = ''}>Clear</button>\n  <div>\n    <p data-testid=\"word-count\">Words: {wordCount}</p>\n    <p data-testid=\"char-count\">Characters: {charCount}</p>\n    <p data-testid=\"length-indicator\">Status: {isLongText ? 'Long text' : 'Short text'}</p>\n  </div>\n</div>\n\n<script>\n  import { $state, $derived } from 'svelte';\n\n  let text = $state('');\n\n  let wordCount = $derived.by(() => {\n    return text.split(/\\s+/).filter(Boolean).length;\n  });\n\n  let charCount = $derived.by(() => text.length);\n\n  let isLongText = $derived.by(() => wordCount > 15);\n</script>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/derived-by_sample5_5d8b4169dd418555/Component.svelte:14:11 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
+          "/svelte-bench/tmp/samples/openrouter/derived-by_sample5_5d8b4169dd418555/Component.svelte:14:11 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
         ]
       },
       {
@@ -359,7 +359,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n    import { $state, $effect } from 'svelte/state';\n\n    let count = $state(5);\n    let doubled = $state(0);\n\n    $effect(() => {\n        doubled = count * 2;\n    });\n</script>\n\n<div>\n    <p data-testid=\"number-value\">Number: {count}</p>\n    <p data-testid=\"doubled-value\">Doubled: {doubled}</p>\n    <button data-testid=\"increment-button\" on:click={() => count += 1}>\n        Increment\n    </button>\n</div>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/effect_sample1_e6f5adb9f3564667/Component.svelte:4:13 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
+          "/svelte-bench/tmp/samples/openrouter/effect_sample1_e6f5adb9f3564667/Component.svelte:4:13 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
         ]
       },
       {
@@ -367,7 +367,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n    import { $state, $effect } from 'svelte';\n\n    let count = $state(5);\n    let doubled = $state(0);\n\n    $effect(() => {\n        doubled = count * 2;\n    });\n</script>\n\n<div>\n    <p data-testid=\"number-value\">Number: {count}</p>\n    <p data-testid=\"doubled-value\">Doubled: {doubled}</p>\n    <button data-testid=\"increment-button\" on:click={() => count += 1}>\n        Increment\n    </button>\n</div>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/effect_sample2_a4281919b84470c6/Component.svelte:4:13 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
+          "/svelte-bench/tmp/samples/openrouter/effect_sample2_a4281919b84470c6/Component.svelte:4:13 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
         ]
       },
       {
@@ -578,7 +578,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n  import { $state, $inspect, $effect } from 'svelte';\n\n  const text = $state('Hello world');\n\n  // Basic inspect logging\n  $inspect(text);\n\n  // Custom callback with .with\n  $inspect(text).with((newValue, oldValue) => {\n    console.log(`Value changed from \"${oldValue}\" to \"${newValue}\"`);\n  });\n\n  // Trace in effect\n  $effect(() => {\n    $inspect(text).trace();\n  });\n</script>\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n  <p data-testid=\"text-value\">Current text: \"{text}\"</p>\n  <p data-testid=\"char-count\">Character count: {text.length}</p>\n</div>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/inspect_sample5_228e9a42dd417c8a/Component.svelte:4:11 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
+          "/svelte-bench/tmp/samples/openrouter/inspect_sample5_228e9a42dd417c8a/Component.svelte:4:11 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
         ]
       },
       {
@@ -616,7 +616,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n    import { $state, $inspect, $effect } from 'svelte';\n\n    let text = $state(\"Hello world\");\n\n    $inspect(text);\n\n    $inspect(text).with((prev, next) => {\n        console.log(\"Text updated from\", prev, \"to\", next);\n    });\n\n    $effect(() => {\n        $inspect(text).trace();\n    });\n</script>\n\n<div>\n    <input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n    <p data-testid=\"text-value\">Current text: \"{text}\"</p>\n    <p data-testid=\"char-count\">Character count: {text.length}</p>\n</div>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/inspect_sample9_1c58dd875c74d8f8/Component.svelte:4:13 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
+          "/svelte-bench/tmp/samples/openrouter/inspect_sample9_1c58dd875c74d8f8/Component.svelte:4:13 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
         ]
       }
     ],
@@ -653,7 +653,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n    import { $props, $state } from 'svelte';\n\n    const props = $props({\n        name: 'World',\n        count: 0,\n        showDetails: false\n    });\n\n    let count = $state(props.count);\n\n    function increment() {\n        count += 1;\n    }\n</script>\n\n<div>\n    <h1 data-testid=\"name-display\">Hello, {props.name}!</h1>\n    <p data-testid=\"count-display\">Count: {count}</p>\n    <button on:click={increment} data-testid=\"increment-button\">Increment</button>\n\n    {#if props.showDetails}\n        <div data-testid=\"details\">\n            <p>Name is {props.name}</p>\n            <p>Count is {count}</p>\n            <p>ShowDetails is {props.showDetails}</p>\n        </div>\n    {/if}\n</div>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/props_sample2_98bb29f10577d3bf/Component.svelte:4:13 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
+          "/svelte-bench/tmp/samples/openrouter/props_sample2_98bb29f10577d3bf/Component.svelte:4:13 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
         ]
       },
       {
@@ -661,7 +661,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n  import { $props, $state } from 'svelte';\n\n  let { name = \"World\", count = 0, showDetails = false } = $props();\n  let internalCount = $state(count);\n\n  function increment() {\n    internalCount += 1;\n  }\n</script>\n\n<div>\n  <h1 data-testid=\"name-display\">Hello, {name}!</h1>\n  <p data-testid=\"count-display\">Count: {internalCount}</p>\n  <button data-testid=\"increment-button\" on:click={increment}>Increment</button>\n\n  {#if showDetails}\n    <div data-testid=\"details\">\n      <p>Name is {name}</p>\n      <p>Count is {internalCount}</p>\n      <p>ShowDetails is {showDetails}</p>\n    </div>\n  {/if}\n</div>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/props_sample3_3ae91cb969768a37/Component.svelte:4:11 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
+          "/svelte-bench/tmp/samples/openrouter/props_sample3_3ae91cb969768a37/Component.svelte:4:11 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
         ]
       },
       {
@@ -669,7 +669,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n    import { $props, $state } from 'svelte';\n\n    const { name = \"World\", count = 0, showDetails = false } = $props();\n\n    let currentCount = $state(count);\n\n    function increment() {\n        currentCount += 1;\n    }\n</script>\n\n<div>\n    <h1 data-testid=\"name-display\">Hello, {name}!</h1>\n    <p data-testid=\"count-display\">Count: {currentCount}</p>\n    <button data-testid=\"increment-button\" on:click={increment}>\n        Increment\n    </button>\n\n    {#if showDetails}\n    <div data-testid=\"details\">\n        <p>Name is {name}</p>\n        <p>Count is {currentCount}</p>\n        <p>ShowDetails is {showDetails}</p>\n    </div>\n    {/if}\n</div>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/props_sample4_30a3b765f591b287/Component.svelte:4:13 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
+          "/svelte-bench/tmp/samples/openrouter/props_sample4_30a3b765f591b287/Component.svelte:4:13 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
         ]
       },
       {
@@ -677,7 +677,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n  import { $props, $state } from 'svelte';\n\n  const { name = \"World\", count: initialCount = 0, showDetails = false } = $props();\n\n  const count = $state(initialCount);\n\n  function increment() {\n    count += 1;\n  }\n</script>\n\n<div>\n  <h1 data-testid=\"name-display\">Hello, {name}!</h1>\n  <p data-testid=\"count-display\">Count: {count}</p>\n  <button data-testid=\"increment-button\" on:click={increment}>Increment</button>\n\n  {#if showDetails}\n    <div data-testid=\"details\">\n      <p>Name is {name}</p>\n      <p>Count is {count}</p>\n      <p>ShowDetails is {showDetails}</p>\n    </div>\n  {/if}\n</div>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/props_sample5_3bb5a65876381f3b/Component.svelte:4:11 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
+          "/svelte-bench/tmp/samples/openrouter/props_sample5_3bb5a65876381f3b/Component.svelte:4:11 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
         ]
       },
       {
@@ -734,7 +734,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n\tlet books = [\n\t\t\"The Lord of the Rings\",\n\t\t\"To Kill a Mockingbird\",\n\t\t\"1984\"\n\t];\n</script>\n\n{:snippet title(title)}\n<span data-testid=\"book-title\">{title}</span>\n{/snippet}\n\n<ul>\n\t{#each books as book}\n\t\t<li data-testid=\"book-item\">\n\t\t\t{@render title(book)}\n\t\t</li>\n\t{/each}\n</ul>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/snippets_sample1_462dc10f5a4eeeb9/Component.svelte:11:1 {:...} block is invalid at this position (did you forget to close the preceding element or block?)\nhttps://svelte.dev/e/block_invalid_continuation_placement"
+          "/svelte-bench/tmp/samples/openrouter/snippets_sample1_462dc10f5a4eeeb9/Component.svelte:11:1 {:...} block is invalid at this position (did you forget to close the preceding element or block?)\nhttps://svelte.dev/e/block_invalid_continuation_placement"
         ]
       },
       {
@@ -768,7 +768,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n  const books = [\n    \"The Lord of the Rings\",\n    \"To Kill a Mockingbird\",\n    \"1984\"\n  ];\n</script>\n\n<ul>\n  {#each books as book}\n    <li data-testid=\"book-item\">\n      {@render title, { title: book }}\n    </li>\n  {/each}\n</ul>\n\n{#snippet title(title)}\n  <span data-testid=\"book-title\">{title}</span>\n{/snippet}",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/snippets_sample5_72b9eafd648aa23b/Component.svelte:14:15 `{@render ...}` tags can only contain call expressions\nhttps://svelte.dev/e/render_tag_invalid_expression"
+          "/svelte-bench/tmp/samples/openrouter/snippets_sample5_72b9eafd648aa23b/Component.svelte:14:15 `{@render ...}` tags can only contain call expressions\nhttps://svelte.dev/e/render_tag_invalid_expression"
         ]
       },
       {
@@ -776,7 +776,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n  const books = [\"The Lord of the Rings\", \"To Kill a Mockingbird\", \"1984\"];\n\n  {:snippet title(bookTitle)}\n    <span data-testid=\"book-title\">{bookTitle}</span>\n  {/snippet}\n</script>\n\n<ul>\n  {#each books as book}\n    <li data-testid=\"book-item\">\n      {@render title(book)}\n    </li>\n  {/each}\n</ul>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/snippets_sample6_fa8224f0f85d6854/Component.svelte:6:3 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+          "/svelte-bench/tmp/samples/openrouter/snippets_sample6_fa8224f0f85d6854/Component.svelte:6:3 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
         ]
       },
       {
@@ -784,7 +784,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n  const books = [\n    \"The Lord of the Rings\",\n    \"To Kill a Mockingbird\",\n    \"1984\"\n  ];\n\n  export let title;\n</script>\n\n<ul>\n  {#each books as book}\n    <li data-testid=\"book-item\">\n      {@render title(book)}\n    </li>\n  {/each}\n</ul>\n<script>\n  export let title;\n</script>\n<span data-testid=\"book-title\">{title}</span>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/Desktop/repos/forks/svelte-bench/tmp/samples/openrouter/snippets_sample7_0a547e714057b4a9/Component.svelte:20:0 A component can have a single top-level `<script>` element and/or a single top-level `<script module>` element\nhttps://svelte.dev/e/script_duplicate"
+          "/svelte-bench/tmp/samples/openrouter/snippets_sample7_0a547e714057b4a9/Component.svelte:20:0 A component can have a single top-level `<script>` element and/or a single top-level `<script module>` element\nhttps://svelte.dev/e/script_duplicate"
         ]
       },
       {
