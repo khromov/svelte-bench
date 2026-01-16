@@ -40,7 +40,7 @@ async function getBenchmarkFiles(): Promise<string[]> {
       (file) =>
         file.endsWith(".json") &&
         file.includes("benchmark-results") &&
-        file.includes("-2025-") && // Include current timestamped files
+        /\d{4}-\d{2}-\d{2}T/.test(file) && // Include timestamped files (year-agnostic)
         !file.includes("with-context") &&
         file !== "benchmark-results-merged.json",
     )
