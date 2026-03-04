@@ -220,7 +220,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\nlet text = $state('');\n\nconst wordCount = $derived.by(() => {\n\tconst trimmed = text.trim();\n\treturn trimmed ? trimmed.split(/\\s+/).length : 0;\n});\n\nconst charCount = $derived.by(() => text.length);\n\nconst lengthIndicator = $derived.by(() => {\n\treturn wordCount > 15 ? \"Status: Long text\" : \"Status: Short text\";\n});\n</script>\n\n<div>\n\t<input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n\tbutton data-testid=\"clear-button\" on:click={() => text = ''}>Clear</button>\n\t<div>\n\t\t<p data-testid=\"word-count\">Words: {wordCount}</p>\n\t\t<p data-testid=\"char-count\">Characters: {charCount}</p>\n\t\t<p data-testid=\"length-indicator\">{lengthIndicator}</p>\n\t</div>\n</div>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/repos/svelte-bench/tmp/samples/openrouter/derived-by_sample8_871934d2ea2b199b/Component.svelte:20:67 `</button>` attempted to close an element that was not open\nhttps://svelte.dev/e/element_invalid_closing_tag"
+          "/svelte-bench/tmp/samples/openrouter/derived-by_sample8_871934d2ea2b199b/Component.svelte:20:67 `</button>` attempted to close an element that was not open\nhttps://svelte.dev/e/element_invalid_closing_tag"
         ]
       },
       {
@@ -651,7 +651,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n\tconst books = [\n\t\t\"The Lord of the Rings\",\n\t\t\"To Kill a Mockingbird\",\n\t\t\"1984\"\n\t];\n\n\t{@snippet title(bookTitle)}\n\t\t<span data-testid=\"book-title\">{bookTitle}</span>\n\t{/snippet}\n</script>\n\n<ul>\n\t{#each books as book}\n\t\t<li data-testid=\"book-item\">\n\t\t\t{@render title(book)}\n\t\t</li>\n\t{/each}\n</ul>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/repos/svelte-bench/tmp/samples/openrouter/snippets_sample0_c05ecd8de818c96d/Component.svelte:10:2 Unexpected character '@'\nhttps://svelte.dev/e/js_parse_error"
+          "/svelte-bench/tmp/samples/openrouter/snippets_sample0_c05ecd8de818c96d/Component.svelte:10:2 Unexpected character '@'\nhttps://svelte.dev/e/js_parse_error"
         ],
         "temperature": 0
       },
@@ -660,7 +660,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n\tlet books = $state([\n\t\t\"The Lord of the Rings\",\n\t\t\"To Kill a Mockingbird\",\n\t\t\"1984\"\n\t]);\n</script>\n\n{@snippet title(book)}\n\t<span data-testid=\"book-title\">{book}</span>\n{@endsnippet}\n\n<ul>\n\t{#each books as book}\n\t\t<li data-testid=\"book-item\">\n\t\t\t{@render title(book)}\n\t\t</li>\n\t{/each}\n</ul>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/repos/svelte-bench/tmp/samples/openrouter/snippets_sample1_b8fbdffb7a5666b3/Component.svelte:11:2 Expected 'html', 'render', 'attach', 'const', or 'debug'\nhttps://svelte.dev/e/expected_tag"
+          "/svelte-bench/tmp/samples/openrouter/snippets_sample1_b8fbdffb7a5666b3/Component.svelte:11:2 Expected 'html', 'render', 'attach', 'const', or 'debug'\nhttps://svelte.dev/e/expected_tag"
         ]
       },
       {
@@ -668,7 +668,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n  const books = [\n    \"The Lord of the Rings\",\n    \"To Kill a Mockingbird\",\n    \"1984\"\n  ];\n\n  {@snippet title(bookTitle)}\n    <span data-testid=\"book-title\">{bookTitle}</span>\n  {/endsnippet}\n</script>\n\n<ul>\n  {#each books as book}\n    <li data-testid=\"book-item\">\n      {@render title(book)}\n    </li>\n  {/each}\n</ul>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/repos/svelte-bench/tmp/samples/openrouter/snippets_sample2_fc6cb3983e9b7757/Component.svelte:10:3 Unexpected character '@'\nhttps://svelte.dev/e/js_parse_error"
+          "/svelte-bench/tmp/samples/openrouter/snippets_sample2_fc6cb3983e9b7757/Component.svelte:10:3 Unexpected character '@'\nhttps://svelte.dev/e/js_parse_error"
         ]
       },
       {
@@ -676,7 +676,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n  const books = [\n    \"The Lord of the Rings\",\n    \"To Kill a Mockingbird\",\n    \"1984\"\n  ];\n</script>\n\n{@snippet title(book)}\n  <span data-testid=\"book-title\">{book}</span>\n{@/snippet}\n\n<ul>\n  {#each books as book}\n    <li data-testid=\"book-item\">\n      {@render title(book)}\n    </li>\n  {/each}\n</ul>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/repos/svelte-bench/tmp/samples/openrouter/snippets_sample3_67bef1db8da30f29/Component.svelte:11:2 Expected 'html', 'render', 'attach', 'const', or 'debug'\nhttps://svelte.dev/e/expected_tag"
+          "/svelte-bench/tmp/samples/openrouter/snippets_sample3_67bef1db8da30f29/Component.svelte:11:2 Expected 'html', 'render', 'attach', 'const', or 'debug'\nhttps://svelte.dev/e/expected_tag"
         ]
       },
       {
@@ -684,7 +684,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n\tconst books = [\"The Lord of the Rings\", \"To Kill a Mockingbird\", \"1984\"];\n</script>\n\n{@snippet title(book)}\n\t<span data-testid=\"book-title\">{book}</span>\n{@/snippet}\n\n<ul>\n\t{#each books as book}\n\t\t<li data-testid=\"book-item\">\n\t\t\t{@render title(book)}\n\t\t</li>\n\t{/each}\n</ul>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/repos/svelte-bench/tmp/samples/openrouter/snippets_sample4_cf247663b3e38dfd/Component.svelte:7:2 Expected 'html', 'render', 'attach', 'const', or 'debug'\nhttps://svelte.dev/e/expected_tag"
+          "/svelte-bench/tmp/samples/openrouter/snippets_sample4_cf247663b3e38dfd/Component.svelte:7:2 Expected 'html', 'render', 'attach', 'const', or 'debug'\nhttps://svelte.dev/e/expected_tag"
         ]
       },
       {
@@ -692,7 +692,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n  const books = [\n    \"The Lord of the Rings\",\n    \"To Kill a Mockingbird\",\n    \"1984\"\n  ];\n</script>\n\n{@snippet title(book)}\n  <span data-testid=\"book-title\">{book}</span>\n{@/snippet}\n\n<ul>\n  {#each books as book}\n    <li data-testid=\"book-item\">\n      {@render title(book)}\n    </li>\n  {/each}\n</ul>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/repos/svelte-bench/tmp/samples/openrouter/snippets_sample5_c2b2b7c2d237746d/Component.svelte:11:2 Expected 'html', 'render', 'attach', 'const', or 'debug'\nhttps://svelte.dev/e/expected_tag"
+          "/svelte-bench/tmp/samples/openrouter/snippets_sample5_c2b2b7c2d237746d/Component.svelte:11:2 Expected 'html', 'render', 'attach', 'const', or 'debug'\nhttps://svelte.dev/e/expected_tag"
         ]
       },
       {
@@ -700,7 +700,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n\tconst books = [\n\t\t\"The Lord of the Rings\",\n\t\t\"To Kill a Mockingbird\",\n\t\t\"1984\"\n\t];\n</script>\n\n{@snippet title(book)}\n\t<span data-testid=\"book-title\">{book}</span>\n{/snippet}\n\n<ul>\n\t{#each books as book}\n\t\t<li data-testid=\"book-item\">\n\t\t\t{@render title(book)}\n\t\t</li>\n\t{/each}\n</ul>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/repos/svelte-bench/tmp/samples/openrouter/snippets_sample6_7dc21578ad7369cc/Component.svelte:11:2 Expected 'html', 'render', 'attach', 'const', or 'debug'\nhttps://svelte.dev/e/expected_tag"
+          "/svelte-bench/tmp/samples/openrouter/snippets_sample6_7dc21578ad7369cc/Component.svelte:11:2 Expected 'html', 'render', 'attach', 'const', or 'debug'\nhttps://svelte.dev/e/expected_tag"
         ]
       },
       {
@@ -708,7 +708,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n\tconst books = [\n\t\t\"The Lord of the Rings\",\n\t\t\"To Kill a Mockingbird\",\n\t\t\"1984\"\n\t];\n\n\t{@snippet title(book)}\n\t\t<span data-testid=\"book-title\">{book}</span>\n\t{/snippet}\n</script>\n\n<ul>\n\t{#each books as book}\n\t\t<li data-testid=\"book-item\">\n\t\t\t{@render title(book)}\n\t\t</li>\n\t{/each}\n</ul>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/repos/svelte-bench/tmp/samples/openrouter/snippets_sample7_62e87b2a9a1a354b/Component.svelte:10:2 Unexpected character '@'\nhttps://svelte.dev/e/js_parse_error"
+          "/svelte-bench/tmp/samples/openrouter/snippets_sample7_62e87b2a9a1a354b/Component.svelte:10:2 Unexpected character '@'\nhttps://svelte.dev/e/js_parse_error"
         ]
       },
       {
@@ -716,7 +716,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n\tconst books = [\n\t\t\"The Lord of the Rings\",\n\t\t\"To Kill a Mockingbird\",\n\t\t\"1984\"\n\t];\n</script>\n\n{@snippet title(bookTitle)}\n\t<span data-testid=\"book-title\">{bookTitle}</span>\n{/snippet}\n\n<ul>\n\t{#each books as book}\n\t\t<li data-testid=\"book-item\">\n\t\t\t{@render title(book)}\n\t\t</li>\n\t{/each}\n</ul>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/repos/svelte-bench/tmp/samples/openrouter/snippets_sample8_98f16e6237df8b91/Component.svelte:11:2 Expected 'html', 'render', 'attach', 'const', or 'debug'\nhttps://svelte.dev/e/expected_tag"
+          "/svelte-bench/tmp/samples/openrouter/snippets_sample8_98f16e6237df8b91/Component.svelte:11:2 Expected 'html', 'render', 'attach', 'const', or 'debug'\nhttps://svelte.dev/e/expected_tag"
         ]
       },
       {
@@ -724,7 +724,7 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n  const books = [\n    \"The Lord of the Rings\",\n    \"To Kill a Mockingbird\",\n    \"1984\"\n  ];\n</script>\n\n{@snippet title(bookTitle)}\n  <span data-testid=\"book-title\">{bookTitle}</span>\n{/snippet}\n\n<ul>\n  {#each books as book}\n    <li data-testid=\"book-item\">\n      {@render title(book)}\n    </li>\n  {/each}\n</ul>",
         "success": false,
         "errors": [
-          "/Users/maxfarrell/repos/svelte-bench/tmp/samples/openrouter/snippets_sample9_767f51d59c829b7a/Component.svelte:11:2 Expected 'html', 'render', 'attach', 'const', or 'debug'\nhttps://svelte.dev/e/expected_tag"
+          "/svelte-bench/tmp/samples/openrouter/snippets_sample9_767f51d59c829b7a/Component.svelte:11:2 Expected 'html', 'render', 'attach', 'const', or 'debug'\nhttps://svelte.dev/e/expected_tag"
         ]
       }
     ],
