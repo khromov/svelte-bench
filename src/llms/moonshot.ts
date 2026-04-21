@@ -62,8 +62,10 @@ export class MoonshotProvider implements LLMProvider {
    * @returns The generated code
    */
   async generateCode(prompt: string, temperature?: number, contextContent?: string): Promise<string> {
+    // Use TEMPERATURE_OVERRIDE env var if present, otherwise use provided temperature or default
+    const envTemperature = process.env.TEMPERATURE_OVERRIDE ? parseFloat(process.env.TEMPERATURE_OVERRIDE) : temperature;
     // Ensure temperature is within valid range [0, 1]
-    const validTemperature = temperature !== undefined ? Math.max(0, Math.min(1, temperature)) : 0.7;
+    const validTemperature = envTemperature !== undefined ? Math.max(0, Math.min(1, envTemperature)) : 0.7;
 
     console.log(`🤖 Generating code with Moonshot using model: ${this.modelId} (temp: ${validTemperature})...`);
 
