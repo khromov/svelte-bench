@@ -10,6 +10,7 @@ import {
 } from "./src/utils/parallel-test-manager";
 import { runAllTestsHumanEval as runAllTestsHumanEvalSequential } from "./src/utils/test-manager";
 import type { HumanEvalResult } from "./src/utils/humaneval";
+import { isRateLimitError } from "./src/utils/errors";
 import { ensureRequiredDirectories } from "./src/utils/ensure-dirs";
 import { validateModels } from "./src/utils/model-validator";
 import path from "path";
@@ -228,6 +229,14 @@ async function runBenchmark() {
 
           return results;
         } catch (error) {
+          // Stop immediately on rate limit errors
+          if (isRateLimitError(error)) {
+            const msg = error instanceof Error ? error.message : String(error);
+            console.error(`\n❌ ${msg}`);
+            console.error("turn off parallel execution");
+            process.exit(1);
+          }
+
           console.error(`Error running tests with ${providerWithModel.name} (${providerWithModel.modelId}):`, error);
           // Return empty results rather than throwing
           return [];
@@ -281,6 +290,14 @@ async function runBenchmark() {
             }
           }
         } catch (error) {
+          // Stop immediately on rate limit errors
+          if (isRateLimitError(error)) {
+            const msg = error instanceof Error ? error.message : String(error);
+            console.error(`\n❌ ${msg}`);
+            console.error("turn off parallel execution");
+            process.exit(1);
+          }
+
           console.error(`Error running tests with ${providerWithModel.name} (${providerWithModel.modelId}):`, error);
           // Continue with next provider instead of failing completely
         }
@@ -330,6 +347,13 @@ async function runBenchmark() {
     const exitCode = totalSuccess > 0 ? 0 : 1;
     process.exit(exitCode);
   } catch (error) {
+    if (isRateLimitError(error)) {
+      const msg = error instanceof Error ? error.message : String(error);
+      console.error(`\n❌ ${msg}`);
+      console.error("turn off parallel execution");
+      process.exit(1);
+    }
+
     console.error("Error running benchmark:", error);
     process.exit(1);
   }

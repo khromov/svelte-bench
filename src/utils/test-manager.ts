@@ -15,6 +15,7 @@ import type { TestResult } from "./test-runner";
 import { calculatePassAtK, type HumanEvalResult } from "./humaneval";
 import { cleanCodeMarkdown } from "./code-cleaner";
 import { withRetry } from "./retry-wrapper";
+import { isRateLimitError } from "./errors";
 
 export interface TestDefinition {
   name: string;
@@ -171,6 +172,11 @@ export async function runSingleTest(
       temperature,
     };
   } catch (error) {
+    // Propagate rate limit errors immediately - don't swallow them
+    if (isRateLimitError(error)) {
+      throw error;
+    }
+
     const errorMessage = error instanceof Error ? error.message : String(error);
     console.error(`Error running test ${test.name} with ${llmProvider.name}:`, errorMessage);
 
@@ -259,6 +265,11 @@ export async function runHumanEvalTest(
           console.log(`💾 Saved checkpoint after sample ${i + 1}/${numSamples}`);
         }
       } catch (error) {
+        // Propagate rate limit errors immediately
+        if (isRateLimitError(error)) {
+          throw error;
+        }
+
         console.error(`Error running sample ${i + 1} for ${test.name} with ${actualProviderName}:`, error);
 
         // Save checkpoint even for failed samples to track progress
@@ -337,6 +348,11 @@ export async function runHumanEvalTest(
       })),
     };
   } catch (error) {
+    // Propagate rate limit errors - don't swallow them
+    if (isRateLimitError(error)) {
+      throw error;
+    }
+
     const errorMessage = error instanceof Error ? error.message : String(error);
     console.error(`Error running HumanEval test ${test.name} with ${llmProvider.name}:`, errorMessage);
 
@@ -480,6 +496,11 @@ export async function runAllTestsHumanEval(
         };
         await saveCheckpoint(providerName, modelId, checkpointData);
       } catch (error) {
+        // Propagate rate limit errors immediately
+        if (isRateLimitError(error)) {
+          throw error;
+        }
+
         console.error(`Error running test ${test.name} with ${providerName}:`, error);
 
         // If this was due to retry exhaustion, abort the entire run
@@ -528,6 +549,11 @@ export async function runAllTestsHumanEval(
 
     return results;
   } catch (error) {
+    // Propagate rate limit errors - don't swallow them
+    if (isRateLimitError(error)) {
+      throw error;
+    }
+
     console.error(`Error running all tests for ${llmProvider.name}:`, error);
     // Return an empty array rather than throwing an error
     return [];

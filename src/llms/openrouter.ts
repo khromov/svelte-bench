@@ -1,4 +1,5 @@
 import { DEFAULT_SYSTEM_PROMPT, DEFAULT_SYSTEM_PROMPT_WITH_CONTEXT } from "../utils/prompt";
+import { RateLimitError } from "../utils/errors";
 import type { LLMProvider } from "./index";
 import OpenAI from "openai";
 import type { ChatCompletionMessageParam } from "openai/resources/chat/completions";
@@ -138,8 +139,17 @@ export class OpenRouterProvider implements LLMProvider {
         throw new Error(`Request timed out after 5 minutes: ${this.modelId}`);
       }
 
+      // Check for rate limit (429) errors
+      const errorObj = error as any;
+      const status = errorObj?.status ?? errorObj?.code;
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      if (status === 429 || errorMsg.includes("Rate limit exceeded") || errorMsg.includes("rate limit")) {
+        console.error(`OpenRouter rate limit hit for model: ${this.modelId}`);
+        throw new RateLimitError(`OpenRouter rate limit exceeded: ${errorMsg}`);
+      }
+
       console.error("Error generating code with OpenRouter:", error);
-      throw new Error(`Failed to generate code: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(`Failed to generate code: ${errorMsg}`);
     }
   }
 
