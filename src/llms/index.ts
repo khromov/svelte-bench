@@ -71,6 +71,9 @@ export async function getLLMProvider(providerName: string, modelId?: string): Pr
     case "xai":
       const { XAIProvider } = await import("./xai");
       return new XAIProvider(modelId);
+    case "meta":
+      const { MetaProvider } = await import("./meta");
+      return new MetaProvider(modelId);
     default:
       throw new Error(`Unknown LLM provider: ${providerName}`);
   }
@@ -167,6 +170,17 @@ export async function getAllLLMProviders(): Promise<ProviderWithModel[]> {
     providers.push({
       provider,
       name: "xAI",
+      modelId,
+    });
+  }
+
+  // Meta provider
+  const metaProvider = await getLLMProvider("meta");
+  for (const modelId of metaProvider.getModels()) {
+    const provider = await getLLMProvider("meta", modelId);
+    providers.push({
+      provider,
+      name: "Meta",
       modelId,
     });
   }
