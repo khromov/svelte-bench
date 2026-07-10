@@ -74,6 +74,9 @@ export async function getLLMProvider(providerName: string, modelId?: string): Pr
     case "meta":
       const { MetaProvider } = await import("./meta");
       return new MetaProvider(modelId);
+    case "cursor":
+      const { CursorProvider } = await import("./cursor");
+      return new CursorProvider(modelId);
     default:
       throw new Error(`Unknown LLM provider: ${providerName}`);
   }
