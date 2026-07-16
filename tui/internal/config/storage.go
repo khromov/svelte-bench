@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 )
 
@@ -26,7 +27,7 @@ type Provider struct {
 
 // AllProviders returns a list of all supported providers
 func AllProviders() []Provider {
-	return []Provider{
+	providers := []Provider{
 		{Name: "OpenAI", EnvKey: "OPENAI_API_KEY"},
 		{Name: "Anthropic", EnvKey: "ANTHROPIC_API_KEY"},
 		{Name: "Google (Gemini)", EnvKey: "GOOGLE_API_KEY"},
@@ -42,6 +43,10 @@ func AllProviders() []Provider {
 		{Name: "Moonshot", EnvKey: "MOONSHOT_API_KEY"},
 		{Name: "Z.ai", EnvKey: "Z_AI_API_KEY"},
 	}
+	sort.SliceStable(providers, func(i, j int) bool {
+		return strings.ToLower(providers[i].Name) < strings.ToLower(providers[j].Name)
+	})
+	return providers
 }
 
 // LoadFromEnv loads configuration from .env file

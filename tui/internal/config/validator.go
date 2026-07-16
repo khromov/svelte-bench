@@ -36,6 +36,12 @@ func ValidateAPIKey(provider, apiKey string) error {
 		return validateCohere(apiKey)
 	case "FIREWORKS_API_KEY":
 		return validateFireworks(apiKey)
+	case "META_API_KEY":
+		return validateBearerModels("https://api.meta.ai/v1/models", apiKey)
+	case "MOONSHOT_API_KEY":
+		return validateBearerModels("https://api.moonshot.ai/v1/models", apiKey)
+	case "Z_AI_API_KEY":
+		return validateBearerModels("https://open.bigmodel.cn/api/paas/v4/models", apiKey)
 	default:
 		return fmt.Errorf("unknown provider: %s", provider)
 	}
@@ -47,11 +53,35 @@ func SupportsAPIKeyValidation(provider string) bool {
 	switch provider {
 	case "OPENAI_API_KEY", "ANTHROPIC_API_KEY", "GOOGLE_API_KEY", "OPENROUTER_API_KEY",
 		"GROQ_API_KEY", "DEEPSEEK_API_KEY", "XAI_API_KEY", "MISTRAL_API_KEY",
-		"COHERE_API_KEY", "FIREWORKS_API_KEY":
+		"COHERE_API_KEY", "FIREWORKS_API_KEY", "META_API_KEY", "MOONSHOT_API_KEY",
+		"Z_AI_API_KEY":
 		return true
 	default:
 		return false
 	}
+}
+
+func validateBearerModels(url, apiKey string) error {
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Authorization", "Bearer "+apiKey)
+
+	client := &http.Client{Timeout: 10 * time.Second}
+	resp, err := client.Do(req)
+	if err != nil {
+		return fmt.Errorf("network error: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode == http.StatusUnauthorized || resp.StatusCode == http.StatusForbidden {
+		return fmt.Errorf("invalid API key")
+	}
+	if resp.StatusCode < http.StatusOK || resp.StatusCode >= http.StatusMultipleChoices {
+		return fmt.Errorf("API returned status %d", resp.StatusCode)
+	}
+	return nil
 }
 
 func validateOpenAI(apiKey string) error {
