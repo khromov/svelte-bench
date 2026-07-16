@@ -609,7 +609,13 @@ func getXAIModelsStatic() []Model {
 }
 
 func fetchMoonshotModels(apiKey string) ([]Model, error) {
-	req, err := http.NewRequest("GET", "https://api.moonshot.cn/v1/models", nil)
+	return fetchMoonshotModelsFromURL(moonshotModelsURL, apiKey)
+}
+
+const moonshotModelsURL = "https://api.moonshot.ai/v1/models"
+
+func fetchMoonshotModelsFromURL(url, apiKey string) ([]Model, error) {
+	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return getMoonshotModelsStatic(), nil
 	}
@@ -632,7 +638,20 @@ func fetchMoonshotModels(apiKey string) ([]Model, error) {
 		return getMoonshotModelsStatic(), nil
 	}
 
-	// Moonshot returns OpenAI-compatible format
+	models, err := parseMoonshotModels(body)
+	if err != nil {
+		return getMoonshotModelsStatic(), nil
+	}
+
+	if len(models) == 0 {
+		return getMoonshotModelsStatic(), nil
+	}
+
+	return models, nil
+}
+
+func parseMoonshotModels(body []byte) ([]Model, error) {
+	// Moonshot returns OpenAI-compatible format.
 	var result struct {
 		Data []struct {
 			ID      string `json:"id"`
@@ -643,7 +662,7 @@ func fetchMoonshotModels(apiKey string) ([]Model, error) {
 	}
 
 	if err := json.Unmarshal(body, &result); err != nil {
-		return getMoonshotModelsStatic(), nil
+		return nil, err
 	}
 
 	models := make([]Model, 0)
@@ -659,10 +678,6 @@ func fetchMoonshotModels(apiKey string) ([]Model, error) {
 			Name:      item.ID,
 			IsPopular: popular[item.ID],
 		})
-	}
-
-	if len(models) == 0 {
-		return getMoonshotModelsStatic(), nil
 	}
 
 	return models, nil
