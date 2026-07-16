@@ -122,6 +122,12 @@ let vitestPoolInitialization: Promise<void> | undefined;
 
 function getVitestWorkerPool(): Promise<void> {
   if (!vitestPoolInitialization) {
+    // Match Vitest's startVitest preparation step. These flags are used by
+    // Vite/Svelte integrations when selecting the client test environment.
+    process.env.TEST = "true";
+    process.env.VITEST = "true";
+    process.env.NODE_ENV ??= "test";
+
     // Ten is the existing maximum number of concurrent samples. This keeps
     // the pool bounded without reducing the current parallelism.
     vitestPoolInitialization = vitestWorkerPool.initialize(10).catch((error) => {
