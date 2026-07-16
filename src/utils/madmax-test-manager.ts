@@ -105,8 +105,9 @@ export async function runAllTestsHumanEvalMadmax(
     }),
   );
 
+  const testOrder = new Map(tests.map((test, index) => [test.name, index]));
   const orderedResults = results.sort(
-    (a, b) => tests.findIndex((test) => test.name === a.testName) - tests.findIndex((test) => test.name === b.testName),
+    (a, b) => (testOrder.get(a.testName) ?? 0) - (testOrder.get(b.testName) ?? 0),
   );
 
   if (orderedResults.length === tests.length && orderedResults.every((result) => result.numSamples > 0)) {

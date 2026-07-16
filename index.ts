@@ -2,7 +2,7 @@
 import "dotenv/config";
 
 import { getAllLLMProviders, getLLMProvider } from "./src/llms";
-import { cleanTmpDir, loadContextFile } from "./src/utils/file";
+import { loadContextFile } from "./src/utils/file";
 import {
   runAllTestsHumanEval as runAllTestsHumanEvalParallel,
   saveBenchmarkResults,

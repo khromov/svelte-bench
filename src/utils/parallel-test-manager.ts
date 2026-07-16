@@ -1,7 +1,7 @@
 import path from "path";
 import fs from "fs/promises";
 import type { LLMProvider } from "../llms";
-import { cleanTmpDir, cleanCheckpointDir, writeToTmpFile, readFile, saveCheckpoint, loadCheckpoint, removeCheckpoint } from "./file";
+import { cleanCheckpointDir, readFile, saveCheckpoint, loadCheckpoint, removeCheckpoint } from "./file";
 import { runTest } from "./test-runner";
 import type { TestResult } from "./test-runner";
 import { calculatePassAtK, type HumanEvalResult } from "./humaneval";
@@ -91,21 +91,6 @@ function getUniqueTestDir(providerName: string, testName: string, sampleIndex: n
     providerName.toLowerCase(),
     `${testName}_sample${sampleIndex}_${uniqueId}`
   );
-}
-
-/**
- * Write files to a unique directory for a test/sample combination
- */
-async function writeToUniqueTestDir(
-  dir: string,
-  filename: string,
-  content: string
-): Promise<string> {
-  await fs.mkdir(dir, { recursive: true });
-  const filePath = path.join(dir, filename);
-  await fs.writeFile(filePath, content);
-  console.log(`📝 Wrote to ${filePath}`);
-  return filePath;
 }
 
 /**
