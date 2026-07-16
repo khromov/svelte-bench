@@ -1,4 +1,4 @@
-import { startVitest } from "vitest/node";
+import { createVitest, type TestModule } from "vitest/node";
 import path from "path";
 import { getTmpDir } from "./file";
 import fs from "fs/promises";
@@ -10,6 +10,135 @@ export interface TestResult {
   totalTests: number;
   failedTests: number;
   errors: string[]; // All errors that occurred during test execution
+}
+
+interface VitestRunResult {
+  testModules: TestModule[];
+  unhandledErrors: unknown[];
+}
+
+interface VitestWorker {
+  vitest: Awaited<ReturnType<typeof createVitest>>;
+  busy: boolean;
+}
+
+/**
+ * Vitest startup is relatively expensive. Keep one isolated Vitest instance
+ * per concurrent sample and reuse it for the lifetime of the benchmark run.
+ * The instances are still isolated from one another, so this does not change
+ * test execution or module state semantics.
+ */
+class VitestWorkerPool {
+  private readonly workers: VitestWorker[] = [];
+  private readonly waiters: Array<(worker: VitestWorker) => void> = [];
+  private initialized = false;
+  private closing = false;
+  private previousMaxListeners: number | undefined;
+
+  async initialize(size: number): Promise<void> {
+    if (this.initialized) return;
+
+    this.initialized = true;
+    this.previousMaxListeners = process.getMaxListeners();
+    if (this.previousMaxListeners > 0) {
+      process.setMaxListeners(Math.max(this.previousMaxListeners, size + 1));
+    }
+    try {
+      await Promise.all(
+        Array.from({ length: size }, async () => {
+          const vitest = await createVitest("test", {
+            run: false,
+            watch: false,
+            reporters: ["verbose"],
+          });
+          await vitest.init();
+          this.workers.push({ vitest, busy: false });
+        })
+      );
+    } catch (error) {
+      await Promise.allSettled(this.workers.map(({ vitest }) => vitest.close()));
+      this.workers.length = 0;
+      this.initialized = false;
+      if (this.previousMaxListeners !== undefined) {
+        process.setMaxListeners(this.previousMaxListeners);
+        this.previousMaxListeners = undefined;
+      }
+      throw error;
+    }
+  }
+
+  async run(testFilePath: string): Promise<VitestRunResult> {
+    if (this.closing) {
+      throw new Error("Vitest worker pool is closing");
+    }
+
+    const worker = await this.acquire();
+    try {
+      const specifications = await worker.vitest.getRelevantTestSpecifications([testFilePath]);
+      if (specifications.length === 0) {
+        return { testModules: [], unhandledErrors: [] };
+      }
+
+      return await worker.vitest.runTestSpecifications(specifications);
+    } finally {
+      this.release(worker);
+    }
+  }
+
+  async close(): Promise<void> {
+    this.closing = true;
+    await Promise.all(this.workers.map(({ vitest }) => vitest.close()));
+    this.workers.length = 0;
+    this.initialized = false;
+    this.closing = false;
+    if (this.previousMaxListeners !== undefined) {
+      process.setMaxListeners(this.previousMaxListeners);
+      this.previousMaxListeners = undefined;
+    }
+  }
+
+  private async acquire(): Promise<VitestWorker> {
+    const availableWorker = this.workers.find((worker) => !worker.busy);
+    if (availableWorker) {
+      availableWorker.busy = true;
+      return availableWorker;
+    }
+
+    return new Promise((resolve) => this.waiters.push(resolve));
+  }
+
+  private release(worker: VitestWorker): void {
+    const waiter = this.waiters.shift();
+    if (waiter) {
+      waiter(worker);
+    } else {
+      worker.busy = false;
+    }
+  }
+}
+
+const vitestWorkerPool = new VitestWorkerPool();
+let vitestPoolInitialization: Promise<void> | undefined;
+
+function getVitestWorkerPool(): Promise<void> {
+  if (!vitestPoolInitialization) {
+    // Ten is the existing maximum number of concurrent samples. This keeps
+    // the pool bounded without reducing the current parallelism.
+    vitestPoolInitialization = vitestWorkerPool.initialize(10).catch((error) => {
+      vitestPoolInitialization = undefined;
+      throw error;
+    });
+  }
+
+  return vitestPoolInitialization;
+}
+
+/** Close reusable Vitest workers after the benchmark has finished. */
+export async function closeTestRunnerPool(): Promise<void> {
+  if (!vitestPoolInitialization) return;
+  await vitestPoolInitialization;
+  await vitestWorkerPool.close();
+  vitestPoolInitialization = undefined;
 }
 
 /**
@@ -61,19 +190,13 @@ export async function runTest(testName: string, provider?: string, testDir?: str
     // Race between the test execution and the timeout
     const testPromise = async (): Promise<TestResult> => {
       try {
-        const vitest = await startVitest("test", [testFilePath], {
-          watch: false,
-          reporters: ["verbose"],
-        });
-
-        await vitest.close();
-        const testModules = vitest.state.getTestModules();
+        await getVitestWorkerPool();
+        const { testModules, unhandledErrors } = await vitestWorkerPool.run(testFilePath);
 
         // Collect all errors
         const allErrors: string[] = [];
 
         // Get unhandled errors
-        const unhandledErrors = vitest.state.getUnhandledErrors();
         for (const error of unhandledErrors) {
           const errorMessage = error instanceof Error ? error.message : String(error);
           allErrors.push(errorMessage);

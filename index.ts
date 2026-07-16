@@ -8,6 +8,7 @@ import {
   saveBenchmarkResults,
   loadTestDefinitions,
 } from "./src/utils/parallel-test-manager";
+import { closeTestRunnerPool } from "./src/utils/test-runner";
 import {
   runAllTestsHumanEval as runAllTestsHumanEvalSequential,
 } from "./src/utils/test-manager";
@@ -65,7 +66,7 @@ async function runBenchmark() {
         log(`👉 Using context file: ${contextFilePath}`);
       } catch (error) {
         console.error(`Error loading context file: ${error}`);
-        process.exit(1);
+        throw error;
       }
     }
 
@@ -242,7 +243,7 @@ async function runBenchmark() {
             const message = error instanceof Error ? error.message : String(error);
             console.error(`\n❌ ${message}`);
             console.error("Turn off parallel execution and retry.");
-            process.exit(1);
+            throw error;
           }
           console.error(
             `Error running tests with ${providerWithModel.name} (${providerWithModel.modelId}):`,
@@ -365,15 +366,17 @@ async function runBenchmark() {
 
     // Exit with appropriate code
     const exitCode = totalSuccess > 0 ? 0 : 1;
-    process.exit(exitCode);
+    process.exitCode = exitCode;
   } catch (error) {
     console.error("Error running benchmark:", error);
-    process.exit(1);
+    process.exitCode = 1;
+  } finally {
+    await closeTestRunnerPool();
   }
 }
 
 // Run the benchmark
 runBenchmark().catch((error) => {
   console.error("Unhandled error:", error);
-  process.exit(1);
+  process.exitCode = 1;
 });
