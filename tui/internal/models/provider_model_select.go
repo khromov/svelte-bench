@@ -2,10 +2,10 @@ package models
 
 import (
 	"fmt"
-	"os"
 	"svelte-bench/tui/internal/bridge"
 	"svelte-bench/tui/internal/config"
 	"svelte-bench/tui/internal/styles"
+	"sync"
 	"time"
 
 	"github.com/charmbracelet/bubbles/textinput"
@@ -16,6 +16,11 @@ import (
 type modelsLoadedMsg struct {
 	models []bridge.Model
 	err    error
+}
+
+type providerValidationMsg struct {
+	valid  map[string]bool
+	errors map[string]string
 }
 
 // ProviderModelSelectModel handles provider and model selection
@@ -35,7 +40,10 @@ type ProviderModelSelectModel struct {
 	height            int
 	scrollOffset      int // For scrolling providers
 	modelScrollOffset int // For scrolling models
-	backToWelcome     bool
+	exitOnBack        bool
+	validating        bool
+	validated         map[string]bool
+	validationErrors  map[string]string
 }
 
 // NewProviderModelSelectModel creates a new provider/model select model
@@ -56,12 +64,20 @@ func NewProviderModelSelectModel(state *SharedState) ProviderModelSelectModel {
 		modelInput:       modelInput,
 		width:            80,
 		height:           24,
+		validated:        make(map[string]bool),
+		validationErrors: make(map[string]string),
+		validating:       true,
+		exitOnBack:       true,
 	}
+}
+
+func NewProviderModelSelectFromConfig(cfg *config.Config) ProviderModelSelectModel {
+	return NewProviderModelSelectModel(&SharedState{Config: cfg})
 }
 
 func NewProviderModelSelectFromExecution(state *SharedState) ProviderModelSelectModel {
 	m := NewProviderModelSelectModel(state)
-	m.backToWelcome = false
+	m.exitOnBack = false
 	for i, provider := range m.providers {
 		if provider.EnvKey == state.ProviderKey {
 			m.selectedProvider = i
@@ -86,6 +102,9 @@ func NewModelSelectionModel(state *SharedState) ProviderModelSelectModel {
 }
 
 func (m ProviderModelSelectModel) Init() tea.Cmd {
+	if m.step == 0 {
+		return m.validateConfiguredProviders()
+	}
 	return nil
 }
 
@@ -112,8 +131,8 @@ func (m ProviderModelSelectModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					return m, tea.Quit
 				}
 			case "left":
-				if m.backToWelcome {
-					return NewWelcomeModel(m.state.Config), nil
+				if m.exitOnBack {
+					return m, tea.Quit
 				}
 				return NewExecutionModeModel(m.state), nil
 			case "up":
@@ -144,13 +163,15 @@ func (m ProviderModelSelectModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				provider := m.providers[m.selectedProvider]
 				m.state.Provider = bridge.ConvertProviderNameToEnvKey(provider.Name)
 				m.state.ProviderKey = provider.EnvKey
-				if provider.APIKey == "" {
+				if provider.APIKey == "" || m.validationErrors[provider.EnvKey] != "" {
 					return NewAPIKeyPromptModel(m.state, provider), nil
 				}
-				// Move to model input step
-				m.step = 1
-				m.modelInput.Focus()
-				return m, m.loadModels(m.providers[m.selectedProvider])
+				if m.validating && config.SupportsAPIKeyValidation(provider.EnvKey) && !m.validated[provider.EnvKey] {
+					return m, nil
+				}
+				// Keep the flow consistent whether the key was already configured or
+				// entered moments ago: choose execution mode before loading models.
+				return NewExecutionModeModel(m.state), nil
 			}
 		} else {
 			// Step 1: Type model name with autocomplete
@@ -174,32 +195,16 @@ func (m ProviderModelSelectModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.state.ProviderKey = m.providers[m.selectedProvider].EnvKey
 					m.state.Model = m.filteredModels[m.selectedModel].ID
 
-					// EMERGENCY DEBUG
-					if debugFile, err := os.Create("/tmp/tui-model-selected.txt"); err == nil {
-						fmt.Fprintf(debugFile, "Model selected from list\n")
-						fmt.Fprintf(debugFile, "Provider name: '%s'\n", m.providers[m.selectedProvider].Name)
-						fmt.Fprintf(debugFile, "Converted provider: '%s'\n", m.state.Provider)
-						fmt.Fprintf(debugFile, "Model: '%s'\n", m.state.Model)
-						debugFile.Close()
-					}
-
-					return NewBenchmarkModel(m.state), nil
+					model := NewBenchmarkModel(m.state)
+					return model, model.Init()
 				} else if m.modelInput.Value() != "" {
 					// User typed a custom model name
 					m.state.Provider = bridge.ConvertProviderNameToEnvKey(m.providers[m.selectedProvider].Name)
 					m.state.ProviderKey = m.providers[m.selectedProvider].EnvKey
 					m.state.Model = m.modelInput.Value()
 
-					// EMERGENCY DEBUG
-					if debugFile, err := os.Create("/tmp/tui-model-typed.txt"); err == nil {
-						fmt.Fprintf(debugFile, "Model typed manually\n")
-						fmt.Fprintf(debugFile, "Provider name: '%s'\n", m.providers[m.selectedProvider].Name)
-						fmt.Fprintf(debugFile, "Converted provider: '%s'\n", m.state.Provider)
-						fmt.Fprintf(debugFile, "Model: '%s'\n", m.state.Model)
-						debugFile.Close()
-					}
-
-					return NewBenchmarkModel(m.state), nil
+					model := NewBenchmarkModel(m.state)
+					return model, model.Init()
 				}
 			case "up":
 				if m.selectedModel > 0 {
@@ -254,6 +259,12 @@ func (m ProviderModelSelectModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.error = ""
 		}
 		return m, nil
+
+	case providerValidationMsg:
+		m.validating = false
+		m.validated = msg.valid
+		m.validationErrors = msg.errors
+		return m, nil
 	}
 
 	return m, nil
@@ -287,13 +298,21 @@ func (m ProviderModelSelectModel) View() string {
 
 		for i := startIdx; i < endIdx; i++ {
 			provider := m.providers[i]
+			status := ""
+			if m.validated[provider.EnvKey] {
+				status = " ✓"
+			} else if m.validationErrors[provider.EnvKey] != "" {
+				status = " !"
+			} else if provider.APIKey != "" && m.validating {
+				status = " …"
+			}
 			if i == m.selectedProvider {
 				lines = append(lines, lipgloss.NewStyle().
 					Foreground(styles.OrangePrimary).
 					Bold(true).
-					Render("▸ "+provider.Name))
+					Render("▸ "+provider.Name+status))
 			} else {
-				lines = append(lines, "  "+provider.Name)
+				lines = append(lines, "  "+provider.Name+status)
 			}
 		}
 
@@ -308,7 +327,7 @@ func (m ProviderModelSelectModel) View() string {
 		lines = append(lines, "")
 		lines = append(lines, lipgloss.NewStyle().
 			Foreground(styles.GrayDim).
-			Render("↑/↓: Navigate • Enter: Select • Ctrl+C: Quit"))
+			Render("↑/↓: Navigate • Enter: Select • ✓ Valid • ! Re-enter • ←: Back • Double Esc: Quit • Ctrl+C: Quit"))
 	} else {
 		// Model input with autocomplete
 		providerName := m.providers[m.selectedProvider].Name
@@ -398,5 +417,38 @@ func (m ProviderModelSelectModel) loadModels(provider config.Provider) tea.Cmd {
 	return func() tea.Msg {
 		models, err := bridge.FetchModels(provider.EnvKey, provider.APIKey)
 		return modelsLoadedMsg{models: models, err: err}
+	}
+}
+
+func (m ProviderModelSelectModel) validateConfiguredProviders() tea.Cmd {
+	return func() tea.Msg {
+		valid := make(map[string]bool)
+		errors := make(map[string]string)
+		type result struct {
+			key string
+			err error
+		}
+		results := make(chan result, len(m.providers))
+		var wg sync.WaitGroup
+		for _, provider := range m.providers {
+			if provider.APIKey == "" || !config.SupportsAPIKeyValidation(provider.EnvKey) {
+				continue
+			}
+			wg.Add(1)
+			go func(provider config.Provider) {
+				defer wg.Done()
+				results <- result{key: provider.EnvKey, err: config.ValidateAPIKey(provider.EnvKey, provider.APIKey)}
+			}(provider)
+		}
+		wg.Wait()
+		close(results)
+		for result := range results {
+			if result.err != nil {
+				errors[result.key] = result.err.Error()
+			} else {
+				valid[result.key] = true
+			}
+		}
+		return providerValidationMsg{valid: valid, errors: errors}
 	}
 }

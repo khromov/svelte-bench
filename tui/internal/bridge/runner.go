@@ -6,16 +6,18 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"sort"
+	"strings"
 )
 
 // BenchmarkConfig holds the configuration for running a benchmark
 type BenchmarkConfig struct {
-	Provider     string
-	Model        string
-	APIKeys      map[string]string
-	Parallel     bool
-	Samples      int
-	ContextFile  string
+	Provider    string
+	Model       string
+	APIKeys     map[string]string
+	Parallel    bool
+	Samples     int
+	ContextFile string
 }
 
 // RunBenchmark runs the TypeScript benchmark with the given configuration
@@ -47,29 +49,19 @@ func RunBenchmark(config BenchmarkConfig, eventHandler EventHandler) error {
 		fmt.Fprintf(debugLog, "Working directory: %s\n\n", projectRoot)
 	}
 
-	// Set environment variables
-	env := os.Environ()
-
-	// Add API keys
-	for key, value := range config.APIKeys {
-		env = append(env, fmt.Sprintf("%s=%s", key, value))
+	// Set environment variables, replacing inherited values rather than
+	// appending duplicates. This guarantees the TUI's selected key wins.
+	env := buildBenchmarkEnv(os.Environ(), config)
+	for key := range config.APIKeys {
 		if debugLog != nil {
 			// Don't log the actual key value, just that it was set
 			fmt.Fprintf(debugLog, "ENV: %s=***\n", key)
 		}
 	}
 
-	// Add TUI mode
-	env = append(env, "TUI_MODE=true")
 	if debugLog != nil {
 		fmt.Fprintf(debugLog, "ENV: TUI_MODE=true\n")
 	}
-
-	// Add DEBUG_MODE settings
-	env = append(env, "DEBUG_MODE=true")
-	env = append(env, fmt.Sprintf("DEBUG_PROVIDER=%s", config.Provider))
-	env = append(env, fmt.Sprintf("DEBUG_MODEL=%s", config.Model))
-	env = append(env, fmt.Sprintf("DEBUG_SAMPLES=%d", config.Samples))
 
 	if debugLog != nil {
 		fmt.Fprintf(debugLog, "ENV: DEBUG_MODE=true\n")
@@ -78,12 +70,8 @@ func RunBenchmark(config BenchmarkConfig, eventHandler EventHandler) error {
 		fmt.Fprintf(debugLog, "ENV: DEBUG_SAMPLES=%d\n", config.Samples)
 	}
 
-	// Add execution mode
-	if config.Parallel {
-		env = append(env, "PARALLEL_EXECUTION=true")
-		if debugLog != nil {
-			fmt.Fprintf(debugLog, "ENV: PARALLEL_EXECUTION=true\n")
-		}
+	if config.Parallel && debugLog != nil {
+		fmt.Fprintf(debugLog, "ENV: PARALLEL_EXECUTION=true\n")
 	}
 
 	cmd.Env = env
@@ -193,6 +181,41 @@ func RunBenchmark(config BenchmarkConfig, eventHandler EventHandler) error {
 	return nil
 }
 
+func buildBenchmarkEnv(base []string, config BenchmarkConfig) []string {
+	values := make(map[string]string, len(base)+len(config.APIKeys)+5)
+	for _, entry := range base {
+		key, value, ok := strings.Cut(entry, "=")
+		if ok {
+			values[key] = value
+		}
+	}
+	for key, value := range config.APIKeys {
+		values[key] = value
+	}
+	values["TUI_MODE"] = "true"
+	values["DEBUG_MODE"] = "true"
+	values["DEBUG_PROVIDER"] = config.Provider
+	values["DEBUG_MODEL"] = config.Model
+	values["DEBUG_SAMPLES"] = fmt.Sprintf("%d", config.Samples)
+	if config.Parallel {
+		values["PARALLEL_EXECUTION"] = "true"
+	} else {
+		delete(values, "PARALLEL_EXECUTION")
+	}
+
+	keys := make([]string, 0, len(values))
+	for key := range values {
+		keys = append(keys, key)
+	}
+	sort.Strings(keys)
+
+	env := make([]string, 0, len(keys))
+	for _, key := range keys {
+		env = append(env, key+"="+values[key])
+	}
+	return env
+}
+
 // GetAvailableTests returns a list of available test names
 func GetAvailableTests() ([]string, error) {
 	projectRoot, err := getProjectRoot()
@@ -278,6 +301,8 @@ func ConvertProviderNameToEnvKey(providerName string) string {
 		"Fireworks":       "fireworks",
 		"Moonshot":        "moonshot",
 		"Z.ai":            "zai",
+		"Meta":            "meta",
+		"Cursor":          "cursor",
 	}
 
 	if key, ok := mapping[providerName]; ok {

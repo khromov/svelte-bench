@@ -41,6 +41,19 @@ func ValidateAPIKey(provider, apiKey string) error {
 	}
 }
 
+// SupportsAPIKeyValidation reports whether the TUI can validate this provider
+// without requiring a model-specific request.
+func SupportsAPIKeyValidation(provider string) bool {
+	switch provider {
+	case "OPENAI_API_KEY", "ANTHROPIC_API_KEY", "GOOGLE_API_KEY", "OPENROUTER_API_KEY",
+		"GROQ_API_KEY", "DEEPSEEK_API_KEY", "XAI_API_KEY", "MISTRAL_API_KEY",
+		"COHERE_API_KEY", "FIREWORKS_API_KEY":
+		return true
+	default:
+		return false
+	}
+}
+
 func validateOpenAI(apiKey string) error {
 	req, err := http.NewRequest("GET", "https://api.openai.com/v1/models", nil)
 	if err != nil {

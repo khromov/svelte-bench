@@ -27,7 +27,6 @@ type Provider struct {
 // AllProviders returns a list of all supported providers
 func AllProviders() []Provider {
 	return []Provider{
-		{Name: "AI SDK", EnvKey: "AI_SDK_API_KEY"},
 		{Name: "OpenAI", EnvKey: "OPENAI_API_KEY"},
 		{Name: "Anthropic", EnvKey: "ANTHROPIC_API_KEY"},
 		{Name: "Google (Gemini)", EnvKey: "GOOGLE_API_KEY"},
@@ -156,7 +155,7 @@ func (c *Config) GetConfiguredProviders() []Provider {
 	var configured []Provider
 
 	for _, provider := range AllProviders() {
-		if key, ok := c.APIKeys[provider.EnvKey]; ok && key != "" {
+		if key := c.apiKey(provider.EnvKey); key != "" {
 			provider.APIKey = key
 			configured = append(configured, provider)
 		}
@@ -169,11 +168,20 @@ func (c *Config) GetConfiguredProviders() []Provider {
 func (c *Config) GetAllProvidersWithKeys() []Provider {
 	providers := AllProviders()
 	for i := range providers {
-		if key, ok := c.APIKeys[providers[i].EnvKey]; ok {
-			providers[i].APIKey = key
-		}
+		providers[i].APIKey = c.apiKey(providers[i].EnvKey)
 	}
 	return providers
+}
+
+func (c *Config) apiKey(envKey string) string {
+	if key := c.APIKeys[envKey]; key != "" {
+		return key
+	}
+	// GEMINI_API_KEY is the legacy name used by the CLI and .env.example.
+	if envKey == "GOOGLE_API_KEY" {
+		return c.APIKeys["GEMINI_API_KEY"]
+	}
+	return ""
 }
 
 // HasAnyAPIKeys checks if any API keys are configured

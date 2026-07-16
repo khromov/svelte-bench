@@ -45,7 +45,8 @@ func (m ExecutionModeModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m, tea.Quit
 			}
 		case "left":
-			return NewProviderModelSelectFromExecution(m.state), nil
+			model := NewProviderModelSelectFromExecution(m.state)
+			return model, model.Init()
 
 		case "up":
 			m.selectedOption = (m.selectedOption - 1 + 2) % 2

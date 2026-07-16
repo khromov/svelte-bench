@@ -2,7 +2,6 @@ package models
 
 import (
 	"fmt"
-	"os"
 	"svelte-bench/tui/internal/bridge"
 	"svelte-bench/tui/internal/styles"
 	"time"
@@ -62,15 +61,6 @@ func NewBenchmarkModel(state *SharedState) BenchmarkModel {
 }
 
 func (m BenchmarkModel) Init() tea.Cmd {
-	// EMERGENCY DEBUG: Write that Init was called
-	if debugFile, err := os.Create("/tmp/tui-init-called.txt"); err == nil {
-		fmt.Fprintf(debugFile, "BenchmarkModel.Init() was called\n")
-		fmt.Fprintf(debugFile, "Provider: '%s'\n", m.state.Provider)
-		fmt.Fprintf(debugFile, "Model: '%s'\n", m.state.Model)
-		fmt.Fprintf(debugFile, "Running: %v\n", m.running)
-		debugFile.Close()
-	}
-
 	return tea.Batch(
 		m.runBenchmark(),
 		m.waitForEvent(),
@@ -386,22 +376,8 @@ func (m *BenchmarkModel) handleEvent(event bridge.BenchmarkEvent) {
 
 func (m BenchmarkModel) runBenchmark() tea.Cmd {
 	return func() tea.Msg {
-		// EMERGENCY DEBUG: Write that runBenchmark was called
-		if debugFile, err := os.Create("/tmp/tui-runbenchmark-called.txt"); err == nil {
-			fmt.Fprintf(debugFile, "runBenchmark() tea.Cmd was called\n")
-			fmt.Fprintf(debugFile, "Provider: '%s'\n", m.state.Provider)
-			fmt.Fprintf(debugFile, "Model: '%s'\n", m.state.Model)
-			debugFile.Close()
-		}
-
 		// Start the actual TypeScript benchmark in a goroutine
 		go func() {
-			// EMERGENCY DEBUG: Write that goroutine started
-			if debugFile, err := os.Create("/tmp/tui-goroutine-started.txt"); err == nil {
-				fmt.Fprintf(debugFile, "Goroutine started\n")
-				debugFile.Close()
-			}
-
 			// Convert config to API keys map
 			apiKeys := make(map[string]string)
 			if m.state.Config != nil {
@@ -416,16 +392,6 @@ func (m BenchmarkModel) runBenchmark() tea.Cmd {
 				APIKeys:  apiKeys,
 				Parallel: m.state.Parallel,
 				Samples:  10,
-			}
-
-			// EMERGENCY DEBUG: Write config to file before running
-			if debugFile, err := os.Create("/tmp/tui-benchmark-config.txt"); err == nil {
-				fmt.Fprintf(debugFile, "Provider: '%s'\n", config.Provider)
-				fmt.Fprintf(debugFile, "Model: '%s'\n", config.Model)
-				fmt.Fprintf(debugFile, "Parallel: %v\n", config.Parallel)
-				fmt.Fprintf(debugFile, "Samples: %d\n", config.Samples)
-				fmt.Fprintf(debugFile, "API Keys count: %d\n", len(config.APIKeys))
-				debugFile.Close()
 			}
 
 			// Run benchmark and handle events
