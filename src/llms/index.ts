@@ -59,6 +59,9 @@ export async function getLLMProvider(providerName: string, modelId?: string): Pr
     case "openrouter":
       const { OpenRouterProvider } = await import("./openrouter");
       return new OpenRouterProvider(modelId);
+    case "fireworks":
+      const { FireworksProvider } = await import("./fireworks");
+      return new FireworksProvider(modelId);
     case "ollama":
       const { OllamaProvider } = await import("./ollama");
       return new OllamaProvider(modelId);
@@ -129,6 +132,17 @@ export async function getAllLLMProviders(): Promise<ProviderWithModel[]> {
     providers.push({
       provider,
       name: "OpenRouter",
+      modelId,
+    });
+  }
+
+  // Fireworks provider
+  const fireworksProvider = await getLLMProvider("fireworks");
+  for (const modelId of fireworksProvider.getModels()) {
+    const provider = await getLLMProvider("fireworks", modelId);
+    providers.push({
+      provider,
+      name: "Fireworks",
       modelId,
     });
   }
