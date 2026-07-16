@@ -134,7 +134,7 @@ func (m BenchmarkModel) View() string {
 	// Calculate the test window from that actual footprint so all categories are
 	// shown whenever the terminal has room, instead of hiding most of them at
 	// ordinary terminal heights.
-	fixedRows := 13
+	fixedRows := 15
 	if m.state.Error != "" {
 		fixedRows += 2
 	}
@@ -183,6 +183,7 @@ func (m BenchmarkModel) View() string {
 	animatedBar := styles.RenderAnimatedProgressBar(m.currentCount, m.totalSamples, barWidth, m.frame)
 
 	sections = append(sections, progressLabel, animatedBar, "")
+	sections = append(sections, m.renderActiveSummary(), "")
 
 	// Tests - scrollable
 	testsHeader := lipgloss.NewStyle().
@@ -282,7 +283,7 @@ func (m *BenchmarkModel) renderTest(test *TestResult) string {
 	if test.Status == StatusRunning {
 		nameColor = styles.OrangePrimary
 	} else if test.Status == StatusCompleted {
-		nameColor = styles.OrangeSuccess
+		nameColor = styles.GrayDim
 	}
 
 	nameStyle := lipgloss.NewStyle().
@@ -321,6 +322,27 @@ func (m *BenchmarkModel) renderTest(test *TestResult) string {
 	}
 
 	return fmt.Sprintf(" %s %s %s %s %s", iconStyled, name, miniBar, progressText, statusText)
+}
+
+func (m BenchmarkModel) renderActiveSummary() string {
+	label := "Preparing next test..."
+	for _, name := range m.testOrder {
+		test := m.tests[name]
+		if test.Status == StatusRunning {
+			label = fmt.Sprintf("Running: %s • %d/%d samples complete", test.TestName, test.Current, test.Total)
+			if m.state.Parallel {
+				label = fmt.Sprintf("Running samples: %s • %d/%d complete", test.TestName, test.Current, test.Total)
+			}
+			break
+		}
+	}
+
+	return lipgloss.NewStyle().
+		Background(styles.BgMedium).
+		Foreground(styles.OrangeLight).
+		Bold(true).
+		Padding(0, 1).
+		Render(label)
 }
 
 func (m *BenchmarkModel) handleEvent(event bridge.BenchmarkEvent) {
