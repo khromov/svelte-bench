@@ -29,14 +29,15 @@ nvm use
 pnpm install
 ```
 
-The recommended workflow is to configure API keys from the TUI. Start it with:
+The recommended workflow is to choose a provider and configure its API key from
+the TUI. Start it with:
 
 ```bash
 pnpm tui
 ```
 
-The API key screen validates providers and stores credentials in `.env` for
-future runs. You only need to configure the providers you want to use.
+If the selected provider has no saved key, the TUI prompts for one and stores
+it in `.env` for future runs. You only need to configure the providers you use.
 
 For scripted or CI usage, create `.env` from the example and add your keys:
 
@@ -94,11 +95,12 @@ pnpm tui
 
 The TUI guides you through:
 
-1. Loading existing credentials or configuring API keys
-2. Choosing parallel or sequential execution
-3. Selecting a provider and model
-4. Running the benchmark with live progress
-5. Reviewing the results
+1. Selecting a provider
+2. Entering an API key if that provider has no saved key
+3. Choosing parallel or sequential execution
+4. Selecting a model
+5. Running the benchmark with live progress
+6. Reviewing the results
 
 Use `←` to go back between setup and selection screens. Double-press `Esc`
 within one second to exit, or use `Ctrl+C`.

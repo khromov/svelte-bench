@@ -35,6 +35,7 @@ type ProviderModelSelectModel struct {
 	height            int
 	scrollOffset      int // For scrolling providers
 	modelScrollOffset int // For scrolling models
+	backToWelcome     bool
 }
 
 // NewProviderModelSelectModel creates a new provider/model select model
@@ -56,6 +57,32 @@ func NewProviderModelSelectModel(state *SharedState) ProviderModelSelectModel {
 		width:            80,
 		height:           24,
 	}
+}
+
+func NewProviderModelSelectFromExecution(state *SharedState) ProviderModelSelectModel {
+	m := NewProviderModelSelectModel(state)
+	m.backToWelcome = false
+	for i, provider := range m.providers {
+		if provider.EnvKey == state.ProviderKey {
+			m.selectedProvider = i
+			break
+		}
+	}
+	return m
+}
+
+// NewModelSelectionModel creates the model-selection step for the chosen provider.
+func NewModelSelectionModel(state *SharedState) ProviderModelSelectModel {
+	m := NewProviderModelSelectFromExecution(state)
+	m.step = 1
+	for i, provider := range m.providers {
+		if provider.EnvKey == state.ProviderKey {
+			m.selectedProvider = i
+			break
+		}
+	}
+	m.modelInput.Focus()
+	return m
 }
 
 func (m ProviderModelSelectModel) Init() tea.Cmd {
@@ -85,6 +112,9 @@ func (m ProviderModelSelectModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					return m, tea.Quit
 				}
 			case "left":
+				if m.backToWelcome {
+					return NewWelcomeModel(m.state.Config), nil
+				}
 				return NewExecutionModeModel(m.state), nil
 			case "up":
 				if m.selectedProvider > 0 {
@@ -111,6 +141,12 @@ func (m ProviderModelSelectModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					}
 				}
 			case "enter":
+				provider := m.providers[m.selectedProvider]
+				m.state.Provider = bridge.ConvertProviderNameToEnvKey(provider.Name)
+				m.state.ProviderKey = provider.EnvKey
+				if provider.APIKey == "" {
+					return NewAPIKeyPromptModel(m.state, provider), nil
+				}
 				// Move to model input step
 				m.step = 1
 				m.modelInput.Focus()

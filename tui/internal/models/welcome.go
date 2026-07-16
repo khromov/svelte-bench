@@ -10,22 +10,18 @@ import (
 
 // WelcomeModel is the welcome screen model
 type WelcomeModel struct {
-	state           *SharedState
-	selectedOption  int
-	hasExistingConf bool
-	width           int
-	height          int
+	state  *SharedState
+	width  int
+	height int
 }
 
 // NewWelcomeModel creates a new welcome model
 func NewWelcomeModel(cfg *config.Config) WelcomeModel {
-	hasConf := cfg != nil && cfg.HasAnyAPIKeys()
-
 	state := &SharedState{
 		Config: cfg,
 	}
 
-	if !hasConf {
+	if cfg == nil {
 		// Initialize empty config
 		state.Config = &config.Config{
 			APIKeys: make(map[string]string),
@@ -33,11 +29,9 @@ func NewWelcomeModel(cfg *config.Config) WelcomeModel {
 	}
 
 	return WelcomeModel{
-		state:           state,
-		selectedOption:  0,
-		hasExistingConf: hasConf,
-		width:           80,
-		height:          24,
+		state:  state,
+		width:  80,
+		height: 24,
 	}
 }
 
@@ -61,25 +55,8 @@ func (m WelcomeModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m, tea.Quit
 			}
 
-		case "up":
-			if m.hasExistingConf {
-				m.selectedOption = (m.selectedOption - 1 + 2) % 2
-			}
-
-		case "down":
-			if m.hasExistingConf {
-				m.selectedOption = (m.selectedOption + 1) % 2
-			}
-
 		case "enter":
-			// Navigate to next screen
-			if m.hasExistingConf && m.selectedOption == 0 {
-				// Use existing config - go to execution mode selection
-				return NewExecutionModeFromWelcome(m.state), nil
-			} else {
-				// Configure API keys
-				return NewAPIKeyConfigModel(m.state), nil
-			}
+			return NewProviderModelSelectModel(m.state), nil
 		}
 	}
 
@@ -98,40 +75,12 @@ func (m WelcomeModel) View() string {
 
 	lines = append(lines, title, subtitle, "", "")
 
-	// Options
-	if m.hasExistingConf {
-		opt1 := "  Use existing API keys"
-		opt2 := "  Configure new API keys"
-
-		if m.selectedOption == 0 {
-			opt1 = lipgloss.NewStyle().
-				Foreground(styles.OrangePrimary).
-				Bold(true).
-				Render("▸ Use existing API keys")
-		} else {
-			opt2 = lipgloss.NewStyle().
-				Foreground(styles.OrangePrimary).
-				Bold(true).
-				Render("▸ Configure new API keys")
-		}
-
-		lines = append(lines, opt1, opt2)
-	} else {
-		opt := lipgloss.NewStyle().
-			Foreground(styles.OrangePrimary).
-			Bold(true).
-			Render("▸ Configure API keys to get started")
-		lines = append(lines, opt)
-	}
+	lines = append(lines, styles.ProgressTextStyle.Render("Press Enter to select a provider"))
 
 	// Help text
 	lines = append(lines, "")
 	var help string
-	if m.hasExistingConf {
-		help = "↑/↓: Navigate • Enter: Select • Ctrl+C: Quit"
-	} else {
-		help = "Enter: Continue • Ctrl+C: Quit"
-	}
+	help = "Enter: Continue • Double Esc: Quit • Ctrl+C: Quit"
 	lines = append(lines, lipgloss.NewStyle().
 		Foreground(styles.GrayDim).
 		Render(help))

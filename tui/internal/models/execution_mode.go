@@ -11,7 +11,6 @@ import (
 type ExecutionModeModel struct {
 	state          *SharedState
 	selectedOption int
-	backToWelcome  bool
 	width          int
 	height         int
 }
@@ -24,13 +23,6 @@ func NewExecutionModeModel(state *SharedState) ExecutionModeModel {
 		width:          80,
 		height:         24,
 	}
-}
-
-// NewExecutionModeFromWelcome returns to the welcome screen when backing out.
-func NewExecutionModeFromWelcome(state *SharedState) ExecutionModeModel {
-	m := NewExecutionModeModel(state)
-	m.backToWelcome = true
-	return m
 }
 
 func (m ExecutionModeModel) Init() tea.Cmd {
@@ -53,10 +45,7 @@ func (m ExecutionModeModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m, tea.Quit
 			}
 		case "left":
-			if m.backToWelcome {
-				return NewWelcomeModel(m.state.Config), nil
-			}
-			return NewAPIKeyConfigModel(m.state), nil
+			return NewProviderModelSelectFromExecution(m.state), nil
 
 		case "up":
 			m.selectedOption = (m.selectedOption - 1 + 2) % 2
@@ -66,7 +55,8 @@ func (m ExecutionModeModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		case "enter":
 			m.state.Parallel = (m.selectedOption == 0)
-			return NewProviderModelSelectModel(m.state), nil
+			model := NewModelSelectionModel(m.state)
+			return model, model.loadModels(model.providers[model.selectedProvider])
 		}
 	}
 
