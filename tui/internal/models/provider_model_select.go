@@ -300,15 +300,15 @@ func (m ProviderModelSelectModel) View() string {
 			provider := m.providers[i]
 			status := ""
 			if m.validated[provider.EnvKey] {
-				status = " VALID"
+				status = " ✓"
 			} else if m.validationErrors[provider.EnvKey] != "" {
-				status = " INVALID"
+				status = " !"
 			} else if provider.APIKey != "" && m.validating {
-				status = " ..."
+				status = " …"
 			} else if provider.APIKey != "" {
 				// Some providers do not expose a lightweight validation endpoint.
 				// Still show that their key was loaded from configuration.
-				status = " STORED"
+				status = " •"
 			}
 			if i == m.selectedProvider {
 				lines = append(lines, lipgloss.NewStyle().
@@ -331,7 +331,7 @@ func (m ProviderModelSelectModel) View() string {
 		lines = append(lines, "")
 		lines = append(lines, lipgloss.NewStyle().
 			Foreground(styles.GrayDim).
-			Render("Up/Down: Navigate | Enter: Select | VALID | STORED | INVALID | Left: Back | Double Esc: Quit | Ctrl+C: Quit"))
+			Render("Up/Down: Navigate | Enter: Select | ✓ Valid | • Stored | ! Invalid | Left: Back | Double Esc: Quit | Ctrl+C: Quit"))
 	} else {
 		// Model input with autocomplete
 		providerName := m.providers[m.selectedProvider].Name
