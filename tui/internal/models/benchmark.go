@@ -95,6 +95,9 @@ func (m BenchmarkModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m, tea.Quit
 			}
 		}
+		// Ignore navigation and other keys during a run. In particular, do not
+		// schedule another animation tick for each repeated arrow-key event.
+		return m, nil
 
 	case benchmarkStartMsg:
 		if !m.running {
