@@ -51,6 +51,12 @@ type ProviderModelSelectModel struct {
 // NewProviderModelSelectModel creates a new provider/model select model
 func NewProviderModelSelectModel(state *SharedState) ProviderModelSelectModel {
 	providers := state.Config.GetAllProvidersWithKeys()
+	if state.ValidatedProviders == nil {
+		state.ValidatedProviders = make(map[string]bool)
+	}
+	if state.ProviderValidationErrors == nil {
+		state.ProviderValidationErrors = make(map[string]string)
+	}
 
 	modelInput := textinput.New()
 	modelInput.Placeholder = "Type model name or use arrows to select..."
@@ -66,8 +72,8 @@ func NewProviderModelSelectModel(state *SharedState) ProviderModelSelectModel {
 		modelInput:       modelInput,
 		width:            80,
 		height:           24,
-		validated:        make(map[string]bool),
-		validationErrors: make(map[string]string),
+		validated:        state.ValidatedProviders,
+		validationErrors: state.ProviderValidationErrors,
 		validating:       true,
 		exitOnBack:       true,
 	}
@@ -280,6 +286,8 @@ func (m ProviderModelSelectModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.validating = false
 		m.validated = msg.valid
 		m.validationErrors = msg.errors
+		m.state.ValidatedProviders = msg.valid
+		m.state.ProviderValidationErrors = msg.errors
 		return m, nil
 	}
 

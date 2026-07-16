@@ -16,27 +16,29 @@ const (
 
 // SharedState holds state shared across screens
 type SharedState struct {
-	Config       *config.Config
-	Provider     string
-	ProviderKey  string
-	Model        string
-	Parallel     bool
-	Madmax       bool
-	Results      []TestResult
-	Completed    bool
-	Error        string
+	Config                   *config.Config
+	ValidatedProviders       map[string]bool
+	ProviderValidationErrors map[string]string
+	Provider                 string
+	ProviderKey              string
+	Model                    string
+	Parallel                 bool
+	Madmax                   bool
+	Results                  []TestResult
+	Completed                bool
+	Error                    string
 }
 
 // TestResult holds results for a single test
 type TestResult struct {
-	TestName    string
-	Current     int
-	Total       int
-	Passed      bool
-	PassAtOne   float64
-	PassAtTen   float64
-	Status      TestStatus
-	RetryAfter  int
+	TestName     string
+	Current      int
+	Total        int
+	Passed       bool
+	PassAtOne    float64
+	PassAtTen    float64
+	Status       TestStatus
+	RetryAfter   int
 	RetryAttempt int
 }
 

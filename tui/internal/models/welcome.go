@@ -56,7 +56,8 @@ func (m WelcomeModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 
 		case "enter":
-			return NewProviderModelSelectModel(m.state), nil
+			model := NewProviderModelSelectModel(m.state)
+			return model, model.Init()
 		}
 	}
 
@@ -75,7 +76,7 @@ func (m WelcomeModel) View() string {
 
 	lines = append(lines, title, subtitle, "", "")
 
-	lines = append(lines, styles.ProgressTextStyle.Render("Press Enter to select a provider"))
+	lines = append(lines, styles.ProgressTextStyle.Render("Press Enter to benchmark another model"))
 
 	// Help text
 	lines = append(lines, "")

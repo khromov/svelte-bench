@@ -109,8 +109,10 @@ func (m BenchmarkModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case benchmarkEventMsg:
 		event := bridge.BenchmarkEvent(msg)
 		m.handleEvent(event)
-		// Keep both event consumption and the elapsed-time animation alive.
-		return m, tea.Batch(m.waitForEvent(), m.tickCmd())
+		// The animation tick reschedules itself when it fires. Starting another
+		// tick here for every benchmark event would create concurrent timers and
+		// make the animation speed up as sample events arrive.
+		return m, m.waitForEvent()
 
 	case benchmarkErrorMsg:
 		m.running = false
@@ -126,10 +128,12 @@ func (m BenchmarkModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		// Tick for animations
 		if _, ok := msg.(time.Time); ok {
 			m.frame++
+			return m, m.tickCmd()
 		}
+		return m, nil
 	}
 
-	return m, m.tickCmd()
+	return m, nil
 }
 
 func (m BenchmarkModel) View() string {
@@ -185,7 +189,9 @@ func (m BenchmarkModel) View() string {
 		Foreground(styles.OrangeLight).
 		Render(fmt.Sprintf("Overall progress: %d%% • %d/%d samples", percent, m.currentCount, m.totalSamples))
 
-	animatedBar := styles.RenderAnimatedProgressBar(m.currentCount, m.totalSamples, barWidth, m.frame)
+	// Keep the rest of the UI on the normal animation clock while making only
+	// the progress-bar highlight travel three times faster.
+	animatedBar := styles.RenderAnimatedProgressBar(m.currentCount, m.totalSamples, barWidth, m.frame*3)
 
 	sections = append(sections, progressLabel, animatedBar, "")
 	sections = append(sections, m.renderActiveSummary(), "")
@@ -481,6 +487,7 @@ func (m BenchmarkModel) runBenchmark() tea.Cmd {
 				Model:    m.state.Model,
 				APIKeys:  apiKeys,
 				Parallel: m.state.Parallel,
+				Madmax:   m.state.Madmax,
 				Samples:  10,
 			}
 

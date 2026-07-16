@@ -2,6 +2,7 @@ package models
 
 import (
 	"fmt"
+	"svelte-bench/tui/internal/bridge"
 	"svelte-bench/tui/internal/styles"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -12,8 +13,14 @@ import (
 type ResultsModel struct {
 	state          *SharedState
 	selectedOption int
+	openingResults bool
+	openError      string
 	width          int
 	height         int
+}
+
+type resultsOpenedMsg struct {
+	err error
 }
 
 // NewResultsModel creates a new results model
@@ -38,6 +45,9 @@ func (m ResultsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 
 	case tea.KeyMsg:
+		if m.openingResults {
+			return m, nil
+		}
 		switch msg.String() {
 		case "ctrl+c", "q":
 			return m, tea.Quit
@@ -46,7 +56,8 @@ func (m ResultsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m, tea.Quit
 			}
 		case "left":
-			return NewWelcomeModel(m.state.Config), nil
+			model := NewProviderModelSelectModel(m.state)
+			return model, model.Init()
 
 		case "up":
 			if m.selectedOption > 0 {
@@ -62,12 +73,22 @@ func (m ResultsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			switch m.selectedOption {
 			case 0:
 				// Run another benchmark
-				return NewWelcomeModel(m.state.Config), nil
+				model := NewProviderModelSelectModel(m.state)
+				return model, model.Init()
 			case 1:
-				// Exit
-				return m, tea.Quit
+				m.openingResults = true
+				m.openError = ""
+				return m, m.openResults()
 			}
 		}
+
+	case resultsOpenedMsg:
+		m.openingResults = false
+		if msg.err != nil {
+			m.openError = msg.err.Error()
+			return m, nil
+		}
+		return NewWelcomeModel(m.state.Config), nil
 	}
 
 	return m, nil
@@ -193,6 +214,11 @@ func (m ResultsModel) View() string {
 	}
 
 	lines = append(lines, opt1, opt2)
+	if m.openingResults {
+		lines = append(lines, "", styles.ProgressTextStyle.Render("Opening all results..."))
+	} else if m.openError != "" {
+		lines = append(lines, "", styles.ErrorStyle.Render("Could not open results: "+m.openError))
+	}
 
 	// Help
 	lines = append(lines, "")
@@ -208,4 +234,10 @@ func (m ResultsModel) View() string {
 		Render(lipgloss.JoinVertical(lipgloss.Left, lines...))
 
 	return content
+}
+
+func (m ResultsModel) openResults() tea.Cmd {
+	return func() tea.Msg {
+		return resultsOpenedMsg{err: bridge.OpenResults()}
+	}
 }

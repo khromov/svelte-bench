@@ -43,11 +43,13 @@ func RunBenchmark(config BenchmarkConfig, eventHandler EventHandler) error {
 	}
 
 	// Build command
-	cmd := exec.Command("pnpm", "run-tests")
+	// Run the complete workflow so the visualization is built before the TUI
+	// presents the completed-benchmark actions.
+	cmd := exec.Command("pnpm", "start")
 	cmd.Dir = projectRoot
 
 	if debugLog != nil {
-		fmt.Fprintf(debugLog, "Command: pnpm run-tests\n")
+		fmt.Fprintf(debugLog, "Command: pnpm start\n")
 		fmt.Fprintf(debugLog, "Working directory: %s\n\n", projectRoot)
 	}
 
@@ -181,6 +183,19 @@ func RunBenchmark(config BenchmarkConfig, eventHandler EventHandler) error {
 	}
 
 	return nil
+}
+
+// OpenResults opens the generated benchmark visualization in the user's
+// default browser.
+func OpenResults() error {
+	projectRoot, err := getProjectRoot()
+	if err != nil {
+		return fmt.Errorf("failed to get project root: %w", err)
+	}
+
+	cmd := exec.Command("pnpm", "open")
+	cmd.Dir = projectRoot
+	return cmd.Run()
 }
 
 func buildBenchmarkEnv(base []string, config BenchmarkConfig) []string {
