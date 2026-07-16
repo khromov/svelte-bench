@@ -149,26 +149,26 @@ func (m BenchmarkModel) View() string {
 	var sections []string
 
 	// Header - compact
-	mode := "Sequential"
+	mode := "Sequential samples"
 	if m.state.Parallel {
-		mode = "Parallel"
+		mode = "Parallel samples"
 	}
 
 	title := styles.HeadingStyle.Render("BENCHMARK RUNNING")
 
 	info := lipgloss.NewStyle().
-		Foreground(styles.OrangeMid).
+		Foreground(styles.GrayMedium).
 		Render(fmt.Sprintf("%s • %s • %s", m.state.Provider, m.state.Model, mode))
 
 	sections = append(sections, title, info, "")
 
 	// Overall progress - compact
-	barWidth := m.width - 10
-	if barWidth > 50 {
-		barWidth = 50
+	barWidth := m.width - 20
+	if barWidth > 56 {
+		barWidth = 56
 	}
-	if barWidth < 20 {
-		barWidth = 20
+	if barWidth < 16 {
+		barWidth = 16
 	}
 
 	percent := 0
@@ -178,7 +178,7 @@ func (m BenchmarkModel) View() string {
 
 	progressLabel := lipgloss.NewStyle().
 		Foreground(styles.OrangeLight).
-		Render(fmt.Sprintf("Progress: %d%% (%d/%d)", percent, m.currentCount, m.totalSamples))
+		Render(fmt.Sprintf("Overall progress: %d%% • %d/%d samples", percent, m.currentCount, m.totalSamples))
 
 	animatedBar := styles.RenderAnimatedProgressBar(m.currentCount, m.totalSamples, barWidth, m.frame)
 
@@ -186,9 +186,9 @@ func (m BenchmarkModel) View() string {
 
 	// Tests - scrollable
 	testsHeader := lipgloss.NewStyle().
-		Foreground(styles.OrangeMid).
+		Foreground(styles.OrangeLight).
 		Bold(true).
-		Render("Tests:")
+		Render("TEST PROGRESS")
 
 	sections = append(sections, testsHeader)
 
