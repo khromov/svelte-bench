@@ -208,8 +208,6 @@ func (m BenchmarkModel) View() string {
 			Render(fmt.Sprintf("  ... and %d more tests", remaining)))
 	}
 
-	sections = append(sections, "")
-
 	// Stats - compact
 	var elapsed time.Duration
 	var elapsedStr string
@@ -227,6 +225,7 @@ func (m BenchmarkModel) View() string {
 	sections = append(sections, lipgloss.NewStyle().
 		Foreground(styles.GrayMedium).
 		Render(stats))
+	sections = append(sections, m.renderOverallScore())
 
 	// Show error if present
 	if m.state.Error != "" {
@@ -308,17 +307,11 @@ func (m *BenchmarkModel) renderTest(test *TestResult) string {
 
 	// Status or result
 	statusText := ""
-	if test.Status == StatusCompleted {
-		passColor := styles.OrangeSuccess
-		if test.PassAtOne < 0.5 {
-			passColor = styles.OrangeError
-		} else if test.PassAtOne < 0.7 {
-			passColor = styles.OrangeWarning
-		}
+	if (test.Status == StatusCompleted || test.Status == StatusFailed) && test.Current >= test.Total {
 		statusText = lipgloss.NewStyle().
 			Width(5).
 			Align(lipgloss.Right).
-			Foreground(passColor).
+			Foreground(scoreColor(test.PassAtOne)).
 			Render(fmt.Sprintf("%.0f%%", test.PassAtOne*100))
 	}
 
@@ -327,6 +320,40 @@ func (m *BenchmarkModel) renderTest(test *TestResult) string {
 	}
 
 	return fmt.Sprintf(" %s %s %s %s %s", iconStyled, name, miniBar, progressText, statusText)
+}
+
+func (m BenchmarkModel) renderOverallScore() string {
+	completed := 0
+	totalScore := 0.0
+	for _, name := range m.testOrder {
+		test := m.tests[name]
+		if (test.Status == StatusCompleted || test.Status == StatusFailed) && test.Current >= test.Total {
+			completed++
+			totalScore += test.PassAtOne
+		}
+	}
+
+	if completed == 0 {
+		return lipgloss.NewStyle().
+			Foreground(styles.GrayDim).
+			Render(fmt.Sprintf("Overall score: -- (%d/%d tests complete)", completed, len(m.testOrder)))
+	}
+
+	overall := totalScore / float64(completed)
+	return lipgloss.NewStyle().
+		Foreground(scoreColor(overall)).
+		Bold(true).
+		Render(fmt.Sprintf("Overall score: %.0f%% (%d/%d tests complete)", overall*100, completed, len(m.testOrder)))
+}
+
+func scoreColor(score float64) lipgloss.Color {
+	if score < 0.5 {
+		return styles.OrangeError
+	}
+	if score < 0.7 {
+		return styles.OrangeWarning
+	}
+	return styles.OrangeSuccess
 }
 
 func (m BenchmarkModel) renderActiveSummary() string {
