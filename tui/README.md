@@ -59,9 +59,9 @@ The TUI infrastructure is complete with:
 - ✅ TypeScript bridge (runner, parser, model API)
 - ✅ TUI event emitter in TypeScript
 
-The TUI is the primary interaction path. The existing TypeScript runner is
-still available for scripts and CI via `pnpm run-tests`, and all existing
-environment variables remain supported there.
+Run the TUI with `pnpm tui`. The existing TypeScript runner remains available
+for scripts and CI via `pnpm run-tests`, and all existing environment
+variables remain supported there.
 
 ## Contributing
 

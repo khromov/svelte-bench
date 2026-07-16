@@ -82,12 +82,11 @@ You only need to configure the providers you want to test with.
 # Run the full benchmark (sequential execution)
 pnpm start
 
-# `pnpm start` launches the interactive Bubble Tea TUI.
-# The non-interactive/env-compatible runner remains available as:
-pnpm run-tests
+# Launch the interactive Bubble Tea TUI
+pnpm tui
 
 # Run with parallel sample generation (faster)
-PARALLEL_EXECUTION=true pnpm run-tests
+PARALLEL_EXECUTION=true pnpm start
 
 # Run tests only (without building visualization)
 pnpm run run-tests
