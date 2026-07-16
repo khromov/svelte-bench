@@ -27,14 +27,23 @@ SvelteBench supports multiple LLM providers:
 ```bash
 nvm use
 pnpm install
-
-# Create .env file from example
-cp .env.example .env
 ```
 
-Then edit the `.env` file and add your API keys:
+The recommended workflow is to configure API keys from the TUI. Start it with:
 
 ```bash
+pnpm tui
+```
+
+The API key screen validates providers and stores credentials in `.env` for
+future runs. You only need to configure the providers you want to use.
+
+For scripted or CI usage, create `.env` from the example and add your keys:
+
+```bash
+# Optional: create the env-compatible configuration file
+cp .env.example .env
+
 # OpenAI (optional)
 OPENAI_API_KEY=your_openai_api_key_here
 
@@ -72,24 +81,39 @@ META_API_KEY=your_meta_api_key_here
 CURSOR_API_KEY=your_cursor_api_key_here
 ```
 
-You only need to configure the providers you want to test with.
+The existing environment variables remain supported by `pnpm run-tests` and
+the standard `pnpm start` command.
 
 ## Running the Benchmark
 
-### Standard Execution
+### TUI Execution
 
 ```bash
-# Run the full benchmark (sequential execution)
-pnpm start
-
-# Launch the interactive Bubble Tea TUI
 pnpm tui
+```
+
+The TUI guides you through:
+
+1. Loading existing credentials or configuring API keys
+2. Choosing parallel or sequential execution
+3. Selecting a provider and model
+4. Running the benchmark with live progress
+5. Reviewing the results
+
+Use `Esc` or `←` to go back between setup and selection screens. Use
+`Ctrl+C` to quit.
+
+### Environment-Compatible Execution
+
+```bash
+# Run the full benchmark and build the visualization
+pnpm start
 
 # Run with parallel sample generation (faster)
 PARALLEL_EXECUTION=true pnpm start
 
 # Run tests only (without building visualization)
-pnpm run run-tests
+pnpm run-tests
 ```
 
 **NOTE: This will run all providers and models that are available!**
@@ -101,7 +125,7 @@ SvelteBench supports two execution modes:
 - **Sequential (default)**: Tests and samples run one at a time. More reliable with detailed progress output.
 - **Parallel**: Tests run sequentially, but samples within each test are generated in parallel. Faster execution with `PARALLEL_EXECUTION=true`.
 
-### Debug Mode
+### Debug Mode (Environment-Compatible)
 
 For faster development, or to run just one provider/model, you can enable debug mode in your `.env` file:
 
