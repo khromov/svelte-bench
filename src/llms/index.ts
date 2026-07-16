@@ -88,6 +88,9 @@ export async function getLLMProvider(
     case "openrouter":
       const { OpenRouterProvider } = await import("./openrouter");
       return new OpenRouterProvider(actualModel);
+    case "fireworks":
+      const { FireworksProvider } = await import("./fireworks");
+      return new FireworksProvider(actualModel);
     case "ollama":
       const { OllamaProvider } = await import("./ollama");
       return new OllamaProvider(actualModel);
@@ -97,6 +100,15 @@ export async function getLLMProvider(
     case "moonshot":
       const { MoonshotProvider } = await import("./moonshot");
       return new MoonshotProvider(actualModel);
+    case "xai":
+      const { XAIProvider } = await import("./xai");
+      return new XAIProvider(actualModel);
+    case "meta":
+      const { MetaProvider } = await import("./meta");
+      return new MetaProvider(actualModel);
+    case "cursor":
+      const { CursorProvider } = await import("./cursor");
+      return new CursorProvider(actualModel);
   }
 
   // Try AI SDK unified registry for other official providers
@@ -111,7 +123,7 @@ export async function getLLMProvider(
   // Provider not found
   throw new Error(
     `Unknown LLM provider: ${actualProvider}. ` +
-    `Native providers: openai, anthropic, google, openrouter, ollama, zai, moonshot. ` +
+    `Native providers: openai, anthropic, google, openrouter, fireworks, ollama, zai, moonshot, xai, meta, cursor. ` +
     `AI SDK providers: ${availableProviders.join(', ')}`
   );
 }

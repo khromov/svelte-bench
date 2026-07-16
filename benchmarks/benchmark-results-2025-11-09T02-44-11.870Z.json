@@ -1,0 +1,865 @@
+[
+  {
+    "testName": "counter",
+    "provider": "OpenAI",
+    "modelId": "gpt-5-nano",
+    "numSamples": 10,
+    "numCorrect": 2,
+    "pass1": 0.20000000000000007,
+    "pass10": 1,
+    "context": {
+      "used": false,
+      "content": ""
+    },
+    "samples": [
+      {
+        "index": 0,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  let $state = { count: 0 };\n\n  function increment() {\n    $state.count += 1;\n  }\n\n  function decrement() {\n    $state.count -= 1;\n  }\n</script>\n\n<style>\n  .counter {\n    display: inline-flex;\n    align-items: center;\n    gap: 8px;\n  }\n  button {\n    padding: 0.5em 0.75em;\n    font-size: 1rem;\n  }\n  span {\n    min-width: 2ch;\n    text-align: center;\n  }\n</style>\n\n<div class=\"counter\">\n  <button data-testid=\"decrement-button\" on:click={decrement}>-</button>\n  <span data-testid=\"count-value\">{ $state.count }</span>\n  <button data-testid=\"increment-button\" on:click={increment}>+</button>\n</div>",
+        "success": false,
+        "errors": [
+          "/svelte-bench/tmp/samples/openai/Component.svelte:4:6 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
+        ],
+        "temperature": 0
+      },
+      {
+        "index": 1,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  // Initialize the built-in $state store for reactivity\n  $state = { count: 0 };\n\n  const increment = () => {\n    $state.count += 1;\n  };\n\n  const decrement = () => {\n    $state.count -= 1;\n  };\n</script>\n\n<div class=\"counter\">\n  <button data-testid=\"decrement-button\" on:click={decrement}>-</button>\n  <span data-testid=\"count-value\">{$state.count}</span>\n  <button data-testid=\"increment-button\" on:click={increment}>+</button>\n</div>\n\n<style>\n  .counter {\n    display: inline-flex;\n    align-items: center;\n    gap: 0.5rem;\n    padding: 0.25rem;\n    border-radius: 6px;\n  }\n\n  .counter button {\n    padding: 0.25rem 0.5rem;\n    font-size: 1rem;\n    cursor: pointer;\n  }\n\n  .counter span {\n    min-width: 2ch;\n    text-align: center;\n    font-family: inherit;\n    font-size: 1rem;\n  }\n</style>",
+        "success": false,
+        "errors": [
+          "tmp/samples/openai/Component.svelte:5:2 Cannot use rune without parentheses\nhttps://svelte.dev/e/rune_missing_parentheses"
+        ]
+      },
+      {
+        "index": 2,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  const $state = { count: 0 };\n  function increment() {\n    $state.count += 1;\n  }\n  function decrement() {\n    $state.count -= 1;\n  }\n</script>\n\n<style>\n  .counter {\n    display: inline-flex;\n    align-items: center;\n    gap: 0.5rem;\n    padding: 0.5rem;\n    border: 1px solid #ccc;\n    border-radius: 6px;\n  }\n  .counter button {\n    width: 2rem;\n    height: 2rem;\n    display: inline-flex;\n    align-items: center;\n    justify-content: center;\n    border: 1px solid #bbb;\n    background: #f6f6f6;\n    border-radius: 4px;\n    cursor: pointer;\n  }\n  .counter span {\n    min-width: 2rem;\n    text-align: center;\n  }\n</style>\n\n<div class=\"counter\">\n  <button data-testid=\"decrement-button\" on:click={decrement}>-</button>\n  <span data-testid=\"count-value\">{ $state.count }</span>\n  <button data-testid=\"increment-button\" on:click={increment}>+</button>\n</div>",
+        "success": false,
+        "errors": [
+          "/svelte-bench/tmp/samples/openai/Component.svelte:4:8 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
+        ]
+      },
+      {
+        "index": 3,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  $state = { count: 0 };\n\n  function increment() {\n    $state.count += 1;\n  }\n\n  function decrement() {\n    $state.count -= 1;\n  }\n</script>\n\n<style>\n  .counter {\n    display: inline-flex;\n    align-items: center;\n    gap: 0.5rem;\n    padding: 0.25rem;\n    border: 1px solid #e5e7eb;\n    border-radius: 6px;\n    background: #fff;\n  }\n\n  .counter button {\n    width: 2rem;\n    height: 2rem;\n    display: inline-flex;\n    align-items: center;\n    justify-content: center;\n    border: 1px solid #d1d5db;\n    border-radius: 4px;\n    background: #f8f9fa;\n    cursor: pointer;\n  }\n\n  .counter span {\n    min-width: 2rem;\n    text-align: center;\n    font-family: inherit;\n  }\n</style>\n\n<div class=\"counter\">\n  <button data-testid=\"decrement-button\" on:click={decrement}>-</button>\n  <span data-testid=\"count-value\">{$state.count}</span>\n  <button data-testid=\"increment-button\" on:click={increment}>+</button>\n</div>",
+        "success": false,
+        "errors": [
+          "tmp/samples/openai/Component.svelte:4:2 Cannot use rune without parentheses\nhttps://svelte.dev/e/rune_missing_parentheses"
+        ]
+      },
+      {
+        "index": 4,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  // Initialize reactive state using Svelte 5's $state\n  $state = { count: 0 };\n\n  function increment() {\n    $state.count += 1;\n  }\n\n  function decrement() {\n    $state.count -= 1;\n  }\n</script>\n\n<style>\n  .counter {\n    display: inline-flex;\n    align-items: center;\n    gap: 8px;\n    padding: 6px 10px;\n    border: 1px solid #e5e7eb;\n    border-radius: 6px;\n  }\n\n  .counter button {\n    font: inherit;\n    padding: 4px 8px;\n    border: 1px solid #d1d5db;\n    border-radius: 4px;\n    background: #fff;\n    cursor: pointer;\n  }\n\n  .counter span {\n    min-width: 24px;\n    text-align: center;\n  }\n</style>\n\n<div class=\"counter\">\n  <button data-testid=\"decrement-button\" on:click={decrement}>-</button>\n  <span data-testid=\"count-value\">{$state.count}</span>\n  <button data-testid=\"increment-button\" on:click={increment}>+</button>\n</div>",
+        "success": false,
+        "errors": [
+          "tmp/samples/openai/Component.svelte:5:2 Cannot use rune without parentheses\nhttps://svelte.dev/e/rune_missing_parentheses"
+        ]
+      },
+      {
+        "index": 5,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  // Initialize reactive state using Svelte 5's $state\n  $state = { count: 0 };\n\n  function decrement() {\n    $state.count -= 1;\n  }\n\n  function increment() {\n    $state.count += 1;\n  }\n</script>\n\n<div class=\"counter\">\n  <button data-testid=\"decrement-button\" on:click={decrement}>-</button>\n  <span data-testid=\"count-value\">{$state.count}</span>\n  <button data-testid=\"increment-button\" on:click={increment}>+</button>\n</div>\n\n<style>\n  .counter {\n    display: inline-flex;\n    align-items: center;\n    gap: 0.5rem;\n    padding: 0.25rem 0.5rem;\n    border: 1px solid #ccc;\n    border-radius: 6px;\n  }\n\n  .counter button {\n    font-size: 1rem;\n    padding: 0.25rem 0.5rem;\n    background: #f5f5f5;\n    border: 1px solid #ddd;\n    border-radius: 4px;\n    cursor: pointer;\n  }\n\n  .counter span {\n    min-width: 1.5rem;\n    text-align: center;\n  }\n</style>",
+        "success": false,
+        "errors": [
+          "tmp/samples/openai/Component.svelte:5:2 Cannot use rune without parentheses\nhttps://svelte.dev/e/rune_missing_parentheses"
+        ]
+      },
+      {
+        "index": 6,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  // Initialize reactive state using Svelte 5's built-in $state\n  $state = { count: 0 };\n\n  function increment() {\n    $state.count += 1;\n  }\n\n  function decrement() {\n    $state.count -= 1;\n  }\n</script>\n\n<style>\n  .counter {\n    display: inline-flex;\n    align-items: center;\n    gap: 8px;\n  }\n\n  .counter button {\n    padding: 6px 12px;\n    cursor: pointer;\n  }\n\n  .counter span {\n    min-width: 20px;\n    text-align: center;\n  }\n</style>\n\n<div class=\"counter\">\n  <button data-testid=\"decrement-button\" on:click={decrement}>-</button>\n  <span data-testid=\"count-value\">{$state.count}</span>\n  <button data-testid=\"increment-button\" on:click={increment}>+</button>\n</div>",
+        "success": false,
+        "errors": [
+          "tmp/samples/openai/Component.svelte:5:2 Cannot use rune without parentheses\nhttps://svelte.dev/e/rune_missing_parentheses"
+        ]
+      },
+      {
+        "index": 7,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  // Initialize the reactive state using the built-in $state\n  $state.count = 0;\n\n  function increment() {\n    $state.count += 1;\n  }\n\n  function decrement() {\n    $state.count -= 1;\n  }\n</script>\n\n<div class=\"counter\">\n  <button data-testid=\"decrement-button\" on:click={decrement}>-</button>\n  <span data-testid=\"count-value\">{$state.count}</span>\n  <button data-testid=\"increment-button\" on:click={increment}>+</button>\n</div>\n\n<style>\n  .counter {\n    display: inline-flex;\n    align-items: center;\n    gap: 8px;\n  }\n</style>",
+        "success": false,
+        "errors": [
+          "tmp/samples/openai/Component.svelte:5:2 `$state.count` is not a valid rune\nhttps://svelte.dev/e/rune_invalid_name"
+        ]
+      },
+      {
+        "index": 8,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  // Use Svelte 5's $state for reactivity\n  const state = $state({ count: 0 });\n\n  function increment() {\n    state.count += 1;\n  }\n\n  function decrement() {\n    state.count -= 1;\n  }\n</script>\n\n<div class=\"counter\">\n  <button data-testid=\"decrement-button\" on:click={decrement}>-</button>\n  <span data-testid=\"count-value\">{state.count}</span>\n  <button data-testid=\"increment-button\" on:click={increment}>+</button>\n</div>\n\n<style>\n  .counter {\n    display: inline-flex;\n    align-items: center;\n    gap: 8px;\n    padding: 6px;\n    border: 1px solid #ddd;\n    border-radius: 6px;\n    font-family: ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto;\n  }\n  .counter button {\n    width: 28px;\n    height: 28px;\n    border: 1px solid #ccc;\n    border-radius: 4px;\n    background: #f7f7f7;\n    cursor: pointer;\n  }\n  .counter span {\n    min-width: 20px;\n    text-align: center;\n  }\n</style>",
+        "success": true,
+        "errors": []
+      },
+      {
+        "index": 9,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  const state = $state({ count: 0 });\n\n  function increment() {\n    state.count += 1;\n  }\n\n  function decrement() {\n    state.count -= 1;\n  }\n</script>\n\n<div class=\"counter\">\n  <button data-testid=\"decrement-button\" on:click={decrement}>-</button>\n  <span data-testid=\"count-value\">{state.count}</span>\n  <button data-testid=\"increment-button\" on:click={increment}>+</button>\n</div>\n\n<style>\n  .counter {\n    display: inline-flex;\n    align-items: center;\n    gap: 0.5rem;\n  }\n\n  button {\n    padding: 0.25rem 0.5rem;\n    border: 1px solid #ccc;\n    background: #fff;\n    border-radius: 4px;\n    cursor: pointer;\n  }\n\n  span {\n    min-width: 2ch;\n    text-align: center;\n  }\n</style>",
+        "success": true,
+        "errors": []
+      }
+    ],
+    "timestamp": "2025-11-09T02:44:11.870Z"
+  },
+  {
+    "testName": "derived",
+    "provider": "OpenAI",
+    "modelId": "gpt-5-nano",
+    "numSamples": 10,
+    "numCorrect": 0,
+    "pass1": 0,
+    "pass10": 0,
+    "context": {
+      "used": false,
+      "content": ""
+    },
+    "samples": [
+      {
+        "index": 0,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  const number = $state(5);\n  const doubled = $derived(() => number * 2);\n</script>\n\n<div>\n  <p data-testid=\"number-value\">Number: {number}</p>\n  <p data-testid=\"doubled-value\">Doubled: {doubled}</p>\n  <button data-testid=\"increment-button\" on:click={() => number.update(n => n + 1)}>Increment</button>\n</div>",
+        "success": false,
+        "errors": [
+          "Cannot convert object to primitive value"
+        ],
+        "temperature": 0
+      },
+      {
+        "index": 1,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  let number = $state(5);\n  const doubled = $derived(() => number * 2);\n</script>\n\n<div>\n  <p data-testid=\"number-value\">Number: {number}</p>\n  <p data-testid=\"doubled-value\">Doubled: {doubled}</p>\n  <input type=\"number\" bind:value={number} />\n  <button data-testid=\"increment-button\" on:click={() => number = number + 1}>Increment</button>\n</div>",
+        "success": false,
+        "errors": [
+          "\u001b[2mexpect(\u001b[22m\u001b[31melement\u001b[39m\u001b[2m).toHaveTextContent()\u001b[22m\n\nExpected element to have text content:\n\u001b[32m  Doubled: 10\u001b[39m\nReceived:\n\u001b[31m  Doubled: () => get(number) * 2\u001b[39m",
+          "\u001b[2mexpect(\u001b[22m\u001b[31melement\u001b[39m\u001b[2m).toHaveTextContent()\u001b[22m\n\nExpected element to have text content:\n\u001b[32m  Doubled: 12\u001b[39m\nReceived:\n\u001b[31m  Doubled: () => get(number) * 2\u001b[39m"
+        ]
+      },
+      {
+        "index": 2,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  const number = $state(5);\n  const doubled = $derived(number, (n) => n * 2);\n\n  function increment() {\n    number.set(number.value + 1);\n  }\n</script>\n\n<div>\n  <p data-testid=\"number-value\">Number: {number}</p>\n  <p data-testid=\"doubled-value\">Doubled: {doubled}</p>\n\n  <input type=\"number\" value={number} on:input={(e) => number.set(+e.target.value)} />\n\n  <button data-testid=\"increment-button\" on:click={increment}>Increment</button>\n</div>",
+        "success": false,
+        "errors": [
+          "tmp/samples/openai/Component.svelte:5:18 `$derived` must be called with exactly one argument\nhttps://svelte.dev/e/rune_invalid_arguments_length"
+        ]
+      },
+      {
+        "index": 3,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  const number = $state(5);\n  const doubled = $derived(() => number * 2);\n\n  function increment() {\n    number = number + 1;\n  }\n</script>\n\n<div>\n  <p data-testid=\"number-value\">Number: {number}</p>\n  <p data-testid=\"doubled-value\">Doubled: {doubled}</p>\n  <button data-testid=\"increment-button\" on:click={increment}>Increment</button>\n</div>",
+        "success": false,
+        "errors": [
+          "tmp/samples/openai/Component.svelte:8:4 Cannot assign to constant\nhttps://svelte.dev/e/constant_assignment"
+        ]
+      },
+      {
+        "index": 4,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  const number = $state(5);\n  const doubled = $derived(() => number * 2);\n\n  function increment() {\n    number.update(n => n + 1);\n  }\n</script>\n\n<div>\n  <p data-testid=\"number-value\">Number: {$number}</p>\n  <p data-testid=\"doubled-value\">Doubled: {$doubled}</p>\n  <button data-testid=\"increment-button\" on:click={increment}>Increment</button>\n  <input type=\"number\" bind:value={$number} />\n</div>",
+        "success": false,
+        "errors": [
+          "store_invalid_shape\n`number` is not a store with a `subscribe` method\nhttps://svelte.dev/e/store_invalid_shape\n\n\tin <unknown>\n\tin Component.svelte\n",
+          "store_invalid_shape\n`number` is not a store with a `subscribe` method\nhttps://svelte.dev/e/store_invalid_shape\n\n\tin <unknown>\n\tin Component.svelte\n"
+        ]
+      },
+      {
+        "index": 5,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  let number = $state(5)\n  let doubled = $derived(() => number * 2)\n\n  function increment() {\n    number = number + 1\n  }\n</script>\n\n<div>\n  <input type=\"number\" bind:value={number} />\n  <p data-testid=\"number-value\">Number: {number}</p>\n  <p data-testid=\"doubled-value\">Doubled: {doubled}</p>\n  <button data-testid=\"increment-button\" on:click={increment}>Increment</button>\n</div>",
+        "success": false,
+        "errors": [
+          "\u001b[2mexpect(\u001b[22m\u001b[31melement\u001b[39m\u001b[2m).toHaveTextContent()\u001b[22m\n\nExpected element to have text content:\n\u001b[32m  Doubled: 10\u001b[39m\nReceived:\n\u001b[31m  Doubled: () => get(number) * 2\u001b[39m",
+          "\u001b[2mexpect(\u001b[22m\u001b[31melement\u001b[39m\u001b[2m).toHaveTextContent()\u001b[22m\n\nExpected element to have text content:\n\u001b[32m  Doubled: 12\u001b[39m\nReceived:\n\u001b[31m  Doubled: () => get(number) * 2\u001b[39m"
+        ]
+      },
+      {
+        "index": 6,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  const number = $state(5);\n  const doubled = $derived(() => number * 2);\n\n  function increment() {\n    number.value = number.value + 1;\n  }\n</script>\n\n<div>\n  <p data-testid=\"number-value\">Number: {number}</p>\n  <p data-testid=\"doubled-value\">Doubled: {doubled}</p>\n  <button data-testid=\"increment-button\" on:click={increment}>Increment</button>\n</div>",
+        "success": false,
+        "errors": [
+          "Cannot convert object to primitive value"
+        ]
+      },
+      {
+        "index": 7,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  const number = $state(5);\n  const doubled = $derived(() => number * 2);\n</script>\n\n<div>\n  <input type=\"number\" value={number} on:input={(e) => number = +e.target.value} aria-label=\"number-input\" />\n  <p data-testid=\"number-value\">Number: {number}</p>\n  <p data-testid=\"doubled-value\">Doubled: {doubled}</p>\n  <button data-testid=\"increment-button\" on:click={() => number = number + 1}>Increment</button>\n</div>",
+        "success": false,
+        "errors": [
+          "tmp/samples/openai/derived_sample7_a4d3d264791bb36e/Component.svelte:9:55 Cannot assign to constant\nhttps://svelte.dev/e/constant_assignment"
+        ]
+      },
+      {
+        "index": 8,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  const number = $state(5);\n  const doubled = $derived(() => number * 2, [number]);\n  function increment() {\n    number.value = number.value + 1;\n  }\n</script>\n\n<div>\n  <p data-testid=\"number-value\">Number: {number}</p>\n  <p data-testid=\"doubled-value\">Doubled: {doubled}</p>\n  <button data-testid=\"increment-button\" on:click={increment}>Increment</button>\n</div>",
+        "success": false,
+        "errors": [
+          "tmp/samples/openai/derived_sample8_6c0482f9396ca8e1/Component.svelte:5:18 `$derived` must be called with exactly one argument\nhttps://svelte.dev/e/rune_invalid_arguments_length"
+        ]
+      },
+      {
+        "index": 9,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  const number = $state(5);\n  const doubled = $derived([number], ([$n]) => $n * 2);\n\n  function increment() {\n    number.update(n => n + 1);\n  }\n</script>\n\n<div>\n  <input type=\"number\" bind:value={$number} />\n  <p data-testid=\"number-value\">Number: {$number}</p>\n  <p data-testid=\"doubled-value\">Doubled: {$doubled}</p>\n  <button data-testid=\"increment-button\" on:click={increment}>Increment</button>\n</div>",
+        "success": false,
+        "errors": [
+          "tmp/samples/openai/derived_sample9_b1e6cd219a58830e/Component.svelte:5:18 `$derived` must be called with exactly one argument\nhttps://svelte.dev/e/rune_invalid_arguments_length"
+        ]
+      }
+    ],
+    "timestamp": "2025-11-09T02:44:11.870Z"
+  },
+  {
+    "testName": "derived-by",
+    "provider": "OpenAI",
+    "modelId": "gpt-5-nano",
+    "numSamples": 10,
+    "numCorrect": 0,
+    "pass1": 0,
+    "pass10": 0,
+    "context": {
+      "used": false,
+      "content": ""
+    },
+    "samples": [
+      {
+        "index": 0,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  $state text = \"\";\n\n  $derived.by words from text = text.trim() ? text.trim().split(/\\s+/).length : 0;\n  $derived.by chars from text = text.length;\n  $derived.by long from words = words > 15;\n</script>\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" bind:value={$state.text} />\n  <button data-testid=\"clear-button\" on:click={() => $state.text = \"\"}>Clear</button>\n\n  <div>\n    <p data-testid=\"word-count\">Words: { $derived.by.words }</p>\n    <p data-testid=\"char-count\">Characters: { $derived.by.chars }</p>\n    <p data-testid=\"length-indicator\">Status: { $derived.by.long ? \"Long text\" : \"Short text\" }</p>\n  </div>\n</div>",
+        "success": false,
+        "errors": [
+          "/svelte-bench/tmp/samples/openai/derived-by_sample0_1991fca11e1f9094/Component.svelte:4:9 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+        ],
+        "temperature": 0
+      },
+      {
+        "index": 1,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  const text = $state('');\n  const wordCount = $derived.by(text, t => {\n    const trimmed = t.trim();\n    return trimmed.length ? trimmed.split(/\\s+/).length : 0;\n  });\n  const charCount = $derived.by(text, t => t.length);\n  const lengthIndicator = $derived.by(wordCount, w => w > 15);\n</script>\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" value={$text} on:input={(e) => text = e.target.value} />\n  <button data-testid=\"clear-button\" on:click={() => text = ''}>Clear</button>\n  <div>\n    <p data-testid=\"word-count\">Words: {$wordCount}</p>\n    <p data-testid=\"char-count\">Characters: {$charCount}</p>\n    <p data-testid=\"length-indicator\">Status: { $lengthIndicator ? 'Long text' : 'Short text' }</p>\n  </div>\n</div>",
+        "success": false,
+        "errors": [
+          "tmp/samples/openai/derived-by_sample1_2faf517bb4b3c154/Component.svelte:5:20 `$derived.by` must be called with exactly one argument\nhttps://svelte.dev/e/rune_invalid_arguments_length"
+        ]
+      },
+      {
+        "index": 2,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  const text = $state(\"\");\n\n  const wordCount = $derived.by([text], (t) => {\n    const s = t.trim();\n    if (s === \"\") return 0;\n    return s.split(/\\s+/).length;\n  });\n\n  const charCount = $derived.by([text], (t) => t.length);\n\n  const isLong = $derived.by([wordCount], (w) => w > 15);\n\n  function clear() {\n    text.set(\"\");\n  }\n</script>\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" bind:value={$text} />\n  <button data-testid=\"clear-button\" on:click={clear}>Clear</button>\n\n  <div>\n    <p data-testid=\"word-count\">Words: {$wordCount}</p>\n    <p data-testid=\"char-count\">Characters: {$charCount}</p>\n    <p data-testid=\"length-indicator\">Status: {$isLong ? \"Long text\" : \"Short text\"}</p>\n  </div>\n</div>",
+        "success": false,
+        "errors": [
+          "tmp/samples/openai/derived-by_sample2_cb9aa3c3ced38ff3/Component.svelte:6:20 `$derived.by` must be called with exactly one argument\nhttps://svelte.dev/e/rune_invalid_arguments_length"
+        ]
+      },
+      {
+        "index": 3,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  const text = $state(\"\");\n\n  const wordCount = $derived.by(text, t => {\n    const trimmed = t.trim();\n    if (trimmed === \"\") return 0;\n    return trimmed.split(/\\s+/).filter(s => s.length > 0).length;\n  });\n\n  const charCount = $derived.by(text, t => t.length);\n\n  const isLong = $derived.by(wordCount, w => w > 15);\n</script>\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" bind:value={$text} />\n  <button data-testid=\"clear-button\" on:click={() => text.set('')}>Clear</button>\n  <div>\n    <p data-testid=\"word-count\">Words: {$wordCount}</p>\n    <p data-testid=\"char-count\">Characters: {$charCount}</p>\n    <p data-testid=\"length-indicator\">Status: {$isLong ? 'Long text' : 'Short text'}</p>\n  </div>\n</div>",
+        "success": false,
+        "errors": [
+          "tmp/samples/openai/derived-by_sample3_29820c8a4bfe50a4/Component.svelte:6:20 `$derived.by` must be called with exactly one argument\nhttps://svelte.dev/e/rune_invalid_arguments_length"
+        ]
+      },
+      {
+        "index": 4,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  // Use $derived.by to compute derived values from $state\n  $: derived = $derived.by($state, (text) => {\n    const words = text.trim() === \"\" ? 0 : text.trim().split(/\\s+/).filter(Boolean).length;\n    const chars = text.length;\n    const long = words > 15;\n    return { words, chars, long };\n  });\n</script>\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" bind:value={$state} />\n  <button data-testid=\"clear-button\" on:click={() => $state = \"\"}>Clear</button>\n  <div>\n    <p data-testid=\"word-count\">Words: {derived.words}</p>\n    <p data-testid=\"char-count\">Characters: {derived.chars}</p>\n    <p data-testid=\"length-indicator\">Status: {derived.long ? \"Long text\" : \"Short text\"}</p>\n  </div>\n</div>",
+        "success": false,
+        "errors": [
+          "tmp/samples/openai/derived-by_sample4_15b7b090caa3ef73/Component.svelte:5:2 `$:` is not allowed in runes mode, use `$derived` or `$effect` instead\nhttps://svelte.dev/e/legacy_reactive_statement_invalid"
+        ]
+      },
+      {
+        "index": 5,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  const text = $state('');\n\n  const wordCount = $derived.by(text, (t) => {\n    const s = t.trim();\n    return s === '' ? 0 : s.split(/\\s+/).length;\n  });\n\n  const charCount = $derived.by(text, (t) => t.length);\n\n  const isLong = $derived.by(wordCount, (w) => w > 15);\n\n  function clear() {\n    text.set('');\n  }\n</script>\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" bind:value={$text} />\n  <button data-testid=\"clear-button\" on:click={clear}>Clear</button>\n  <div>\n    <p data-testid=\"word-count\">Words: {$wordCount}</p>\n    <p data-testid=\"char-count\">Characters: {$charCount}</p>\n    <p data-testid=\"length-indicator\">Status: {$isLong ? 'Long text' : 'Short text'}</p>\n  </div>\n</div>",
+        "success": false,
+        "errors": [
+          "tmp/samples/openai/derived-by_sample5_db7a1bb65cee6ed1/Component.svelte:6:20 `$derived.by` must be called with exactly one argument\nhttps://svelte.dev/e/rune_invalid_arguments_length"
+        ]
+      },
+      {
+        "index": 6,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  const text = $state(\"\");\n\n  const wordCount = $derived.by(() => {\n    const t = $text;\n    if (!t) return 0;\n    const trimmed = t.trim();\n    if (trimmed.length === 0) return 0;\n    return trimmed.split(/\\s+/).length;\n  }, [$text]);\n\n  const charCount = $derived.by(() => {\n    const t = $text;\n    return t ? t.length : 0;\n  }, [$text]);\n\n  const isLong = $derived.by(() => $wordCount > 15, [$wordCount]);\n\n  const clear = () => text.set(\"\");\n</script>\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" bind:value={$text} />\n  <button data-testid=\"clear-button\" on:click={clear}>Clear</button>\n  <div>\n    <p data-testid=\"word-count\">Words: {$wordCount}</p>\n    <p data-testid=\"char-count\">Characters: {$charCount}</p>\n    <p data-testid=\"length-indicator\">Status: {$isLong ? \"Long text\" : \"Short text\"}</p>\n  </div>\n</div>",
+        "success": false,
+        "errors": [
+          "tmp/samples/openai/derived-by_sample6_7d011f394848aa52/Component.svelte:6:20 `$derived.by` must be called with exactly one argument\nhttps://svelte.dev/e/rune_invalid_arguments_length"
+        ]
+      },
+      {
+        "index": 7,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  const text = $state(\"\");\n\n  const wordCount = $derived.by(text, t => {\n    const s = (t ?? \"\").trim();\n    if (!s) return 0;\n    return s.split(/\\s+/).length;\n  });\n\n  const charCount = $derived.by(text, t => (t ?? \"\").length);\n\n  const longText = $derived.by(wordCount, w => w > 15);\n\n  function clearText() {\n    text.set(\"\");\n  }\n</script>\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" value={$text} on:input={(e) => text.set(e.target.value)} />\n  <button data-testid=\"clear-button\" on:click={clearText}>Clear</button>\n  <div>\n    <p data-testid=\"word-count\">Words: {$wordCount}</p>\n    <p data-testid=\"char-count\">Characters: {$charCount}</p>\n    <p data-testid=\"length-indicator\">Status: {$longText ? 'Long text' : 'Short text'}</p>\n  </div>\n</div>",
+        "success": false,
+        "errors": [
+          "tmp/samples/openai/derived-by_sample7_e18bfa8323492c04/Component.svelte:6:20 `$derived.by` must be called with exactly one argument\nhttps://svelte.dev/e/rune_invalid_arguments_length"
+        ]
+      },
+      {
+        "index": 8,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  const state = $state(\"\");\n\n  const wordCount = $derived.by(state, s => {\n    if (!s) return 0;\n    const parts = s.trim().split(/\\s+/);\n    return parts.filter(p => p.length > 0).length;\n  });\n\n  const charCount = $derived.by(state, s => s.length);\n\n  const isLong = $derived.by(state, s => {\n    const w = s ? s.trim().split(/\\s+/).filter(Boolean).length : 0;\n    return w > 15;\n  });\n\n  function clearText() {\n    state.set(\"\");\n  }\n</script>\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" bind:value={$state} />\n  <button data-testid=\"clear-button\" on:click={clearText}>Clear</button>\n  <div>\n    <p data-testid=\"word-count\">Words: {$wordCount}</p>\n    <p data-testid=\"char-count\">Characters: {$charCount}</p>\n    <p data-testid=\"length-indicator\">Status: {$isLong ? 'Long text' : 'Short text'}</p>\n  </div>\n</div>",
+        "success": false,
+        "errors": [
+          "tmp/samples/openai/derived-by_sample8_a7e0029f096662b4/Component.svelte:6:20 `$derived.by` must be called with exactly one argument\nhttps://svelte.dev/e/rune_invalid_arguments_length"
+        ]
+      },
+      {
+        "index": 9,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  const text = $state(\"\");\n\n  const wordCount = $derived.by(text, (t) => {\n    const trimmed = t.trim();\n    if (trimmed === \"\") return 0;\n    return trimmed.split(/\\s+/).length;\n  });\n\n  const charCount = $derived.by(text, (t) => t.length);\n\n  const isLong = $derived.by(text, (t) => {\n    const w = t.trim() === \"\" ? 0 : t.trim().split(/\\s+/).length;\n    return w > 15;\n  });\n\n  function clear() {\n    text.set(\"\");\n  }\n</script>\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" value={$text} on:input={(e) => text.set(e.target.value)} />\n  <button data-testid=\"clear-button\" on:click={clear}>Clear</button>\n  <div>\n    <p data-testid=\"word-count\">Words: {$wordCount}</p>\n    <p data-testid=\"char-count\">Characters: {$charCount}</p>\n    <p data-testid=\"length-indicator\">Status: { $isLong ? 'Long text' : 'Short text' }</p>\n  </div>\n</div>",
+        "success": false,
+        "errors": [
+          "tmp/samples/openai/derived-by_sample9_2a69904ca4ca75d9/Component.svelte:6:20 `$derived.by` must be called with exactly one argument\nhttps://svelte.dev/e/rune_invalid_arguments_length"
+        ]
+      }
+    ],
+    "timestamp": "2025-11-09T02:44:11.870Z"
+  },
+  {
+    "testName": "each",
+    "provider": "OpenAI",
+    "modelId": "gpt-5-nano",
+    "numSamples": 10,
+    "numCorrect": 0,
+    "pass1": 0,
+    "pass10": 0,
+    "context": {
+      "used": false,
+      "content": ""
+    },
+    "samples": [
+      {
+        "index": 0,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  let characters = [\"Jerry\", \"Elaine\", \"Kramer\"];\n\n  function addGeorge() {\n    characters = [...characters, \"George\"];\n  }\n</script>\n\n<div>\n  <ul data-testid=\"characters-list\">\n    {#each characters as character}\n      <li data-testid=\"character\">{character}</li>\n    {/each}\n  </ul>\n  <button data-testid=\"add-george-button\" on:click={addGeorge}>Add George</button>\n</div>",
+        "success": false,
+        "errors": [
+          "expected 3 to be 4 // Object.is equality"
+        ],
+        "temperature": 0
+      },
+      {
+        "index": 1,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  let characters = [\"Jerry\", \"Elaine\", \"Kramer\"];\n\n  function addGeorge() {\n    characters = [...characters, \"George\"];\n  }\n</script>\n\n<div>\n  <ul data-testid=\"characters-list\">\n    {#each characters as character}\n      <li data-testid=\"character\">{character}</li>\n    {/each}\n  </ul>\n  <button data-testid=\"add-george-button\" on:click={addGeorge}>Add George</button>\n</div>",
+        "success": false,
+        "errors": [
+          "expected 3 to be 4 // Object.is equality"
+        ]
+      },
+      {
+        "index": 2,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  let characters = [\"Jerry\", \"Elaine\", \"Kramer\"];\n\n  function addGeorge() {\n    characters = [...characters, \"George\"];\n  }\n</script>\n\n<div>\n  <ul data-testid=\"characters-list\">\n    {#each characters as character}\n      <li data-testid=\"character\">{character}</li>\n    {/each}\n  </ul>\n  <button data-testid=\"add-george-button\" on:click={addGeorge}>Add George</button>\n</div>",
+        "success": false,
+        "errors": [
+          "expected 3 to be 4 // Object.is equality"
+        ]
+      },
+      {
+        "index": 3,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  let characters = [\"Jerry\", \"Elaine\", \"Kramer\"];\n\n  function addGeorge() {\n    characters = [...characters, \"George\"];\n  }\n</script>\n\n<div>\n  <ul data-testid=\"characters-list\">\n    {#each characters as character (character)}\n      <li data-testid=\"character\">{character}</li>\n    {/each}\n  </ul>\n  <button data-testid=\"add-george-button\" on:click={addGeorge}>Add George</button>\n</div>",
+        "success": false,
+        "errors": [
+          "expected 3 to be 4 // Object.is equality"
+        ]
+      },
+      {
+        "index": 4,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  let characters = [\"Jerry\", \"Elaine\", \"Kramer\"];\n\n  function addGeorge() {\n    characters = [...characters, \"George\"];\n  }\n</script>\n\n<div>\n  <ul data-testid=\"characters-list\">\n    {#each characters as character, index (index)}\n      <li data-testid=\"character\">{character}</li>\n    {/each}\n  </ul>\n  <button data-testid=\"add-george-button\" on:click={addGeorge}>Add George</button>\n</div>",
+        "success": false,
+        "errors": [
+          "expected 3 to be 4 // Object.is equality"
+        ]
+      },
+      {
+        "index": 5,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  let characters = [\"Jerry\", \"Elaine\", \"Kramer\"];\n\n  function addGeorge() {\n    characters = [...characters, \"George\"];\n  }\n</script>\n\n<div>\n  <ul data-testid=\"characters-list\">\n    {#each characters as character}\n      <li data-testid=\"character\">{character}</li>\n    {/each}\n  </ul>\n  <button data-testid=\"add-george-button\" on:click={addGeorge}>Add George</button>\n</div>",
+        "success": false,
+        "errors": [
+          "expected 3 to be 4 // Object.is equality"
+        ]
+      },
+      {
+        "index": 6,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  let characters = [\"Jerry\", \"Elaine\", \"Kramer\"];\n\n  function addGeorge() {\n    characters = [...characters, \"George\"];\n  }\n</script>\n\n<div>\n  <ul data-testid=\"characters-list\">\n    {#each characters as character, i (i)}\n      <li data-testid=\"character\">{character}</li>\n    {/each}\n  </ul>\n  <button data-testid=\"add-george-button\" on:click={addGeorge}>Add George</button>\n</div>",
+        "success": false,
+        "errors": [
+          "expected 3 to be 4 // Object.is equality"
+        ]
+      },
+      {
+        "index": 7,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  let characters = [\"Jerry\", \"Elaine\", \"Kramer\"];\n\n  function addGeorge() {\n    characters = [...characters, \"George\"];\n  }\n</script>\n\n<div>\n  <ul data-testid=\"characters-list\">\n    {#each characters as character, index (index)}\n      <li data-testid=\"character\">{character}</li>\n    {/each}\n  </ul>\n  <button data-testid=\"add-george-button\" on:click={addGeorge}>Add George</button>\n</div>",
+        "success": false,
+        "errors": [
+          "expected 3 to be 4 // Object.is equality"
+        ]
+      },
+      {
+        "index": 8,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  let characters = [\"Jerry\", \"Elaine\", \"Kramer\"];\n\n  function addGeorge() {\n    characters = [...characters, \"George\"];\n  }\n</script>\n\n<div>\n  <ul data-testid=\"characters-list\">\n    {#each characters as character}\n      <li data-testid=\"character\">{character}</li>\n    {/each}\n  </ul>\n  <button data-testid=\"add-george-button\" on:click={addGeorge}>Add George</button>\n</div>",
+        "success": false,
+        "errors": [
+          "expected 3 to be 4 // Object.is equality"
+        ]
+      },
+      {
+        "index": 9,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  let characters = [\"Jerry\", \"Elaine\", \"Kramer\"];\n\n  function addGeorge() {\n    characters = [...characters, \"George\"];\n  }\n</script>\n\n<div>\n  <ul data-testid=\"characters-list\">\n    {#each characters as character}\n      <li data-testid=\"character\">{character}</li>\n    {/each}\n  </ul>\n  <button data-testid=\"add-george-button\" on:click={addGeorge}>Add George</button>\n</div>",
+        "success": false,
+        "errors": [
+          "expected 3 to be 4 // Object.is equality"
+        ]
+      }
+    ],
+    "timestamp": "2025-11-09T02:44:11.870Z"
+  },
+  {
+    "testName": "effect",
+    "provider": "OpenAI",
+    "modelId": "gpt-5-nano",
+    "numSamples": 10,
+    "numCorrect": 0,
+    "pass1": 0,
+    "pass10": 0,
+    "context": {
+      "used": false,
+      "content": ""
+    },
+    "samples": [
+      {
+        "index": 0,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  const number = $state(5);\n  const doubled = $effect(() => number * 2);\n  const increment = () => number.update(n => n + 1);\n</script>\n\n<div>\n  <p data-testid=\"number-value\">Number: {number}</p>\n  <p data-testid=\"doubled-value\">Doubled: {doubled}</p>\n  <button data-testid=\"increment-button\" on:click={increment}>Increment</button>\n</div>",
+        "success": false,
+        "errors": [
+          "tmp/samples/openai/effect_sample0_f380d8e0c6c5c08c/Component.svelte:5:18 `$effect()` can only be used as an expression statement\nhttps://svelte.dev/e/effect_invalid_placement"
+        ],
+        "temperature": 0
+      },
+      {
+        "index": 1,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  $state number = 5\n  let doubled = 0\n  $effect(() => {\n    doubled = number * 2\n  })\n  function increment() {\n    number = number + 1\n  }\n</script>\n\n<div>\n  <label>Number\n    <input type=\"number\" value={number} on:input={(e) => number = Number(e.target.value)} />\n  </label>\n  <p data-testid=\"number-value\">Number: {number}</p>\n  <p data-testid=\"doubled-value\">Doubled: {doubled}</p>\n  <button data-testid=\"increment-button\" on:click={increment}>Increment</button>\n</div>",
+        "success": false,
+        "errors": [
+          "/svelte-bench/tmp/samples/openai/effect_sample1_d5597044cf7649be/Component.svelte:4:9 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+        ]
+      },
+      {
+        "index": 2,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  const number = $state(5);\n  const doubled = $effect(() => number * 2);\n\n  function increment() {\n    number.update(n => n + 1);\n  }\n</script>\n\n<div>\n  <p data-testid=\"number-value\">Number: {number}</p>\n  <p data-testid=\"doubled-value\">Doubled: {doubled}</p>\n  <button data-testid=\"increment-button\" on:click={increment}>Increment</button>\n</div>",
+        "success": false,
+        "errors": [
+          "tmp/samples/openai/effect_sample2_09fb70dc33c1ae61/Component.svelte:5:18 `$effect()` can only be used as an expression statement\nhttps://svelte.dev/e/effect_invalid_placement"
+        ]
+      },
+      {
+        "index": 3,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  $state number = 5;\n  let doubled = number * 2;\n\n  $effect(() => {\n    doubled = number * 2;\n  }, [number]);\n\n  function increment() {\n    number = number + 1;\n  }\n</script>\n\n<div>\n  <p data-testid=\"number-value\">Number: {number}</p>\n  <p data-testid=\"doubled-value\">Doubled: {doubled}</p>\n  <button data-testid=\"increment-button\" on:click={increment}>Increment</button>\n</div>",
+        "success": false,
+        "errors": [
+          "/svelte-bench/tmp/samples/openai/effect_sample3_c636422605bb79e1/Component.svelte:4:9 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+        ]
+      },
+      {
+        "index": 4,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  $state number = 5;\n  let doubled = 0;\n  $effect(() => {\n    doubled = number * 2;\n  });\n\n  function increment() {\n    $state number += 1;\n  }\n</script>\n\n<div>\n  <p data-testid=\"number-value\">Number: {number}</p>\n  <p data-testid=\"doubled-value\">Doubled: {doubled}</p>\n  <input type=\"number\" min=\"0\" value={number} on:input={e => { $state number = +e.target.value; }} />\n  <button data-testid=\"increment-button\" on:click={increment}>Increment</button>\n</div>",
+        "success": false,
+        "errors": [
+          "/svelte-bench/tmp/samples/openai/effect_sample4_ce4205db288b34c3/Component.svelte:4:9 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+        ]
+      },
+      {
+        "index": 5,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  let number = $state(5);\n  let doubled;\n  $effect(() => {\n    doubled = number * 2;\n  }, [number]);\n</script>\n\n<div>\n  <p data-testid=\"number-value\">Number: {number}</p>\n  <p data-testid=\"doubled-value\">Doubled: {doubled}</p>\n  <button data-testid=\"increment-button\" on:click={() => number = number + 1}>Increment</button>\n</div>",
+        "success": false,
+        "errors": [
+          "tmp/samples/openai/effect_sample5_772554c2dbc6e37a/Component.svelte:6:2 `$effect` must be called with exactly one argument\nhttps://svelte.dev/e/rune_invalid_arguments_length"
+        ]
+      },
+      {
+        "index": 6,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  const number = $state(5);\n  const doubled = $effect(() => number * 2);\n  function increment() {\n    number.set(n => n + 1);\n  }\n</script>\n\n<div>\n  <p data-testid=\"number-value\">Number: {number}</p>\n  <p data-testid=\"doubled-value\">Doubled: {doubled}</p>\n  <button data-testid=\"increment-button\" on:click={increment}>Increment</button>\n  <input type=\"number\" value={number} on:input={(e) => number.set(+e.currentTarget.value)} />\n</div>",
+        "success": false,
+        "errors": [
+          "tmp/samples/openai/effect_sample6_b18acfd23d2ecb06/Component.svelte:5:18 `$effect()` can only be used as an expression statement\nhttps://svelte.dev/e/effect_invalid_placement"
+        ]
+      },
+      {
+        "index": 7,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  $state number = 5;\n  $effect doubled = number * 2;\n</script>\n\n<div>\n  <input type=\"number\" bind:value={number} min=\"0\" />\n  <p data-testid=\"number-value\">Number: {number}</p>\n  <p data-testid=\"doubled-value\">Doubled: {doubled}</p>\n  <button data-testid=\"increment-button\" on:click={() => number = number + 1}>Increment</button>\n</div>",
+        "success": false,
+        "errors": [
+          "/svelte-bench/tmp/samples/openai/effect_sample7_085761c388b7c443/Component.svelte:4:9 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+        ]
+      },
+      {
+        "index": 8,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  $state number = 5;\n  let doubled;\n  $effect(() => {\n    doubled = number * 2;\n  });\n\n  function increment() {\n    number += 1;\n  }\n</script>\n\n<div>\n  <p data-testid=\"number-value\">Number: {number}</p>\n  <p data-testid=\"doubled-value\">Doubled: {doubled}</p>\n  <input type=\"number\" min=\"0\" bind:value={number} />\n  <button data-testid=\"increment-button\" on:click={increment}>Increment</button>\n</div>",
+        "success": false,
+        "errors": [
+          "/svelte-bench/tmp/samples/openai/effect_sample8_9d43c48870ae5c4e/Component.svelte:4:9 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+        ]
+      },
+      {
+        "index": 9,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  const state = { number: 5 };\n  let doubled;\n  $effect(() => {\n    doubled = state.number * 2;\n  });\n</script>\n\n<div>\n  <input type=\"number\" bind:value={$state.number} />\n  <p data-testid=\"number-value\">Number: {$state.number}</p>\n  <p data-testid=\"doubled-value\">Doubled: {doubled}</p>\n  <button data-testid=\"increment-button\" on:click={() => { state.number += 1; }}>Increment</button>\n</div>",
+        "success": false,
+        "errors": [
+          "store_invalid_shape\n`state` is not a store with a `subscribe` method\nhttps://svelte.dev/e/store_invalid_shape\n\n\tin <unknown>\n\tin Component.svelte\n",
+          "store_invalid_shape\n`state` is not a store with a `subscribe` method\nhttps://svelte.dev/e/store_invalid_shape\n\n\tin <unknown>\n\tin Component.svelte\n"
+        ]
+      }
+    ],
+    "timestamp": "2025-11-09T02:44:11.870Z"
+  },
+  {
+    "testName": "hello-world",
+    "provider": "OpenAI",
+    "modelId": "gpt-5-nano",
+    "numSamples": 10,
+    "numCorrect": 10,
+    "pass1": 1,
+    "pass10": 1,
+    "context": {
+      "used": false,
+      "content": ""
+    },
+    "samples": [
+      {
+        "index": 0,
+        "code": "<svelte:options runes={true} />\n\n<div data-testid=\"greeting\" class=\"greeting\">\n  Hello, World!\n</div>\n\n<style>\n  .greeting {\n    color: blue;\n    min-height: 100vh;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    padding: 16px;\n    margin: 0;\n    text-align: center;\n  }\n</style>",
+        "success": true,
+        "errors": [],
+        "temperature": 0
+      },
+      {
+        "index": 1,
+        "code": "<svelte:options runes={true} />\n\n<div class=\"container\">\n  <div data-testid=\"greeting\" class=\"greeting\">Hello, World!</div>\n</div>\n\n<style>\n  .container {\n    min-height: 100vh;\n    display: grid;\n    place-items: center;\n    margin: 0;\n  }\n\n  .greeting {\n    color: blue;\n    margin: 12px;\n    font-family: system-ui, -apple-system, \"Segoe UI\", Roboto, Arial, sans-serif;\n    font-size: 2rem;\n  }\n</style>",
+        "success": true,
+        "errors": []
+      },
+      {
+        "index": 2,
+        "code": "<svelte:options runes={true} />\n\n<div class=\"container\">\n  <div data-testid=\"greeting\" class=\"greeting\">Hello, World!</div>\n</div>\n\n<style>\n  .container {\n    height: 100vh;\n    display: grid;\n    place-items: center;\n  }\n  .greeting {\n    color: blue;\n    margin: 8px;\n    text-align: center;\n  }\n</style>",
+        "success": true,
+        "errors": []
+      },
+      {
+        "index": 3,
+        "code": "<svelte:options runes={true} />\n\n<div class=\"container\">\n  <div data-testid=\"greeting\" class=\"greeting\">Hello, World!</div>\n</div>\n\n<style>\n  .container {\n    display: flex;\n    min-height: 100vh;\n    width: 100%;\n    align-items: center;\n    justify-content: center;\n  }\n  .greeting {\n    color: blue;\n    margin: 8px;\n    text-align: center;\n  }\n</style>",
+        "success": true,
+        "errors": []
+      },
+      {
+        "index": 4,
+        "code": "<svelte:options runes={true} />\n\n<div class=\"page\">\n  <div data-testid=\"greeting\" class=\"greeting\">Hello, World!</div>\n</div>\n\n<style>\n  .page {\n    min-height: 100vh;\n    display: grid;\n    place-items: center;\n    margin: 0;\n  }\n\n  .greeting {\n    color: blue;\n    margin: 8px;\n  }\n</style>",
+        "success": true,
+        "errors": []
+      },
+      {
+        "index": 5,
+        "code": "<svelte:options runes={true} />\n\n<script>\n</script>\n\n<div class=\"wrapper\">\n  <div data-testid=\"greeting\" class=\"greeting\">Hello, World!</div>\n</div>\n\n<style>\n  .wrapper {\n    min-height: 100vh;\n    display: flex;\n    justify-content: center;\n    align-items: center;\n  }\n\n  .greeting {\n    color: blue;\n    margin: 0.5rem;\n  }\n</style>",
+        "success": true,
+        "errors": []
+      },
+      {
+        "index": 6,
+        "code": "<svelte:options runes={true} />\n\n<div data-testid=\"greeting\" class=\"greeting\">Hello, World!</div>\n\n<style>\n  .greeting {\n    color: blue;\n    height: 100vh;\n    display: grid;\n    place-items: center;\n    padding: 1rem;\n    box-sizing: border-box;\n    text-align: center;\n  }\n</style>",
+        "success": true,
+        "errors": []
+      },
+      {
+        "index": 7,
+        "code": "<svelte:options runes={true} />\n\n<div data-testid=\"greeting\" class=\"greeting\">Hello, World!</div>\n\n<style>\n  .greeting {\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    min-height: 100vh;\n    width: 100%;\n    color: blue;\n    font-family: system-ui, -apple-system, \"Segoe UI\", Roboto, Arial, sans-serif;\n    font-size: 2rem;\n    padding: 0.5rem;\n    box-sizing: border-box;\n  }\n</style>",
+        "success": true,
+        "errors": []
+      },
+      {
+        "index": 8,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  // No state needed for this simple component\n</script>\n\n<div class=\"container\">\n  <div data-testid=\"greeting\" class=\"greeting\">Hello, World!</div>\n</div>\n\n<style>\n  :global(body) {\n    margin: 0;\n  }\n  .container {\n    min-height: 100vh;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n  }\n  .greeting {\n    color: blue;\n    margin: 0.5rem;\n    font-family: system-ui, -apple-system, \"Segoe UI\", Roboto, Arial, sans-serif;\n    font-size: 1.75rem;\n  }\n</style>",
+        "success": true,
+        "errors": []
+      },
+      {
+        "index": 9,
+        "code": "<svelte:options runes={true} />\n\n<div class=\"center\">\n  <div data-testid=\"greeting\" class=\"greeting\">Hello, World!</div>\n</div>\n\n<style>\n  .center {\n    position: fixed;\n    top: 0;\n    left: 0;\n    width: 100vw;\n    height: 100vh;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n  }\n\n  .greeting {\n    color: blue;\n    margin: 8px;\n  }\n</style>",
+        "success": true,
+        "errors": []
+      }
+    ],
+    "timestamp": "2025-11-09T02:44:11.870Z"
+  },
+  {
+    "testName": "inspect",
+    "provider": "OpenAI",
+    "modelId": "gpt-5-nano",
+    "numSamples": 10,
+    "numCorrect": 0,
+    "pass1": 0,
+    "pass10": 0,
+    "context": {
+      "used": false,
+      "content": ""
+    },
+    "samples": [
+      {
+        "index": 0,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  const text = $state(\"Hello world\");\n\n  $inspect(text);\n  $inspect(text).with((value) => {\n    console.log(\"Input updated to:\", value);\n  });\n\n  $: $inspect.trace(text);\n</script>\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n  <p data-testid=\"text-value\">Current text: \"{text}\"</p>\n  <p data-testid=\"char-count\">Character count: {text.length}</p>\n</div>",
+        "success": false,
+        "errors": [
+          "tmp/samples/openai/inspect_sample0_dfb0f9433d6cbc5b/Component.svelte:11:2 `$:` is not allowed in runes mode, use `$derived` or `$effect` instead\nhttps://svelte.dev/e/legacy_reactive_statement_invalid"
+        ],
+        "temperature": 0
+      },
+      {
+        "index": 1,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  const text = $state(\"Hello world\");\n\n  // Basic inspect to log the input value\n  $inspect(text);\n\n  // Inspect with a custom callback to track updates\n  $inspect(text).with((value) => {\n    console.debug(\"text updated to:\", value);\n  });\n\n  // Trace the value inside an effect that runs when the input changes\n  $effect(() => {\n    $inspect.trace(text);\n  });\n</script>\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n  <p data-testid=\"text-value\">Current text: \"{text}\"</p>\n  <p data-testid=\"char-count\">Character count: {text.length}</p>\n</div>",
+        "success": false,
+        "errors": [
+          "tmp/samples/openai/inspect_sample1_ff012878b664df7a/Component.svelte:21:46 Cannot bind to constant\nhttps://svelte.dev/e/constant_binding"
+        ]
+      },
+      {
+        "index": 2,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  let text = $state(\"Hello world\");\n  $inspect(text);\n  $inspect(text).with((value) => {\n    console.info(\"Inspect with callback - new value:\", value);\n  });\n  $effect(() => {\n    $inspect.trace(\"Text changed\", text);\n  });\n  $: charCount = text.length;\n</script>\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n  <p data-testid=\"text-value\">Current text: \"{text}\"</p>\n  <p data-testid=\"char-count\">Character count: {charCount}</p>\n</div>",
+        "success": false,
+        "errors": [
+          "tmp/samples/openai/inspect_sample2_9b30a91d7617f7b3/Component.svelte:10:4 `$inspect.trace` must be called with zero or one arguments\nhttps://svelte.dev/e/rune_invalid_arguments_length"
+        ]
+      },
+      {
+        "index": 3,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  const text = $state(\"Hello world\");\n\n  // Basic $inspect to log the input value\n  $inspect(text);\n\n  // $inspect(...).with to track updates with a custom callback\n  $inspect(text).with((value) => {\n    console.log(\"Text updated to:\", value);\n  });\n\n  // $inspect.trace() inside an effect that runs when the input changes\n  $effect(() => {\n    $inspect.trace(text);\n  });\n\n  // Derived value: character count\n  $: charCount = text.length;\n</script>\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n  <p data-testid=\"text-value\">Current text: \"{text}\"</p>\n  <p data-testid=\"char-count\">Character count: {charCount}</p>\n</div>",
+        "success": false,
+        "errors": [
+          "tmp/samples/openai/inspect_sample3_1bb40af57ef613d9/Component.svelte:20:2 `$:` is not allowed in runes mode, use `$derived` or `$effect` instead\nhttps://svelte.dev/e/legacy_reactive_statement_invalid"
+        ]
+      },
+      {
+        "index": 4,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  $state\n  let text = \"Hello world\";\n\n  // Basic $inspect to log the input value\n  $inspect(text);\n\n  // Use $inspect(...).with to track updates to the input with a custom callback\n  $inspect(text).with((value) => {\n    console.log(\"Inspect with callback:\", value);\n  });\n\n  // $inspect.trace() inside an effect that runs when the input changes\n  $effect(() => {\n    $inspect.trace(text);\n  });\n</script>\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n  <p data-testid=\"text-value\">Current text: \"{text}\"</p>\n  <p data-testid=\"char-count\">Character count: {text.length}</p>\n</div>",
+        "success": false,
+        "errors": [
+          "tmp/samples/openai/inspect_sample4_6befd11b1f38df3e/Component.svelte:4:2 Cannot use rune without parentheses\nhttps://svelte.dev/e/rune_missing_parentheses"
+        ]
+      },
+      {
+        "index": 5,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  let text = $state(\"Hello world\");\n\n  $inspect(text);\n\n  $inspect(text).with((value) => {\n    console.info(\"Input updated to:\", value);\n  });\n\n  $effect(() => {\n    $inspect.trace(text);\n  });\n</script>\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n  <p data-testid=\"text-value\">Current text: \"{text}\"</p>\n  <p data-testid=\"char-count\">Character count: {text.length}</p>\n</div>",
+        "success": false,
+        "errors": [
+          "expected 'Hello world\\n[object Object] %cno rea…' to contain 'init'",
+          "expected 'Hello world\\n[object Object] %cno rea…' to contain 'init'",
+          "expected 'Hello world\\n[object Object] %cno rea…' to contain 'init'"
+        ]
+      },
+      {
+        "index": 6,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  $state text = \"Hello world\";\n\n  // Basic $inspect to log the input value\n  $inspect(text);\n\n  // $inspect(...).with to track updates with a custom callback\n  $inspect(text).with((v) => {\n    console.debug(\"[inspect].with callback:\", v);\n  });\n\n  // $inspect.trace() inside an effect that runs when the input changes\n  $effect(() => {\n    $inspect.trace(text);\n  });\n\n  // Derived value: character count\n  $: charCount = text.length;\n</script>\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n  <p data-testid=\"text-value\">Current text: \"{text}\"</p>\n  <p data-testid=\"char-count\">Character count: {charCount}</p>\n</div>",
+        "success": false,
+        "errors": [
+          "/svelte-bench/tmp/samples/openai/inspect_sample6_789bb77d6da75786/Component.svelte:4:9 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+        ]
+      },
+      {
+        "index": 7,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  const text = $state(\"Hello world\");\n\n  $inspect(text);\n  $inspect(text).with((value) => {\n    console.log(\"Text updated to:\", value);\n  });\n\n  $effect(() => {\n    $inspect.trace(text);\n  });\n\n  $: charCount = text.length;\n</script>\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n  <p data-testid=\"text-value\">Current text: \"{text}\"</p>\n  <p data-testid=\"char-count\">Character count: {charCount}</p>\n</div>",
+        "success": false,
+        "errors": [
+          "tmp/samples/openai/inspect_sample7_517fbeb739a8bb1c/Component.svelte:15:2 `$:` is not allowed in runes mode, use `$derived` or `$effect` instead\nhttps://svelte.dev/e/legacy_reactive_statement_invalid"
+        ]
+      },
+      {
+        "index": 8,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  $state text = \"Hello world\";\n\n  $inspect(text);\n\n  $inspect(text).with((value) => {\n    console.info(\"text updated to:\", value);\n  });\n\n  $effect(() => {\n    $inspect.trace(text);\n  }, [text]);\n</script>\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n  <p data-testid=\"text-value\">Current text: \"{text}\"</p>\n  <p data-testid=\"char-count\">Character count: {text.length}</p>\n</div>",
+        "success": false,
+        "errors": [
+          "/svelte-bench/tmp/samples/openai/inspect_sample8_f49c494815f65fe0/Component.svelte:4:9 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+        ]
+      },
+      {
+        "index": 9,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  let text = $state(\"Hello world\");\n\n  // Basic $inspect to log the input value\n  $inspect(text);\n\n  // Implement $inspect(...).with to track updates with a custom callback\n  $inspect(text).with((value) => {\n    console.log(\"Text updated to:\", value);\n  });\n\n  // Implement $inspect.trace() inside an effect that runs when the input changes\n  $: {\n    $inspect.trace(text, (value) => {\n      console.log(\"trace: text changed to\", value);\n    });\n  }\n\n  // Derived value: character count\n  $: charCount = text.length;\n</script>\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n  <p data-testid=\"text-value\">Current text: \"{text}\"</p>\n  <p data-testid=\"char-count\">Character count: {charCount}</p>\n</div>",
+        "success": false,
+        "errors": [
+          "tmp/samples/openai/inspect_sample9_ff3af3cd6bddd643/Component.svelte:15:2 `$:` is not allowed in runes mode, use `$derived` or `$effect` instead\nhttps://svelte.dev/e/legacy_reactive_statement_invalid"
+        ]
+      }
+    ],
+    "timestamp": "2025-11-09T02:44:11.870Z"
+  },
+  {
+    "testName": "props",
+    "provider": "OpenAI",
+    "modelId": "gpt-5-nano",
+    "numSamples": 10,
+    "numCorrect": 0,
+    "pass1": 0,
+    "pass10": 0,
+    "context": {
+      "used": false,
+      "content": ""
+    },
+    "samples": [
+      {
+        "index": 0,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  $props name = \"World\";\n  $props count = 0;\n  $props showDetails = false;\n\n  $state countValue = count;\n\n  function increment() {\n    countValue = countValue + 1;\n  }\n</script>\n\n<div>\n  <h1 data-testid=\"name-display\">{name}</h1>\n  <p data-testid=\"count-display\">Count: {countValue}</p>\n  <button data-testid=\"increment-button\" on:click={increment}>Increment</button>\n\n  {#if showDetails}\n    <div data-testid=\"details\">\n      <p>Name is {name}</p>\n      <p>Count is {countValue}</p>\n      <p>ShowDetails is {showDetails}</p>\n    </div>\n  {/if}\n</div>",
+        "success": false,
+        "errors": [
+          "/svelte-bench/tmp/samples/openai/props_sample0_0ef8eb2986e3b828/Component.svelte:4:9 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+        ],
+        "temperature": 0
+      },
+      {
+        "index": 1,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  const { name = \"World\", count = 0, showDetails = false } = $props;\n\n  const $state = { count };\n\n  function increment() {\n    $state.count += 1;\n  }\n</script>\n\n<div>\n  <h1 data-testid=\"name-display\">{name}</h1>\n  <p data-testid=\"count-display\">Count: {$state.count}</p>\n  <button data-testid=\"increment-button\" on:click={increment}>Increment</button>\n\n  {#if showDetails}\n    <div data-testid=\"details\">\n      <p>Name is {name}</p>\n      <p>Count is {$state.count}</p>\n      <p>ShowDetails is {showDetails.toString()}</p>\n    </div>\n  {/if}\n</div>",
+        "success": false,
+        "errors": [
+          "/svelte-bench/tmp/samples/openai/props_sample1_02a937d32513fac9/Component.svelte:6:8 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
+        ]
+      },
+      {
+        "index": 2,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  const { name = \"World\", count: initialCount = 0, showDetails = false } = $props;\n  const $state = { count: initialCount };\n</script>\n\n<div>\n  <h1 data-testid=\"name-display\">{name}</h1>\n  <p data-testid=\"count-display\">Count: {$state.count}</p>\n  <button data-testid=\"increment-button\" on:click={() => { $state.count += 1; }}>Increment</button>\n\n  {#if showDetails}\n    <div data-testid=\"details\">\n      <p>Name is {name}</p>\n      <p>Count is {$state.count}</p>\n      <p>ShowDetails is {showDetails}</p>\n    </div>\n  {/if}\n</div>",
+        "success": false,
+        "errors": [
+          "/svelte-bench/tmp/samples/openai/props_sample2_ba387871b51f7fa9/Component.svelte:5:8 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
+        ]
+      },
+      {
+        "index": 3,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  $props: {\n    name = \"World\",\n    count = 0,\n    showDetails = false\n  }\n\n  $state let localCount = count;\n\n  function increment() {\n    localCount += 1;\n  }\n</script>\n\n<div>\n  <h1 data-testid=\"name-display\">{name}</h1>\n  <p data-testid=\"count-display\">Count: {localCount}</p>\n  <button data-testid=\"increment-button\" on:click={increment}>Increment</button>\n\n  {#if showDetails}\n    <div data-testid=\"details\">\n      <p>Name is {name}</p>\n      <p>Count is {localCount}</p>\n      <p>ShowDetails is {showDetails}</p>\n    </div>\n  {/if}\n</div>",
+        "success": false,
+        "errors": [
+          "/svelte-bench/tmp/samples/openai/props_sample3_a359f21098fde084/Component.svelte:10:9 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+        ]
+      },
+      {
+        "index": 4,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  const { name = \"World\", count: initialCount = 0, showDetails = false } = $props;\n  $state let count = initialCount;\n  function increment() {\n    count = count + 1;\n  }\n</script>\n\n<div>\n  <h1 data-testid=\"name-display\">{name}</h1>\n  <p data-testid=\"count-display\">Count: {count}</p>\n  <button data-testid=\"increment-button\" on:click={increment}>Increment</button>\n\n  {#if showDetails}\n    <div data-testid=\"details\">\n      <p>Name is {name}</p>\n      <p>Count is {count}</p>\n      <p>ShowDetails is {showDetails}</p>\n    </div>\n  {/if}\n</div>",
+        "success": false,
+        "errors": [
+          "/svelte-bench/tmp/samples/openai/props_sample4_44c6728686c54ccc/Component.svelte:5:9 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+        ]
+      },
+      {
+        "index": 5,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  const { name = \"World\", count: initialCount = 0, showDetails = false } = $props;\n  let $state = { count: initialCount };\n  function increment() {\n    $state = { ...$state, count: $state.count + 1 };\n  }\n</script>\n\n<div>\n  <h1 data-testid=\"name-display\">Hello, {name}!</h1>\n  <p data-testid=\"count-display\">Count: {$state.count}</p>\n  <button data-testid=\"increment-button\" on:click={increment}>Increment</button>\n\n  {#if showDetails}\n    <div data-testid=\"details\">\n      <p>Name is {name}</p>\n      <p>Count is {$state.count}</p>\n      <p>ShowDetails is {showDetails ? 'true' : 'false'}</p>\n    </div>\n  {/if}\n</div>",
+        "success": false,
+        "errors": [
+          "/svelte-bench/tmp/samples/openai/props_sample5_dd3f2d34d4aa82fc/Component.svelte:5:6 The $ prefix is reserved, and cannot be used for variables and imports\nhttps://svelte.dev/e/dollar_prefix_invalid"
+        ]
+      },
+      {
+        "index": 6,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  const { name = \"World\", count = 0, showDetails = false } = $props;\n  $state currentCount = count;\n\n  function increment() {\n    currentCount = currentCount + 1;\n  }\n</script>\n\n<div>\n  <h1 data-testid=\"name-display\">{name}</h1>\n  <p data-testid=\"count-display\">Count: {currentCount}</p>\n  <button data-testid=\"increment-button\" on:click={increment}>Increment</button>\n\n  {#if showDetails}\n    <div data-testid=\"details\">\n      <p>Name is {name}</p>\n      <p>Count is {currentCount}</p>\n      <p>ShowDetails is {showDetails ? \"true\" : \"false\"}</p>\n    </div>\n  {/if}\n</div>",
+        "success": false,
+        "errors": [
+          "/svelte-bench/tmp/samples/openai/props_sample6_f1ec19536e0fcc6a/Component.svelte:5:9 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+        ]
+      },
+      {
+        "index": 7,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  $props {\n    name = \"World\",\n    count = 0,\n    showDetails = false\n  }\n\n  $state {\n    localCount = count\n  }\n\n  function increment() {\n    localCount += 1\n  }\n</script>\n\n<div>\n  <h1 data-testid=\"name-display\">{name}</h1>\n  <p data-testid=\"count-display\">Count: {localCount}</p>\n  <button data-testid=\"increment-button\" on:click={increment}>Increment</button>\n\n  {#if showDetails}\n    <div data-testid=\"details\">\n      <p>Name is {name}</p>\n      <p>Count is {localCount}</p>\n      <p>ShowDetails is {showDetails ? 'true' : 'false'}</p>\n    </div>\n  {/if}\n</div>",
+        "success": false,
+        "errors": [
+          "/svelte-bench/tmp/samples/openai/props_sample7_bfc5259f8f78e1b4/Component.svelte:4:9 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+        ]
+      },
+      {
+        "index": 8,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  export let name = \"World\";\n  export let count = 0;\n  export let showDetails = false;\n\n  $state: internalCount = count;\n\n  function increment() {\n    internalCount = internalCount + 1;\n  }\n</script>\n\n<div>\n  <h1 data-testid=\"name-display\">{ $props.name ?? name }</h1>\n  <p data-testid=\"count-display\">Count: { internalCount }</p>\n  <button data-testid=\"increment-button\" on:click={increment}>Increment</button>\n\n  {#if ($props.showDetails ?? showDetails)}\n  <div data-testid=\"details\">\n    <p>Name is { $props.name ?? name }</p>\n    <p>Count is { internalCount }</p>\n    <p>ShowDetails is { $props.showDetails ?? showDetails }</p>\n  </div>\n  {/if}\n</div>",
+        "success": false,
+        "errors": [
+          "tmp/samples/openai/props_sample8_ac43c3064615ba7f/Component.svelte:4:2 Cannot use `export let` in runes mode — use `$props()` instead\nhttps://svelte.dev/e/legacy_export_invalid"
+        ]
+      },
+      {
+        "index": 9,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  const { name = \"World\", count = 0, showDetails = false } = $props;\n  $state let localCount = count;\n  function increment() {\n    localCount += 1;\n  }\n</script>\n\n<div>\n  <h1 data-testid=\"name-display\">{name}</h1>\n  <p data-testid=\"count-display\">Count: {localCount}</p>\n  <button data-testid=\"increment-button\" on:click={increment}>Increment</button>\n\n  {#if showDetails}\n    <div data-testid=\"details\">\n      <p>Name is {name}</p>\n      <p>Count is {localCount}</p>\n      <p>ShowDetails is {showDetails ? \"true\" : \"false\"}</p>\n    </div>\n  {/if}\n</div>",
+        "success": false,
+        "errors": [
+          "/svelte-bench/tmp/samples/openai/props_sample9_f94b0483b021c091/Component.svelte:5:9 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+        ]
+      }
+    ],
+    "timestamp": "2025-11-09T02:44:11.870Z"
+  },
+  {
+    "testName": "snippets",
+    "provider": "OpenAI",
+    "modelId": "gpt-5-nano",
+    "numSamples": 10,
+    "numCorrect": 0,
+    "pass1": 0,
+    "pass10": 0,
+    "context": {
+      "used": false,
+      "content": ""
+    },
+    "samples": [
+      {
+        "index": 0,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  const books = [\n    \"The Lord of the Rings\",\n    \"To Kill a Mockingbird\",\n    \"1984\"\n  ];\n</script>\n\n<snippet name=\"title\" let:title>\n  <span data-testid=\"book-title\">{title}</span>\n</snippet>\n\n<ul>\n  {#each books as book}\n    <li data-testid=\"book-item\">{@render title book}</li>\n  {/each}\n</ul>",
+        "success": false,
+        "errors": [
+          "/svelte-bench/tmp/samples/openai/snippets_sample0_aedc5433a8d66ea2/Component.svelte:17:41 `{@render ...}` tags can only contain call expressions\nhttps://svelte.dev/e/render_tag_invalid_expression"
+        ],
+        "temperature": 0
+      },
+      {
+        "index": 1,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  const titles = [\"The Lord of the Rings\", \"To Kill a Mockingbird\", \"1984\"];\n</script>\n\n<snippet name=\"title\" let:title>\n  <span data-testid=\"book-title\">{title}</span>\n</snippet>\n\n<ul>\n  {#each titles as t}\n    <li data-testid=\"book-item\">{@render title(t)}</li>\n  {/each}\n</ul>",
+        "success": false,
+        "errors": [
+          "snippet is not a function\n\n\tin <unknown>\n\tin Component.svelte\n",
+          "snippet is not a function\n\n\tin <unknown>\n\tin Component.svelte\n",
+          "snippet is not a function\n\n\tin <unknown>\n\tin Component.svelte\n"
+        ]
+      },
+      {
+        "index": 2,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  const books = [\n    \"The Lord of the Rings\",\n    \"To Kill a Mockingbird\",\n    \"1984\"\n  ];\n</script>\n\n<snippet name=\"title\" let:title>\n  <span data-testid=\"book-title\">{title}</span>\n</snippet>\n\n<ul>\n  {#each books as book}\n    <li data-testid=\"book-item\">{@render title book}</li>\n  {/each}\n</ul>",
+        "success": false,
+        "errors": [
+          "/svelte-bench/tmp/samples/openai/snippets_sample2_cb5957fccaaee347/Component.svelte:17:41 `{@render ...}` tags can only contain call expressions\nhttps://svelte.dev/e/render_tag_invalid_expression"
+        ]
+      },
+      {
+        "index": 3,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  const books = [\"The Lord of the Rings\", \"To Kill a Mockingbird\", \"1984\"];\n</script>\n\n<snippet name=\"title\" let:title>\n  <span data-testid=\"book-title\">{title}</span>\n</snippet>\n\n<ul>\n  {#each books as b}\n    <li data-testid=\"book-item\">{@render title b}</li>\n  {/each}\n</ul>",
+        "success": false,
+        "errors": [
+          "/svelte-bench/tmp/samples/openai/snippets_sample3_25de1aaed73e2237/Component.svelte:13:41 `{@render ...}` tags can only contain call expressions\nhttps://svelte.dev/e/render_tag_invalid_expression"
+        ]
+      },
+      {
+        "index": 4,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  const books = [\"The Lord of the Rings\", \"To Kill a Mockingbird\", \"1984\"];\n</script>\n\n<snippet name=\"title\" let:title>\n  <span data-testid=\"book-title\">{title}</span>\n</snippet>\n\n<ul>\n  {#each books as book}\n    <li data-testid=\"book-item\">\n      {@render title title={book}}\n    </li>\n  {/each}\n</ul>",
+        "success": false,
+        "errors": [
+          "/svelte-bench/tmp/samples/openai/snippets_sample4_72972f7462bdbadd/Component.svelte:14:15 `{@render ...}` tags can only contain call expressions\nhttps://svelte.dev/e/render_tag_invalid_expression"
+        ]
+      },
+      {
+        "index": 5,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  const titles = [\n    \"The Lord of the Rings\",\n    \"To Kill a Mockingbird\",\n    \"1984\"\n  ];\n\n  snippet title(t) {\n    <span data-testid=\"book-title\">{t}</span>\n  }\n</script>\n\n<ul>\n  {#each titles as t}\n    <li data-testid=\"book-item\">{@render title(t)}</li>\n  {/each}\n</ul>",
+        "success": false,
+        "errors": [
+          "/svelte-bench/tmp/samples/openai/snippets_sample5_59d9c849d7b1762b/Component.svelte:10:10 Unexpected token\nhttps://svelte.dev/e/js_parse_error"
+        ]
+      },
+      {
+        "index": 6,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  const books = [\"The Lord of the Rings\", \"To Kill a Mockingbird\", \"1984\"];\n</script>\n\n<snippet name=\"title\" let:title>\n  <span data-testid=\"book-title\">{title}</span>\n</snippet>\n\n<ul>\n  {#each books as t}\n    <li data-testid=\"book-item\">{@render title(t)}</li>\n  {/each}\n</ul>",
+        "success": false,
+        "errors": [
+          "snippet is not a function\n\n\tin <unknown>\n\tin Component.svelte\n",
+          "snippet is not a function\n\n\tin <unknown>\n\tin Component.svelte\n",
+          "snippet is not a function\n\n\tin <unknown>\n\tin Component.svelte\n"
+        ]
+      },
+      {
+        "index": 7,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  const books = [\"The Lord of the Rings\", \"To Kill a Mockingbird\", \"1984\"];\n</script>\n\n<snippet title let:title>\n  <span data-testid=\"book-title\">{title}</span>\n</snippet>\n\n<ul>\n  {#each books as b}\n    <li data-testid=\"book-item\">{@render title(b)}</li>\n  {/each}\n</ul>",
+        "success": false,
+        "errors": [
+          "snippet is not a function\n\n\tin <unknown>\n\tin Component.svelte\n",
+          "snippet is not a function\n\n\tin <unknown>\n\tin Component.svelte\n",
+          "snippet is not a function\n\n\tin <unknown>\n\tin Component.svelte\n"
+        ]
+      },
+      {
+        "index": 8,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  const titles = [\"The Lord of the Rings\", \"To Kill a Mockingbird\", \"1984\"];\n</script>\n\n<snippet name=\"title\" let:bookTitle>\n  <span data-testid=\"book-title\">{bookTitle}</span>\n</snippet>\n\n<ul>\n  {#each titles as t}\n    <li data-testid=\"book-item\">{@render title(t)}</li>\n  {/each}\n</ul>",
+        "success": false,
+        "errors": [
+          "title is not defined\n\n\tin <unknown>\n\tin Component.svelte\n",
+          "title is not defined\n\n\tin <unknown>\n\tin Component.svelte\n",
+          "title is not defined\n\n\tin <unknown>\n\tin Component.svelte\n"
+        ]
+      },
+      {
+        "index": 9,
+        "code": "<svelte:options runes={true} />\n\n<script>\n  const books = [\"The Lord of the Rings\", \"To Kill a Mockingbird\", \"1984\"];\n</script>\n\n<snippet name=\"title\" let:title>\n  <span data-testid=\"book-title\">{title}</span>\n</snippet>\n\n<ul>\n  {#each books as b}\n    <li data-testid=\"book-item\">\n      {@render title title={b}}\n    </li>\n  {/each}\n</ul>",
+        "success": false,
+        "errors": [
+          "/svelte-bench/tmp/samples/openai/snippets_sample9_896b0645c772915d/Component.svelte:14:15 `{@render ...}` tags can only contain call expressions\nhttps://svelte.dev/e/render_tag_invalid_expression"
+        ]
+      }
+    ],
+    "timestamp": "2025-11-09T02:44:11.870Z"
+  }
+]

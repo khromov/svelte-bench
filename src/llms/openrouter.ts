@@ -5,6 +5,7 @@ import {
 import type { LLMProvider } from "./index";
 import OpenAI from "openai";
 import type { ChatCompletionMessageParam } from "openai/resources/chat/completions";
+import { RateLimitError } from "../utils/errors";
 import { log } from "../utils/tui-events";
 
 export class OpenRouterProvider implements LLMProvider {
@@ -156,6 +157,13 @@ export class OpenRouterProvider implements LLMProvider {
           `OpenRouter API call timed out after 5 minutes for model: ${this.modelId}`,
         );
         throw new Error(`Request timed out after 5 minutes: ${this.modelId}`);
+      }
+
+      const errorObject = error as { status?: number; code?: number };
+      const status = errorObject?.status ?? errorObject?.code;
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      if (status === 429 || /rate limit/i.test(errorMessage)) {
+        throw new RateLimitError(`OpenRouter rate limit exceeded: ${errorMessage}`);
       }
 
       console.error("Error generating code with OpenRouter:", error);

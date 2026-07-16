@@ -38,10 +38,7 @@ export async function ensureTmpDir(provider?: string): Promise<void> {
     const tmpDir = getTmpDir(provider);
     await fs.mkdir(tmpDir, { recursive: true });
   } catch (error) {
-    console.error(
-      `Error creating tmp directory for ${provider || "base"}:`,
-      error
-    );
+    console.error(`Error creating tmp directory for ${provider || "base"}:`, error);
     throw error;
   }
 }
@@ -55,10 +52,7 @@ export async function ensureCheckpointDir(provider: string): Promise<void> {
     const checkpointDir = getCheckpointDir(provider);
     await fs.mkdir(checkpointDir, { recursive: true });
   } catch (error) {
-    console.error(
-      `Error creating checkpoint directory for ${provider}:`,
-      error
-    );
+    console.error(`Error creating checkpoint directory for ${provider}:`, error);
     throw error;
   }
 }
@@ -92,16 +86,14 @@ export async function cleanCheckpointDir(provider: string): Promise<void> {
       retries++;
       console.warn(
         `Warning: Failed to clean checkpoint directory for ${provider} (attempt ${retries}/${MAX_RETRIES}):`,
-        error
+        error,
       );
 
       if (retries < MAX_RETRIES) {
         // Wait a bit before retrying to allow any file locks to clear
         await delay(RETRY_DELAY * retries);
       } else {
-        console.error(
-          `Failed to clean checkpoint directory for ${provider} after ${MAX_RETRIES} attempts`
-        );
+        console.error(`Failed to clean checkpoint directory for ${provider} after ${MAX_RETRIES} attempts`);
         // Don't throw the error, just log it and continue
       }
     }
@@ -131,21 +123,15 @@ export async function cleanTmpDir(provider?: string): Promise<void> {
     } catch (error) {
       retries++;
       console.warn(
-        `Warning: Failed to clean samples directory for ${
-          provider || "base"
-        } (attempt ${retries}/${MAX_RETRIES}):`,
-        error
+        `Warning: Failed to clean samples directory for ${provider || "base"} (attempt ${retries}/${MAX_RETRIES}):`,
+        error,
       );
 
       if (retries < MAX_RETRIES) {
         // Wait a bit before retrying to allow any file locks to clear
         await delay(RETRY_DELAY * retries);
       } else {
-        console.error(
-          `Failed to clean samples directory for ${
-            provider || "base"
-          } after ${MAX_RETRIES} attempts`
-        );
+        console.error(`Failed to clean samples directory for ${provider || "base"} after ${MAX_RETRIES} attempts`);
         // Don't throw the error, just log it and continue
       }
     }
@@ -158,11 +144,7 @@ export async function cleanTmpDir(provider?: string): Promise<void> {
  * @param content The content to write
  * @param provider The provider name (optional)
  */
-export async function writeToTmpFile(
-  filename: string,
-  content: string,
-  provider?: string
-): Promise<string> {
+export async function writeToTmpFile(filename: string, content: string, provider?: string): Promise<string> {
   let retries = 0;
 
   while (retries < MAX_RETRIES) {
@@ -176,29 +158,20 @@ export async function writeToTmpFile(
     } catch (error) {
       retries++;
       console.warn(
-        `Warning: Failed to write to ${filename} for ${
-          provider || "base"
-        } (attempt ${retries}/${MAX_RETRIES}):`,
-        error
+        `Warning: Failed to write to ${filename} for ${provider || "base"} (attempt ${retries}/${MAX_RETRIES}):`,
+        error,
       );
 
       if (retries < MAX_RETRIES) {
         await delay(RETRY_DELAY * retries);
       } else {
-        console.error(
-          `Error writing to ${filename} for ${
-            provider || "base"
-          } after ${MAX_RETRIES} attempts:`,
-          error
-        );
+        console.error(`Error writing to ${filename} for ${provider || "base"} after ${MAX_RETRIES} attempts:`, error);
         throw error;
       }
     }
   }
 
-  throw new Error(
-    `Failed to write to ${filename} after ${MAX_RETRIES} attempts`
-  );
+  throw new Error(`Failed to write to ${filename} after ${MAX_RETRIES} attempts`);
 }
 
 /**
@@ -207,11 +180,7 @@ export async function writeToTmpFile(
  * @param destFilename The name of the destination file
  * @param provider The provider name (optional)
  */
-export async function copyToTmpDir(
-  sourcePath: string,
-  destFilename: string,
-  provider?: string
-): Promise<string> {
+export async function copyToTmpDir(sourcePath: string, destFilename: string, provider?: string): Promise<string> {
   let retries = 0;
 
   while (retries < MAX_RETRIES) {
@@ -225,29 +194,20 @@ export async function copyToTmpDir(
     } catch (error) {
       retries++;
       console.warn(
-        `Warning: Failed to copy ${sourcePath} for ${
-          provider || "base"
-        } (attempt ${retries}/${MAX_RETRIES}):`,
-        error
+        `Warning: Failed to copy ${sourcePath} for ${provider || "base"} (attempt ${retries}/${MAX_RETRIES}):`,
+        error,
       );
 
       if (retries < MAX_RETRIES) {
         await delay(RETRY_DELAY * retries);
       } else {
-        console.error(
-          `Error copying ${sourcePath} for ${
-            provider || "base"
-          } after ${MAX_RETRIES} attempts:`,
-          error
-        );
+        console.error(`Error copying ${sourcePath} for ${provider || "base"} after ${MAX_RETRIES} attempts:`, error);
         throw error;
       }
     }
   }
 
-  throw new Error(
-    `Failed to copy to ${destFilename} after ${MAX_RETRIES} attempts`
-  );
+  throw new Error(`Failed to copy to ${destFilename} after ${MAX_RETRIES} attempts`);
 }
 
 /**
@@ -263,18 +223,12 @@ export async function readFile(filePath: string): Promise<string> {
       return await fs.readFile(filePath, "utf-8");
     } catch (error) {
       retries++;
-      console.warn(
-        `Warning: Failed to read ${filePath} (attempt ${retries}/${MAX_RETRIES}):`,
-        error
-      );
+      console.warn(`Warning: Failed to read ${filePath} (attempt ${retries}/${MAX_RETRIES}):`, error);
 
       if (retries < MAX_RETRIES) {
         await delay(RETRY_DELAY * retries);
       } else {
-        console.error(
-          `Error reading ${filePath} after ${MAX_RETRIES} attempts:`,
-          error
-        );
+        console.error(`Error reading ${filePath} after ${MAX_RETRIES} attempts:`, error);
         throw error;
       }
     }
@@ -301,11 +255,7 @@ export async function loadContextFile(filePath: string): Promise<string> {
     return contextContent;
   } catch (error) {
     console.error(`Error loading context file ${filePath}:`, error);
-    throw new Error(
-      `Failed to load context file: ${
-        error instanceof Error ? error.message : String(error)
-      }`
-    );
+    throw new Error(`Failed to load context file: ${error instanceof Error ? error.message : String(error)}`);
   }
 }
 
@@ -317,21 +267,17 @@ export async function loadContextFile(filePath: string): Promise<string> {
  */
 export function getCheckpointPath(provider: string, modelId: string): string {
   const checkpointDir = getCheckpointDir(provider);
-  const safeModelId = modelId.replace(/[^a-zA-Z0-9\-_]/g, '-');
+  const safeModelId = modelId.replace(/[^a-zA-Z0-9\-_]/g, "-");
   return path.join(checkpointDir, `checkpoint-${safeModelId}.json`);
 }
 
 /**
  * Save checkpoint data to file
  * @param provider The provider name
- * @param modelId The model identifier  
+ * @param modelId The model identifier
  * @param checkpointData The checkpoint data to save
  */
-export async function saveCheckpoint(
-  provider: string,
-  modelId: string,
-  checkpointData: any
-): Promise<void> {
+export async function saveCheckpoint(provider: string, modelId: string, checkpointData: any): Promise<void> {
   try {
     await ensureCheckpointDir(provider);
     const checkpointPath = getCheckpointPath(provider, modelId);
@@ -349,10 +295,7 @@ export async function saveCheckpoint(
  * @param modelId The model identifier
  * @returns The checkpoint data or null if not found
  */
-export async function loadCheckpoint(
-  provider: string,
-  modelId: string
-): Promise<any | null> {
+export async function loadCheckpoint(provider: string, modelId: string): Promise<any | null> {
   try {
     const checkpointPath = getCheckpointPath(provider, modelId);
     await fs.access(checkpointPath);
@@ -371,10 +314,7 @@ export async function loadCheckpoint(
  * @param provider The provider name
  * @param modelId The model identifier
  */
-export async function removeCheckpoint(
-  provider: string,
-  modelId: string
-): Promise<void> {
+export async function removeCheckpoint(provider: string, modelId: string): Promise<void> {
   try {
     const checkpointPath = getCheckpointPath(provider, modelId);
     await fs.unlink(checkpointPath);

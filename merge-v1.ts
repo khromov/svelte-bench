@@ -20,10 +20,7 @@ function extractTimestamp(filename: string): Date | null {
   const match = filename.match(/(\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}\.\d{3}Z)/);
   if (match && match[1]) {
     // Replace dashes with colons in the time part to make a valid ISO string
-    const isoTimestamp = match[1].replace(
-      /T(\d{2})-(\d{2})-(\d{2})/,
-      "T$1:$2:$3"
-    );
+    const isoTimestamp = match[1].replace(/T(\d{2})-(\d{2})-(\d{2})/, "T$1:$2:$3");
     return new Date(isoTimestamp);
   }
   return null;
@@ -44,7 +41,7 @@ async function getBenchmarkFiles(): Promise<string[]> {
         file.endsWith(".json") &&
         file.includes("benchmark-results") &&
         !file.includes("with-context") &&
-        file !== "benchmark-results-merged.json"
+        file !== "benchmark-results-merged.json",
     )
     .map((file) => path.join(benchmarksDir, file));
 }
@@ -65,15 +62,11 @@ async function readBenchmarkFile(filePath: string): Promise<HumanEvalResult[]> {
 /**
  * Find the latest file for each provider/model combination
  */
-async function findLatestResultsForEachModel(): Promise<
-  Map<string, LatestFileInfo>
-> {
+async function findLatestResultsForEachModel(): Promise<Map<string, LatestFileInfo>> {
   const benchmarkFiles = await getBenchmarkFiles();
   const latestFiles = new Map<string, LatestFileInfo>();
 
-  console.log(
-    `🔍 Found ${benchmarkFiles.length} eligible benchmark files (excluding with-context files)`
-  );
+  console.log(`🔍 Found ${benchmarkFiles.length} eligible benchmark files (excluding with-context files)`);
 
   for (const filePath of benchmarkFiles) {
     const filename = path.basename(filePath);
@@ -92,17 +85,11 @@ async function findLatestResultsForEachModel(): Promise<
     for (const result of results) {
       const key = `${result.provider}-${result.modelId}`;
 
-      if (
-        !latestFiles.has(key) ||
-        timestamp > latestFiles.get(key)!.timestamp
-      ) {
+      if (!latestFiles.has(key) || timestamp > latestFiles.get(key)!.timestamp) {
         latestFiles.set(key, {
           filePath,
           timestamp,
-          results: results.filter(
-            (r) =>
-              r.provider === result.provider && r.modelId === result.modelId
-          ),
+          results: results.filter((r) => r.provider === result.provider && r.modelId === result.modelId),
         });
       }
     }
@@ -125,26 +112,18 @@ async function mergeAndSaveResults(): Promise<void> {
   const includedFiles = new Set<string>();
 
   for (const [key, info] of latestResultsMap.entries()) {
-    console.log(
-      `📊 Including results for ${key} from ${path.basename(info.filePath)}`
-    );
+    console.log(`📊 Including results for ${key} from ${path.basename(info.filePath)}`);
     mergedResults.push(...info.results);
     includedFiles.add(info.filePath);
   }
 
   // Save merged results
   await ensureBenchmarksDir();
-  const outputPath = path.resolve(
-    process.cwd(),
-    "benchmarks",
-    "benchmark-results-merged.json"
-  );
+  const outputPath = path.resolve(process.cwd(), "benchmarks", "benchmark-results-merged.json");
 
   await fs.writeFile(outputPath, JSON.stringify(mergedResults, null, 2));
 
-  console.log(
-    `\n✅ Successfully merged results from ${includedFiles.size} files`
-  );
+  console.log(`\n✅ Successfully merged results from ${includedFiles.size} files`);
   console.log(`✅ Total provider/model combinations: ${latestResultsMap.size}`);
   console.log(`✅ Total result entries: ${mergedResults.length}`);
   console.log(`✅ Merged results saved to: ${outputPath}`);

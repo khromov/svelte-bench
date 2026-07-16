@@ -36,18 +36,8 @@ export async function ensureRequiredDirectories(): Promise<void> {
 
     // Create sample and checkpoint directories for each provider
     for (const provider of providerNames) {
-      const sampleDir = path.resolve(
-        process.cwd(),
-        "tmp",
-        "samples",
-        provider.toLowerCase()
-      );
-      const checkpointDir = path.resolve(
-        process.cwd(),
-        "tmp",
-        "checkpoint",
-        provider.toLowerCase()
-      );
+      const sampleDir = path.resolve(process.cwd(), "tmp", "samples", provider.toLowerCase());
+      const checkpointDir = path.resolve(process.cwd(), "tmp", "checkpoint", provider.toLowerCase());
       await fs.mkdir(sampleDir, { recursive: true });
       await fs.mkdir(checkpointDir, { recursive: true });
     }

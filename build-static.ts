@@ -10,9 +10,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 /**
  * Load all benchmark results from the benchmarks directory
  */
-async function loadBenchmarkFiles(): Promise<
-  Array<{ name: string; path: string; mtime: number }>
-> {
+async function loadBenchmarkFiles(): Promise<Array<{ name: string; path: string; mtime: number }>> {
   await ensureBenchmarksDir();
 
   const benchmarksDir = path.resolve(process.cwd(), "benchmarks");
@@ -31,7 +29,7 @@ async function loadBenchmarkFiles(): Promise<
         path: filePath,
         mtime: stats.mtime.getTime(),
       };
-    })
+    }),
   );
 
   // Sort all files by name using reverse natural sort order (Z to A)
@@ -49,19 +47,15 @@ async function loadBenchmarkFiles(): Promise<
 /**
  * Load all benchmark results from the benchmarks/v1 directory
  */
-async function loadV1BenchmarkFiles(): Promise<
-  Array<{ name: string; path: string; mtime: number }>
-> {
+async function loadV1BenchmarkFiles(): Promise<Array<{ name: string; path: string; mtime: number }>> {
   const benchmarksDir = path.resolve(process.cwd(), "benchmarks", "v1");
 
   try {
     const files = await fs.readdir(benchmarksDir);
 
     // Filter only JSON files, exclude merged files
-    const jsonFiles = files.filter((file) =>
-      file.endsWith(".json") &&
-      file.includes("benchmark-results") &&
-      !file.includes("merged")
+    const jsonFiles = files.filter(
+      (file) => file.endsWith(".json") && file.includes("benchmark-results") && !file.includes("merged"),
     );
 
     // Get file details with modification time
@@ -74,7 +68,7 @@ async function loadV1BenchmarkFiles(): Promise<
           path: filePath,
           mtime: stats.mtime.getTime(),
         };
-      })
+      }),
     );
 
     // Sort all files by name using reverse natural sort order (Z to A)
@@ -125,9 +119,7 @@ function groupBenchmarkResults(results: HumanEvalResult[]): ProviderData[] {
   });
 
   // Sort providers alphabetically
-  const sortedProviders = Object.keys(byProvider).sort((a, b) =>
-    a.localeCompare(b)
-  );
+  const sortedProviders = Object.keys(byProvider).sort((a, b) => a.localeCompare(b));
 
   // Build the final structure
   const groupedResults: ProviderData[] = [];
@@ -149,10 +141,13 @@ function groupBenchmarkResults(results: HumanEvalResult[]): ProviderData[] {
     // Sort models alphabetically
     providerData.models = Object.entries(providerData.models)
       .sort(([modelA], [modelB]) => modelA.localeCompare(modelB))
-      .reduce((acc, [model, results]) => {
-        acc[model] = results;
-        return acc;
-      }, {} as Record<string, any[]>);
+      .reduce(
+        (acc, [model, results]) => {
+          acc[model] = results;
+          return acc;
+        },
+        {} as Record<string, any[]>,
+      );
 
     groupedResults.push(providerData);
   }
@@ -166,12 +161,10 @@ function groupBenchmarkResults(results: HumanEvalResult[]): ProviderData[] {
 async function generateBenchmarkHTML(
   benchmarkData: HumanEvalResult[],
   fileName: string,
-  benchmarkFiles: Array<{ name: string; path: string; mtime: number }>
+  benchmarkFiles: Array<{ name: string; path: string; mtime: number }>,
 ): Promise<string> {
   const groupedResults = groupBenchmarkResults(benchmarkData);
-  const benchmarkDataB64 = Buffer.from(JSON.stringify(groupedResults)).toString(
-    "base64"
-  );
+  const benchmarkDataB64 = Buffer.from(JSON.stringify(groupedResults)).toString("base64");
 
   // Format benchmark files for the template
   const formattedBenchmarkFiles = benchmarkFiles.map((file) => ({
@@ -180,9 +173,7 @@ async function generateBenchmarkHTML(
   }));
 
   // Check if context information is present in the results
-  const hasContext = benchmarkData.some(
-    (result) => result.context && result.context.used
-  );
+  const hasContext = benchmarkData.some((result) => result.context && result.context.used);
 
   const contextInfo = hasContext
     ? {
@@ -196,16 +187,20 @@ async function generateBenchmarkHTML(
   const template = await fs.readFile(templatePath, "utf-8");
 
   // Render the template with our data - include filename option for includes
-  const html = ejs.render(template, {
-    benchmarkFiles: formattedBenchmarkFiles,
-    selectedFile: fileName,
-    groupedResults,
-    benchmarkDataB64,
-    contextInfo,
-    isStaticBuild: true,
-  }, {
-    filename: templatePath, // This tells EJS where to resolve includes from
-  });
+  const html = ejs.render(
+    template,
+    {
+      benchmarkFiles: formattedBenchmarkFiles,
+      selectedFile: fileName,
+      groupedResults,
+      benchmarkDataB64,
+      contextInfo,
+      isStaticBuild: true,
+    },
+    {
+      filename: templatePath, // This tells EJS where to resolve includes from
+    },
+  );
 
   return html;
 }
@@ -214,7 +209,7 @@ async function generateBenchmarkHTML(
  * Generate an index HTML file that lists all benchmark results
  */
 async function generateIndexHTML(
-  benchmarkFiles: Array<{ name: string; path: string; mtime: number }>
+  benchmarkFiles: Array<{ name: string; path: string; mtime: number }>,
 ): Promise<string> {
   // Load the EJS template
   const templatePath = path.join(__dirname, "views", "index.ejs");
@@ -227,16 +222,20 @@ async function generateIndexHTML(
   }));
 
   // Render the template with minimal data to show just the file list
-  const html = ejs.render(template, {
-    benchmarkFiles: formattedBenchmarkFiles,
-    selectedFile: null,
-    groupedResults: [],
-    benchmarkDataB64: "",
-    isStaticBuild: true,
-    isIndexPage: true,
-  }, {
-    filename: templatePath, // This tells EJS where to resolve includes from
-  });
+  const html = ejs.render(
+    template,
+    {
+      benchmarkFiles: formattedBenchmarkFiles,
+      selectedFile: null,
+      groupedResults: [],
+      benchmarkDataB64: "",
+      isStaticBuild: true,
+      isIndexPage: true,
+    },
+    {
+      filename: templatePath, // This tells EJS where to resolve includes from
+    },
+  );
 
   return html;
 }
@@ -245,7 +244,7 @@ async function generateIndexHTML(
  * Generate an index HTML file that lists all v1 benchmark results with warnings
  */
 async function generateV1IndexHTML(
-  benchmarkFiles: Array<{ name: string; path: string; mtime: number }>
+  benchmarkFiles: Array<{ name: string; path: string; mtime: number }>,
 ): Promise<string> {
   // Load the v1 EJS template
   const templatePath = path.join(__dirname, "views", "index-v1.ejs");
@@ -258,17 +257,21 @@ async function generateV1IndexHTML(
   }));
 
   // Render the template with minimal data to show just the file list
-  const html = ejs.render(template, {
-    benchmarkFiles: formattedBenchmarkFiles,
-    selectedFile: null,
-    groupedResults: [],
-    benchmarkDataB64: "",
-    isStaticBuild: true,
-    isIndexPage: true,
-    isV1IndexPage: true,
-  }, {
-    filename: templatePath, // This tells EJS where to resolve includes from
-  });
+  const html = ejs.render(
+    template,
+    {
+      benchmarkFiles: formattedBenchmarkFiles,
+      selectedFile: null,
+      groupedResults: [],
+      benchmarkDataB64: "",
+      isStaticBuild: true,
+      isIndexPage: true,
+      isV1IndexPage: true,
+    },
+    {
+      filename: templatePath, // This tells EJS where to resolve includes from
+    },
+  );
 
   return html;
 }
@@ -277,11 +280,7 @@ async function generateV1IndexHTML(
  * Check if merged benchmark results file exists
  */
 async function checkForMergedResultsFile(): Promise<string | null> {
-  const mergedFilePath = path.resolve(
-    process.cwd(),
-    "benchmarks",
-    "benchmark-results-merged.json"
-  );
+  const mergedFilePath = path.resolve(process.cwd(), "benchmarks", "benchmark-results-merged.json");
 
   try {
     await fs.access(mergedFilePath);
@@ -296,12 +295,7 @@ async function checkForMergedResultsFile(): Promise<string | null> {
  * Check if v1 merged benchmark results file exists
  */
 async function checkForV1MergedResultsFile(): Promise<string | null> {
-  const mergedFilePath = path.resolve(
-    process.cwd(),
-    "benchmarks",
-    "v1",
-    "v1-benchmark-results-merged.json"
-  );
+  const mergedFilePath = path.resolve(process.cwd(), "benchmarks", "v1", "v1-benchmark-results-merged.json");
 
   try {
     await fs.access(mergedFilePath);
@@ -315,19 +309,12 @@ async function checkForV1MergedResultsFile(): Promise<string | null> {
 /**
  * Generate HTML content for v1 benchmark results using EJS
  */
-async function generateV1BenchmarkHTML(
-  benchmarkData: HumanEvalResult[],
-  fileName: string
-): Promise<string> {
+async function generateV1BenchmarkHTML(benchmarkData: HumanEvalResult[], fileName: string): Promise<string> {
   const groupedResults = groupBenchmarkResults(benchmarkData);
-  const benchmarkDataB64 = Buffer.from(JSON.stringify(groupedResults)).toString(
-    "base64"
-  );
+  const benchmarkDataB64 = Buffer.from(JSON.stringify(groupedResults)).toString("base64");
 
   // Check if context information is present in the results
-  const hasContext = benchmarkData.some(
-    (result) => result.context && result.context.used
-  );
+  const hasContext = benchmarkData.some((result) => result.context && result.context.used);
 
   const contextInfo = hasContext
     ? {
@@ -341,17 +328,21 @@ async function generateV1BenchmarkHTML(
   const template = await fs.readFile(templatePath, "utf-8");
 
   // Render the template with our data - include filename option for includes
-  const html = ejs.render(template, {
-    benchmarkFiles: [],
-    selectedFile: fileName,
-    groupedResults,
-    benchmarkDataB64,
-    contextInfo,
-    isStaticBuild: true,
-    isV1Build: true,
-  }, {
-    filename: templatePath, // This tells EJS where to resolve includes from
-  });
+  const html = ejs.render(
+    template,
+    {
+      benchmarkFiles: [],
+      selectedFile: fileName,
+      groupedResults,
+      benchmarkDataB64,
+      contextInfo,
+      isStaticBuild: true,
+      isV1Build: true,
+    },
+    {
+      filename: templatePath, // This tells EJS where to resolve includes from
+    },
+  );
 
   return html;
 }
@@ -368,11 +359,7 @@ async function buildStaticFiles(): Promise<void> {
 
     // Create an index.html file
     const indexHtml = await generateIndexHTML(benchmarkFiles);
-    const indexHtmlPath = path.resolve(
-      process.cwd(),
-      "benchmarks",
-      "index.html"
-    );
+    const indexHtmlPath = path.resolve(process.cwd(), "benchmarks", "index.html");
     await fs.writeFile(indexHtmlPath, indexHtml);
     console.log(`📝 Created index.html at ${indexHtmlPath}`);
 
@@ -380,12 +367,7 @@ async function buildStaticFiles(): Promise<void> {
     const v1BenchmarkFiles = await loadV1BenchmarkFiles();
     if (v1BenchmarkFiles.length > 0) {
       const v1IndexHtml = await generateV1IndexHTML(v1BenchmarkFiles);
-      const v1IndexHtmlPath = path.resolve(
-        process.cwd(),
-        "benchmarks",
-        "v1",
-        "index.html"
-      );
+      const v1IndexHtmlPath = path.resolve(process.cwd(), "benchmarks", "v1", "index.html");
       await fs.writeFile(v1IndexHtmlPath, v1IndexHtml);
       console.log(`📝 Created v1/index.html at ${v1IndexHtmlPath}`);
     }
@@ -403,19 +385,11 @@ async function buildStaticFiles(): Promise<void> {
       const benchmarkData = await loadBenchmarkData(file.path);
 
       // Generate HTML
-      const html = await generateBenchmarkHTML(
-        benchmarkData,
-        file.name,
-        benchmarkFiles
-      );
+      const html = await generateBenchmarkHTML(benchmarkData, file.name, benchmarkFiles);
 
       // Write HTML file
       const htmlFileName = file.name.replace(".json", ".html");
-      const htmlFilePath = path.resolve(
-        process.cwd(),
-        "benchmarks",
-        htmlFileName
-      );
+      const htmlFilePath = path.resolve(process.cwd(), "benchmarks", htmlFileName);
       await fs.writeFile(htmlFilePath, html);
 
       console.log(`📝 Created ${htmlFileName}`);
@@ -431,26 +405,16 @@ async function buildStaticFiles(): Promise<void> {
       const mergedBenchmarkData = await loadBenchmarkData(mergedFilePath);
 
       // Generate HTML for merged results
-      const mergedHtml = await generateBenchmarkHTML(
-        mergedBenchmarkData,
-        mergedFileName,
-        benchmarkFiles
-      );
+      const mergedHtml = await generateBenchmarkHTML(mergedBenchmarkData, mergedFileName, benchmarkFiles);
 
       // Write HTML file for merged results
-      const htmlFileName = mergedFileName.replace('.json', '.html');
-      const mergedHtmlFilePath = path.resolve(
-        process.cwd(),
-        "benchmarks",
-        htmlFileName
-      );
+      const htmlFileName = mergedFileName.replace(".json", ".html");
+      const mergedHtmlFilePath = path.resolve(process.cwd(), "benchmarks", htmlFileName);
       await fs.writeFile(mergedHtmlFilePath, mergedHtml);
 
       console.log(`📝 Created ${htmlFileName}`);
     } else {
-      console.log(
-        `ℹ️ No merged results file found. Run 'npm run merge' to create one.`
-      );
+      console.log(`ℹ️ No merged results file found. Run 'npm run merge' to create one.`);
     }
 
     // Check for v1 merged results file and process it
@@ -463,31 +427,21 @@ async function buildStaticFiles(): Promise<void> {
       const v1MergedBenchmarkData = await loadBenchmarkData(v1MergedFilePath);
 
       // Generate HTML for v1 merged results
-      const v1MergedHtml = await generateV1BenchmarkHTML(
-        v1MergedBenchmarkData,
-        v1MergedFileName
-      );
+      const v1MergedHtml = await generateV1BenchmarkHTML(v1MergedBenchmarkData, v1MergedFileName);
 
-      // Write HTML file for v1 merged results  
-      const v1HtmlFileName = v1MergedFileName.replace('.json', '.html');
-      const v1MergedHtmlFilePath = path.resolve(
-        process.cwd(),
-        "benchmarks",
-        "v1",
-        v1HtmlFileName
-      );
+      // Write HTML file for v1 merged results
+      const v1HtmlFileName = v1MergedFileName.replace(".json", ".html");
+      const v1MergedHtmlFilePath = path.resolve(process.cwd(), "benchmarks", "v1", v1HtmlFileName);
       await fs.writeFile(v1MergedHtmlFilePath, v1MergedHtml);
 
       console.log(`📝 Created v1/${v1HtmlFileName}`);
     } else {
-      console.log(
-        `ℹ️ No v1 merged results file found. Creating merged v1 results from all v1 files...`
-      );
+      console.log(`ℹ️ No v1 merged results file found. Creating merged v1 results from all v1 files...`);
 
       // Create proper v1 merged results using the same logic as the main merge
       try {
         console.log(`🔄 Creating v1 merged results from all v1 files...`);
-        
+
         // Function to extract timestamp from filename (same as merge.ts)
         function extractTimestamp(filename: string): Date | null {
           const match = filename.match(/(\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}\.\d{3}Z)/);
@@ -500,20 +454,21 @@ async function buildStaticFiles(): Promise<void> {
 
         const v1Dir = path.resolve(process.cwd(), "benchmarks", "v1");
         const v1Files = await fs.readdir(v1Dir);
-        
+
         // Get all JSON files (exclude already merged ones)
         const v1JsonFiles = v1Files
-          .filter((file) => 
-            file.endsWith(".json") &&
-            file.includes("benchmark-results") &&
-            !file.includes("with-context") &&
-            !file.includes("merged")
+          .filter(
+            (file) =>
+              file.endsWith(".json") &&
+              file.includes("benchmark-results") &&
+              !file.includes("with-context") &&
+              !file.includes("merged"),
           )
           .map((file) => path.join(v1Dir, file));
 
         if (v1JsonFiles.length > 0) {
           console.log(`🔍 Found ${v1JsonFiles.length} v1 benchmark files to merge`);
-          
+
           // Use the same merging logic as the main merge script
           const latestFiles = new Map<string, { filePath: string; timestamp: Date; results: HumanEvalResult[] }>();
 
@@ -527,7 +482,7 @@ async function buildStaticFiles(): Promise<void> {
             }
 
             const results = await loadBenchmarkData(filePath);
-            
+
             // Group by provider/model combinations
             for (const result of results) {
               const key = `${result.provider}-${result.modelId}`;
@@ -555,7 +510,7 @@ async function buildStaticFiles(): Promise<void> {
           // Save merged JSON
           const v1MergedJsonPath = path.resolve(v1Dir, "v1-benchmark-results-merged.json");
           await fs.writeFile(v1MergedJsonPath, JSON.stringify(mergedResults, null, 2));
-          
+
           // Generate HTML
           const v1Html = await generateV1BenchmarkHTML(mergedResults, "v1-benchmark-results-merged.json");
           const v1HtmlFilePath = path.resolve(v1Dir, "v1-benchmark-results-merged.html");

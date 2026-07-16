@@ -62,6 +62,10 @@ func FetchModels(providerKey, apiKey string) ([]Model, error) {
 		models, err = fetchFireworksModels(apiKey)
 	case "Z_AI_API_KEY":
 		models, err = fetchZAIModels(apiKey)
+	case "META_API_KEY":
+		models = []Model{{ID: "muse-spark-1.1", Name: "Muse Spark 1.1", IsPopular: true}}
+	case "CURSOR_API_KEY":
+		models = []Model{{ID: "composer-1", Name: "Composer 1", IsPopular: true}}
 	default:
 		return nil, fmt.Errorf("unsupported provider: %s", providerKey)
 	}
@@ -789,11 +793,11 @@ func fetchZAIModels(apiKey string) ([]Model, error) {
 
 func getZAIModelDescription(modelID string) string {
 	descriptions := map[string]string{
-		"glm-4.5":            "GLM-4.5 flagship model",
-		"glm-4.5-air":        "GLM-4.5 Air (lightweight)",
-		"glm-4.5-x":          "GLM-4.5 X (extended)",
-		"glm-4.5-airx":       "GLM-4.5 AirX",
-		"glm-4.5-flash":      "GLM-4.5 Flash (fastest)",
+		"glm-4.5":             "GLM-4.5 flagship model",
+		"glm-4.5-air":         "GLM-4.5 Air (lightweight)",
+		"glm-4.5-x":           "GLM-4.5 X (extended)",
+		"glm-4.5-airx":        "GLM-4.5 AirX",
+		"glm-4.5-flash":       "GLM-4.5 Flash (fastest)",
 		"glm-4-32b-0414-128k": "GLM-4 32B (128k context)",
 	}
 

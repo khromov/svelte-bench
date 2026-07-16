@@ -8,9 +8,7 @@ describe("NumberDoubler component", () => {
     render(NumberDoubler);
 
     expect(screen.getByTestId("number-value")).toHaveTextContent("Number: 5");
-    expect(screen.getByTestId("doubled-value")).toHaveTextContent(
-      "Doubled: 10"
-    );
+    expect(screen.getByTestId("doubled-value")).toHaveTextContent("Doubled: 10");
   });
 
   test("updates doubled value when number increments", async () => {
@@ -20,16 +18,12 @@ describe("NumberDoubler component", () => {
     await user.click(screen.getByTestId("increment-button"));
 
     expect(screen.getByTestId("number-value")).toHaveTextContent("Number: 6");
-    expect(screen.getByTestId("doubled-value")).toHaveTextContent(
-      "Doubled: 12"
-    );
+    expect(screen.getByTestId("doubled-value")).toHaveTextContent("Doubled: 12");
 
     // Click again
     await user.click(screen.getByTestId("increment-button"));
 
     expect(screen.getByTestId("number-value")).toHaveTextContent("Number: 7");
-    expect(screen.getByTestId("doubled-value")).toHaveTextContent(
-      "Doubled: 14"
-    );
+    expect(screen.getByTestId("doubled-value")).toHaveTextContent("Doubled: 14");
   });
 });

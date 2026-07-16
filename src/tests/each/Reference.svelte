@@ -2,7 +2,7 @@
 
 <script>
   let characters = $state(["Jerry", "Elaine", "Kramer"]);
-  
+
   function addGeorge() {
     characters = [...characters, "George"];
   }
@@ -14,7 +14,5 @@
       <li data-testid="character">{character}</li>
     {/each}
   </ul>
-  <button data-testid="add-george-button" onclick={addGeorge}>
-    Add George
-  </button>
+  <button data-testid="add-george-button" onclick={addGeorge}> Add George </button>
 </div>

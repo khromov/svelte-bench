@@ -12,6 +12,7 @@ import {
   runAllTestsHumanEval as runAllTestsHumanEvalSequential,
 } from "./src/utils/test-manager";
 import type { HumanEvalResult } from "./src/utils/humaneval";
+import { isRateLimitError } from "./src/utils/errors";
 import { ensureRequiredDirectories } from "./src/utils/ensure-dirs";
 import { validateModels } from "./src/utils/model-validator";
 import { isTUIMode, emitComplete, log } from "./src/utils/tui-events";
@@ -237,6 +238,12 @@ async function runBenchmark() {
 
           return results;
         } catch (error) {
+          if (isRateLimitError(error)) {
+            const message = error instanceof Error ? error.message : String(error);
+            console.error(`\n❌ ${message}`);
+            console.error("Turn off parallel execution and retry.");
+            process.exit(1);
+          }
           console.error(
             `Error running tests with ${providerWithModel.name} (${providerWithModel.modelId}):`,
             error
@@ -293,6 +300,9 @@ async function runBenchmark() {
             }
           }
         } catch (error) {
+          if (isRateLimitError(error)) {
+            throw error;
+          }
           console.error(
             `Error running tests with ${providerWithModel.name} (${providerWithModel.modelId}):`,
             error

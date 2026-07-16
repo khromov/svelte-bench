@@ -10,12 +10,17 @@ SvelteBench evaluates LLM-generated Svelte components by testing them against pr
 
 SvelteBench supports multiple LLM providers:
 
-- **OpenAI** - GPT-4, GPT-4o, o1, o3, o4 models
-- **Anthropic** - Claude 3.5, Claude 4 models
-- **Google** - Gemini 2.5 models
-- **OpenRouter** - Access to 100+ models through a unified API
-- **Ollama** - Run models locally (Llama, Mistral, etc.)
-- **Z.ai** - GLM-4 and other models
+- **OpenAI**
+- **Anthropic**
+- **Google Gemini**
+- **OpenRouter** - Access to models through a unified API
+- **Fireworks** - Fireworks-hosted models through its OpenAI-compatible API
+- **Ollama** - Run models locally
+- **Z.ai**
+- **Moonshot**
+- **xAI**
+- **Meta**
+- **Cursor**
 
 ## Setup
 
@@ -45,11 +50,26 @@ OPENROUTER_SITE_URL=https://github.com/khromov/svelte-bench  # Optional
 OPENROUTER_SITE_NAME=SvelteBench  # Optional
 OPENROUTER_PROVIDER=deepseek  # Optional - preferred provider routing
 
+# Fireworks (optional)
+FIREWORKS_API_KEY=your_fireworks_api_key_here
+
 # Ollama (optional - defaults to http://127.0.0.1:11434)
 OLLAMA_HOST=http://127.0.0.1:11434
 
 # Z.ai (optional)
 Z_AI_API_KEY=your_z_ai_api_key_here
+
+# Moonshot (optional)
+MOONSHOT_API_KEY=your_moonshot_api_key_here
+
+# xAI (optional)
+XAI_API_KEY=your_xai_api_key_here
+
+# Meta (optional)
+META_API_KEY=your_meta_api_key_here
+
+# Cursor (optional)
+CURSOR_API_KEY=your_cursor_api_key_here
 ```
 
 You only need to configure the providers you want to test with.
@@ -62,8 +82,12 @@ You only need to configure the providers you want to test with.
 # Run the full benchmark (sequential execution)
 pnpm start
 
+# `pnpm start` launches the interactive Bubble Tea TUI.
+# The non-interactive/env-compatible runner remains available as:
+pnpm run-tests
+
 # Run with parallel sample generation (faster)
-PARALLEL_EXECUTION=true pnpm start
+PARALLEL_EXECUTION=true pnpm run-tests
 
 # Run tests only (without building visualization)
 pnpm run run-tests
@@ -84,9 +108,9 @@ For faster development, or to run just one provider/model, you can enable debug 
 
 ```
 DEBUG_MODE=true
-DEBUG_PROVIDER=anthropic
-DEBUG_MODEL=claude-3-7-sonnet-20250219
-DEBUG_TEST=counter
+DEBUG_PROVIDER=<provider>
+DEBUG_MODEL=<model-id>
+DEBUG_TEST=<test-name>
 ```
 
 Debug mode runs only one provider/model combination, making it much faster for testing during development.
@@ -97,8 +121,8 @@ You can now specify multiple models to test in debug mode by providing a comma-s
 
 ```
 DEBUG_MODE=true
-DEBUG_PROVIDER=anthropic
-DEBUG_MODEL=claude-3-7-sonnet-20250219,claude-opus-4-20250514,claude-sonnet-4-20250514
+DEBUG_PROVIDER=<provider>
+DEBUG_MODEL=<model-id-1>,<model-id-2>,<model-id-3>
 ```
 
 This will run tests with all three models sequentially while still staying within the same provider.
@@ -157,6 +181,7 @@ When running with a context file, the results filename will include "with-contex
 ### Versioning System
 
 **Current Results**: All new benchmark runs produce current results with:
+
 - Fixed test prompts and improved error handling
 - Corrected Svelte syntax examples
 - Standard naming without version suffixes
@@ -182,6 +207,7 @@ pnpm run build-v1
 ```
 
 This creates merged JSON and HTML files:
+
 - `pnpm run merge` → `benchmarks/benchmark-results-merged.{json,html}` (current results)
 - `pnpm run merge-v1` → `benchmarks/v1/benchmark-results-merged.{json,html}` (legacy results)
 

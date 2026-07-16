@@ -9,9 +9,7 @@ describe("TextAnalyzer component", () => {
 
     expect(screen.getByTestId("word-count")).toHaveTextContent("Words: 0");
     expect(screen.getByTestId("char-count")).toHaveTextContent("Characters: 0");
-    expect(screen.getByTestId("length-indicator")).toHaveTextContent(
-      "Status: Short text"
-    );
+    expect(screen.getByTestId("length-indicator")).toHaveTextContent("Status: Short text");
   });
 
   test("updates counts when text is entered", async () => {
@@ -24,27 +22,19 @@ describe("TextAnalyzer component", () => {
     await user.type(input, "Hello world");
 
     expect(screen.getByTestId("word-count")).toHaveTextContent("Words: 2");
-    expect(screen.getByTestId("char-count")).toHaveTextContent(
-      "Characters: 11"
-    );
-    expect(screen.getByTestId("length-indicator")).toHaveTextContent(
-      "Status: Short text"
-    );
+    expect(screen.getByTestId("char-count")).toHaveTextContent("Characters: 11");
+    expect(screen.getByTestId("length-indicator")).toHaveTextContent("Status: Short text");
 
     // Clear and enter a longer text
     await user.clear(input);
     await user.type(
       input,
-      "This is a much longer text that should have more than fifteen words so that we can test the long text indicator functionality properly"
+      "This is a much longer text that should have more than fifteen words so that we can test the long text indicator functionality properly",
     );
 
     expect(screen.getByTestId("word-count")).toHaveTextContent("Words: 24");
-    expect(screen.getByTestId("char-count")).toHaveTextContent(
-      "Characters: 134"
-    );
-    expect(screen.getByTestId("length-indicator")).toHaveTextContent(
-      "Status: Long text"
-    );
+    expect(screen.getByTestId("char-count")).toHaveTextContent("Characters: 134");
+    expect(screen.getByTestId("length-indicator")).toHaveTextContent("Status: Long text");
   });
 
   test("clear button resets the text", async () => {
@@ -66,9 +56,7 @@ describe("TextAnalyzer component", () => {
     // Verify everything is reset
     expect(screen.getByTestId("word-count")).toHaveTextContent("Words: 0");
     expect(screen.getByTestId("char-count")).toHaveTextContent("Characters: 0");
-    expect(screen.getByTestId("length-indicator")).toHaveTextContent(
-      "Status: Short text"
-    );
+    expect(screen.getByTestId("length-indicator")).toHaveTextContent("Status: Short text");
     expect(input).toHaveValue("");
   });
 });

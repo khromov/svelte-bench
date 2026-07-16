@@ -10,11 +10,11 @@ import (
 
 // Config holds the application configuration
 type Config struct {
-	APIKeys          map[string]string
-	LastProvider     string
-	LastModel        string
-	LastExecMode     string
-	SaveToFile       bool
+	APIKeys      map[string]string
+	LastProvider string
+	LastModel    string
+	LastExecMode string
+	SaveToFile   bool
 }
 
 // Provider represents an LLM provider
@@ -38,6 +38,8 @@ func AllProviders() []Provider {
 		{Name: "Mistral", EnvKey: "MISTRAL_API_KEY"},
 		{Name: "Cohere", EnvKey: "COHERE_API_KEY"},
 		{Name: "Fireworks", EnvKey: "FIREWORKS_API_KEY"},
+		{Name: "Meta", EnvKey: "META_API_KEY"},
+		{Name: "Cursor", EnvKey: "CURSOR_API_KEY"},
 		{Name: "Moonshot", EnvKey: "MOONSHOT_API_KEY"},
 		{Name: "Z.ai", EnvKey: "Z_AI_API_KEY"},
 	}
@@ -123,15 +125,9 @@ func (c *Config) SaveToEnv() error {
 		}
 	}
 
-	if c.LastProvider != "" {
-		existing["LAST_PROVIDER"] = c.LastProvider
-	}
-	if c.LastModel != "" {
-		existing["LAST_MODEL"] = c.LastModel
-	}
-	if c.LastExecMode != "" {
-		existing["LAST_EXECUTION_MODE"] = c.LastExecMode
-	}
+	// The TUI owns the run selection for the current session. Keep .env focused
+	// on credentials and preserve legacy LAST_* values when they already exist,
+	// but do not create or update them for new TUI runs.
 
 	// Write back
 	outFile, err := os.Create(envPath)

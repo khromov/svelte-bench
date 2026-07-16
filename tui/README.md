@@ -59,16 +59,9 @@ The TUI infrastructure is complete with:
 - ✅ TypeScript bridge (runner, parser, model API)
 - ✅ TUI event emitter in TypeScript
 
-### Next Steps:
-- [ ] Implement full screen flow (welcome → API config → execution mode → provider/model select → benchmark → results)
-- [ ] Wire up TypeScript event emitters throughout index.ts
-- [ ] Add real-time progress tracking
-- [ ] Implement results export
-
-For now, use the CLI directly:
-```bash
-DEBUG_MODE=true DEBUG_PROVIDER=openai DEBUG_MODEL=gpt-4o-mini pnpm start
-```
+The TUI is the primary interaction path. The existing TypeScript runner is
+still available for scripts and CI via `pnpm run-tests`, and all existing
+environment variables remain supported there.
 
 ## Contributing
 
