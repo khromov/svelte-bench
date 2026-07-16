@@ -41,6 +41,8 @@ func (m ResultsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg.String() {
 		case "ctrl+c", "q":
 			return m, tea.Quit
+		case "esc", "left":
+			return NewWelcomeModel(m.state.Config), nil
 
 		case "up":
 			if m.selectedOption > 0 {
@@ -195,7 +197,7 @@ func (m ResultsModel) View() string {
 	lines = append(lines, "")
 	help := lipgloss.NewStyle().
 		Foreground(styles.GrayDim).
-		Render("↑/↓: Navigate • Enter: Select • Q/Ctrl+C: Quit")
+		Render("↑/↓: Navigate • Enter: Select • Esc/←: Back • Q/Ctrl+C: Quit")
 	lines = append(lines, help)
 
 	content := lipgloss.NewStyle().

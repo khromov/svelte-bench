@@ -95,6 +95,8 @@ func (m APIKeyConfigModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg.String() {
 		case "ctrl+c":
 			return m, tea.Quit
+		case "esc", "left":
+			return NewWelcomeModel(m.state.Config), nil
 
 		case "up":
 			if m.selectedIndex > 0 {
@@ -230,9 +232,9 @@ func (m APIKeyConfigModel) View() string {
 	// Help
 	lines = append(lines, "")
 	if m.state.Config.HasAnyAPIKeys() {
-		lines = append(lines, styles.HelpStyle.Render("↑↓: Navigate • Enter: Edit • Tab: Continue • Ctrl+C: Quit"))
+		lines = append(lines, styles.HelpStyle.Render("↑↓: Navigate • Enter: Edit • Tab: Continue • Esc/←: Back • Ctrl+C: Quit"))
 	} else {
-		lines = append(lines, styles.HelpStyle.Render("↑↓: Navigate • Enter: Edit • Ctrl+C: Quit"))
+		lines = append(lines, styles.HelpStyle.Render("↑↓: Navigate • Enter: Edit • Esc/←: Back • Ctrl+C: Quit"))
 	}
 
 	content := lipgloss.NewStyle().Padding(0, 2).Render(

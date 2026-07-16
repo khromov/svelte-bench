@@ -40,6 +40,8 @@ func (m ExecutionModeModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg.String() {
 		case "ctrl+c":
 			return m, tea.Quit
+		case "esc", "left":
+			return NewAPIKeyConfigModel(m.state), nil
 
 		case "up":
 			m.selectedOption = (m.selectedOption - 1 + 2) % 2
@@ -91,7 +93,7 @@ func (m ExecutionModeModel) View() string {
 	lines = append(lines, "")
 	help := lipgloss.NewStyle().
 		Foreground(styles.GrayDim).
-		Render("↑/↓: Navigate • Enter: Select • Ctrl+C: Quit")
+		Render("↑/↓: Navigate • Enter: Select • Esc/←: Back • Ctrl+C: Quit")
 	lines = append(lines, help)
 
 	content := lipgloss.NewStyle().

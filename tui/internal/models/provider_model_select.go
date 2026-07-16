@@ -80,6 +80,8 @@ func (m ProviderModelSelectModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			switch msg.String() {
 			case "ctrl+c":
 				return m, tea.Quit
+			case "esc", "left":
+				return NewExecutionModeModel(m.state), nil
 			case "up":
 				if m.selectedProvider > 0 {
 					m.selectedProvider--
@@ -113,7 +115,7 @@ func (m ProviderModelSelectModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		} else {
 			// Step 1: Type model name with autocomplete
 			switch msg.String() {
-			case "esc":
+			case "esc", "left":
 				// Go back to provider selection
 				m.step = 0
 				m.modelInput.Blur()
@@ -339,7 +341,7 @@ func (m ProviderModelSelectModel) View() string {
 		lines = append(lines, "")
 		lines = append(lines, lipgloss.NewStyle().
 			Foreground(styles.GrayDim).
-			Render("Type to search • ↑/↓: Navigate • Enter: Select • Esc: Back • Ctrl+C: Quit"))
+			Render("Type to search • ↑/↓: Navigate • Enter: Select • Esc/←: Back • Ctrl+C: Quit"))
 	}
 
 	content := lipgloss.NewStyle().
