@@ -257,7 +257,7 @@ func (m *BenchmarkModel) renderTest(test *TestResult) string {
 		icon = "✓"
 		iconColor = styles.OrangeSuccess
 	case StatusRunning:
-		icon = styles.SpinnerFrames[m.frame%len(styles.SpinnerFrames)]
+		icon = styles.SpinnerFrames[(m.frame/4)%len(styles.SpinnerFrames)]
 		iconColor = styles.OrangePrimary
 	case StatusRateLimit:
 		icon = "~"

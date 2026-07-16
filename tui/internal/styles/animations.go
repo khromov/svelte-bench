@@ -7,7 +7,7 @@ import (
 )
 
 // Spinner frames for loading animations
-var SpinnerFrames = []string{"◐", "◓", "◑", "◒"}
+var SpinnerFrames = []string{"⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"}
 
 // GetSpinnerFrame returns the current spinner frame based on time
 func GetSpinnerFrame(startTime time.Time) string {
