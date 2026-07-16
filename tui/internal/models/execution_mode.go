@@ -68,7 +68,7 @@ func (m ExecutionModeModel) View() string {
 	var lines []string
 
 	// Title
-	title := styles.HeadingStyle.Render("⚡ EXECUTION MODE")
+	title := styles.HeadingStyle.Render("EXECUTION MODE")
 
 	lines = append(lines, title, "", "")
 
@@ -78,7 +78,7 @@ func (m ExecutionModeModel) View() string {
 		opt1 = lipgloss.NewStyle().
 			Foreground(styles.OrangePrimary).
 			Bold(true).
-			Render("▸ Parallel (faster, concurrent samples)")
+			Render("> Parallel (faster, concurrent samples)")
 	}
 
 	// Sequential option
@@ -87,7 +87,7 @@ func (m ExecutionModeModel) View() string {
 		opt2 = lipgloss.NewStyle().
 			Foreground(styles.OrangePrimary).
 			Bold(true).
-			Render("▸ Sequential (reliable, one at a time)")
+			Render("> Sequential (reliable, one at a time)")
 	}
 
 	lines = append(lines, opt1, opt2)
@@ -96,7 +96,7 @@ func (m ExecutionModeModel) View() string {
 	lines = append(lines, "")
 	help := lipgloss.NewStyle().
 		Foreground(styles.GrayDim).
-		Render("↑/↓: Navigate • Enter: Select • ←: Back • Double Esc: Quit • Ctrl+C: Quit")
+		Render("Up/Down: Navigate | Enter: Select | Left: Back | Double Esc: Quit | Ctrl+C: Quit")
 	lines = append(lines, help)
 
 	content := lipgloss.NewStyle().

@@ -118,7 +118,7 @@ func RenderAnimatedProgressBar(current, total, width int, frame int) string {
 
 			if isHighlight && filled > 2 {
 				// Yellow highlight
-				bar += lipgloss.NewStyle().Foreground(lipgloss.Color("#FFFF00")).Bold(true).Render("█")
+				bar += lipgloss.NewStyle().Foreground(lipgloss.Color("#FFE08A")).Bold(true).Render("█")
 			} else {
 				// Orange gradient
 				ratio := float64(i) / math.Max(float64(filled-1), 1)

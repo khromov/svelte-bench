@@ -2,6 +2,7 @@ package models
 
 import (
 	"fmt"
+	"math"
 	"svelte-bench/tui/internal/bridge"
 	"svelte-bench/tui/internal/styles"
 	"time"
@@ -17,17 +18,20 @@ type benchmarkErrorMsg struct{ err error }
 
 // BenchmarkModel handles benchmark execution
 type BenchmarkModel struct {
-	state        *SharedState
-	tests        map[string]*TestResult
-	testOrder    []string
-	startTime    time.Time
-	running      bool
-	totalSamples int
-	currentCount int
-	width        int
-	height       int
-	frame        int // For animations
-	eventChan    chan bridge.BenchmarkEvent
+	state          *SharedState
+	tests          map[string]*TestResult
+	testOrder      []string
+	startTime      time.Time
+	running        bool
+	totalSamples   int
+	currentCount   int
+	width          int
+	height         int
+	frame          int // For animations
+	eventChan      chan bridge.BenchmarkEvent
+	lastProgressAt time.Time
+	sampleRate     float64
+	progressEvents int
 }
 
 // NewBenchmarkModel creates a new benchmark model
@@ -64,7 +68,6 @@ func (m BenchmarkModel) Init() tea.Cmd {
 	return tea.Batch(
 		m.runBenchmark(),
 		m.waitForEvent(),
-		m.tickCmd(),
 	)
 }
 
@@ -102,13 +105,13 @@ func (m BenchmarkModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.running = true
 			m.startTime = time.Now()
 		}
-		return m, nil
+		return m, m.tickCmd()
 
 	case benchmarkEventMsg:
 		event := bridge.BenchmarkEvent(msg)
 		m.handleEvent(event)
-		// Wait for next event
-		return m, m.waitForEvent()
+		// Keep both event consumption and the elapsed-time animation alive.
+		return m, tea.Batch(m.waitForEvent(), m.tickCmd())
 
 	case benchmarkErrorMsg:
 		m.running = false
@@ -131,22 +134,20 @@ func (m BenchmarkModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m BenchmarkModel) View() string {
-	// Calculate content height to ensure it fits
-	headerHeight := 5
-	progressHeight := 6
-	testsHeight := len(m.testOrder) + 4
-	statsHeight := 4
-	helpHeight := 2
-
-	totalNeeded := headerHeight + progressHeight + testsHeight + statsHeight + helpHeight
-
-	// Adjust if needed
-	maxTestsShown := len(m.testOrder)
-	if totalNeeded > m.height && m.height > 20 {
-		maxTestsShown = m.height - (headerHeight + progressHeight + statsHeight + helpHeight + 4)
-		if maxTestsShown < 3 {
-			maxTestsShown = 3
-		}
+	// The fixed portions of this view use 13 rows including the outer padding.
+	// Calculate the test window from that actual footprint so all categories are
+	// shown whenever the terminal has room, instead of hiding most of them at
+	// ordinary terminal heights.
+	fixedRows := 13
+	if m.state.Error != "" {
+		fixedRows += 2
+	}
+	maxTestsShown := m.height - fixedRows
+	if maxTestsShown < 1 {
+		maxTestsShown = 1
+	}
+	if maxTestsShown > len(m.testOrder) {
+		maxTestsShown = len(m.testOrder)
 	}
 
 	var sections []string
@@ -157,11 +158,11 @@ func (m BenchmarkModel) View() string {
 		mode = "Parallel"
 	}
 
-	title := styles.HeadingStyle.Render("🔥 BENCHMARK RUNNING")
+	title := styles.HeadingStyle.Render("BENCHMARK RUNNING")
 
 	info := lipgloss.NewStyle().
 		Foreground(styles.OrangeMid).
-		Render(fmt.Sprintf("%s • %s • %s", m.state.Provider, m.state.Model, mode))
+		Render(fmt.Sprintf("%s | %s | %s", m.state.Provider, m.state.Model, mode))
 
 	sections = append(sections, title, info, "")
 
@@ -218,17 +219,18 @@ func (m BenchmarkModel) View() string {
 		elapsed = time.Since(m.startTime)
 		elapsedStr = formatDuration(elapsed)
 
-		if m.currentCount > 0 && m.currentCount < m.totalSamples {
-			avgPerSample := elapsed.Seconds() / float64(m.currentCount)
+		if m.currentCount < m.totalSamples && m.sampleRate > 0 && m.progressEvents >= 2 {
 			remainingSamples := m.totalSamples - m.currentCount
-			remainingSeconds := int(avgPerSample * float64(remainingSamples))
+			remainingSeconds := int(math.Ceil(float64(remainingSamples) / m.sampleRate))
 			remaining := formatDuration(time.Duration(remainingSeconds) * time.Second)
-			stats = fmt.Sprintf("⏱ %s Elapsed • %s Remaining", elapsedStr, remaining)
+			stats = fmt.Sprintf("Elapsed: %s | Remaining: %s", elapsedStr, remaining)
+		} else if m.currentCount > 0 {
+			stats = fmt.Sprintf("Elapsed: %s | Remaining: estimating", elapsedStr)
 		} else {
-			stats = fmt.Sprintf("⏱ %s Elapsed", elapsedStr)
+			stats = fmt.Sprintf("Elapsed: %s", elapsedStr)
 		}
 	} else {
-		stats = "⏱ Starting..."
+		stats = "Starting..."
 	}
 
 	sections = append(sections, lipgloss.NewStyle().
@@ -241,7 +243,7 @@ func (m BenchmarkModel) View() string {
 		sections = append(sections, lipgloss.NewStyle().
 			Foreground(styles.OrangeError).
 			Bold(true).
-			Render("❌ Error: "+m.state.Error))
+			Render("Error: "+m.state.Error))
 	}
 
 	// Help
@@ -265,19 +267,19 @@ func (m *BenchmarkModel) renderTest(test *TestResult) string {
 
 	switch test.Status {
 	case StatusCompleted:
-		icon = "✓"
+		icon = "[OK]"
 		iconColor = styles.OrangeSuccess
 	case StatusRunning:
 		icon = styles.SpinnerFrames[m.frame%len(styles.SpinnerFrames)]
 		iconColor = styles.OrangePrimary
 	case StatusRateLimit:
-		icon = "⏸"
+		icon = "[WAIT]"
 		iconColor = styles.OrangeWarning
 	case StatusFailed:
-		icon = "✗"
+		icon = "[FAIL]"
 		iconColor = styles.OrangeError
 	default:
-		icon = "○"
+		icon = "[ ]"
 		iconColor = styles.GrayDim
 	}
 
@@ -306,7 +308,7 @@ func (m *BenchmarkModel) renderTest(test *TestResult) string {
 
 	// Status or result
 	statusText := ""
-	if test.Status == StatusCompleted && test.PassAtOne > 0 {
+	if test.Status == StatusCompleted {
 		passColor := styles.OrangeSuccess
 		if test.PassAtOne < 0.5 {
 			passColor = styles.OrangeError
@@ -315,7 +317,7 @@ func (m *BenchmarkModel) renderTest(test *TestResult) string {
 		}
 		statusText = lipgloss.NewStyle().
 			Foreground(passColor).
-			Render(fmt.Sprintf("%.2f", test.PassAtOne))
+			Render(fmt.Sprintf("%.0f%%", test.PassAtOne*100))
 	}
 
 	return fmt.Sprintf(" %s %s %s %s  %s", iconStyled, name, miniBar, progressText, statusText)
@@ -331,15 +333,18 @@ func (m *BenchmarkModel) handleEvent(event bridge.BenchmarkEvent) {
 
 	case bridge.EventSampleProgress:
 		if test, ok := m.tests[event.Test]; ok {
-			// Only increment currentCount if this is a new sample
-			if event.Sample > test.Current {
-				m.currentCount++
-			}
+			previous := test.Current
 			test.Current = event.Sample
+			if event.Sample > previous {
+				m.recordProgress(event.Sample - previous)
+			}
 		}
 
 	case bridge.EventTestComplete:
 		if test, ok := m.tests[event.Test]; ok {
+			if event.Total > test.Current {
+				m.recordProgress(event.Total - test.Current)
+			}
 			test.Current = event.Total
 			test.Passed = event.Passed
 			test.PassAtOne = event.PassAtOne
@@ -372,6 +377,30 @@ func (m *BenchmarkModel) handleEvent(event bridge.BenchmarkEvent) {
 			m.state.Results = append(m.state.Results, *test)
 		}
 	}
+}
+
+func (m *BenchmarkModel) recordProgress(samples int) {
+	if samples <= 0 {
+		return
+	}
+
+	m.currentCount += samples
+	now := time.Now()
+	if !m.lastProgressAt.IsZero() {
+		elapsed := now.Sub(m.lastProgressAt).Seconds()
+		if elapsed > 0 {
+			instantRate := float64(samples) / elapsed
+			if m.sampleRate == 0 {
+				m.sampleRate = instantRate
+			} else {
+				// Smooth bursts from parallel execution without making the ETA
+				// jump wildly after a single fast or slow sample.
+				m.sampleRate = (m.sampleRate * 0.75) + (instantRate * 0.25)
+			}
+		}
+	}
+	m.lastProgressAt = now
+	m.progressEvents++
 }
 
 func (m BenchmarkModel) runBenchmark() tea.Cmd {

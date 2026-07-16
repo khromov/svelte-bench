@@ -77,7 +77,7 @@ func (m ResultsModel) View() string {
 	var lines []string
 
 	// Title
-	title := styles.HeadingStyle.Render("✓ BENCHMARK COMPLETE")
+	title := styles.HeadingStyle.Render("BENCHMARK COMPLETE")
 
 	lines = append(lines, title, "")
 
@@ -97,7 +97,7 @@ func (m ResultsModel) View() string {
 
 	summary := lipgloss.NewStyle().
 		Foreground(styles.OrangeMid).
-		Render(fmt.Sprintf("%s • %s", m.state.Provider, m.state.Model))
+		Render(fmt.Sprintf("%s | %s", m.state.Provider, m.state.Model))
 
 	passColor := styles.OrangeSuccess
 	if avgPass < 0.5 {
@@ -109,7 +109,7 @@ func (m ResultsModel) View() string {
 	stats := lipgloss.NewStyle().
 		Foreground(passColor).
 		Bold(true).
-		Render(fmt.Sprintf("Average pass@1: %.2f (%d/%d tests passed)", avgPass, totalPassed, totalTests))
+		Render(fmt.Sprintf("Average pass@1: %.0f%% (%d/%d tests passed)", avgPass*100, totalPassed, totalTests))
 
 	lines = append(lines, summary, stats, "", "")
 
@@ -131,10 +131,10 @@ func (m ResultsModel) View() string {
 		result := m.state.Results[i]
 
 		// Icon
-		icon := "✓"
+		icon := "[OK]"
 		iconColor := styles.OrangeSuccess
 		if !result.Passed || result.PassAtOne < 0.5 {
-			icon = "✗"
+			icon = "[FAIL]"
 			iconColor = styles.OrangeError
 		} else if result.PassAtOne < 0.7 {
 			icon = "!"
@@ -162,7 +162,7 @@ func (m ResultsModel) View() string {
 
 		pass1 := lipgloss.NewStyle().
 			Foreground(passColor).
-			Render(fmt.Sprintf("%.2f", result.PassAtOne))
+			Render(fmt.Sprintf("%.0f%%", result.PassAtOne*100))
 
 		lines = append(lines, fmt.Sprintf(" %s %s  %s", iconStyled, name, pass1))
 	}
@@ -184,12 +184,12 @@ func (m ResultsModel) View() string {
 		opt1 = lipgloss.NewStyle().
 			Foreground(styles.OrangePrimary).
 			Bold(true).
-			Render("▸ Run another benchmark")
+			Render("> Run another benchmark")
 	} else if m.selectedOption == 1 {
 		opt2 = lipgloss.NewStyle().
 			Foreground(styles.OrangePrimary).
 			Bold(true).
-			Render("▸ Exit")
+			Render("> Exit")
 	}
 
 	lines = append(lines, opt1, opt2)
@@ -198,7 +198,7 @@ func (m ResultsModel) View() string {
 	lines = append(lines, "")
 	help := lipgloss.NewStyle().
 		Foreground(styles.GrayDim).
-		Render("↑/↓: Navigate • Enter: Select • ←: Back • Double Esc: Quit • Q/Ctrl+C: Quit")
+		Render("Up/Down: Navigate | Enter: Select | Left: Back | Double Esc: Quit | Q/Ctrl+C: Quit")
 	lines = append(lines, help)
 
 	content := lipgloss.NewStyle().

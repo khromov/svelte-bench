@@ -92,7 +92,7 @@ func (m APIKeyPromptModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m APIKeyPromptModel) View() string {
-	title := styles.HeadingStyle.Render("🔑 API KEY REQUIRED")
+	title := styles.HeadingStyle.Render("API KEY REQUIRED")
 	subtitle := lipgloss.NewStyle().Foreground(styles.OrangeMid).Render(m.provider.Name)
 	lines := []string{title, subtitle, "", m.input.View()}
 	if m.validating {
@@ -101,7 +101,7 @@ func (m APIKeyPromptModel) View() string {
 	if m.error != "" {
 		lines = append(lines, "", styles.ErrorStyle.Render(m.error))
 	}
-	lines = append(lines, "", styles.HelpStyle.Render("Enter: Save • ←: Back • Double Esc: Quit • Ctrl+C: Quit"))
+	lines = append(lines, "", styles.HelpStyle.Render("Enter: Save | Left: Back | Double Esc: Quit | Ctrl+C: Quit"))
 
 	return lipgloss.NewStyle().
 		Padding(2, 4).

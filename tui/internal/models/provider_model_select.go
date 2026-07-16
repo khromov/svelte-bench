@@ -275,10 +275,10 @@ func (m ProviderModelSelectModel) View() string {
 
 	// Header
 	if m.step == 0 {
-		title := styles.HeadingStyle.Render("📡 SELECT PROVIDER")
+		title := styles.HeadingStyle.Render("SELECT PROVIDER")
 		lines = append(lines, title, "")
 	} else {
-		title := styles.HeadingStyle.Render("🤖 SELECT MODEL")
+		title := styles.HeadingStyle.Render("SELECT MODEL")
 		lines = append(lines, title, "")
 	}
 
@@ -300,21 +300,21 @@ func (m ProviderModelSelectModel) View() string {
 			provider := m.providers[i]
 			status := ""
 			if m.validated[provider.EnvKey] {
-				status = " ✓"
+				status = " VALID"
 			} else if m.validationErrors[provider.EnvKey] != "" {
-				status = " !"
+				status = " INVALID"
 			} else if provider.APIKey != "" && m.validating {
-				status = " …"
+				status = " ..."
 			} else if provider.APIKey != "" {
 				// Some providers do not expose a lightweight validation endpoint.
 				// Still show that their key was loaded from configuration.
-				status = " • Stored"
+				status = " STORED"
 			}
 			if i == m.selectedProvider {
 				lines = append(lines, lipgloss.NewStyle().
 					Foreground(styles.OrangePrimary).
 					Bold(true).
-					Render("▸ "+provider.Name+status))
+					Render("> "+provider.Name+status))
 			} else {
 				lines = append(lines, "  "+provider.Name+status)
 			}
@@ -331,7 +331,7 @@ func (m ProviderModelSelectModel) View() string {
 		lines = append(lines, "")
 		lines = append(lines, lipgloss.NewStyle().
 			Foreground(styles.GrayDim).
-			Render("↑/↓: Navigate • Enter: Select • ✓ Valid • Stored • ! Invalid • ←: Back • Double Esc: Quit • Ctrl+C: Quit"))
+			Render("Up/Down: Navigate | Enter: Select | VALID | STORED | INVALID | Left: Back | Double Esc: Quit | Ctrl+C: Quit"))
 	} else {
 		// Model input with autocomplete
 		providerName := m.providers[m.selectedProvider].Name
@@ -379,7 +379,7 @@ func (m ProviderModelSelectModel) View() string {
 					lines = append(lines, lipgloss.NewStyle().
 						Foreground(styles.OrangePrimary).
 						Bold(true).
-						Render("▸ "+model.ID))
+						Render("> "+model.ID))
 				} else {
 					lines = append(lines, "  "+model.ID)
 				}
@@ -402,7 +402,7 @@ func (m ProviderModelSelectModel) View() string {
 		lines = append(lines, "")
 		lines = append(lines, lipgloss.NewStyle().
 			Foreground(styles.GrayDim).
-			Render("Type to search • ↑/↓: Navigate • Enter: Select • ←: Back • Double Esc: Quit • Ctrl+C: Quit"))
+			Render("Type to search | Up/Down: Navigate | Enter: Select | Left: Back | Double Esc: Quit | Ctrl+C: Quit"))
 	}
 
 	content := lipgloss.NewStyle().

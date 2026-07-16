@@ -134,14 +134,14 @@ func (m APIKeyConfigModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case validationMsg:
 		m.validating = false
 		if msg.success {
-			m.validationResult = "✓ Valid"
+			m.validationResult = "VALID"
 			// Save the key
 			m.providers[m.selectedIndex].APIKey = m.input.Value()
 			m.state.Config.APIKeys[msg.provider] = m.input.Value()
 			m.editing = false
 			m.input.Blur()
 		} else {
-			m.validationResult = "✗ " + msg.error
+			m.validationResult = "INVALID: " + msg.error
 		}
 		return m, nil
 	}
@@ -162,14 +162,14 @@ func (m APIKeyConfigModel) View() string {
 			spinner := styles.GetSpinnerFrame(m.validationStart)
 			lines = append(lines, styles.ProgressTextStyle.Render(spinner+" Validating..."))
 		} else if m.validationResult != "" {
-			if strings.HasPrefix(m.validationResult, "✓") {
+			if strings.HasPrefix(m.validationResult, "VALID") {
 				lines = append(lines, styles.SuccessStyle.Render(m.validationResult))
 			} else {
 				lines = append(lines, styles.ErrorStyle.Render(m.validationResult))
 			}
 		}
 
-		lines = append(lines, "", styles.HelpStyle.Render("Enter: Confirm • Esc: Cancel"))
+		lines = append(lines, "", styles.HelpStyle.Render("Enter: Confirm | Esc: Cancel"))
 
 		modal := lipgloss.NewStyle().
 			Border(lipgloss.RoundedBorder()).
@@ -181,7 +181,7 @@ func (m APIKeyConfigModel) View() string {
 	}
 
 	// Provider list
-	title := styles.HeadingStyle.Render("🔑 API CONFIGURATION")
+	title := styles.HeadingStyle.Render("API CONFIGURATION")
 
 	var lines []string
 	lines = append(lines, title, "")
@@ -211,15 +211,15 @@ func (m APIKeyConfigModel) View() string {
 
 		var line string
 		if provider.APIKey != "" {
-			status := styles.SuccessStyle.Render("✓")
+			status := styles.SuccessStyle.Render("VALID")
 			if selected {
-				line = styles.ProgressTextStyle.Render("▸ " + provider.Name + " " + status)
+				line = styles.ProgressTextStyle.Render("> " + provider.Name + " " + status)
 			} else {
 				line = "  " + provider.Name + " " + status
 			}
 		} else {
 			if selected {
-				line = styles.ProgressTextStyle.Render("▸ " + provider.Name)
+				line = styles.ProgressTextStyle.Render("> " + provider.Name)
 			} else {
 				line = "  " + provider.Name
 			}
@@ -235,9 +235,9 @@ func (m APIKeyConfigModel) View() string {
 	// Help
 	lines = append(lines, "")
 	if m.state.Config.HasAnyAPIKeys() {
-		lines = append(lines, styles.HelpStyle.Render("↑↓: Navigate • Enter: Edit • Tab: Continue • ←: Back • Double Esc: Quit • Ctrl+C: Quit"))
+		lines = append(lines, styles.HelpStyle.Render("Up/Down: Navigate | Enter: Edit | Tab: Continue | Left: Back | Double Esc: Quit | Ctrl+C: Quit"))
 	} else {
-		lines = append(lines, styles.HelpStyle.Render("↑↓: Navigate • Enter: Edit • ←: Back • Double Esc: Quit • Ctrl+C: Quit"))
+		lines = append(lines, styles.HelpStyle.Render("Up/Down: Navigate | Enter: Edit | Left: Back | Double Esc: Quit | Ctrl+C: Quit"))
 	}
 
 	content := lipgloss.NewStyle().Padding(0, 2).Render(

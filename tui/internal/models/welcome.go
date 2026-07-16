@@ -67,7 +67,7 @@ func (m WelcomeModel) View() string {
 	var lines []string
 
 	// Title - simple and clean
-	title := styles.HeadingStyle.Render("🔥 SVELTEBENCH")
+	title := styles.HeadingStyle.Render("SVELTEBENCH")
 
 	subtitle := lipgloss.NewStyle().
 		Foreground(styles.OrangeMid).
@@ -80,7 +80,7 @@ func (m WelcomeModel) View() string {
 	// Help text
 	lines = append(lines, "")
 	var help string
-	help = "Enter: Continue • Double Esc: Quit • Ctrl+C: Quit"
+	help = "Enter: Continue | Double Esc: Quit | Ctrl+C: Quit"
 	lines = append(lines, lipgloss.NewStyle().
 		Foreground(styles.GrayDim).
 		Render(help))
