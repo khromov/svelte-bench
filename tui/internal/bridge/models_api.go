@@ -64,7 +64,7 @@ func FetchModels(providerKey, apiKey string) ([]Model, error) {
 	case "Z_AI_API_KEY":
 		models, err = fetchZAIModels(apiKey)
 	case "META_API_KEY":
-		models = []Model{{ID: "muse-spark-1.1", Name: "Muse Spark 1.1", IsPopular: true}}
+		models, err = fetchOpenAICompatibleModels("https://api.meta.ai/v1/models", apiKey)
 	case "CURSOR_API_KEY":
 		models = []Model{{ID: "composer-1", Name: "Composer 1", IsPopular: true}}
 	default:
@@ -209,8 +209,9 @@ func fetchOpenAIModels(apiKey string) ([]Model, error) {
 
 	models := make([]Model, 0)
 	for _, item := range result.Data {
-		// Filter to chat models only
-		if !strings.Contains(item.ID, "gpt") && !strings.Contains(item.ID, "o1") {
+		// Filter to models usable with the chat-completions benchmark. The
+		// catalog also contains embeddings, moderation, image, and audio models.
+		if !isOpenAIChatModel(item.ID) {
 			continue
 		}
 
@@ -223,6 +224,18 @@ func fetchOpenAIModels(apiKey string) ([]Model, error) {
 	}
 
 	return models, nil
+}
+
+func isOpenAIChatModel(modelID string) bool {
+	if strings.HasPrefix(modelID, "gpt-image") || strings.HasPrefix(modelID, "gpt-audio") {
+		return false
+	}
+	return strings.HasPrefix(modelID, "gpt-") ||
+		strings.HasPrefix(modelID, "o1") ||
+		strings.HasPrefix(modelID, "o3") ||
+		strings.HasPrefix(modelID, "o4") ||
+		strings.HasPrefix(modelID, "chatgpt-") ||
+		strings.HasPrefix(modelID, "ft:gpt-")
 }
 
 func fetchOpenRouterModels(apiKey string) ([]Model, error) {
@@ -529,72 +542,118 @@ func getGoogleModelsStatic() []Model {
 }
 
 func fetchDeepSeekModels(apiKey string) ([]Model, error) {
-	// DeepSeek uses OpenAI-compatible endpoint, static list based on AI SDK
-	return []Model{
-		{ID: "deepseek-chat", Name: "DeepSeek Chat", Description: "Latest chat model", IsPopular: true},
-		{ID: "deepseek-coder", Name: "DeepSeek Coder", Description: "Code specialized", IsPopular: true},
-		{ID: "deepseek-reasoner", Name: "DeepSeek Reasoner", Description: "Reasoning model"},
-	}, nil
+	return fetchOpenAICompatibleModels("https://api.deepseek.com/models", apiKey)
 }
 
 func fetchXAIModels(apiKey string) ([]Model, error) {
 	req, err := http.NewRequest("GET", "https://api.x.ai/v1/language-models", nil)
 	if err != nil {
-		return getXAIModelsStatic(), nil
+		return nil, err
 	}
-
 	req.Header.Set("Authorization", "Bearer "+apiKey)
 
 	client := &http.Client{Timeout: 10 * time.Second}
 	resp, err := client.Do(req)
 	if err != nil {
-		return getXAIModelsStatic(), nil
+		return nil, err
 	}
 	defer resp.Body.Close()
-
-	if resp.StatusCode != 200 {
-		return getXAIModelsStatic(), nil
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("API returned status %d", resp.StatusCode)
 	}
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return getXAIModelsStatic(), nil
+		return nil, err
 	}
-
-	// xAI returns array directly, not wrapped in "data"
-	var result []struct {
-		ID          string `json:"id"`
-		Object      string `json:"object"`
-		DisplayName string `json:"display_name"`
-		MaxTokens   int    `json:"max_tokens"`
+	models, err := parseXAIModels(body)
+	if err != nil {
+		return nil, err
 	}
-
-	if err := json.Unmarshal(body, &result); err != nil {
-		return getXAIModelsStatic(), nil
-	}
-
-	models := make([]Model, 0)
-	popular := map[string]bool{
-		"grok-beta":   true,
-		"grok-2-1212": true,
-	}
-
-	for _, item := range result {
-		name := item.DisplayName
-		if name == "" {
-			name = item.ID
-		}
-		models = append(models, Model{
-			ID:        item.ID,
-			Name:      name,
-			IsPopular: popular[item.ID],
-		})
-	}
-
 	if len(models) == 0 {
-		return getXAIModelsStatic(), nil
+		return nil, fmt.Errorf("model API returned no language models")
+	}
+	return models, nil
+}
+
+func parseXAIModels(body []byte) ([]Model, error) {
+	var result struct {
+		Models []struct {
+			ID               string   `json:"id"`
+			InputModalities  []string `json:"input_modalities"`
+			OutputModalities []string `json:"output_modalities"`
+		} `json:"models"`
+	}
+	if err := json.Unmarshal(body, &result); err != nil {
+		return nil, err
 	}
 
+	models := make([]Model, 0, len(result.Models))
+	for _, item := range result.Models {
+		if item.ID == "" || !containsString(item.InputModalities, "text") || !containsString(item.OutputModalities, "text") {
+			continue
+		}
+		models = append(models, Model{ID: item.ID, Name: item.ID})
+	}
+	return models, nil
+}
+
+func containsString(values []string, target string) bool {
+	for _, value := range values {
+		if value == target {
+			return true
+		}
+	}
+	return false
+}
+
+func fetchOpenAICompatibleModels(url, apiKey string) ([]Model, error) {
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Authorization", "Bearer "+apiKey)
+
+	client := &http.Client{Timeout: 10 * time.Second}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("API returned status %d", resp.StatusCode)
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	models, err := parseOpenAICompatibleModels(body)
+	if err != nil {
+		return nil, err
+	}
+	if len(models) == 0 {
+		return nil, fmt.Errorf("model API returned no models")
+	}
+	return models, nil
+}
+
+func parseOpenAICompatibleModels(body []byte) ([]Model, error) {
+	var result struct {
+		Data []struct {
+			ID string `json:"id"`
+		} `json:"data"`
+	}
+	if err := json.Unmarshal(body, &result); err != nil {
+		return nil, err
+	}
+
+	models := make([]Model, 0, len(result.Data))
+	for _, item := range result.Data {
+		if item.ID != "" {
+			models = append(models, Model{ID: item.ID, Name: item.ID})
+		}
+	}
 	return models, nil
 }
 
@@ -692,13 +751,54 @@ func getMoonshotModelsStatic() []Model {
 }
 
 func fetchCohereModels(apiKey string) ([]Model, error) {
-	// Cohere static list based on AI SDK
-	return []Model{
-		{ID: "command-r-plus", Name: "Command R+", Description: "Most capable", IsPopular: true},
-		{ID: "command-r", Name: "Command R", Description: "Balanced", IsPopular: true},
-		{ID: "command", Name: "Command", Description: "Legacy"},
-		{ID: "command-light", Name: "Command Light", Description: "Fast"},
-	}, nil
+	req, err := http.NewRequest("GET", "https://api.cohere.ai/v1/models?endpoint=chat&page_size=1000", nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Authorization", "Bearer "+apiKey)
+
+	client := &http.Client{Timeout: 10 * time.Second}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("API returned status %d", resp.StatusCode)
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	var result struct {
+		Models []struct {
+			Name        string   `json:"name"`
+			Description string   `json:"description"`
+			Endpoints   []string `json:"endpoints"`
+			Deprecated  bool     `json:"is_deprecated"`
+		} `json:"models"`
+	}
+	if err := json.Unmarshal(body, &result); err != nil {
+		return nil, err
+	}
+
+	models := make([]Model, 0, len(result.Models))
+	for _, item := range result.Models {
+		if item.Name == "" || item.Deprecated {
+			continue
+		}
+		models = append(models, Model{
+			ID:          item.Name,
+			Name:        item.Name,
+			Description: item.Description,
+			IsPopular:   strings.HasPrefix(item.Name, "command-a") || item.Name == "command-r-plus",
+		})
+	}
+	if len(models) == 0 {
+		return nil, fmt.Errorf("model API returned no chat models")
+	}
+	return models, nil
 }
 
 func fetchFireworksModels(apiKey string) ([]Model, error) {

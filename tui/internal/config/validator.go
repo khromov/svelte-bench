@@ -27,7 +27,7 @@ func ValidateAPIKey(provider, apiKey string) error {
 	case "GROQ_API_KEY":
 		return validateGroq(apiKey)
 	case "DEEPSEEK_API_KEY":
-		return validateDeepSeek(apiKey)
+		return validateBearerModels("https://api.deepseek.com/models", apiKey)
 	case "XAI_API_KEY":
 		return validateXAI(apiKey)
 	case "MISTRAL_API_KEY":
@@ -203,32 +203,6 @@ func validateOpenRouter(apiKey string) error {
 
 func validateGroq(apiKey string) error {
 	req, err := http.NewRequest("GET", "https://api.groq.com/openai/v1/models", nil)
-	if err != nil {
-		return err
-	}
-
-	req.Header.Set("Authorization", "Bearer "+apiKey)
-
-	client := &http.Client{Timeout: 10 * time.Second}
-	resp, err := client.Do(req)
-	if err != nil {
-		return fmt.Errorf("network error: %w", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode == 401 {
-		return fmt.Errorf("invalid API key")
-	}
-
-	if resp.StatusCode != 200 {
-		return fmt.Errorf("API returned status %d", resp.StatusCode)
-	}
-
-	return nil
-}
-
-func validateDeepSeek(apiKey string) error {
-	req, err := http.NewRequest("GET", "https://api.deepseek.com/v1/models", nil)
 	if err != nil {
 		return err
 	}
