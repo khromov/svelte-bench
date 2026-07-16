@@ -8,7 +8,7 @@ A fully-featured, ultra-modern terminal user interface for SvelteBench using Go 
 - **✅ Orange gradient styling throughout** - Modern, polished design
 - **✅ Interactive provider/model selection** - With fuzzy search
 - **✅ Real-time progress tracking** - Animated progress bars
-- **✅ Sequential & parallel execution modes**
+- **✅ Sequential, parallel, and MADMAX execution modes**
 - **✅ Beautiful results display** - With pass@k metrics
 
 ## 📁 Architecture
@@ -36,7 +36,7 @@ tui/
 │       ├── types.go                   # Shared types
 │       ├── welcome.go                 # Welcome screen
 │       ├── apikey_config.go           # API key configuration
-│       ├── execution_mode.go          # Parallel vs sequential
+│       ├── execution_mode.go          # Sequential, parallel, and MADMAX
 │       ├── provider_model_select.go   # Provider & model selection
 │       ├── benchmark.go               # Live benchmark execution
 │       └── results.go                 # Results summary
@@ -57,7 +57,7 @@ tui/
 - Option to save to .env file
 
 ### 3. Execution Mode Selection
-- Large cards for Parallel vs Sequential modes
+- Large cards for Sequential, Parallel, and MADMAX modes
 - Icons and descriptions
 - Smooth selection animations
 
@@ -98,7 +98,7 @@ pnpm tui:build
 3. Navigate with ↑/↓, press Enter to add keys
 4. Keys are validated in real-time
 5. Choose to save to .env or keep in memory
-6. Select execution mode (Parallel/Sequential)
+6. Select execution mode (Parallel/Sequential/MADMAX)
 7. Choose provider & model
 8. Benchmark runs with live progress
 9. View results and optionally run again
@@ -153,8 +153,9 @@ TypeScript Benchmark
 
 ## 🚀 Performance
 
-- **Parallel mode**: All 9 tests run simultaneously
+- **Parallel mode**: Samples within each test run simultaneously
 - **Sequential mode**: Tests run one at a time
+- **MADMAX mode**: All 9 tests and their samples run simultaneously, with isolated category checkpoints and rate-limit backoff
 - **Default**: 10 samples per test for pass@k metrics
 - **Checkpointing**: Resume from interruptions
 - **Live updates**: 100ms refresh rate

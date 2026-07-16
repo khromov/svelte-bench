@@ -155,6 +155,8 @@ func (m BenchmarkModel) View() string {
 	mode := "Sequential samples"
 	if m.state.Parallel {
 		mode = "Parallel samples"
+	} else if m.state.Madmax {
+		mode = "MADMAX: parallel categories + samples"
 	}
 
 	title := styles.HeadingStyle.Render("BENCHMARK RUNNING")
@@ -307,6 +309,14 @@ func (m *BenchmarkModel) renderTest(test *TestResult) string {
 
 	// Status or result
 	statusText := ""
+	if test.Status == StatusRateLimit {
+		statusText = lipgloss.NewStyle().
+			Width(5).
+			Align(lipgloss.Right).
+			Foreground(styles.OrangeWarning).
+			Render(fmt.Sprintf("~%ds", test.RetryAfter))
+	}
+
 	if (test.Status == StatusCompleted || test.Status == StatusFailed) && test.Current >= test.Total {
 		statusText = lipgloss.NewStyle().
 			Width(5).
@@ -383,10 +393,13 @@ func (m *BenchmarkModel) handleEvent(event bridge.BenchmarkEvent) {
 		if test, ok := m.tests[event.Test]; ok {
 			test.Status = StatusRunning
 			test.Current = 0
+			test.RetryAfter = 0
+			test.RetryAttempt = 0
 		}
 
 	case bridge.EventSampleProgress:
 		if test, ok := m.tests[event.Test]; ok {
+			test.Status = StatusRunning
 			previous := test.Current
 			test.Current = event.Sample
 			if event.Sample > previous {
@@ -411,11 +424,21 @@ func (m *BenchmarkModel) handleEvent(event bridge.BenchmarkEvent) {
 		}
 
 	case bridge.EventRateLimit:
-		// Mark currently running test as rate limited
-		for _, test := range m.tests {
-			if test.Status == StatusRunning {
+		// MADMAX identifies the category being throttled. Legacy events without
+		// a test name still apply to every active category.
+		if event.Test != "" {
+			if test, ok := m.tests[event.Test]; ok {
 				test.Status = StatusRateLimit
 				test.RetryAfter = event.RetryAfter
+				test.RetryAttempt = event.RetryAttempt
+			}
+		} else {
+			for _, test := range m.tests {
+				if test.Status == StatusRunning {
+					test.Status = StatusRateLimit
+					test.RetryAfter = event.RetryAfter
+					test.RetryAttempt = event.RetryAttempt
+				}
 			}
 		}
 

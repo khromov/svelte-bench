@@ -18,6 +18,8 @@ export interface TUIEvent {
   total?: number;
   passed?: boolean;
   retryAfter?: number;
+  retryAttempt?: number;
+  retryDelayMs?: number;
   error?: string;
   passAtOne?: number;
   passAtTen?: number;
@@ -99,10 +101,13 @@ export function emitSampleProgress(testName: string, current: number, total: num
 /**
  * Emit rate limit event
  */
-export function emitRateLimit(retryAfter: number): void {
+export function emitRateLimit(testName: string, retryAttempt: number, retryDelayMs: number): void {
   emitTUIEvent({
     type: 'rate_limit',
-    retryAfter,
+    test: testName,
+    retryAttempt,
+    retryAfter: Math.ceil(retryDelayMs / 1000),
+    retryDelayMs,
   });
 }
 

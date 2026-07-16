@@ -27,6 +27,8 @@ type BenchmarkEvent struct {
 	Total        int                    `json:"total,omitempty"`
 	Passed       bool                   `json:"passed,omitempty"`
 	RetryAfter   int                    `json:"retryAfter,omitempty"`
+	RetryAttempt int                    `json:"retryAttempt,omitempty"`
+	RetryDelayMs int                    `json:"retryDelayMs,omitempty"`
 	Error        string                 `json:"error,omitempty"`
 	PassAtOne    float64                `json:"passAtOne,omitempty"`
 	PassAtTen    float64                `json:"passAtTen,omitempty"`

@@ -8,6 +8,7 @@ import {
   saveBenchmarkResults,
   loadTestDefinitions,
 } from "./src/utils/parallel-test-manager";
+import { runAllTestsHumanEvalMadmax } from "./src/utils/madmax-test-manager";
 import {
   runAllTestsHumanEval as runAllTestsHumanEvalSequential,
 } from "./src/utils/test-manager";
@@ -50,9 +51,10 @@ async function runBenchmark() {
     const { contextFile } = parseCommandLineArgs();
 
     // Check for parallel execution environment variable
-    const parallel = process.env.PARALLEL_EXECUTION === "true";
+    const madmax = process.env.MADMAX_EXECUTION === "true";
+    const parallel = !madmax && process.env.PARALLEL_EXECUTION === "true";
 
-    const executionMode = parallel ? "PARALLEL EXECUTION" : "SEQUENTIAL EXECUTION";
+    const executionMode = madmax ? "MADMAX EXECUTION" : parallel ? "PARALLEL EXECUTION" : "SEQUENTIAL EXECUTION";
     log(`🚀 Starting SvelteBench with HumanEval methodology (${executionMode})...`);
 
     // Load context file if specified
@@ -198,7 +200,40 @@ async function runBenchmark() {
 
     const allResults: HumanEvalResult[] = [];
 
-    if (parallel) {
+    if (madmax) {
+      log(
+        `\n👉 Running MADMAX with ${selectedProviderModels.length} provider/model combinations; all test categories and samples will run concurrently...`
+      );
+
+      const providerPromises = selectedProviderModels.map(async (providerWithModel) => {
+        try {
+          log(`\n👉 Starting MADMAX tests with ${providerWithModel.name} (${providerWithModel.modelId})...`);
+          const modelNumSamples = providerWithModel.modelId.startsWith("o1-pro") ? 1 : numSamples;
+          const results = await runAllTestsHumanEvalMadmax(
+            providerWithModel.provider,
+            modelNumSamples,
+            testDefinitions,
+            contextContent
+          );
+
+          if (results.length > 0) {
+            await saveBenchmarkResults(results, contextFile, contextContent, undefined);
+          }
+          return results;
+        } catch (error) {
+          console.error(
+            `Error running MADMAX tests with ${providerWithModel.name} (${providerWithModel.modelId}):`,
+            error
+          );
+          return [];
+        }
+      });
+
+      const resultsArrays = await Promise.all(providerPromises);
+      for (const results of resultsArrays) {
+        allResults.push(...results);
+      }
+    } else if (parallel) {
       // Run all provider/model combinations in parallel
       log(
         `\n👉 Running tests with ${selectedProviderModels.length} provider/model combinations in parallel...`

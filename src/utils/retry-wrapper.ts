@@ -1,9 +1,14 @@
+import { isRateLimitError } from "./errors";
+import { emitRateLimit, isTUIMode } from "./tui-events";
+
 export interface RetryOptions {
   maxAttempts?: number;
   initialDelayMs?: number;
   maxDelayMs?: number;
   backoffFactor?: number;
   onRetry?: (error: Error, attempt: number) => void;
+  onRateLimit?: (error: Error, attempt: number, delayMs: number) => void;
+  retryRateLimits?: boolean;
 }
 
 const DEFAULT_OPTIONS: Required<RetryOptions> = {
@@ -14,7 +19,21 @@ const DEFAULT_OPTIONS: Required<RetryOptions> = {
   onRetry: (error, attempt) => {
     console.warn(`⚠️  Retry attempt ${attempt} after error: ${error.message}`);
   },
+  onRateLimit: (_error, attempt, delayMs) => {
+    if (isTUIMode()) {
+      // Provider-specific retry wrappers do not know the benchmark category;
+      // the TUI treats an unnamed event as applying to active categories.
+      emitRateLimit("", attempt, delayMs);
+    }
+  },
+  retryRateLimits: false,
 };
+
+function isRateLimitLikeError(error: Error): boolean {
+  const status = (error as Error & { status?: number; code?: number }).status
+    ?? (error as Error & { status?: number; code?: number }).code;
+  return isRateLimitError(error) || status === 429 || /rate.?limit|too many requests|\b429\b/i.test(error.message);
+}
 
 export async function withRetry<T>(fn: () => Promise<T>, options?: RetryOptions): Promise<T> {
   const opts = { ...DEFAULT_OPTIONS, ...options };
@@ -26,8 +45,12 @@ export async function withRetry<T>(fn: () => Promise<T>, options?: RetryOptions)
     } catch (error) {
       lastError = error instanceof Error ? error : new Error(String(error));
 
-      // Don't retry rate limit errors - they should abort the run immediately
-      if (lastError.name === "RateLimitError") {
+      const rateLimited = isRateLimitLikeError(lastError);
+
+      // Existing modes retain their current fail-fast behavior for the
+      // explicit RateLimitError used by OpenRouter. Other providers already
+      // surface 429s as ordinary errors and have historically retried them.
+      if (isRateLimitError(lastError) && !opts.retryRateLimits) {
         throw lastError;
       }
 
@@ -43,6 +66,10 @@ export async function withRetry<T>(fn: () => Promise<T>, options?: RetryOptions)
       // Add random jitter between 10-250ms to prevent thundering herd
       const jitterMs = Math.floor(Math.random() * 241) + 10; // 10-250ms
       const totalDelayMs = baseDelayMs + jitterMs;
+
+      if (rateLimited) {
+        opts.onRateLimit(lastError, attempt, totalDelayMs);
+      }
 
       console.log(`⏳ Waiting ${totalDelayMs}ms before retry...`);
       await new Promise((resolve) => setTimeout(resolve, totalDelayMs));

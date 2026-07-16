@@ -21,6 +21,7 @@ type SharedState struct {
 	ProviderKey  string
 	Model        string
 	Parallel     bool
+	Madmax       bool
 	Results      []TestResult
 	Completed    bool
 	Error        string
@@ -36,6 +37,7 @@ type TestResult struct {
 	PassAtTen   float64
 	Status      TestStatus
 	RetryAfter  int
+	RetryAttempt int
 }
 
 // TestStatus represents the status of a test

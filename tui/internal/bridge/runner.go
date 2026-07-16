@@ -16,6 +16,7 @@ type BenchmarkConfig struct {
 	Model       string
 	APIKeys     map[string]string
 	Parallel    bool
+	Madmax      bool
 	Samples     int
 	ContextFile string
 }
@@ -38,6 +39,7 @@ func RunBenchmark(config BenchmarkConfig, eventHandler EventHandler) error {
 		fmt.Fprintf(debugLog, "Model: %s\n", config.Model)
 		fmt.Fprintf(debugLog, "Samples: %d\n", config.Samples)
 		fmt.Fprintf(debugLog, "Parallel: %v\n", config.Parallel)
+		fmt.Fprintf(debugLog, "Madmax: %v\n", config.Madmax)
 	}
 
 	// Build command
@@ -197,10 +199,15 @@ func buildBenchmarkEnv(base []string, config BenchmarkConfig) []string {
 	values["DEBUG_PROVIDER"] = config.Provider
 	values["DEBUG_MODEL"] = config.Model
 	values["DEBUG_SAMPLES"] = fmt.Sprintf("%d", config.Samples)
-	if config.Parallel {
+	if config.Madmax {
+		values["MADMAX_EXECUTION"] = "true"
+		delete(values, "PARALLEL_EXECUTION")
+	} else if config.Parallel {
 		values["PARALLEL_EXECUTION"] = "true"
+		delete(values, "MADMAX_EXECUTION")
 	} else {
 		delete(values, "PARALLEL_EXECUTION")
+		delete(values, "MADMAX_EXECUTION")
 	}
 
 	keys := make([]string, 0, len(values))

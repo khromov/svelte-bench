@@ -8,7 +8,7 @@ import { calculatePassAtK, type HumanEvalResult } from "./humaneval";
 import { cleanCodeMarkdown } from "./code-cleaner";
 import { withRetry } from "./retry-wrapper";
 import crypto from "crypto";
-import { isTUIMode, emitTestStart, emitTestComplete, emitSampleProgress, log } from "./tui-events";
+import { isTUIMode, emitTestStart, emitTestComplete, emitSampleProgress, emitRateLimit, log } from "./tui-events";
 
 export interface TestDefinition {
   name: string;
@@ -39,6 +39,10 @@ export interface BenchmarkResult {
   timestamp: string;
   sampleIndex?: number;
   temperature?: number;
+}
+
+export interface TestExecutionOptions {
+  retryRateLimits?: boolean;
 }
 
 /**
@@ -123,7 +127,8 @@ async function runSingleTestSample(
   llmProvider: LLMProvider,
   sampleIndex: number,
   temperature: number | undefined,
-  contextContent?: string
+  contextContent?: string,
+  executionOptions: TestExecutionOptions = {}
 ): Promise<BenchmarkResult> {
   const providerName = llmProvider.name;
   const testDir = getUniqueTestDir(providerName, test.name, sampleIndex);
@@ -156,6 +161,15 @@ async function runSingleTestSample(
         onRetry: (error, attempt) => {
           console.warn(
             `⚠️  Retry attempt ${attempt} for ${test.name} with ${providerName} after error: ${error.message}`
+          );
+        },
+        retryRateLimits: executionOptions.retryRateLimits,
+        onRateLimit: (error, attempt, delayMs) => {
+          if (isTUIMode()) {
+            emitRateLimit(test.name, attempt, delayMs);
+          }
+          console.warn(
+            `Rate limit for ${test.name} with ${providerName}; retry ${attempt} in ${delayMs}ms: ${error.message}`
           );
         },
       }
@@ -235,7 +249,8 @@ async function runTestSamplesInParallelWithCheckpointing(
   testIndex?: number,
   completedResults?: HumanEvalResult[],
   existingSamples: BenchmarkResult[] = [],
-  startSampleIndex: number = 0
+  startSampleIndex: number = 0,
+  executionOptions: TestExecutionOptions = {}
 ): Promise<BenchmarkResult[]> {
   const providerName = llmProvider.name;
   const modelId = llmProvider.getModelIdentifier();
@@ -249,7 +264,7 @@ async function runTestSamplesInParallelWithCheckpointing(
     const temperature = i === 0 ? 0 : undefined;
     const sampleIndex = i;
     
-    const samplePromise = runSingleTestSample(test, llmProvider, sampleIndex, temperature, contextContent)
+    const samplePromise = runSingleTestSample(test, llmProvider, sampleIndex, temperature, contextContent, executionOptions)
       .then(result => {
         completedSampleCount++;
         if (isTUIMode()) {
@@ -352,7 +367,8 @@ export async function runHumanEvalTest(
   testIndex?: number,
   completedResults?: HumanEvalResult[],
   existingSamples: BenchmarkResult[] = [],
-  startSampleIndex: number = 0
+  startSampleIndex: number = 0,
+  executionOptions: TestExecutionOptions = {}
 ): Promise<HumanEvalResult> {
   try {
     const providerName = llmProvider.name;
@@ -373,7 +389,8 @@ export async function runHumanEvalTest(
       testIndex,
       completedResults,
       existingSamples,
-      startSampleIndex
+      startSampleIndex,
+      executionOptions
     );
     
     // Show completion status

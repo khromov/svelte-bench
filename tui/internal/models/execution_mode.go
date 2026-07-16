@@ -49,13 +49,14 @@ func (m ExecutionModeModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return model, model.Init()
 
 		case "up":
-			m.selectedOption = (m.selectedOption - 1 + 2) % 2
+			m.selectedOption = (m.selectedOption - 1 + 3) % 3
 
 		case "down":
-			m.selectedOption = (m.selectedOption + 1) % 2
+			m.selectedOption = (m.selectedOption + 1) % 3
 
 		case "enter":
 			m.state.Parallel = (m.selectedOption == 0)
+			m.state.Madmax = (m.selectedOption == 2)
 			model := NewModelSelectionModel(m.state)
 			return model, model.loadModels(model.providers[model.selectedProvider])
 		}
@@ -90,7 +91,16 @@ func (m ExecutionModeModel) View() string {
 			Render("> Sequential (reliable, one at a time)")
 	}
 
-	lines = append(lines, opt1, opt2)
+	// MADMAX option
+	opt3 := "  MADMAX (all categories and samples concurrent)"
+	if m.selectedOption == 2 {
+		opt3 = lipgloss.NewStyle().
+			Foreground(styles.OrangePrimary).
+			Bold(true).
+			Render("> MADMAX (all categories and samples concurrent)")
+	}
+
+	lines = append(lines, opt1, opt2, opt3)
 
 	// Help text
 	lines = append(lines, "")

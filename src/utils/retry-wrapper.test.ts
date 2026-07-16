@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { withRetry } from "./retry-wrapper";
+import { RateLimitError } from "./errors";
 
 describe("retry-wrapper", () => {
   it("should succeed on first attempt", async () => {
@@ -112,5 +113,30 @@ describe("retry-wrapper", () => {
     // So total should be between 110ms and 350ms
     expect(delays[0]).toBeGreaterThanOrEqual(110);
     expect(delays[0]).toBeLessThanOrEqual(350);
+  });
+
+  it("should retry rate limits with exponential backoff when enabled", async () => {
+    const onRateLimit = vi.fn();
+    const mockFn = vi
+      .fn()
+      .mockRejectedValueOnce(new RateLimitError("429 too many requests"))
+      .mockResolvedValueOnce("success");
+
+    await expect(
+      withRetry(mockFn, {
+        maxAttempts: 2,
+        initialDelayMs: 10,
+        maxDelayMs: 100,
+        retryRateLimits: true,
+        onRateLimit,
+      }),
+    ).resolves.toBe("success");
+
+    expect(onRateLimit).toHaveBeenCalledWith(
+      expect.objectContaining({ name: "RateLimitError" }),
+      1,
+      expect.any(Number),
+    );
+    expect(mockFn).toHaveBeenCalledTimes(2);
   });
 });

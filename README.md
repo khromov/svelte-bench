@@ -122,10 +122,11 @@ pnpm run-tests
 
 ### Execution Modes
 
-SvelteBench supports two execution modes:
+SvelteBench supports three execution modes:
 
 - **Sequential (default)**: Tests and samples run one at a time. More reliable with detailed progress output.
 - **Parallel**: Tests run sequentially, but samples within each test are generated in parallel. Faster execution with `PARALLEL_EXECUTION=true`.
+- **MADMAX**: All test categories run concurrently, while samples inside every category also run concurrently. This is the fastest and most rate-limit-sensitive mode; enable it with `MADMAX_EXECUTION=true`.
 
 ### Debug Mode (Environment-Compatible)
 

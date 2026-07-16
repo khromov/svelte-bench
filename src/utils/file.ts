@@ -271,6 +271,52 @@ export function getCheckpointPath(provider: string, modelId: string): string {
   return path.join(checkpointDir, `checkpoint-${safeModelId}.json`);
 }
 
+/** Get an isolated checkpoint path for one MADMAX test category. */
+export function getTestCheckpointPath(provider: string, modelId: string, testName: string): string {
+  const checkpointDir = getCheckpointDir(provider);
+  const safeModelId = modelId.replace(/[^a-zA-Z0-9\-_]/g, "-");
+  const safeTestName = testName.replace(/[^a-zA-Z0-9\-_]/g, "-");
+  return path.join(checkpointDir, `madmax-${safeModelId}-${safeTestName}.json`);
+}
+
+/** Atomically save an isolated MADMAX category checkpoint. */
+export async function saveTestCheckpoint(
+  provider: string,
+  modelId: string,
+  testName: string,
+  checkpointData: unknown
+): Promise<void> {
+  await ensureCheckpointDir(provider);
+  const checkpointPath = getTestCheckpointPath(provider, modelId, testName);
+  const tempPath = `${checkpointPath}.${process.pid}.${Date.now()}.tmp`;
+  try {
+    await fs.writeFile(tempPath, JSON.stringify(checkpointData, null, 2));
+    await fs.rename(tempPath, checkpointPath);
+  } catch (error) {
+    await fs.rm(tempPath, { force: true }).catch(() => undefined);
+    console.error(`Error saving MADMAX checkpoint for ${provider}/${modelId}/${testName}:`, error);
+  }
+}
+
+/** Load an isolated MADMAX category checkpoint. */
+export async function loadTestCheckpoint(
+  provider: string,
+  modelId: string,
+  testName: string
+): Promise<any | null> {
+  try {
+    const data = await fs.readFile(getTestCheckpointPath(provider, modelId, testName), "utf-8");
+    return JSON.parse(data);
+  } catch {
+    return null;
+  }
+}
+
+/** Remove an isolated MADMAX category checkpoint. */
+export async function removeTestCheckpoint(provider: string, modelId: string, testName: string): Promise<void> {
+  await fs.unlink(getTestCheckpointPath(provider, modelId, testName)).catch(() => undefined);
+}
+
 /**
  * Save checkpoint data to file
  * @param provider The provider name
