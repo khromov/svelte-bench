@@ -26,8 +26,8 @@ export async function withRetry<T>(fn: () => Promise<T>, options?: RetryOptions)
     } catch (error) {
       lastError = error instanceof Error ? error : new Error(String(error));
 
-      // Don't retry rate limit errors - they should abort the run immediately
-      if (lastError.name === "RateLimitError") {
+      // Don't retry errors that cannot be fixed by repeating the same request.
+      if (lastError.name === "RateLimitError" || lastError.name === "NonRetryableError") {
         throw lastError;
       }
 
