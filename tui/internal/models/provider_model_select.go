@@ -331,7 +331,7 @@ func (m ProviderModelSelectModel) View() string {
 		lines = append(lines, "")
 		lines = append(lines, lipgloss.NewStyle().
 			Foreground(styles.GrayDim).
-			Render("Up/Down: Navigate | Enter: Select | ✓ Valid | • Stored | ! Invalid | Left: Back | Double Esc: Quit | Ctrl+C: Quit"))
+			Render("Up/Down: Navigate • Enter: Select • ✓ Valid • Stored • ! Invalid • Left: Back • Double Esc: Quit • Ctrl+C: Quit"))
 	} else {
 		// Model input with autocomplete
 		providerName := m.providers[m.selectedProvider].Name
@@ -402,7 +402,7 @@ func (m ProviderModelSelectModel) View() string {
 		lines = append(lines, "")
 		lines = append(lines, lipgloss.NewStyle().
 			Foreground(styles.GrayDim).
-			Render("Type to search | Up/Down: Navigate | Enter: Select | Left: Back | Double Esc: Quit | Ctrl+C: Quit"))
+			Render("Type to search • Up/Down: Navigate • Enter: Select • Left: Back • Double Esc: Quit • Ctrl+C: Quit"))
 	}
 
 	content := lipgloss.NewStyle().

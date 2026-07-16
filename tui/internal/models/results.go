@@ -97,7 +97,7 @@ func (m ResultsModel) View() string {
 
 	summary := lipgloss.NewStyle().
 		Foreground(styles.OrangeMid).
-		Render(fmt.Sprintf("%s | %s", m.state.Provider, m.state.Model))
+		Render(fmt.Sprintf("%s • %s", m.state.Provider, m.state.Model))
 
 	passColor := styles.OrangeSuccess
 	if avgPass < 0.5 {
@@ -198,7 +198,7 @@ func (m ResultsModel) View() string {
 	lines = append(lines, "")
 	help := lipgloss.NewStyle().
 		Foreground(styles.GrayDim).
-		Render("Up/Down: Navigate | Enter: Select | Left: Back | Double Esc: Quit | Q/Ctrl+C: Quit")
+		Render("Up/Down: Navigate • Enter: Select • Left: Back • Double Esc: Quit • Q/Ctrl+C: Quit")
 	lines = append(lines, help)
 
 	content := lipgloss.NewStyle().

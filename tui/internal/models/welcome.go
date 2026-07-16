@@ -80,7 +80,7 @@ func (m WelcomeModel) View() string {
 	// Help text
 	lines = append(lines, "")
 	var help string
-	help = "Enter: Continue | Double Esc: Quit | Ctrl+C: Quit"
+	help = "Enter: Continue • Double Esc: Quit • Ctrl+C: Quit"
 	lines = append(lines, lipgloss.NewStyle().
 		Foreground(styles.GrayDim).
 		Render(help))

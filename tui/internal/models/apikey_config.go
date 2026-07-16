@@ -169,7 +169,7 @@ func (m APIKeyConfigModel) View() string {
 			}
 		}
 
-		lines = append(lines, "", styles.HelpStyle.Render("Enter: Confirm | Esc: Cancel"))
+		lines = append(lines, "", styles.HelpStyle.Render("Enter: Confirm • Esc: Cancel"))
 
 		modal := lipgloss.NewStyle().
 			Border(lipgloss.RoundedBorder()).
@@ -235,9 +235,9 @@ func (m APIKeyConfigModel) View() string {
 	// Help
 	lines = append(lines, "")
 	if m.state.Config.HasAnyAPIKeys() {
-		lines = append(lines, styles.HelpStyle.Render("Up/Down: Navigate | Enter: Edit | Tab: Continue | Left: Back | Double Esc: Quit | Ctrl+C: Quit"))
+		lines = append(lines, styles.HelpStyle.Render("Up/Down: Navigate • Enter: Edit • Tab: Continue • Left: Back • Double Esc: Quit • Ctrl+C: Quit"))
 	} else {
-		lines = append(lines, styles.HelpStyle.Render("Up/Down: Navigate | Enter: Edit | Left: Back | Double Esc: Quit | Ctrl+C: Quit"))
+		lines = append(lines, styles.HelpStyle.Render("Up/Down: Navigate • Enter: Edit • Left: Back • Double Esc: Quit • Ctrl+C: Quit"))
 	}
 
 	content := lipgloss.NewStyle().Padding(0, 2).Render(

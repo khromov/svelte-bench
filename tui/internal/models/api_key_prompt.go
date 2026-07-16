@@ -101,7 +101,7 @@ func (m APIKeyPromptModel) View() string {
 	if m.error != "" {
 		lines = append(lines, "", styles.ErrorStyle.Render(m.error))
 	}
-	lines = append(lines, "", styles.HelpStyle.Render("Enter: Save | Left: Back | Double Esc: Quit | Ctrl+C: Quit"))
+	lines = append(lines, "", styles.HelpStyle.Render("Enter: Save • Left: Back • Double Esc: Quit • Ctrl+C: Quit"))
 
 	return lipgloss.NewStyle().
 		Padding(2, 4).

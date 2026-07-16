@@ -158,7 +158,7 @@ func (m BenchmarkModel) View() string {
 
 	info := lipgloss.NewStyle().
 		Foreground(styles.OrangeMid).
-		Render(fmt.Sprintf("%s | %s | %s", m.state.Provider, m.state.Model, mode))
+		Render(fmt.Sprintf("%s • %s • %s", m.state.Provider, m.state.Model, mode))
 
 	sections = append(sections, title, info, "")
 

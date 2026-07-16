@@ -96,7 +96,7 @@ func (m ExecutionModeModel) View() string {
 	lines = append(lines, "")
 	help := lipgloss.NewStyle().
 		Foreground(styles.GrayDim).
-		Render("Up/Down: Navigate | Enter: Select | Left: Back | Double Esc: Quit | Ctrl+C: Quit")
+		Render("Up/Down: Navigate • Enter: Select • Left: Back • Double Esc: Quit • Ctrl+C: Quit")
 	lines = append(lines, help)
 
 	content := lipgloss.NewStyle().
