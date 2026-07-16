@@ -257,25 +257,27 @@ func (m *BenchmarkModel) renderTest(test *TestResult) string {
 	var iconColor lipgloss.Color
 
 	switch test.Status {
-	case StatusCompleted:
-		icon = "✓"
-		iconColor = styles.OrangeSuccess
+	case StatusCompleted, StatusFailed:
+		if test.Current >= test.Total {
+			icon = "Done"
+			iconColor = styles.OrangeSuccess
+		} else {
+			icon = "x"
+			iconColor = styles.OrangeError
+		}
 	case StatusRunning:
 		icon = styles.SpinnerFrames[(m.frame/4)%len(styles.SpinnerFrames)]
 		iconColor = styles.OrangePrimary
 	case StatusRateLimit:
 		icon = "~"
 		iconColor = styles.OrangeWarning
-	case StatusFailed:
-		icon = "x"
-		iconColor = styles.OrangeError
 	default:
 		icon = "-"
 		iconColor = styles.GrayDim
 	}
 
 	iconStyled := lipgloss.NewStyle().
-		Width(2).
+		Width(5).
 		Align(lipgloss.Right).
 		Foreground(iconColor).
 		Bold(true).

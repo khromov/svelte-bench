@@ -25,6 +25,9 @@ func TestBenchmarkViewShowsAllTestsAndPercentageScores(t *testing.T) {
 	if !strings.Contains(view, "75%") {
 		t.Fatal("benchmark view should render pass scores as percentages")
 	}
+	if !strings.Contains(view, "Done") {
+		t.Fatal("benchmark view should mark completed samples as Done")
+	}
 	if strings.Contains(view, "0.75") {
 		t.Fatal("benchmark view should not render decimal pass scores")
 	}
