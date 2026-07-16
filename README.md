@@ -100,8 +100,8 @@ The TUI guides you through:
 4. Running the benchmark with live progress
 5. Reviewing the results
 
-Use `Esc` or `←` to go back between setup and selection screens. Use
-`Ctrl+C` to quit.
+Use `←` to go back between setup and selection screens. Double-press `Esc`
+within one second to exit, or use `Ctrl+C`.
 
 ### Environment-Compatible Execution
 

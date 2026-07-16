@@ -80,7 +80,11 @@ func (m ProviderModelSelectModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			switch msg.String() {
 			case "ctrl+c":
 				return m, tea.Quit
-			case "esc", "left":
+			case "esc":
+				if DoubleEscapeRequestsExit() {
+					return m, tea.Quit
+				}
+			case "left":
 				return NewExecutionModeModel(m.state), nil
 			case "up":
 				if m.selectedProvider > 0 {
@@ -115,7 +119,11 @@ func (m ProviderModelSelectModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		} else {
 			// Step 1: Type model name with autocomplete
 			switch msg.String() {
-			case "esc", "left":
+			case "esc":
+				if DoubleEscapeRequestsExit() {
+					return m, tea.Quit
+				}
+			case "left":
 				// Go back to provider selection
 				m.step = 0
 				m.modelInput.Blur()
@@ -220,16 +228,10 @@ func (m ProviderModelSelectModel) View() string {
 
 	// Header
 	if m.step == 0 {
-		title := lipgloss.NewStyle().
-			Bold(true).
-			Foreground(styles.OrangePrimary).
-			Render("📡 Select Provider")
+		title := styles.HeadingStyle.Render("📡 SELECT PROVIDER")
 		lines = append(lines, title, "")
 	} else {
-		title := lipgloss.NewStyle().
-			Bold(true).
-			Foreground(styles.OrangePrimary).
-			Render("🤖 Select Model")
+		title := styles.HeadingStyle.Render("🤖 SELECT MODEL")
 		lines = append(lines, title, "")
 	}
 
@@ -341,7 +343,7 @@ func (m ProviderModelSelectModel) View() string {
 		lines = append(lines, "")
 		lines = append(lines, lipgloss.NewStyle().
 			Foreground(styles.GrayDim).
-			Render("Type to search • ↑/↓: Navigate • Enter: Select • Esc/←: Back • Ctrl+C: Quit"))
+			Render("Type to search • ↑/↓: Navigate • Enter: Select • ←: Back • Double Esc: Quit • Ctrl+C: Quit"))
 	}
 
 	content := lipgloss.NewStyle().

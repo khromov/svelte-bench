@@ -70,6 +70,9 @@ func (m APIKeyConfigModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if m.editing {
 			switch msg.String() {
 			case "esc":
+				if DoubleEscapeRequestsExit() {
+					return m, tea.Quit
+				}
 				m.editing = false
 				m.input.Blur()
 				return m, nil
@@ -95,8 +98,10 @@ func (m APIKeyConfigModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg.String() {
 		case "ctrl+c":
 			return m, tea.Quit
-		case "esc", "left":
-			return NewWelcomeModel(m.state.Config), nil
+		case "esc":
+			if DoubleEscapeRequestsExit() {
+				return m, tea.Quit
+			}
 
 		case "up":
 			if m.selectedIndex > 0 {
@@ -176,9 +181,7 @@ func (m APIKeyConfigModel) View() string {
 	}
 
 	// Provider list
-	title := lipgloss.NewStyle().Bold(true).Render(
-		styles.CreateGradient("API Configuration", styles.PrimaryGradient),
-	)
+	title := styles.HeadingStyle.Render("🔑 API CONFIGURATION")
 
 	var lines []string
 	lines = append(lines, title, "")
@@ -232,9 +235,9 @@ func (m APIKeyConfigModel) View() string {
 	// Help
 	lines = append(lines, "")
 	if m.state.Config.HasAnyAPIKeys() {
-		lines = append(lines, styles.HelpStyle.Render("↑↓: Navigate • Enter: Edit • Tab: Continue • Esc/←: Back • Ctrl+C: Quit"))
+		lines = append(lines, styles.HelpStyle.Render("↑↓: Navigate • Enter: Edit • Tab: Continue • ←: Back • Double Esc: Quit • Ctrl+C: Quit"))
 	} else {
-		lines = append(lines, styles.HelpStyle.Render("↑↓: Navigate • Enter: Edit • Esc/←: Back • Ctrl+C: Quit"))
+		lines = append(lines, styles.HelpStyle.Render("↑↓: Navigate • Enter: Edit • ←: Back • Double Esc: Quit • Ctrl+C: Quit"))
 	}
 
 	content := lipgloss.NewStyle().Padding(0, 2).Render(

@@ -41,7 +41,11 @@ func (m ResultsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg.String() {
 		case "ctrl+c", "q":
 			return m, tea.Quit
-		case "esc", "left":
+		case "esc":
+			if DoubleEscapeRequestsExit() {
+				return m, tea.Quit
+			}
+		case "left":
 			return NewWelcomeModel(m.state.Config), nil
 
 		case "up":
@@ -73,10 +77,7 @@ func (m ResultsModel) View() string {
 	var lines []string
 
 	// Title
-	title := lipgloss.NewStyle().
-		Bold(true).
-		Foreground(styles.OrangeSuccess).
-		Render("✓ BENCHMARK COMPLETE")
+	title := styles.HeadingStyle.Render("✓ BENCHMARK COMPLETE")
 
 	lines = append(lines, title, "")
 
@@ -197,7 +198,7 @@ func (m ResultsModel) View() string {
 	lines = append(lines, "")
 	help := lipgloss.NewStyle().
 		Foreground(styles.GrayDim).
-		Render("↑/↓: Navigate • Enter: Select • Esc/←: Back • Q/Ctrl+C: Quit")
+		Render("↑/↓: Navigate • Enter: Select • ←: Back • Double Esc: Quit • Q/Ctrl+C: Quit")
 	lines = append(lines, help)
 
 	content := lipgloss.NewStyle().

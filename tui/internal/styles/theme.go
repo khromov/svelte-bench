@@ -35,6 +35,11 @@ var (
 		MarginTop(2).
 		MarginBottom(1)
 
+	// HeadingStyle is used for every screen heading so the TUI has one visual hierarchy.
+	HeadingStyle = lipgloss.NewStyle().
+		Foreground(OrangePrimary).
+		Bold(true)
+
 	// Subtitle style
 	SubtitleStyle = lipgloss.NewStyle().
 		Foreground(GrayMedium).

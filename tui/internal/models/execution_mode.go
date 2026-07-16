@@ -11,6 +11,7 @@ import (
 type ExecutionModeModel struct {
 	state          *SharedState
 	selectedOption int
+	backToWelcome  bool
 	width          int
 	height         int
 }
@@ -23,6 +24,13 @@ func NewExecutionModeModel(state *SharedState) ExecutionModeModel {
 		width:          80,
 		height:         24,
 	}
+}
+
+// NewExecutionModeFromWelcome returns to the welcome screen when backing out.
+func NewExecutionModeFromWelcome(state *SharedState) ExecutionModeModel {
+	m := NewExecutionModeModel(state)
+	m.backToWelcome = true
+	return m
 }
 
 func (m ExecutionModeModel) Init() tea.Cmd {
@@ -40,7 +48,14 @@ func (m ExecutionModeModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg.String() {
 		case "ctrl+c":
 			return m, tea.Quit
-		case "esc", "left":
+		case "esc":
+			if DoubleEscapeRequestsExit() {
+				return m, tea.Quit
+			}
+		case "left":
+			if m.backToWelcome {
+				return NewWelcomeModel(m.state.Config), nil
+			}
 			return NewAPIKeyConfigModel(m.state), nil
 
 		case "up":
@@ -62,10 +77,7 @@ func (m ExecutionModeModel) View() string {
 	var lines []string
 
 	// Title
-	title := lipgloss.NewStyle().
-		Bold(true).
-		Foreground(styles.OrangePrimary).
-		Render("⚡ Select Execution Mode")
+	title := styles.HeadingStyle.Render("⚡ EXECUTION MODE")
 
 	lines = append(lines, title, "", "")
 
@@ -93,7 +105,7 @@ func (m ExecutionModeModel) View() string {
 	lines = append(lines, "")
 	help := lipgloss.NewStyle().
 		Foreground(styles.GrayDim).
-		Render("↑/↓: Navigate • Enter: Select • Esc/←: Back • Ctrl+C: Quit")
+		Render("↑/↓: Navigate • Enter: Select • ←: Back • Double Esc: Quit • Ctrl+C: Quit")
 	lines = append(lines, help)
 
 	content := lipgloss.NewStyle().

@@ -101,6 +101,10 @@ func (m BenchmarkModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg.String() {
 		case "ctrl+c":
 			return m, tea.Quit
+		case "esc":
+			if DoubleEscapeRequestsExit() {
+				return m, tea.Quit
+			}
 		}
 
 	case benchmarkStartMsg:
@@ -163,10 +167,7 @@ func (m BenchmarkModel) View() string {
 		mode = "Parallel"
 	}
 
-	title := lipgloss.NewStyle().
-		Bold(true).
-		Foreground(styles.OrangePrimary).
-		Render("🔥 BENCHMARK RUNNING")
+	title := styles.HeadingStyle.Render("🔥 BENCHMARK RUNNING")
 
 	info := lipgloss.NewStyle().
 		Foreground(styles.OrangeMid).

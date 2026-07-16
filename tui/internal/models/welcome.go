@@ -56,6 +56,10 @@ func (m WelcomeModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg.String() {
 		case "ctrl+c":
 			return m, tea.Quit
+		case "esc":
+			if DoubleEscapeRequestsExit() {
+				return m, tea.Quit
+			}
 
 		case "up":
 			if m.hasExistingConf {
@@ -71,7 +75,7 @@ func (m WelcomeModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			// Navigate to next screen
 			if m.hasExistingConf && m.selectedOption == 0 {
 				// Use existing config - go to execution mode selection
-				return NewExecutionModeModel(m.state), nil
+				return NewExecutionModeFromWelcome(m.state), nil
 			} else {
 				// Configure API keys
 				return NewAPIKeyConfigModel(m.state), nil
@@ -86,10 +90,7 @@ func (m WelcomeModel) View() string {
 	var lines []string
 
 	// Title - simple and clean
-	title := lipgloss.NewStyle().
-		Foreground(styles.OrangePrimary).
-		Bold(true).
-		Render("🔥 SVELTEBENCH")
+	title := styles.HeadingStyle.Render("🔥 SVELTEBENCH")
 
 	subtitle := lipgloss.NewStyle().
 		Foreground(styles.OrangeMid).
