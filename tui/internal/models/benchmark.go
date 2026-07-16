@@ -2,7 +2,6 @@ package models
 
 import (
 	"fmt"
-	"math"
 	"svelte-bench/tui/internal/bridge"
 	"svelte-bench/tui/internal/styles"
 	"time"
@@ -18,20 +17,17 @@ type benchmarkErrorMsg struct{ err error }
 
 // BenchmarkModel handles benchmark execution
 type BenchmarkModel struct {
-	state          *SharedState
-	tests          map[string]*TestResult
-	testOrder      []string
-	startTime      time.Time
-	running        bool
-	totalSamples   int
-	currentCount   int
-	width          int
-	height         int
-	frame          int // For animations
-	eventChan      chan bridge.BenchmarkEvent
-	lastProgressAt time.Time
-	sampleRate     float64
-	progressEvents int
+	state        *SharedState
+	tests        map[string]*TestResult
+	testOrder    []string
+	startTime    time.Time
+	running      bool
+	totalSamples int
+	currentCount int
+	width        int
+	height       int
+	frame        int // For animations
+	eventChan    chan bridge.BenchmarkEvent
 }
 
 // NewBenchmarkModel creates a new benchmark model
@@ -60,7 +56,7 @@ func NewBenchmarkModel(state *SharedState) BenchmarkModel {
 		running:      false,
 		width:        80,
 		height:       24,
-		eventChan:    make(chan bridge.BenchmarkEvent, 100),
+		eventChan:    make(chan bridge.BenchmarkEvent, 1024),
 	}
 }
 
@@ -219,16 +215,7 @@ func (m BenchmarkModel) View() string {
 		elapsed = time.Since(m.startTime)
 		elapsedStr = formatDuration(elapsed)
 
-		if m.currentCount < m.totalSamples && m.sampleRate > 0 && m.progressEvents >= 2 {
-			remainingSamples := m.totalSamples - m.currentCount
-			remainingSeconds := int(math.Ceil(float64(remainingSamples) / m.sampleRate))
-			remaining := formatDuration(time.Duration(remainingSeconds) * time.Second)
-			stats = fmt.Sprintf("Elapsed: %s | Remaining: %s", elapsedStr, remaining)
-		} else if m.currentCount > 0 {
-			stats = fmt.Sprintf("Elapsed: %s | Remaining: estimating", elapsedStr)
-		} else {
-			stats = fmt.Sprintf("Elapsed: %s", elapsedStr)
-		}
+		stats = fmt.Sprintf("Elapsed: %s", elapsedStr)
 	} else {
 		stats = "Starting..."
 	}
@@ -267,23 +254,28 @@ func (m *BenchmarkModel) renderTest(test *TestResult) string {
 
 	switch test.Status {
 	case StatusCompleted:
-		icon = "[OK]"
+		icon = "✓"
 		iconColor = styles.OrangeSuccess
 	case StatusRunning:
 		icon = styles.SpinnerFrames[m.frame%len(styles.SpinnerFrames)]
 		iconColor = styles.OrangePrimary
 	case StatusRateLimit:
-		icon = "[WAIT]"
+		icon = "~"
 		iconColor = styles.OrangeWarning
 	case StatusFailed:
-		icon = "[FAIL]"
+		icon = "x"
 		iconColor = styles.OrangeError
 	default:
-		icon = "[ ]"
+		icon = "-"
 		iconColor = styles.GrayDim
 	}
 
-	iconStyled := lipgloss.NewStyle().Foreground(iconColor).Bold(true).Render(icon)
+	iconStyled := lipgloss.NewStyle().
+		Width(2).
+		Align(lipgloss.Right).
+		Foreground(iconColor).
+		Bold(true).
+		Render(icon)
 
 	// Test name
 	nameColor := styles.GrayMedium
@@ -303,6 +295,8 @@ func (m *BenchmarkModel) renderTest(test *TestResult) string {
 
 	// Progress text
 	progressText := lipgloss.NewStyle().
+		Width(5).
+		Align(lipgloss.Right).
 		Foreground(styles.OrangeLight).
 		Render(fmt.Sprintf("%2d/%d", test.Current, test.Total))
 
@@ -316,11 +310,17 @@ func (m *BenchmarkModel) renderTest(test *TestResult) string {
 			passColor = styles.OrangeWarning
 		}
 		statusText = lipgloss.NewStyle().
+			Width(5).
+			Align(lipgloss.Right).
 			Foreground(passColor).
 			Render(fmt.Sprintf("%.0f%%", test.PassAtOne*100))
 	}
 
-	return fmt.Sprintf(" %s %s %s %s  %s", iconStyled, name, miniBar, progressText, statusText)
+	if statusText == "" {
+		statusText = lipgloss.NewStyle().Width(5).Render("")
+	}
+
+	return fmt.Sprintf(" %s %s %s %s %s", iconStyled, name, miniBar, progressText, statusText)
 }
 
 func (m *BenchmarkModel) handleEvent(event bridge.BenchmarkEvent) {
@@ -385,22 +385,6 @@ func (m *BenchmarkModel) recordProgress(samples int) {
 	}
 
 	m.currentCount += samples
-	now := time.Now()
-	if !m.lastProgressAt.IsZero() {
-		elapsed := now.Sub(m.lastProgressAt).Seconds()
-		if elapsed > 0 {
-			instantRate := float64(samples) / elapsed
-			if m.sampleRate == 0 {
-				m.sampleRate = instantRate
-			} else {
-				// Smooth bursts from parallel execution without making the ETA
-				// jump wildly after a single fast or slow sample.
-				m.sampleRate = (m.sampleRate * 0.75) + (instantRate * 0.25)
-			}
-		}
-	}
-	m.lastProgressAt = now
-	m.progressEvents++
 }
 
 func (m BenchmarkModel) runBenchmark() tea.Cmd {
@@ -425,22 +409,15 @@ func (m BenchmarkModel) runBenchmark() tea.Cmd {
 
 			// Run benchmark and handle events
 			err := bridge.RunBenchmark(config, func(event bridge.BenchmarkEvent) {
-				// Send events to the channel for the Update loop
-				select {
-				case m.eventChan <- event:
-				default:
-					// Channel full, skip event
-				}
+				// Preserve every progress event for the Update loop.
+				m.eventChan <- event
 			})
 
 			// Send error event if benchmark failed
 			if err != nil {
-				select {
-				case m.eventChan <- bridge.BenchmarkEvent{
+				m.eventChan <- bridge.BenchmarkEvent{
 					Type:  bridge.EventError,
 					Error: err.Error(),
-				}:
-				default:
 				}
 			}
 

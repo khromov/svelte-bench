@@ -33,8 +33,8 @@ func CreateGradient(text string, gradientType GradientType) string {
 		startColor, _ = colorful.Hex("#EF4444")
 		endColor, _ = colorful.Hex("#FF6B35")
 	case ProgressGradient:
-		startColor, _ = colorful.Hex("#FF6B35")
-		endColor, _ = colorful.Hex("#FFA500")
+		startColor, _ = colorful.Hex("#FFD166")
+		endColor, _ = colorful.Hex("#FF6B35")
 	default:
 		startColor, _ = colorful.Hex("#FF6B35")
 		endColor, _ = colorful.Hex("#FFA500")
@@ -71,8 +71,8 @@ func RenderProgressBar(current, total, width int) string {
 		if i < filled {
 			// Create gradient effect in filled portion
 			ratio := float64(i) / math.Max(float64(filled-1), 1)
-			startColor, _ := colorful.Hex("#FF6B35")
-			endColor, _ := colorful.Hex("#FFA500")
+			startColor, _ := colorful.Hex("#FFD166")
+			endColor, _ := colorful.Hex("#FF6B35")
 			color := startColor.BlendLuv(endColor, ratio)
 			hexColor := color.Hex()
 			bar += lipgloss.NewStyle().Foreground(lipgloss.Color(hexColor)).Render("█")
@@ -98,7 +98,7 @@ func RenderAnimatedProgressBar(current, total, width int, frame int) string {
 	}
 
 	// Moving highlight position (bounces back and forth)
-	highlightSpeed := 3
+	highlightSpeed := 12
 	highlightPos := 0
 	if filled > 0 {
 		cycle := filled * 2
@@ -113,8 +113,8 @@ func RenderAnimatedProgressBar(current, total, width int, frame int) string {
 	bar := ""
 	for i := 0; i < width; i++ {
 		if i < filled {
-			// Check if this is the highlight position
-			isHighlight := i == highlightPos || i == highlightPos-1
+			// Keep the activity pulse subtle and stable.
+			isHighlight := i == highlightPos
 
 			if isHighlight && filled > 2 {
 				// Yellow highlight
@@ -122,8 +122,8 @@ func RenderAnimatedProgressBar(current, total, width int, frame int) string {
 			} else {
 				// Orange gradient
 				ratio := float64(i) / math.Max(float64(filled-1), 1)
-				startColor, _ := colorful.Hex("#FF6B35")
-				endColor, _ := colorful.Hex("#FFA500")
+				startColor, _ := colorful.Hex("#FFD166")
+				endColor, _ := colorful.Hex("#FF6B35")
 				color := startColor.BlendLuv(endColor, ratio)
 				hexColor := color.Hex()
 				bar += lipgloss.NewStyle().Foreground(lipgloss.Color(hexColor)).Render("█")

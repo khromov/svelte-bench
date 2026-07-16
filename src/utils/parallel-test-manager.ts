@@ -243,15 +243,26 @@ async function runTestSamplesInParallelWithCheckpointing(
   
   // Create promises for remaining samples to run in parallel
   const samplePromises: Promise<{index: number, result: BenchmarkResult}>[] = [];
-  
+  let completedSampleCount = startSampleIndex;
+
   for (let i = startSampleIndex; i < numSamples; i++) {
     const temperature = i === 0 ? 0 : undefined;
     const sampleIndex = i;
     
     const samplePromise = runSingleTestSample(test, llmProvider, sampleIndex, temperature, contextContent)
-      .then(result => ({ index: sampleIndex, result }))
+      .then(result => {
+        completedSampleCount++;
+        if (isTUIMode()) {
+          emitSampleProgress(test.name, completedSampleCount, numSamples);
+        }
+        return { index: sampleIndex, result };
+      })
       .catch(error => {
         console.error(`Error running sample ${sampleIndex + 1} for ${test.name}:`, error);
+        completedSampleCount++;
+        if (isTUIMode()) {
+          emitSampleProgress(test.name, completedSampleCount, numSamples);
+        }
         // Return a failed result
         return {
           index: sampleIndex,
@@ -283,13 +294,14 @@ async function runTestSamplesInParallelWithCheckpointing(
   if (samplePromises.length === 0) {
     return samples;
   }
-  
-  console.log(`🔄 Running ${samplePromises.length} samples in parallel for ${test.name}...`);
 
-  // Emit test start event for TUI
+  // Emit progress as each parallel request settles, rather than waiting for
+  // Promise.all. The TUI can then show the actual in-flight work.
   if (isTUIMode()) {
     emitTestStart(test.name, startSampleIndex + 1, numSamples);
   }
+
+  console.log(`🔄 Running ${samplePromises.length} samples in parallel for ${test.name}...`);
 
   // Wait for all samples to complete and process them as they finish
   const completedSamples = await Promise.all(samplePromises);
@@ -304,10 +316,6 @@ async function runTestSamplesInParallelWithCheckpointing(
       samples.push(result);
       console.log(`✅ Completed sample ${index + 1}/${numSamples} for ${test.name}`);
 
-      // Emit sample progress for TUI
-      if (isTUIMode()) {
-        emitSampleProgress(test.name, index + 1, numSamples);
-      }
     } else {
       console.log(`⚠️ API failure for sample ${index + 1}/${numSamples} for ${test.name} - not adding to results`);
     }
@@ -424,7 +432,7 @@ export async function runHumanEvalTest(
 
     // Emit test complete event for TUI
     if (isTUIMode()) {
-      emitTestComplete(test.name, numValidSamples, numValidSamples, numCorrect > 0, pass1, pass10);
+      emitTestComplete(test.name, numSamples, numSamples, numCorrect > 0, pass1, pass10);
     }
 
     return result;

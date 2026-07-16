@@ -333,7 +333,7 @@ export async function runHumanEvalTest(
 
     // Emit test complete event
     const passed = numCorrect > 0;
-    emitTestComplete(test.name, numValidSamples, numValidSamples, passed, pass1, pass10);
+    emitTestComplete(test.name, numSamples, numSamples, passed, pass1, pass10);
 
     // Format the results
     return {
