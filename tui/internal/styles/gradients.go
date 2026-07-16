@@ -27,8 +27,8 @@ func CreateGradient(text string, gradientType GradientType) string {
 		startColor, _ = colorful.Hex("#FF6B35")
 		endColor, _ = colorful.Hex("#FFA500")
 	case SuccessGradient:
-		startColor, _ = colorful.Hex("#4ADE80")
-		endColor, _ = colorful.Hex("#FF8C42")
+		startColor, _ = colorful.Hex("#F6D365")
+		endColor, _ = colorful.Hex("#E98A3A")
 	case ErrorGradient:
 		startColor, _ = colorful.Hex("#EF4444")
 		endColor, _ = colorful.Hex("#FF6B35")

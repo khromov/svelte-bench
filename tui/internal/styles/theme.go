@@ -11,7 +11,7 @@ var (
 	OrangeLight     = lipgloss.Color("#FFA500")
 	OrangeDark      = lipgloss.Color("#FF4500")
 
-	OrangeSuccess   = lipgloss.Color("#3FB950") // Green for successful results
+	OrangeSuccess   = lipgloss.Color("#F6C85F") // Warm yellow for successful results
 	OrangeError     = lipgloss.Color("#F85149") // Red for errors
 	OrangeWarning   = lipgloss.Color("#D29922") // Yellow for warnings
 
