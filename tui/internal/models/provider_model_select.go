@@ -23,6 +23,8 @@ type providerValidationMsg struct {
 	errors map[string]string
 }
 
+const wrapNavigationLimit = 25
+
 // ProviderModelSelectModel handles provider and model selection
 type ProviderModelSelectModel struct {
 	state             *SharedState
@@ -136,7 +138,11 @@ func (m ProviderModelSelectModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 				return NewExecutionModeModel(m.state), nil
 			case "up":
-				if m.selectedProvider > 0 {
+				if m.selectedProvider == 0 && len(m.providers) > 0 && len(m.providers) < wrapNavigationLimit {
+					m.selectedProvider = len(m.providers) - 1
+					maxVisible := max(5, m.height-8)
+					m.scrollOffset = max(0, len(m.providers)-maxVisible)
+				} else if m.selectedProvider > 0 {
 					m.selectedProvider--
 					// Adjust scroll
 					maxVisible := m.height - 8
@@ -148,7 +154,10 @@ func (m ProviderModelSelectModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					}
 				}
 			case "down":
-				if m.selectedProvider < len(m.providers)-1 {
+				if m.selectedProvider == len(m.providers)-1 && len(m.providers) < wrapNavigationLimit {
+					m.selectedProvider = 0
+					m.scrollOffset = 0
+				} else if m.selectedProvider < len(m.providers)-1 {
 					m.selectedProvider++
 					// Adjust scroll
 					maxVisible := m.height - 8
@@ -207,7 +216,11 @@ func (m ProviderModelSelectModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					return model, model.Init()
 				}
 			case "up":
-				if m.selectedModel > 0 {
+				if m.selectedModel == 0 && len(m.filteredModels) > 0 && len(m.filteredModels) < wrapNavigationLimit {
+					m.selectedModel = len(m.filteredModels) - 1
+					maxVisible := max(3, m.height-12)
+					m.modelScrollOffset = max(0, len(m.filteredModels)-maxVisible)
+				} else if m.selectedModel > 0 {
 					m.selectedModel--
 					// Adjust scroll
 					maxVisible := m.height - 12
@@ -219,7 +232,10 @@ func (m ProviderModelSelectModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					}
 				}
 			case "down":
-				if len(m.filteredModels) > 0 && m.selectedModel < len(m.filteredModels)-1 {
+				if len(m.filteredModels) > 0 && m.selectedModel == len(m.filteredModels)-1 && len(m.filteredModels) < wrapNavigationLimit {
+					m.selectedModel = 0
+					m.modelScrollOffset = 0
+				} else if len(m.filteredModels) > 0 && m.selectedModel < len(m.filteredModels)-1 {
 					m.selectedModel++
 					// Adjust scroll
 					maxVisible := m.height - 12
