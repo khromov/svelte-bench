@@ -305,6 +305,10 @@ func (m ProviderModelSelectModel) View() string {
 				status = " !"
 			} else if provider.APIKey != "" && m.validating {
 				status = " …"
+			} else if provider.APIKey != "" {
+				// Some providers do not expose a lightweight validation endpoint.
+				// Still show that their key was loaded from configuration.
+				status = " • Stored"
 			}
 			if i == m.selectedProvider {
 				lines = append(lines, lipgloss.NewStyle().
@@ -327,7 +331,7 @@ func (m ProviderModelSelectModel) View() string {
 		lines = append(lines, "")
 		lines = append(lines, lipgloss.NewStyle().
 			Foreground(styles.GrayDim).
-			Render("↑/↓: Navigate • Enter: Select • ✓ Valid • ! Re-enter • ←: Back • Double Esc: Quit • Ctrl+C: Quit"))
+			Render("↑/↓: Navigate • Enter: Select • ✓ Valid • Stored • ! Invalid • ←: Back • Double Esc: Quit • Ctrl+C: Quit"))
 	} else {
 		// Model input with autocomplete
 		providerName := m.providers[m.selectedProvider].Name

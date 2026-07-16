@@ -28,3 +28,17 @@ func TestLegacyGeminiKeyAppearsAsGoogle(t *testing.T) {
 	}
 	t.Fatal("Google provider not found")
 }
+
+func TestAllProviderKeysAreRecognized(t *testing.T) {
+	configured := make(map[string]string)
+	for _, provider := range AllProviders() {
+		configured[provider.EnvKey] = "stored-key"
+	}
+
+	providers := (&Config{APIKeys: configured}).GetAllProvidersWithKeys()
+	for _, provider := range providers {
+		if provider.APIKey != "stored-key" {
+			t.Errorf("%s was not recognized as configured", provider.EnvKey)
+		}
+	}
+}
