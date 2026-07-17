@@ -374,9 +374,24 @@ func scoreColor(score float64) lipgloss.Color {
 
 func (m BenchmarkModel) renderActiveSummary() string {
 	label := "Preparing next test..."
+	running := make([]*TestResult, 0, len(m.testOrder))
 	for _, name := range m.testOrder {
 		test := m.tests[name]
 		if test.Status == StatusRunning {
+			running = append(running, test)
+		}
+	}
+
+	if m.state.Madmax && len(running) > 0 {
+		completed := 0
+		total := 0
+		for _, test := range running {
+			completed += test.Current
+			total += test.Total
+		}
+		label = fmt.Sprintf("MADMAX: %d categories running • %d/%d samples complete", len(running), completed, total)
+	} else {
+		for _, test := range running {
 			label = fmt.Sprintf("Running: %s • %d/%d samples complete", test.TestName, test.Current, test.Total)
 			if m.state.Parallel {
 				label = fmt.Sprintf("Running samples: %s • %d/%d complete", test.TestName, test.Current, test.Total)
