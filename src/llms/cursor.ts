@@ -44,6 +44,10 @@ export class CursorProvider implements LLMProvider {
       ].join("");
 
       const result = await Agent.prompt(fullPrompt, {
+        // The SDK does not implicitly read CURSOR_API_KEY. Passing it here is
+        // required to authenticate the local agent run with the configured
+        // Cursor user API key.
+        apiKey: process.env.CURSOR_API_KEY,
         model: { id: this.modelId },
         local: {
           cwd,
