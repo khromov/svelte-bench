@@ -77,6 +77,9 @@ export async function getLLMProvider(providerName: string, modelId?: string): Pr
     case "meta":
       const { MetaProvider } = await import("./meta");
       return new MetaProvider(modelId);
+    case "minimax":
+      const { MiniMaxProvider } = await import("./minimax");
+      return new MiniMaxProvider(modelId);
     case "cursor":
       const { CursorProvider } = await import("./cursor");
       return new CursorProvider(modelId);
@@ -198,6 +201,17 @@ export async function getAllLLMProviders(): Promise<ProviderWithModel[]> {
     providers.push({
       provider,
       name: "Meta",
+      modelId,
+    });
+  }
+
+  // MiniMax provider
+  const minimaxProvider = await getLLMProvider("minimax");
+  for (const modelId of minimaxProvider.getModels()) {
+    const provider = await getLLMProvider("minimax", modelId);
+    providers.push({
+      provider,
+      name: "MiniMax",
       modelId,
     });
   }
