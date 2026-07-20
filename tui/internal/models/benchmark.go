@@ -2,12 +2,13 @@ package models
 
 import (
 	"fmt"
+	"image/color"
 	"svelte-bench/tui/internal/bridge"
 	"svelte-bench/tui/internal/styles"
 	"time"
 
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
+	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
 )
 
 type benchmarkStartMsg struct{}
@@ -86,7 +87,7 @@ func (m BenchmarkModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.height = msg.Height
 		return m, nil
 
-	case tea.KeyMsg:
+	case tea.KeyPressMsg:
 		switch msg.String() {
 		case "ctrl+c":
 			return m, tea.Quit
@@ -136,7 +137,7 @@ func (m BenchmarkModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
-func (m BenchmarkModel) View() string {
+func (m BenchmarkModel) View() tea.View {
 	// The fixed portions of this view use 13 rows including the outer padding.
 	// Calculate the test window from that actual footprint so all categories are
 	// shown whenever the terminal has room, instead of hiding most of them at
@@ -256,12 +257,12 @@ func (m BenchmarkModel) View() string {
 		MaxHeight(m.height).
 		Render(lipgloss.JoinVertical(lipgloss.Left, sections...))
 
-	return content
+	return newView(content)
 }
 
 func (m *BenchmarkModel) renderTest(test *TestResult) string {
 	var icon string
-	var iconColor lipgloss.Color
+	var iconColor color.Color
 
 	switch test.Status {
 	case StatusCompleted, StatusFailed:
@@ -362,7 +363,7 @@ func (m BenchmarkModel) renderOverallScore() string {
 		Render(fmt.Sprintf("Overall score: %.0f%% (%d/%d tests complete)", overall*100, completed, len(m.testOrder)))
 }
 
-func scoreColor(score float64) lipgloss.Color {
+func scoreColor(score float64) color.Color {
 	if score < 0.5 {
 		return styles.OrangeError
 	}

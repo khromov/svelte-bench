@@ -6,8 +6,8 @@ import (
 	"svelte-bench/tui/internal/config"
 	"svelte-bench/tui/internal/styles"
 
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
+	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
 )
 
 // APIKeyPromptModel asks for a key only when the selected provider has none.
@@ -42,7 +42,7 @@ func (m APIKeyPromptModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.height = msg.Height
 		return m, nil
 
-	case tea.KeyMsg:
+	case tea.KeyPressMsg:
 		switch msg.String() {
 		case "ctrl+c":
 			return m, tea.Quit
@@ -91,7 +91,7 @@ func (m APIKeyPromptModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
-func (m APIKeyPromptModel) View() string {
+func (m APIKeyPromptModel) View() tea.View {
 	title := styles.HeadingStyle.Render("API KEY REQUIRED")
 	subtitle := lipgloss.NewStyle().Foreground(styles.OrangeMid).Render(m.provider.Name)
 	lines := []string{title, subtitle, "", m.input.View()}
@@ -103,11 +103,12 @@ func (m APIKeyPromptModel) View() string {
 	}
 	lines = append(lines, "", styles.HelpStyle.Render("Enter: Save • Left: Back • Double Esc: Quit • Ctrl+C: Quit"))
 
-	return lipgloss.NewStyle().
+	content := lipgloss.NewStyle().
 		Padding(2, 4).
 		MaxWidth(m.width).
 		MaxHeight(m.height).
 		Render(lipgloss.JoinVertical(lipgloss.Left, lines...))
+	return newView(content)
 }
 
 type apiKeyValidatedMsg struct {

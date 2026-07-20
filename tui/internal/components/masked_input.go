@@ -5,9 +5,9 @@ import (
 
 	"svelte-bench/tui/internal/styles"
 
-	"github.com/charmbracelet/bubbles/textinput"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
+	"charm.land/bubbles/v2/textinput"
+	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
 )
 
 // MaskedInput wraps a text input with masking for API keys
@@ -22,13 +22,16 @@ type MaskedInput struct {
 func NewMaskedInput(placeholder string, width int) MaskedInput {
 	ti := textinput.New()
 	ti.Placeholder = placeholder
-	ti.Width = width
+	ti.SetWidth(width)
 	ti.CharLimit = 200
 
 	// Style the input
-	ti.PromptStyle = lipgloss.NewStyle().Foreground(styles.OrangePrimary)
-	ti.TextStyle = lipgloss.NewStyle().Foreground(styles.White)
-	ti.PlaceholderStyle = lipgloss.NewStyle().Foreground(styles.GrayMedium)
+	inputStyles := ti.Styles()
+	inputStyles.Focused.Prompt = lipgloss.NewStyle().Foreground(styles.OrangePrimary)
+	inputStyles.Focused.Text = lipgloss.NewStyle().Foreground(styles.White)
+	inputStyles.Focused.Placeholder = lipgloss.NewStyle().Foreground(styles.GrayMedium)
+	inputStyles.Blurred = inputStyles.Focused
+	ti.SetStyles(inputStyles)
 
 	return MaskedInput{
 		Input:       ti,

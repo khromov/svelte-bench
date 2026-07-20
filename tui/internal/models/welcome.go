@@ -4,8 +4,8 @@ import (
 	"svelte-bench/tui/internal/config"
 	"svelte-bench/tui/internal/styles"
 
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
+	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
 )
 
 // WelcomeModel is the welcome screen model
@@ -46,7 +46,7 @@ func (m WelcomeModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.height = msg.Height
 		return m, nil
 
-	case tea.KeyMsg:
+	case tea.KeyPressMsg:
 		switch msg.String() {
 		case "ctrl+c":
 			return m, tea.Quit
@@ -64,7 +64,7 @@ func (m WelcomeModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
-func (m WelcomeModel) View() string {
+func (m WelcomeModel) View() tea.View {
 	var lines []string
 
 	// Title - simple and clean
@@ -92,5 +92,5 @@ func (m WelcomeModel) View() string {
 		MaxHeight(m.height).
 		Render(lipgloss.JoinVertical(lipgloss.Left, lines...))
 
-	return content
+	return newView(content)
 }

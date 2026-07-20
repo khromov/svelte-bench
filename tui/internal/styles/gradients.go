@@ -2,9 +2,10 @@ package styles
 
 import (
 	"fmt"
+	"image/color"
 	"math"
 
-	"github.com/charmbracelet/lipgloss"
+	"charm.land/lipgloss/v2"
 	"github.com/lucasb-eyer/go-colorful"
 )
 
@@ -144,8 +145,8 @@ func RenderProgressBarWithPercentage(current, total, width int) string {
 }
 
 // AnimatedBorderColor returns a color for animated border based on frame number
-func AnimatedBorderColor(frame int) lipgloss.Color {
-	colors := []lipgloss.Color{
+func AnimatedBorderColor(frame int) color.Color {
+	colors := []color.Color{
 		OrangePrimary,
 		OrangeMid,
 		OrangeLight,

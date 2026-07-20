@@ -5,7 +5,7 @@ import (
 
 	"svelte-bench/tui/internal/styles"
 
-	"github.com/charmbracelet/lipgloss"
+	"charm.land/lipgloss/v2"
 )
 
 // ProgressBar represents a visual progress indicator

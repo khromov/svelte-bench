@@ -16,7 +16,7 @@ func TestBenchmarkViewShowsAllTestsAndPercentageScores(t *testing.T) {
 		model.tests[name].PassAtOne = 0.75
 	}
 
-	view := model.View()
+	view := model.View().Content
 	for _, name := range model.testOrder {
 		if !strings.Contains(view, name) {
 			t.Errorf("benchmark view omitted test category %q", name)

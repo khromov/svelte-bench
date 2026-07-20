@@ -3,8 +3,8 @@ package models
 import (
 	"svelte-bench/tui/internal/styles"
 
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
+	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
 )
 
 // ExecutionModeModel handles execution mode selection
@@ -36,7 +36,7 @@ func (m ExecutionModeModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.height = msg.Height
 		return m, nil
 
-	case tea.KeyMsg:
+	case tea.KeyPressMsg:
 		switch msg.String() {
 		case "ctrl+c":
 			return m, tea.Quit
@@ -65,7 +65,7 @@ func (m ExecutionModeModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
-func (m ExecutionModeModel) View() string {
+func (m ExecutionModeModel) View() tea.View {
 	var lines []string
 
 	// Title
@@ -115,5 +115,5 @@ func (m ExecutionModeModel) View() string {
 		MaxHeight(m.height).
 		Render(lipgloss.JoinVertical(lipgloss.Left, lines...))
 
-	return content
+	return newView(content)
 }

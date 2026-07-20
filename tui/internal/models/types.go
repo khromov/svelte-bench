@@ -1,6 +1,16 @@
 package models
 
-import "svelte-bench/tui/internal/config"
+import (
+	"svelte-bench/tui/internal/config"
+
+	tea "charm.land/bubbletea/v2"
+)
+
+func newView(content string) tea.View {
+	view := tea.NewView(content)
+	view.AltScreen = true
+	return view
+}
 
 // Screen represents different screens in the TUI
 type Screen int

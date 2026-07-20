@@ -8,9 +8,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/charmbracelet/bubbles/textinput"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
+	"charm.land/bubbles/v2/textinput"
+	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
 )
 
 type modelsLoadedMsg struct {
@@ -60,9 +60,12 @@ func NewProviderModelSelectModel(state *SharedState) ProviderModelSelectModel {
 
 	modelInput := textinput.New()
 	modelInput.Placeholder = "Type model name or use arrows to select..."
-	modelInput.Width = 60
-	modelInput.PromptStyle = lipgloss.NewStyle().Foreground(styles.OrangePrimary)
-	modelInput.TextStyle = lipgloss.NewStyle().Foreground(styles.OrangePrimary)
+	modelInput.SetWidth(60)
+	modelInputStyles := modelInput.Styles()
+	modelInputStyles.Focused.Prompt = lipgloss.NewStyle().Foreground(styles.OrangePrimary)
+	modelInputStyles.Focused.Text = lipgloss.NewStyle().Foreground(styles.OrangePrimary)
+	modelInputStyles.Blurred = modelInputStyles.Focused
+	modelInput.SetStyles(modelInputStyles)
 
 	return ProviderModelSelectModel{
 		state:            state,
@@ -122,13 +125,13 @@ func (m ProviderModelSelectModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.width = msg.Width
 		m.height = msg.Height
 		if m.width < 80 {
-			m.modelInput.Width = m.width - 20
+			m.modelInput.SetWidth(m.width - 20)
 		} else {
-			m.modelInput.Width = 60
+			m.modelInput.SetWidth(60)
 		}
 		return m, nil
 
-	case tea.KeyMsg:
+	case tea.KeyPressMsg:
 		// Step 0: Select provider
 		if m.step == 0 {
 			switch msg.String() {
@@ -294,7 +297,7 @@ func (m ProviderModelSelectModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
-func (m ProviderModelSelectModel) View() string {
+func (m ProviderModelSelectModel) View() tea.View {
 	var lines []string
 
 	// Header
@@ -435,7 +438,7 @@ func (m ProviderModelSelectModel) View() string {
 		MaxHeight(m.height).
 		Render(lipgloss.JoinVertical(lipgloss.Left, lines...))
 
-	return content
+	return newView(content)
 }
 
 func (m ProviderModelSelectModel) loadModels(provider config.Provider) tea.Cmd {

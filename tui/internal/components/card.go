@@ -1,9 +1,10 @@
 package components
 
 import (
+	"image/color"
 	"svelte-bench/tui/internal/styles"
 
-	"github.com/charmbracelet/lipgloss"
+	"charm.land/lipgloss/v2"
 )
 
 // Card represents a UI card component
@@ -16,7 +17,7 @@ type Card struct {
 	Height      int
 	Centered    bool
 	StatusIcon  string // ✓, ○, ⚠, etc.
-	StatusColor lipgloss.Color
+	StatusColor color.Color
 }
 
 // Render renders the card

@@ -1,9 +1,10 @@
 package styles
 
 import (
+	"image/color"
 	"time"
 
-	"github.com/charmbracelet/lipgloss"
+	"charm.land/lipgloss/v2"
 )
 
 // Spinner frames for loading animations
@@ -27,7 +28,7 @@ func GetDotFrame(startTime time.Time) string {
 }
 
 // Pulse returns a pulsing opacity effect (simulated with different shades)
-func GetPulseColor(startTime time.Time) lipgloss.Color {
+func GetPulseColor(startTime time.Time) color.Color {
 	elapsed := time.Since(startTime)
 	// Oscillate between colors every 500ms
 	if (elapsed.Milliseconds()/500)%2 == 0 {

@@ -8,7 +8,7 @@ import (
 	"svelte-bench/tui/internal/models"
 	"syscall"
 
-	tea "github.com/charmbracelet/bubbletea"
+	tea "charm.land/bubbletea/v2"
 )
 
 func main() {
@@ -23,7 +23,7 @@ func main() {
 	initialModel := models.NewProviderModelSelectFromConfig(cfg)
 
 	// Create program with signal handling
-	p := tea.NewProgram(initialModel, tea.WithAltScreen())
+	p := tea.NewProgram(initialModel)
 
 	// Setup signal handling for graceful shutdown
 	sigChan := make(chan os.Signal, 1)

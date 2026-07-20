@@ -8,8 +8,8 @@ import (
 	"svelte-bench/tui/internal/styles"
 	"time"
 
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
+	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
 )
 
 type validationMsg struct {
@@ -66,7 +66,7 @@ func (m APIKeyConfigModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.height = msg.Height
 		return m, nil
 
-	case tea.KeyMsg:
+	case tea.KeyPressMsg:
 		if m.editing {
 			switch msg.String() {
 			case "esc":
@@ -149,7 +149,7 @@ func (m APIKeyConfigModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
-func (m APIKeyConfigModel) View() string {
+func (m APIKeyConfigModel) View() tea.View {
 	// Editing modal
 	if m.editing {
 		var lines []string
@@ -177,7 +177,7 @@ func (m APIKeyConfigModel) View() string {
 			Padding(0, 2).
 			Render(lipgloss.JoinVertical(lipgloss.Left, lines...))
 
-		return lipgloss.NewStyle().Padding(2, 4).Render(modal)
+		return newView(lipgloss.NewStyle().Padding(2, 4).Render(modal))
 	}
 
 	// Provider list
@@ -244,7 +244,7 @@ func (m APIKeyConfigModel) View() string {
 		lipgloss.JoinVertical(lipgloss.Left, lines...),
 	)
 
-	return content
+	return newView(content)
 }
 
 func (m APIKeyConfigModel) validateKey(provider, key string) tea.Cmd {

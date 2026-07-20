@@ -7,7 +7,7 @@ import (
 
 func TestResultsViewPutsViewBenchmarksFirst(t *testing.T) {
 	model := NewResultsModel(&SharedState{Provider: "openai", Model: "gpt-4o"})
-	view := model.View()
+	view := model.View().Content
 
 	viewIndex := strings.Index(view, "View benchmarks")
 	runIndex := strings.Index(view, "Run another benchmark")
