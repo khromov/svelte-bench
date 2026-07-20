@@ -65,20 +65,23 @@ func (m ResultsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 
 		case "down":
-			if m.selectedOption < 1 {
+			if m.selectedOption < 2 {
 				m.selectedOption++
 			}
 
 		case "enter":
 			switch m.selectedOption {
 			case 0:
-				// Run another benchmark
-				model := NewProviderModelSelectModel(m.state)
-				return model, model.Init()
-			case 1:
 				m.openingResults = true
 				m.openError = ""
 				return m, m.openResults()
+			case 1:
+				// Run another benchmark
+				model := NewProviderModelSelectModel(m.state)
+				return model, model.Init()
+			case 2:
+				// Exit
+				return m, tea.Quit
 			}
 		}
 
@@ -198,22 +201,28 @@ func (m ResultsModel) View() string {
 	lines = append(lines, "", "")
 
 	// Options
-	opt1 := "  Run another benchmark"
-	opt2 := "  Exit"
+	opt1 := "  View benchmarks"
+	opt2 := "  Run another benchmark"
+	opt3 := "  Exit"
 
 	if m.selectedOption == 0 {
 		opt1 = lipgloss.NewStyle().
 			Foreground(styles.OrangePrimary).
 			Bold(true).
-			Render("> Run another benchmark")
+			Render("> View benchmarks")
 	} else if m.selectedOption == 1 {
 		opt2 = lipgloss.NewStyle().
+			Foreground(styles.OrangePrimary).
+			Bold(true).
+			Render("> Run another benchmark")
+	} else if m.selectedOption == 2 {
+		opt3 = lipgloss.NewStyle().
 			Foreground(styles.OrangePrimary).
 			Bold(true).
 			Render("> Exit")
 	}
 
-	lines = append(lines, opt1, opt2)
+	lines = append(lines, opt1, opt2, opt3)
 	if m.openingResults {
 		lines = append(lines, "", styles.ProgressTextStyle.Render("Opening all results..."))
 	} else if m.openError != "" {
