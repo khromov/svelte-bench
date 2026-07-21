@@ -12,13 +12,15 @@
     "@types/ejs": "^3.1.5",
     "@types/express": "^5.0.6",
     "jsdom": "^29.1.1",
-    "openai": "^6.47.0",
+    "openai": "^6.48.0",
     "prettier": "^3.9.5",
     "prettier-plugin-svelte": "^4.1.1",
     "vitest": "^3.2.7"
   },
   "scripts": {
     "start": "pnpm run-tests && pnpm build",
+    "tui": "cd tui && go run ./cmd/tui",
+    "tui:build": "mkdir -p bin && cd tui && go build -o ../bin/svelte-bench-tui ./cmd/tui",
     "run-tests": "tsx ./index.ts",
     "check": "tsc --noEmit",
     "test": "vitest run",
@@ -36,7 +38,7 @@
     "typescript": "^5"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.112.1",
+    "@anthropic-ai/sdk": "^0.112.3",
     "@testing-library/jest-dom": "^6.9.1",
     "dotenv": "^17.4.2",
     "ejs": "^6.0.1",

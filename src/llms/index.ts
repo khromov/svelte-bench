@@ -15,7 +15,11 @@ export interface LLMProvider {
    * @param contextContent Optional context content to include in the prompt
    * @returns The generated code
    */
-  generateCode(prompt: string, temperature?: number, contextContent?: string): Promise<string>;
+  generateCode(
+    prompt: string,
+    temperature?: number,
+    contextContent?: string,
+  ): Promise<string>;
 
   /**
    * Get all available models for this provider
@@ -42,178 +46,117 @@ export interface ProviderWithModel {
 
 /**
  * Factory function to get an LLM provider by name
- * @param providerName The name of the provider to get
+ * @param providerName The name of the provider to get (or "provider:model" format)
+ * @param modelId The model identifier (optional if using "provider:model" format)
  * @returns The LLM provider
  */
-export async function getLLMProvider(providerName: string, modelId?: string): Promise<LLMProvider> {
-  switch (providerName.toLowerCase()) {
+export async function getLLMProvider(
+  providerName: string,
+  modelId?: string,
+): Promise<LLMProvider> {
+  // Parse provider:model format if provided
+  let actualProvider = providerName;
+  let actualModel = modelId;
+
+  if (providerName.includes(':') && !modelId) {
+    const [provider, model] = providerName.split(':', 2);
+    actualProvider = provider;
+    actualModel = model;
+  }
+
+  // Ensure model ID is provided
+  if (!actualModel) {
+    throw new Error(
+      `Model ID is required. Use either getLLMProvider('provider', 'model') or getLLMProvider('provider:model')`
+    );
+  }
+
+  // Use native SDK providers for better feature parity
+  // These have special features (reasoning, max_tokens, timeouts, etc.)
+  switch (actualProvider.toLowerCase()) {
     case "openai":
       const { OpenAIProvider } = await import("./openai");
-      return new OpenAIProvider(modelId);
+      return new OpenAIProvider(actualModel);
     case "anthropic":
       const { AnthropicProvider } = await import("./anthropic");
-      return new AnthropicProvider(modelId);
+      return new AnthropicProvider(actualModel);
     case "google":
       const { GoogleGenAIProvider } = await import("./google");
-      return new GoogleGenAIProvider(modelId);
+      return new GoogleGenAIProvider(actualModel);
     case "openrouter":
       const { OpenRouterProvider } = await import("./openrouter");
-      return new OpenRouterProvider(modelId);
+      return new OpenRouterProvider(actualModel);
     case "fireworks":
       const { FireworksProvider } = await import("./fireworks");
-      return new FireworksProvider(modelId);
+      return new FireworksProvider(actualModel);
     case "ollama":
       const { OllamaProvider } = await import("./ollama");
-      return new OllamaProvider(modelId);
+      return new OllamaProvider(actualModel);
     case "zai":
       const { ZAIProvider } = await import("./zai");
-      return new ZAIProvider(modelId);
+      return new ZAIProvider(actualModel);
     case "moonshot":
       const { MoonshotProvider } = await import("./moonshot");
-      return new MoonshotProvider(modelId);
+      return new MoonshotProvider(actualModel);
     case "xai":
       const { XAIProvider } = await import("./xai");
-      return new XAIProvider(modelId);
+      return new XAIProvider(actualModel);
     case "meta":
       const { MetaProvider } = await import("./meta");
-      return new MetaProvider(modelId);
+      return new MetaProvider(actualModel);
     case "minimax":
       const { MiniMaxProvider } = await import("./minimax");
-      return new MiniMaxProvider(modelId);
+      return new MiniMaxProvider(actualModel);
     case "cursor":
       const { CursorProvider } = await import("./cursor");
-      return new CursorProvider(modelId);
-    default:
-      throw new Error(`Unknown LLM provider: ${providerName}`);
+      return new CursorProvider(actualModel);
   }
+
+  // Provider not found
+  throw new Error(
+    `Unknown LLM provider: ${actualProvider}. ` +
+    `Native providers: openai, anthropic, google, openrouter, fireworks, ollama, zai, moonshot, xai, meta, minimax, cursor.`
+  );
 }
 
 /**
  * Function to get all available LLM providers
  * @returns Array of available LLM providers with their models
+ *
+ * Returns providers from the native provider implementations.
  */
 export async function getAllLLMProviders(): Promise<ProviderWithModel[]> {
   const providers: ProviderWithModel[] = [];
 
-  // OpenAI provider
-  const openaiProvider = await getLLMProvider("openai");
-  for (const modelId of openaiProvider.getModels()) {
-    const provider = await getLLMProvider("openai", modelId);
-    providers.push({
-      provider,
-      name: "OpenAI",
-      modelId,
-    });
-  }
+  const nativeProviders = [
+    { name: "openai", displayName: "OpenAI" },
+    { name: "anthropic", displayName: "Anthropic" },
+    { name: "google", displayName: "Google" },
+    { name: "openrouter", displayName: "OpenRouter" },
+    { name: "fireworks", displayName: "Fireworks" },
+    { name: "ollama", displayName: "Ollama" },
+    { name: "zai", displayName: "Z.ai" },
+    { name: "moonshot", displayName: "Moonshot AI" },
+    { name: "xai", displayName: "xAI" },
+    { name: "meta", displayName: "Meta" },
+    { name: "minimax", displayName: "MiniMax" },
+    { name: "cursor", displayName: "Cursor" },
+  ];
 
-  // Anthropic provider
-  const anthropicProvider = await getLLMProvider("anthropic");
-  for (const modelId of anthropicProvider.getModels()) {
-    const provider = await getLLMProvider("anthropic", modelId);
-    providers.push({
-      provider,
-      name: "Anthropic",
-      modelId,
-    });
-  }
-
-  // Google provider
-  const googleProvider = await getLLMProvider("google");
-  for (const modelId of googleProvider.getModels()) {
-    const provider = await getLLMProvider("google", modelId);
-    providers.push({
-      provider,
-      name: "Google",
-      modelId,
-    });
-  }
-
-  // OpenRouter provider
-  const openrouterProvider = await getLLMProvider("openrouter");
-  for (const modelId of openrouterProvider.getModels()) {
-    const provider = await getLLMProvider("openrouter", modelId);
-    providers.push({
-      provider,
-      name: "OpenRouter",
-      modelId,
-    });
-  }
-
-  // Fireworks provider
-  const fireworksProvider = await getLLMProvider("fireworks");
-  for (const modelId of fireworksProvider.getModels()) {
-    const provider = await getLLMProvider("fireworks", modelId);
-    providers.push({
-      provider,
-      name: "Fireworks",
-      modelId,
-    });
-  }
-
-  // Ollama provider
-  const ollamaProvider = await getLLMProvider("ollama");
-  for (const modelId of ollamaProvider.getModels()) {
-    const provider = await getLLMProvider("ollama", modelId);
-    providers.push({
-      provider,
-      name: "Ollama",
-      modelId,
-    });
-  }
-
-  // Z.ai provider
-  const zaiProvider = await getLLMProvider("zai");
-  for (const modelId of zaiProvider.getModels()) {
-    const provider = await getLLMProvider("zai", modelId);
-    providers.push({
-      provider,
-      name: "Z.ai",
-      modelId,
-    });
-  }
-
-  // Moonshot provider
-  const moonshotProvider = await getLLMProvider("moonshot");
-  for (const modelId of moonshotProvider.getModels()) {
-    const provider = await getLLMProvider("moonshot", modelId);
-    providers.push({
-      provider,
-      name: "Moonshot AI",
-      modelId,
-    });
-  }
-
-  // xAI provider
-  const xaiProvider = await getLLMProvider("xai");
-  for (const modelId of xaiProvider.getModels()) {
-    const provider = await getLLMProvider("xai", modelId);
-    providers.push({
-      provider,
-      name: "xAI",
-      modelId,
-    });
-  }
-
-  // Meta provider
-  const metaProvider = await getLLMProvider("meta");
-  for (const modelId of metaProvider.getModels()) {
-    const provider = await getLLMProvider("meta", modelId);
-    providers.push({
-      provider,
-      name: "Meta",
-      modelId,
-    });
-  }
-
-  // MiniMax provider
-  const minimaxProvider = await getLLMProvider("minimax");
-  for (const modelId of minimaxProvider.getModels()) {
-    const provider = await getLLMProvider("minimax", modelId);
-    providers.push({
-      provider,
-      name: "MiniMax",
-      modelId,
-    });
+  for (const { name, displayName } of nativeProviders) {
+    try {
+      const nativeProvider = await getLLMProvider(name, "default");
+      for (const modelId of nativeProvider.getModels()) {
+        const provider = await getLLMProvider(name, modelId);
+        providers.push({
+          provider,
+          name: displayName,
+          modelId,
+        });
+      }
+    } catch {
+      // Provider not configured, skip it.
+    }
   }
 
   return providers;

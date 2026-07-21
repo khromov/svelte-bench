@@ -1,0 +1,989 @@
+package bridge
+
+import (
+	"encoding/json"
+	"fmt"
+	"io"
+	"net/http"
+	"sort"
+	"strings"
+	"time"
+
+	"github.com/sahilm/fuzzy"
+)
+
+// Model represents an LLM model
+type Model struct {
+	ID          string
+	Name        string
+	Description string
+	IsPopular   bool
+}
+
+// modelCache caches fetched models
+var modelCache = make(map[string][]Model)
+var cacheExpiry = make(map[string]time.Time)
+
+const cacheDuration = 5 * time.Minute
+
+// FetchModels fetches available models for a provider
+func FetchModels(providerKey, apiKey string) ([]Model, error) {
+	// Check cache
+	if models, ok := modelCache[providerKey]; ok {
+		if expiry, ok := cacheExpiry[providerKey]; ok && time.Now().Before(expiry) {
+			return models, nil
+		}
+	}
+
+	var models []Model
+	var err error
+
+	switch providerKey {
+	case "OPENAI_API_KEY":
+		models, err = fetchOpenAIModels(apiKey)
+	case "ANTHROPIC_API_KEY":
+		models, err = fetchAnthropicModels(apiKey)
+	case "GOOGLE_API_KEY":
+		models, err = fetchGoogleModels(apiKey)
+	case "OPENROUTER_API_KEY":
+		models, err = fetchOpenRouterModels(apiKey)
+	case "GROQ_API_KEY":
+		models, err = fetchGroqModels(apiKey)
+	case "DEEPSEEK_API_KEY":
+		models, err = fetchDeepSeekModels(apiKey)
+	case "XAI_API_KEY":
+		models, err = fetchXAIModels(apiKey)
+	case "MISTRAL_API_KEY":
+		models, err = fetchMistralModels(apiKey)
+	case "MOONSHOT_API_KEY":
+		models, err = fetchMoonshotModels(apiKey)
+	case "COHERE_API_KEY":
+		models, err = fetchCohereModels(apiKey)
+	case "FIREWORKS_API_KEY":
+		models, err = fetchFireworksModels(apiKey)
+	case "Z_AI_API_KEY":
+		models, err = fetchZAIModels(apiKey)
+	case "META_API_KEY":
+		models, err = fetchOpenAICompatibleModels("https://api.meta.ai/v1/models", apiKey)
+	case "CURSOR_API_KEY":
+		models = []Model{{ID: "composer-1", Name: "Composer 1", IsPopular: true}}
+	default:
+		return nil, fmt.Errorf("unsupported provider: %s", providerKey)
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	// Cache the results
+	modelCache[providerKey] = models
+	cacheExpiry[providerKey] = time.Now().Add(cacheDuration)
+
+	return models, nil
+}
+
+// FuzzySearch returns models ordered by relevance. Exact ID/token matches are
+// intentionally weighted above fuzzy similarity so a query like "14b" cannot
+// be outranked by a nearby but incorrect size such as "24b".
+func FuzzySearch(models []Model, query string) []Model {
+	query = strings.ToLower(strings.TrimSpace(query))
+	if query == "" {
+		return models
+	}
+
+	queryTokens := searchTokens(query)
+	type scoredModel struct {
+		model Model
+		score int
+		index int
+	}
+	scored := make([]scoredModel, 0, len(models))
+
+	for index, model := range models {
+		id := strings.ToLower(model.ID)
+		description := strings.ToLower(model.Description)
+		searchText := id + " " + description
+		match := fuzzy.Find(query, []string{searchText})
+		if len(match) == 0 {
+			continue
+		}
+
+		score := match[0].Score
+		if id == query {
+			score += 10000
+		} else if strings.Contains(id, query) {
+			score += 5000
+		}
+		if strings.HasPrefix(id, query) {
+			score += 1500
+		}
+
+		idTokens := searchTokens(id)
+		for _, token := range queryTokens {
+			if containsSearchToken(idTokens, token) {
+				score += 4000
+			} else if strings.Contains(id, token) {
+				score += 1000
+			} else if containsSearchToken(searchTokens(description), token) {
+				score += 250
+			}
+		}
+
+		// Prefer shorter IDs when relevance is otherwise equivalent.
+		score -= len(id) / 20
+		scored = append(scored, scoredModel{model: model, score: score, index: index})
+	}
+
+	sort.SliceStable(scored, func(i, j int) bool {
+		if scored[i].score == scored[j].score {
+			return scored[i].index < scored[j].index
+		}
+		return scored[i].score > scored[j].score
+	})
+
+	result := make([]Model, len(scored))
+	for i, candidate := range scored {
+		result[i] = candidate.model
+	}
+	return result
+}
+
+func searchTokens(value string) []string {
+	return strings.FieldsFunc(value, func(r rune) bool {
+		return !(r >= 'a' && r <= 'z') && !(r >= '0' && r <= '9')
+	})
+}
+
+func containsSearchToken(tokens []string, query string) bool {
+	for _, token := range tokens {
+		if token == query {
+			return true
+		}
+	}
+	return false
+}
+
+func fetchOpenAIModels(apiKey string) ([]Model, error) {
+	req, err := http.NewRequest("GET", "https://api.openai.com/v1/models", nil)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("Authorization", "Bearer "+apiKey)
+
+	client := &http.Client{Timeout: 10 * time.Second}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		return nil, fmt.Errorf("API returned status %d", resp.StatusCode)
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	var result struct {
+		Data []struct {
+			ID      string `json:"id"`
+			Created int64  `json:"created"`
+		} `json:"data"`
+	}
+
+	if err := json.Unmarshal(body, &result); err != nil {
+		return nil, err
+	}
+
+	popular := map[string]bool{
+		"gpt-4o":        true,
+		"gpt-4o-mini":   true,
+		"gpt-4-turbo":   true,
+		"o1-preview":    true,
+		"o1-mini":       true,
+		"gpt-3.5-turbo": true,
+	}
+
+	models := make([]Model, 0)
+	for _, item := range result.Data {
+		// Filter to models usable with the chat-completions benchmark. The
+		// catalog also contains embeddings, moderation, image, and audio models.
+		if !isOpenAIChatModel(item.ID) {
+			continue
+		}
+
+		models = append(models, Model{
+			ID:          item.ID,
+			Name:        item.ID,
+			Description: getOpenAIDescription(item.ID),
+			IsPopular:   popular[item.ID],
+		})
+	}
+
+	return models, nil
+}
+
+func isOpenAIChatModel(modelID string) bool {
+	if strings.HasPrefix(modelID, "gpt-image") || strings.HasPrefix(modelID, "gpt-audio") {
+		return false
+	}
+	return strings.HasPrefix(modelID, "gpt-") ||
+		strings.HasPrefix(modelID, "o1") ||
+		strings.HasPrefix(modelID, "o3") ||
+		strings.HasPrefix(modelID, "o4") ||
+		strings.HasPrefix(modelID, "chatgpt-") ||
+		strings.HasPrefix(modelID, "ft:gpt-")
+}
+
+func fetchOpenRouterModels(apiKey string) ([]Model, error) {
+	req, err := http.NewRequest("GET", "https://openrouter.ai/api/v1/models", nil)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("Authorization", "Bearer "+apiKey)
+
+	client := &http.Client{Timeout: 10 * time.Second}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		return nil, fmt.Errorf("API returned status %d", resp.StatusCode)
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	var result struct {
+		Data []struct {
+			ID          string `json:"id"`
+			Name        string `json:"name"`
+			Description string `json:"description"`
+		} `json:"data"`
+	}
+
+	if err := json.Unmarshal(body, &result); err != nil {
+		return nil, err
+	}
+
+	models := make([]Model, 0)
+	for _, item := range result.Data {
+		models = append(models, Model{
+			ID:          item.ID,
+			Name:        item.Name,
+			Description: item.Description,
+		})
+	}
+
+	return models, nil
+}
+
+func fetchGroqModels(apiKey string) ([]Model, error) {
+	req, err := http.NewRequest("GET", "https://api.groq.com/openai/v1/models", nil)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("Authorization", "Bearer "+apiKey)
+
+	client := &http.Client{Timeout: 10 * time.Second}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		return nil, fmt.Errorf("API returned status %d", resp.StatusCode)
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	var result struct {
+		Data []struct {
+			ID string `json:"id"`
+		} `json:"data"`
+	}
+
+	if err := json.Unmarshal(body, &result); err != nil {
+		return nil, err
+	}
+
+	models := make([]Model, 0)
+	for _, item := range result.Data {
+		models = append(models, Model{
+			ID:          item.ID,
+			Name:        item.ID,
+			Description: "",
+		})
+	}
+
+	return models, nil
+}
+
+func fetchMistralModels(apiKey string) ([]Model, error) {
+	req, err := http.NewRequest("GET", "https://api.mistral.ai/v1/models", nil)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("Authorization", "Bearer "+apiKey)
+
+	client := &http.Client{Timeout: 10 * time.Second}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		return nil, fmt.Errorf("API returned status %d", resp.StatusCode)
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	var result struct {
+		Data []struct {
+			ID string `json:"id"`
+		} `json:"data"`
+	}
+
+	if err := json.Unmarshal(body, &result); err != nil {
+		return nil, err
+	}
+
+	models := make([]Model, 0)
+	for _, item := range result.Data {
+		models = append(models, Model{
+			ID:          item.ID,
+			Name:        item.ID,
+			Description: "",
+		})
+	}
+
+	return models, nil
+}
+
+func fetchAnthropicModels(apiKey string) ([]Model, error) {
+	req, err := http.NewRequest("GET", "https://api.anthropic.com/v1/models", nil)
+	if err != nil {
+		return getAnthropicModelsStatic(), nil
+	}
+
+	req.Header.Set("x-api-key", apiKey)
+	req.Header.Set("anthropic-version", "2023-06-01")
+
+	client := &http.Client{Timeout: 10 * time.Second}
+	resp, err := client.Do(req)
+	if err != nil {
+		return getAnthropicModelsStatic(), nil
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		return getAnthropicModelsStatic(), nil
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return getAnthropicModelsStatic(), nil
+	}
+
+	var result struct {
+		Data []struct {
+			ID          string `json:"id"`
+			DisplayName string `json:"display_name"`
+			CreatedAt   string `json:"created_at"`
+		} `json:"data"`
+	}
+
+	if err := json.Unmarshal(body, &result); err != nil {
+		return getAnthropicModelsStatic(), nil
+	}
+
+	models := make([]Model, 0)
+	popular := map[string]bool{
+		"claude-sonnet-4-5-20250929": true,
+		"claude-3-7-sonnet-20250219": true,
+		"claude-3-5-sonnet-20241022": true,
+		"claude-3-5-haiku-20241022":  true,
+	}
+
+	for _, item := range result.Data {
+		models = append(models, Model{
+			ID:          item.ID,
+			Name:        item.DisplayName,
+			Description: "",
+			IsPopular:   popular[item.ID],
+		})
+	}
+
+	if len(models) == 0 {
+		return getAnthropicModelsStatic(), nil
+	}
+
+	return models, nil
+}
+
+func getAnthropicModelsStatic() []Model {
+	return []Model{
+		{ID: "claude-sonnet-4-5-20250929", Name: "Claude Sonnet 4.5", Description: "Latest flagship", IsPopular: true},
+		{ID: "claude-3-7-sonnet-20250219", Name: "Claude 3.7 Sonnet", Description: "Extended context", IsPopular: true},
+		{ID: "claude-3-5-sonnet-20241022", Name: "Claude 3.5 Sonnet", Description: "Balanced", IsPopular: true},
+		{ID: "claude-3-5-haiku-20241022", Name: "Claude 3.5 Haiku", Description: "Fast", IsPopular: true},
+		{ID: "claude-3-opus-20240229", Name: "Claude 3 Opus", Description: "Powerful"},
+		{ID: "claude-3-haiku-20240307", Name: "Claude 3 Haiku", Description: "Efficient"},
+	}
+}
+
+func fetchGoogleModels(apiKey string) ([]Model, error) {
+	req, err := http.NewRequest("GET", "https://generativelanguage.googleapis.com/v1beta/models?key="+apiKey, nil)
+	if err != nil {
+		// Fallback to static list on error
+		return getGoogleModelsStatic(), nil
+	}
+
+	client := &http.Client{Timeout: 10 * time.Second}
+	resp, err := client.Do(req)
+	if err != nil {
+		// Fallback to static list on error
+		return getGoogleModelsStatic(), nil
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		// Fallback to static list on error
+		return getGoogleModelsStatic(), nil
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return getGoogleModelsStatic(), nil
+	}
+
+	var result struct {
+		Models []struct {
+			Name             string   `json:"name"`
+			DisplayName      string   `json:"displayName"`
+			Description      string   `json:"description"`
+			SupportedMethods []string `json:"supportedGenerationMethods"`
+		} `json:"models"`
+	}
+
+	if err := json.Unmarshal(body, &result); err != nil {
+		return getGoogleModelsStatic(), nil
+	}
+
+	models := make([]Model, 0)
+	popular := map[string]bool{
+		"gemini-2.0-flash-exp":          true,
+		"gemini-exp-1206":               true,
+		"gemini-2.0-flash-thinking-exp": true,
+		"gemini-1.5-pro":                true,
+		"gemini-1.5-flash":              true,
+	}
+
+	for _, item := range result.Models {
+		// Extract model ID from name (format: models/gemini-xxx)
+		modelID := strings.TrimPrefix(item.Name, "models/")
+
+		// Only include models that support generateContent
+		supportsGenerate := false
+		for _, method := range item.SupportedMethods {
+			if method == "generateContent" {
+				supportsGenerate = true
+				break
+			}
+		}
+
+		if !supportsGenerate {
+			continue
+		}
+
+		models = append(models, Model{
+			ID:          modelID,
+			Name:        item.DisplayName,
+			Description: item.Description,
+			IsPopular:   popular[modelID],
+		})
+	}
+
+	// If no models found, fallback to static
+	if len(models) == 0 {
+		return getGoogleModelsStatic(), nil
+	}
+
+	return models, nil
+}
+
+func getGoogleModelsStatic() []Model {
+	return []Model{
+		{ID: "gemini-2.0-flash-exp", Name: "Gemini 2.0 Flash", Description: "Latest experimental", IsPopular: true},
+		{ID: "gemini-2.0-flash-thinking-exp", Name: "Gemini 2.0 Flash Thinking", Description: "Advanced reasoning", IsPopular: true},
+		{ID: "gemini-exp-1206", Name: "Gemini Exp 1206", Description: "Experimental December", IsPopular: true},
+		{ID: "gemini-1.5-pro", Name: "Gemini 1.5 Pro", Description: "Most capable", IsPopular: true},
+		{ID: "gemini-1.5-flash", Name: "Gemini 1.5 Flash", Description: "Fast and efficient", IsPopular: true},
+		{ID: "gemini-1.5-flash-8b", Name: "Gemini 1.5 Flash 8B", Description: "Smaller and faster"},
+	}
+}
+
+func fetchDeepSeekModels(apiKey string) ([]Model, error) {
+	return fetchOpenAICompatibleModels("https://api.deepseek.com/models", apiKey)
+}
+
+func fetchXAIModels(apiKey string) ([]Model, error) {
+	req, err := http.NewRequest("GET", "https://api.x.ai/v1/language-models", nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Authorization", "Bearer "+apiKey)
+
+	client := &http.Client{Timeout: 10 * time.Second}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("API returned status %d", resp.StatusCode)
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	models, err := parseXAIModels(body)
+	if err != nil {
+		return nil, err
+	}
+	if len(models) == 0 {
+		return nil, fmt.Errorf("model API returned no language models")
+	}
+	return models, nil
+}
+
+func parseXAIModels(body []byte) ([]Model, error) {
+	var result struct {
+		Models []struct {
+			ID               string   `json:"id"`
+			InputModalities  []string `json:"input_modalities"`
+			OutputModalities []string `json:"output_modalities"`
+		} `json:"models"`
+	}
+	if err := json.Unmarshal(body, &result); err != nil {
+		return nil, err
+	}
+
+	models := make([]Model, 0, len(result.Models))
+	for _, item := range result.Models {
+		if item.ID == "" || !containsString(item.InputModalities, "text") || !containsString(item.OutputModalities, "text") {
+			continue
+		}
+		models = append(models, Model{ID: item.ID, Name: item.ID})
+	}
+	return models, nil
+}
+
+func containsString(values []string, target string) bool {
+	for _, value := range values {
+		if value == target {
+			return true
+		}
+	}
+	return false
+}
+
+func fetchOpenAICompatibleModels(url, apiKey string) ([]Model, error) {
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Authorization", "Bearer "+apiKey)
+
+	client := &http.Client{Timeout: 10 * time.Second}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("API returned status %d", resp.StatusCode)
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	models, err := parseOpenAICompatibleModels(body)
+	if err != nil {
+		return nil, err
+	}
+	if len(models) == 0 {
+		return nil, fmt.Errorf("model API returned no models")
+	}
+	return models, nil
+}
+
+func parseOpenAICompatibleModels(body []byte) ([]Model, error) {
+	var result struct {
+		Data []struct {
+			ID string `json:"id"`
+		} `json:"data"`
+	}
+	if err := json.Unmarshal(body, &result); err != nil {
+		return nil, err
+	}
+
+	models := make([]Model, 0, len(result.Data))
+	for _, item := range result.Data {
+		if item.ID != "" {
+			models = append(models, Model{ID: item.ID, Name: item.ID})
+		}
+	}
+	return models, nil
+}
+
+func getXAIModelsStatic() []Model {
+	return []Model{
+		{ID: "grok-beta", Name: "Grok Beta", Description: "Latest", IsPopular: true},
+		{ID: "grok-2-latest", Name: "Grok 2 Latest", Description: "Latest Grok 2", IsPopular: true},
+		{ID: "grok-2-1212", Name: "Grok 2 (Dec)", Description: "December release", IsPopular: true},
+		{ID: "grok-2-vision-1212", Name: "Grok 2 Vision", Description: "With vision"},
+		{ID: "grok-vision-beta", Name: "Grok Vision Beta", Description: "Vision beta"},
+	}
+}
+
+func fetchMoonshotModels(apiKey string) ([]Model, error) {
+	return fetchMoonshotModelsFromURL(moonshotModelsURL, apiKey)
+}
+
+const moonshotModelsURL = "https://api.moonshot.ai/v1/models"
+
+func fetchMoonshotModelsFromURL(url, apiKey string) ([]Model, error) {
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return getMoonshotModelsStatic(), nil
+	}
+
+	req.Header.Set("Authorization", "Bearer "+apiKey)
+
+	client := &http.Client{Timeout: 10 * time.Second}
+	resp, err := client.Do(req)
+	if err != nil {
+		return getMoonshotModelsStatic(), nil
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		return getMoonshotModelsStatic(), nil
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return getMoonshotModelsStatic(), nil
+	}
+
+	models, err := parseMoonshotModels(body)
+	if err != nil {
+		return getMoonshotModelsStatic(), nil
+	}
+
+	if len(models) == 0 {
+		return getMoonshotModelsStatic(), nil
+	}
+
+	return models, nil
+}
+
+func parseMoonshotModels(body []byte) ([]Model, error) {
+	// Moonshot returns OpenAI-compatible format.
+	var result struct {
+		Data []struct {
+			ID      string `json:"id"`
+			Object  string `json:"object"`
+			Created int64  `json:"created"`
+			OwnedBy string `json:"owned_by"`
+		} `json:"data"`
+	}
+
+	if err := json.Unmarshal(body, &result); err != nil {
+		return nil, err
+	}
+
+	models := make([]Model, 0)
+	popular := map[string]bool{
+		"moonshot-v1-8k":   true,
+		"moonshot-v1-32k":  true,
+		"moonshot-v1-128k": true,
+	}
+
+	for _, item := range result.Data {
+		models = append(models, Model{
+			ID:        item.ID,
+			Name:      item.ID,
+			IsPopular: popular[item.ID],
+		})
+	}
+
+	return models, nil
+}
+
+func getMoonshotModelsStatic() []Model {
+	return []Model{
+		{ID: "moonshot-v1-8k", Name: "Moonshot v1 8K", Description: "8K context", IsPopular: true},
+		{ID: "moonshot-v1-32k", Name: "Moonshot v1 32K", Description: "32K context", IsPopular: true},
+		{ID: "moonshot-v1-128k", Name: "Moonshot v1 128K", Description: "128K context"},
+	}
+}
+
+func fetchCohereModels(apiKey string) ([]Model, error) {
+	req, err := http.NewRequest("GET", "https://api.cohere.ai/v1/models?endpoint=chat&page_size=1000", nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Authorization", "Bearer "+apiKey)
+
+	client := &http.Client{Timeout: 10 * time.Second}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("API returned status %d", resp.StatusCode)
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	var result struct {
+		Models []struct {
+			Name        string   `json:"name"`
+			Description string   `json:"description"`
+			Endpoints   []string `json:"endpoints"`
+			Deprecated  bool     `json:"is_deprecated"`
+		} `json:"models"`
+	}
+	if err := json.Unmarshal(body, &result); err != nil {
+		return nil, err
+	}
+
+	models := make([]Model, 0, len(result.Models))
+	for _, item := range result.Models {
+		if item.Name == "" || item.Deprecated {
+			continue
+		}
+		models = append(models, Model{
+			ID:          item.Name,
+			Name:        item.Name,
+			Description: item.Description,
+			IsPopular:   strings.HasPrefix(item.Name, "command-a") || item.Name == "command-r-plus",
+		})
+	}
+	if len(models) == 0 {
+		return nil, fmt.Errorf("model API returned no chat models")
+	}
+	return models, nil
+}
+
+func fetchFireworksModels(apiKey string) ([]Model, error) {
+	req, err := http.NewRequest("GET", "https://api.fireworks.ai/inference/v1/models", nil)
+	if err != nil {
+		return getFireworksModelsStatic(), nil
+	}
+
+	req.Header.Set("Authorization", "Bearer "+apiKey)
+
+	client := &http.Client{Timeout: 10 * time.Second}
+	resp, err := client.Do(req)
+	if err != nil {
+		return getFireworksModelsStatic(), nil
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		return getFireworksModelsStatic(), nil
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return getFireworksModelsStatic(), nil
+	}
+
+	var result struct {
+		Data []struct {
+			ID string `json:"id"`
+		} `json:"data"`
+	}
+
+	if err := json.Unmarshal(body, &result); err != nil {
+		return getFireworksModelsStatic(), nil
+	}
+
+	models := make([]Model, 0)
+	for _, item := range result.Data {
+		// Filter to chat models only
+		if strings.Contains(item.ID, "chat") || strings.Contains(item.ID, "instruct") {
+			models = append(models, Model{
+				ID:   item.ID,
+				Name: item.ID,
+			})
+		}
+	}
+
+	if len(models) == 0 {
+		return getFireworksModelsStatic(), nil
+	}
+
+	return models, nil
+}
+
+func getFireworksModelsStatic() []Model {
+	return []Model{
+		{ID: "accounts/fireworks/models/llama-v3p3-70b-instruct", Name: "Llama 3.3 70B", Description: "Latest Llama", IsPopular: true},
+		{ID: "accounts/fireworks/models/qwen2p5-72b-instruct", Name: "Qwen 2.5 72B", Description: "Qwen latest", IsPopular: true},
+		{ID: "accounts/fireworks/models/mixtral-8x22b-instruct", Name: "Mixtral 8x22B", Description: "MoE model"},
+	}
+}
+
+func getOpenAIDescription(modelID string) string {
+	descriptions := map[string]string{
+		"gpt-4o":        "Latest GPT-4 Omni",
+		"gpt-4o-mini":   "Fast & efficient GPT-4",
+		"gpt-4-turbo":   "GPT-4 Turbo",
+		"o1-preview":    "Reasoning model (preview)",
+		"o1-mini":       "Fast reasoning model",
+		"gpt-3.5-turbo": "Fast & affordable",
+	}
+
+	if desc, ok := descriptions[modelID]; ok {
+		return desc
+	}
+
+	if strings.Contains(modelID, "gpt-4o") {
+		return "GPT-4 Omni snapshot"
+	}
+
+	return ""
+}
+
+// fetchZAIModels fetches available models from Z.ai API
+func fetchZAIModels(apiKey string) ([]Model, error) {
+	// Z.ai API endpoint (based on TypeScript implementation)
+	req, err := http.NewRequest("GET", "https://open.bigmodel.cn/api/paas/v4/models", nil)
+	if err != nil {
+		// If API request fails, return static fallback list
+		return []Model{
+			{ID: "glm-4.5", Description: "GLM-4.5 flagship model"},
+			{ID: "glm-4.5-air", Description: "GLM-4.5 Air (lightweight)"},
+			{ID: "glm-4.5-x", Description: "GLM-4.5 X (extended)"},
+			{ID: "glm-4.5-airx", Description: "GLM-4.5 AirX"},
+			{ID: "glm-4.5-flash", Description: "GLM-4.5 Flash (fastest)"},
+			{ID: "glm-4-32b-0414-128k", Description: "GLM-4 32B (128k context)"},
+		}, nil
+	}
+
+	req.Header.Set("Authorization", "Bearer "+apiKey)
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{Timeout: 10 * time.Second}
+	resp, err := client.Do(req)
+	if err != nil || resp.StatusCode != 200 {
+		// If API request fails, return static fallback list
+		return []Model{
+			{ID: "glm-4.5", Description: "GLM-4.5 flagship model"},
+			{ID: "glm-4.5-air", Description: "GLM-4.5 Air (lightweight)"},
+			{ID: "glm-4.5-x", Description: "GLM-4.5 X (extended)"},
+			{ID: "glm-4.5-airx", Description: "GLM-4.5 AirX"},
+			{ID: "glm-4.5-flash", Description: "GLM-4.5 Flash (fastest)"},
+			{ID: "glm-4-32b-0414-128k", Description: "GLM-4 32B (128k context)"},
+		}, nil
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		// Return static fallback
+		return []Model{
+			{ID: "glm-4.5", Description: "GLM-4.5 flagship model"},
+			{ID: "glm-4.5-air", Description: "GLM-4.5 Air (lightweight)"},
+			{ID: "glm-4.5-x", Description: "GLM-4.5 X (extended)"},
+			{ID: "glm-4.5-airx", Description: "GLM-4.5 AirX"},
+			{ID: "glm-4.5-flash", Description: "GLM-4.5 Flash (fastest)"},
+			{ID: "glm-4-32b-0414-128k", Description: "GLM-4 32B (128k context)"},
+		}, nil
+	}
+
+	// Try to parse response (format may vary)
+	var result struct {
+		Data []struct {
+			ID      string `json:"id"`
+			Object  string `json:"object"`
+			Created int64  `json:"created"`
+			OwnedBy string `json:"owned_by"`
+		} `json:"data"`
+	}
+
+	if err := json.Unmarshal(body, &result); err != nil || len(result.Data) == 0 {
+		// Return static fallback if parsing fails
+		return []Model{
+			{ID: "glm-4.5", Description: "GLM-4.5 flagship model"},
+			{ID: "glm-4.5-air", Description: "GLM-4.5 Air (lightweight)"},
+			{ID: "glm-4.5-x", Description: "GLM-4.5 X (extended)"},
+			{ID: "glm-4.5-airx", Description: "GLM-4.5 AirX"},
+			{ID: "glm-4.5-flash", Description: "GLM-4.5 Flash (fastest)"},
+			{ID: "glm-4-32b-0414-128k", Description: "GLM-4 32B (128k context)"},
+		}, nil
+	}
+
+	models := make([]Model, 0, len(result.Data))
+	for _, m := range result.Data {
+		if m.ID != "" {
+			models = append(models, Model{
+				ID:          m.ID,
+				Description: getZAIModelDescription(m.ID),
+			})
+		}
+	}
+
+	return models, nil
+}
+
+func getZAIModelDescription(modelID string) string {
+	descriptions := map[string]string{
+		"glm-4.5":             "GLM-4.5 flagship model",
+		"glm-4.5-air":         "GLM-4.5 Air (lightweight)",
+		"glm-4.5-x":           "GLM-4.5 X (extended)",
+		"glm-4.5-airx":        "GLM-4.5 AirX",
+		"glm-4.5-flash":       "GLM-4.5 Flash (fastest)",
+		"glm-4-32b-0414-128k": "GLM-4 32B (128k context)",
+	}
+
+	if desc, ok := descriptions[modelID]; ok {
+		return desc
+	}
+
+	if strings.Contains(modelID, "glm-4.5") {
+		return "GLM-4.5 model"
+	}
+	if strings.Contains(modelID, "glm-4") {
+		return "GLM-4 model"
+	}
+
+	return ""
+}

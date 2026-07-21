@@ -1,8 +1,12 @@
-import { DEFAULT_SYSTEM_PROMPT, DEFAULT_SYSTEM_PROMPT_WITH_CONTEXT } from "../utils/prompt";
-import { RateLimitError } from "../utils/errors";
+import {
+  DEFAULT_SYSTEM_PROMPT,
+  DEFAULT_SYSTEM_PROMPT_WITH_CONTEXT,
+} from "../utils/prompt";
 import type { LLMProvider } from "./index";
 import OpenAI from "openai";
 import type { ChatCompletionMessageParam } from "openai/resources/chat/completions";
+import { RateLimitError } from "../utils/errors";
+import { log } from "../utils/tui-events";
 
 export class OpenRouterProvider implements LLMProvider {
   private client: OpenAI;
@@ -39,7 +43,11 @@ export class OpenRouterProvider implements LLMProvider {
    * @param contextContent Optional context content to include in prompts
    * @returns The generated code
    */
-  async generateCode(prompt: string, temperature?: number, contextContent?: string): Promise<string> {
+  async generateCode(
+    prompt: string,
+    temperature?: number,
+    contextContent?: string,
+  ): Promise<string> {
     // Create AbortController with 5-minute timeout
     const abortController = new AbortController();
     const timeoutId = setTimeout(
@@ -50,11 +58,15 @@ export class OpenRouterProvider implements LLMProvider {
     ); // 5 minutes
 
     try {
-      console.log(
-        `🤖 Generating code with OpenRouter using model: ${this.modelId} (temp: ${temperature ?? "default"})...`,
+      log(
+        `🤖 Generating code with OpenRouter using model: ${
+          this.modelId
+        } (temp: ${temperature ?? "default"})...`,
       );
 
-      const systemPrompt = contextContent ? DEFAULT_SYSTEM_PROMPT_WITH_CONTEXT : DEFAULT_SYSTEM_PROMPT;
+      const systemPrompt = contextContent
+        ? DEFAULT_SYSTEM_PROMPT_WITH_CONTEXT
+        : DEFAULT_SYSTEM_PROMPT;
 
       // Standard chat completions for OpenRouter models
       const messages: ChatCompletionMessageParam[] = [
@@ -85,7 +97,7 @@ export class OpenRouterProvider implements LLMProvider {
 
       // Add provider routing preferences if configured
       const openrouterProvider = process.env.OPENROUTER_PROVIDER;
-      if (openrouterProvider && openrouterProvider.toLowerCase() !== "auto") {
+      if (openrouterProvider && openrouterProvider.toLowerCase() !== 'auto') {
         requestOptions.provider = { only: [openrouterProvider] };
       } else {
         // Apply quantization filtering for precision requirements
@@ -99,27 +111,33 @@ export class OpenRouterProvider implements LLMProvider {
 
       let completion;
       try {
-        completion = await this.client.chat.completions.create(requestOptions, {
-          signal: abortController.signal, // Add abort signal
-        });
+        completion = await this.client.chat.completions.create(
+          requestOptions,
+          {
+            signal: abortController.signal, // Add abort signal
+          },
+        );
       } catch (quantizationError) {
         // If no providers match the quantization requirements, fall back to default
         if (this.isQuantizationError(quantizationError)) {
-          console.warn(
+          log(
             "⚠️  WARNING: NO MODELS FOUND WITH REQUIRED PRECISION (bf16+). FALLING BACK TO DEFAULT MODEL WITHOUT QUANTIZATION FILTERING.",
           );
-
+          
           // Retry without quantization filtering
           const fallbackOptions = { ...requestOptions };
-          if (openrouterProvider && openrouterProvider.toLowerCase() !== "auto") {
+          if (openrouterProvider && openrouterProvider.toLowerCase() !== 'auto') {
             fallbackOptions.provider = { only: [openrouterProvider] };
           } else {
             delete fallbackOptions.provider;
           }
-
-          completion = await this.client.chat.completions.create(fallbackOptions, {
-            signal: abortController.signal,
-          });
+          
+          completion = await this.client.chat.completions.create(
+            fallbackOptions,
+            {
+              signal: abortController.signal,
+            },
+          );
         } else {
           throw quantizationError;
         }
@@ -135,21 +153,25 @@ export class OpenRouterProvider implements LLMProvider {
 
       // Check if the error is due to abort (timeout)
       if (error instanceof Error && error.name === "AbortError") {
-        console.error(`OpenRouter API call timed out after 5 minutes for model: ${this.modelId}`);
+        console.error(
+          `OpenRouter API call timed out after 5 minutes for model: ${this.modelId}`,
+        );
         throw new Error(`Request timed out after 5 minutes: ${this.modelId}`);
       }
 
-      // Check for rate limit (429) errors
-      const errorObj = error as any;
-      const status = errorObj?.status ?? errorObj?.code;
-      const errorMsg = error instanceof Error ? error.message : String(error);
-      if (status === 429 || errorMsg.includes("Rate limit exceeded") || errorMsg.includes("rate limit")) {
-        console.error(`OpenRouter rate limit hit for model: ${this.modelId}`);
-        throw new RateLimitError(`OpenRouter rate limit exceeded: ${errorMsg}`);
+      const errorObject = error as { status?: number; code?: number };
+      const status = errorObject?.status ?? errorObject?.code;
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      if (status === 429 || /rate limit/i.test(errorMessage)) {
+        throw new RateLimitError(`OpenRouter rate limit exceeded: ${errorMessage}`);
       }
 
       console.error("Error generating code with OpenRouter:", error);
-      throw new Error(`Failed to generate code: ${errorMsg}`);
+      throw new Error(
+        `Failed to generate code: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
     }
   }
 
@@ -176,12 +198,12 @@ export class OpenRouterProvider implements LLMProvider {
    */
   private buildProviderConfig(): any {
     // Disallow low precision quantizations, allow unknown for flexibility
-    const disallowedQuantizations = ["fp4", "fp6", "fp8", "int4", "int8"];
-
+    const disallowedQuantizations = ['fp4', 'fp6', 'fp8', 'int4', 'int8'];
+    
     return {
       disallow_quantizations: disallowedQuantizations,
       // Allow unknown quantization to handle cases where precision is not specified
-      allow_fallbacks: true,
+      allow_fallbacks: true
     };
   }
 
@@ -192,15 +214,15 @@ export class OpenRouterProvider implements LLMProvider {
    */
   private isQuantizationError(error: any): boolean {
     if (!(error instanceof Error)) return false;
-
+    
     const errorMessage = error.message.toLowerCase();
     return (
-      errorMessage.includes("no providers") ||
-      errorMessage.includes("quantization") ||
-      errorMessage.includes("provider") ||
-      errorMessage.includes("precision") ||
-      errorMessage.includes("not available") ||
-      errorMessage.includes("no models found")
+      errorMessage.includes('no providers') ||
+      errorMessage.includes('quantization') ||
+      errorMessage.includes('provider') ||
+      errorMessage.includes('precision') ||
+      errorMessage.includes('not available') ||
+      errorMessage.includes('no models found')
     );
   }
 }

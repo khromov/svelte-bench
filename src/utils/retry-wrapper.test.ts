@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { withRetry } from "./retry-wrapper";
+import { RateLimitError } from "./errors";
 
 describe("retry-wrapper", () => {
   it("should succeed on first attempt", async () => {
@@ -66,7 +67,7 @@ describe("retry-wrapper", () => {
     expect(delays[1]).toBeGreaterThanOrEqual(110); // ~100ms + min jitter
     expect(delays[1]).toBeLessThanOrEqual(350); // ~100ms + max jitter
     expect(delays[2]).toBeGreaterThanOrEqual(320); // ~(100+200)ms + min jitter
-    expect(delays[2]).toBeLessThanOrEqual(600); // ~(100+200)ms + max jitter
+    expect(delays[2]).toBeLessThanOrEqual(800); // ~(100+200)ms + max jitter for both waits
   });
 
   it("should call onRetry callback", async () => {
@@ -112,5 +113,30 @@ describe("retry-wrapper", () => {
     // So total should be between 110ms and 350ms
     expect(delays[0]).toBeGreaterThanOrEqual(110);
     expect(delays[0]).toBeLessThanOrEqual(350);
+  });
+
+  it("should retry rate limits with exponential backoff when enabled", async () => {
+    const onRateLimit = vi.fn();
+    const mockFn = vi
+      .fn()
+      .mockRejectedValueOnce(new RateLimitError("429 too many requests"))
+      .mockResolvedValueOnce("success");
+
+    await expect(
+      withRetry(mockFn, {
+        maxAttempts: 2,
+        initialDelayMs: 10,
+        maxDelayMs: 100,
+        retryRateLimits: true,
+        onRateLimit,
+      }),
+    ).resolves.toBe("success");
+
+    expect(onRateLimit).toHaveBeenCalledWith(
+      expect.objectContaining({ name: "RateLimitError" }),
+      1,
+      expect.any(Number),
+    );
+    expect(mockFn).toHaveBeenCalledTimes(2);
   });
 });
