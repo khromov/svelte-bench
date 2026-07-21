@@ -106,6 +106,9 @@ export async function getLLMProvider(
     case "meta":
       const { MetaProvider } = await import("./meta");
       return new MetaProvider(actualModel);
+    case "minimax":
+      const { MiniMaxProvider } = await import("./minimax");
+      return new MiniMaxProvider(actualModel);
     case "cursor":
       const { CursorProvider } = await import("./cursor");
       return new CursorProvider(actualModel);
@@ -123,7 +126,7 @@ export async function getLLMProvider(
   // Provider not found
   throw new Error(
     `Unknown LLM provider: ${actualProvider}. ` +
-    `Native providers: openai, anthropic, google, openrouter, fireworks, ollama, zai, moonshot, xai, meta, cursor. ` +
+    `Native providers: openai, anthropic, google, openrouter, fireworks, ollama, zai, moonshot, xai, meta, minimax, cursor. ` +
     `AI SDK providers: ${availableProviders.join(', ')}`
   );
 }
@@ -173,6 +176,17 @@ export async function getAllLLMProviders(): Promise<ProviderWithModel[]> {
 
   // Note: AI SDK providers don't expose model lists by default
   // Models must be specified explicitly in DEBUG_MODE
+
+  // MiniMax provider
+  const minimaxProvider = await getLLMProvider("minimax");
+  for (const modelId of minimaxProvider.getModels()) {
+    const provider = await getLLMProvider("minimax", modelId);
+    providers.push({
+      provider,
+      name: "MiniMax",
+      modelId,
+    });
+  }
 
   return providers;
 }

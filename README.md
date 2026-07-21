@@ -21,6 +21,7 @@ SvelteBench supports multiple LLM providers:
 - **xAI**
 - **Meta**
 - **Cursor**
+- **MiniMax** - MiniMax's OpenAI-compatible API
 
 ## Setup
 
@@ -80,6 +81,9 @@ META_API_KEY=your_meta_api_key_here
 
 # Cursor (optional)
 CURSOR_API_KEY=your_cursor_api_key_here
+
+# MiniMax (optional)
+MINIMAX_API_KEY=your_minimax_api_key_here
 ```
 
 The existing environment variables remain supported by `pnpm run-tests` and

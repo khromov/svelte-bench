@@ -67,7 +67,7 @@ describe("retry-wrapper", () => {
     expect(delays[1]).toBeGreaterThanOrEqual(110); // ~100ms + min jitter
     expect(delays[1]).toBeLessThanOrEqual(350); // ~100ms + max jitter
     expect(delays[2]).toBeGreaterThanOrEqual(320); // ~(100+200)ms + min jitter
-    expect(delays[2]).toBeLessThanOrEqual(600); // ~(100+200)ms + max jitter
+    expect(delays[2]).toBeLessThanOrEqual(800); // ~(100+200)ms + max jitter for both waits
   });
 
   it("should call onRetry callback", async () => {

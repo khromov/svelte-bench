@@ -65,8 +65,14 @@ export class MoonshotProvider implements LLMProvider {
   async generateCode(prompt: string, temperature?: number, contextContent?: string): Promise<string> {
     // Use TEMPERATURE_OVERRIDE env var if present, otherwise use provided temperature or default
     const envTemperature = process.env.TEMPERATURE_OVERRIDE ? parseFloat(process.env.TEMPERATURE_OVERRIDE) : temperature;
-    // Ensure temperature is within valid range [0, 1]
-    const validTemperature = envTemperature !== undefined ? Math.max(0, Math.min(1, envTemperature)) : 0.7;
+    // Kimi K3 only accepts the default temperature value of 1.
+    const requiresDefaultTemperature = /^kimi-k3(?:-|$)/i.test(this.modelId);
+    // Ensure temperature is within valid range [0, 1] for other Moonshot models.
+    const validTemperature = requiresDefaultTemperature
+      ? 1
+      : envTemperature !== undefined
+        ? Math.max(0, Math.min(1, envTemperature))
+        : 0.7;
 
     log(`🤖 Generating code with Moonshot using model: ${this.modelId} (temp: ${validTemperature})...`);
 
@@ -133,8 +139,13 @@ export class MoonshotProvider implements LLMProvider {
             if (response.status === 429 || response.status >= 500) {
               throw new Error(`Moonshot API temporary error: ${response.status} ${response.statusText} - ${errorText}`);
             }
-            // Non-retryable error
-            throw new Error(`Moonshot API request failed: ${response.status} ${response.statusText} - ${errorText}`);
+            // Other 4xx responses are request/configuration errors and cannot be
+            // fixed by retrying the same request.
+            const error = new Error(
+              `Moonshot API request failed: ${response.status} ${response.statusText} - ${errorText}`,
+            );
+            error.name = "NonRetryableError";
+            throw error;
           }
 
           const data: MoonshotResponse = await response.json();

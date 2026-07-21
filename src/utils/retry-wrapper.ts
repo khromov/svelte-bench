@@ -50,7 +50,9 @@ export async function withRetry<T>(fn: () => Promise<T>, options?: RetryOptions)
       // Existing modes retain their current fail-fast behavior for the
       // explicit RateLimitError used by OpenRouter. Other providers already
       // surface 429s as ordinary errors and have historically retried them.
-      if (isRateLimitError(lastError) && !opts.retryRateLimits) {
+      // Don't retry explicit rate-limit errors unless enabled, or errors that
+      // cannot be fixed by repeating the same request.
+      if ((isRateLimitError(lastError) && !opts.retryRateLimits) || lastError.name === "NonRetryableError") {
         throw lastError;
       }
 
