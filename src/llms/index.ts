@@ -1,5 +1,3 @@
-import { log } from "../utils/tui-events";
-
 /**
  * Interface for LLM providers
  * Defines the common functionality that all LLM providers must implement
@@ -114,20 +112,10 @@ export async function getLLMProvider(
       return new CursorProvider(actualModel);
   }
 
-  // Try AI SDK unified registry for other official providers
-  const { getAvailableProviders } = await import("./ai-sdk/unified-registry");
-  const { AISDKProviderWrapper } = await import("./ai-sdk/base-provider");
-
-  const availableProviders = getAvailableProviders();
-  if (availableProviders.includes(actualProvider.toLowerCase())) {
-    return new AISDKProviderWrapper(actualProvider.toLowerCase(), actualModel);
-  }
-
   // Provider not found
   throw new Error(
     `Unknown LLM provider: ${actualProvider}. ` +
-    `Native providers: openai, anthropic, google, openrouter, fireworks, ollama, zai, moonshot, xai, meta, minimax, cursor. ` +
-    `AI SDK providers: ${availableProviders.join(', ')}`
+    `Native providers: openai, anthropic, google, openrouter, fireworks, ollama, zai, moonshot, xai, meta, minimax, cursor.`
   );
 }
 
@@ -135,21 +123,24 @@ export async function getLLMProvider(
  * Function to get all available LLM providers
  * @returns Array of available LLM providers with their models
  *
- * Note: This function returns providers from the AI SDK unified registry.
- * Individual models must be specified by the user in DEBUG_MODE.
+ * Returns providers from the native provider implementations.
  */
 export async function getAllLLMProviders(): Promise<ProviderWithModel[]> {
   const providers: ProviderWithModel[] = [];
 
-  // Native providers with special features
   const nativeProviders = [
     { name: "openai", displayName: "OpenAI" },
     { name: "anthropic", displayName: "Anthropic" },
     { name: "google", displayName: "Google" },
     { name: "openrouter", displayName: "OpenRouter" },
+    { name: "fireworks", displayName: "Fireworks" },
     { name: "ollama", displayName: "Ollama" },
     { name: "zai", displayName: "Z.ai" },
     { name: "moonshot", displayName: "Moonshot AI" },
+    { name: "xai", displayName: "xAI" },
+    { name: "meta", displayName: "Meta" },
+    { name: "minimax", displayName: "MiniMax" },
+    { name: "cursor", displayName: "Cursor" },
   ];
 
   for (const { name, displayName } of nativeProviders) {
@@ -163,29 +154,9 @@ export async function getAllLLMProviders(): Promise<ProviderWithModel[]> {
           modelId,
         });
       }
-    } catch (error) {
-      // Provider not configured, skip
+    } catch {
+      // Provider not configured, skip it.
     }
-  }
-
-  // Get AI SDK providers from unified registry
-  const { getAvailableProviders } = await import("./ai-sdk/unified-registry");
-  const availableProviders = getAvailableProviders();
-
-  log(`📋 Found ${availableProviders.length} available AI SDK providers:`, availableProviders.join(', '));
-
-  // Note: AI SDK providers don't expose model lists by default
-  // Models must be specified explicitly in DEBUG_MODE
-
-  // MiniMax provider
-  const minimaxProvider = await getLLMProvider("minimax");
-  for (const modelId of minimaxProvider.getModels()) {
-    const provider = await getLLMProvider("minimax", modelId);
-    providers.push({
-      provider,
-      name: "MiniMax",
-      modelId,
-    });
   }
 
   return providers;
