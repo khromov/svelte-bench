@@ -120,9 +120,12 @@ PARALLEL_EXECUTION=true pnpm start
 
 # Run tests only (without building visualization)
 pnpm run-tests
+
+# Run the maintained repository test suite (generated samples are excluded)
+pnpm test
 ```
 
-**NOTE: This will run all providers and models that are available!**
+**NOTE:** `pnpm run-tests` runs all providers and models that are available. `pnpm test` runs only maintained repository tests.
 
 ### Execution Modes
 

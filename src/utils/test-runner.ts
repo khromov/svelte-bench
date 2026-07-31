@@ -64,6 +64,8 @@ export async function runTest(testName: string, provider?: string, testDir?: str
         const vitest = await startVitest("test", [testFilePath], {
           watch: false,
           reporters: ["verbose"],
+          include: [testFilePath],
+          exclude: ["benchmarks/**", "dist/**", "node_modules/**"],
         });
 
         await vitest.close();
