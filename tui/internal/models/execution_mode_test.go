@@ -25,7 +25,7 @@ func TestExecutionModeShowsAllModesAndDefaultsToParallel(t *testing.T) {
 	if state.Madmax || !state.Parallel {
 		t.Fatalf("default selection should enable Parallel only: madmax=%v parallel=%v", state.Madmax, state.Parallel)
 	}
-	if _, ok := updated.(ProviderModelSelectModel); !ok {
+	if _, ok := updated.(ModelSelectModel); !ok {
 		t.Fatalf("enter should continue to model selection, got %T", updated)
 	}
 }

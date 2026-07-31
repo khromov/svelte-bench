@@ -46,7 +46,7 @@ func (m ExecutionModeModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m, tea.Quit
 			}
 		case "left":
-			model := NewProviderModelSelectFromExecution(m.state)
+			model := NewProviderSelectFromExecution(m.state)
 			return model, model.Init()
 
 		case "up":
@@ -58,8 +58,8 @@ func (m ExecutionModeModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "enter":
 			m.state.Parallel = (m.selectedOption == 0)
 			m.state.Madmax = (m.selectedOption == 2)
-			model := NewModelSelectionModel(m.state)
-			model, cmd := model.loadModels(model.providers[model.selectedProvider])
+			model := NewModelSelectModel(m.state)
+			model, cmd := model.loadModels()
 			return model, cmd
 		}
 	}

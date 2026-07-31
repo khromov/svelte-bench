@@ -20,7 +20,7 @@ func main() {
 	}
 
 	// Create initial model
-	initialModel := models.NewProviderModelSelectFromConfig(cfg)
+	initialModel := models.NewProviderSelectFromConfig(cfg)
 
 	// Create program with signal handling
 	p := tea.NewProgram(initialModel)

@@ -15,9 +15,7 @@ import (
 
 func TestLoadModelsReturnsLoadingModelImmediately(t *testing.T) {
 	model := modelSelectionFixture()
-	provider := model.providers[model.selectedProvider]
-
-	loading, cmd := model.loadModels(provider)
+	loading, cmd := model.loadModels()
 
 	if !loading.loadingModels {
 		t.Fatal("model should be loading before the fetch command runs")
@@ -35,7 +33,7 @@ func TestExecutionModeReturnsModelSelectionAlreadyLoading(t *testing.T) {
 	execution := NewExecutionModeModel(fixture.state)
 
 	updated, cmd := execution.Update(tea.KeyPressMsg{Code: tea.KeyEnter})
-	selection, ok := updated.(ProviderModelSelectModel)
+	selection, ok := updated.(ModelSelectModel)
 	if !ok {
 		t.Fatalf("enter should open model selection, got %T", updated)
 	}
@@ -54,7 +52,7 @@ func TestModelsLoadedSuccessEndsLoadingAndPopulatesCatalog(t *testing.T) {
 	want := []bridge.Model{{ID: "openai/gpt-4.1"}, {ID: "anthropic/claude-sonnet-4"}}
 
 	updated, cmd := model.Update(modelsLoadedMsg{models: want})
-	loaded := updated.(ProviderModelSelectModel)
+	loaded := updated.(ModelSelectModel)
 
 	if loaded.loadingModels {
 		t.Fatal("successful model fetch should end loading")
@@ -79,7 +77,7 @@ func TestModelsLoadedErrorEndsLoadingAndRetainsDedicatedError(t *testing.T) {
 	want := errors.New("catalog unavailable")
 
 	updated, cmd := model.Update(modelsLoadedMsg{err: want})
-	loaded := updated.(ProviderModelSelectModel)
+	loaded := updated.(ModelSelectModel)
 
 	if loaded.loadingModels {
 		t.Fatal("failed model fetch should end loading")
@@ -98,7 +96,7 @@ func TestLoadingSpinnerOnlyReschedulesWhileLoading(t *testing.T) {
 	tick := spinner.TickMsg{ID: model.loadingSpinner.ID()}
 
 	updated, cmd := model.Update(tick)
-	model = updated.(ProviderModelSelectModel)
+	model = updated.(ModelSelectModel)
 	if cmd == nil {
 		t.Fatal("spinner tick should schedule its successor while loading")
 	}
@@ -110,12 +108,12 @@ func TestLoadingSpinnerOnlyReschedulesWhileLoading(t *testing.T) {
 	}
 }
 
-func modelSelectionFixture() ProviderModelSelectModel {
+func modelSelectionFixture() ModelSelectModel {
 	state := &SharedState{
 		Config:      &config.Config{APIKeys: map[string]string{"OPENROUTER_API_KEY": "test-key"}},
 		ProviderKey: "OPENROUTER_API_KEY",
 	}
-	model := NewModelSelectionModel(state)
+	model := NewModelSelectModel(state)
 	model.models = []bridge.Model{
 		{ID: "openai/gpt-4"},
 		{ID: "anthropic/claude-sonnet-4"},
@@ -128,11 +126,11 @@ func TestModelSelectionMarksMultipleModelsAndRunsThemInCatalogOrder(t *testing.T
 	model := modelSelectionFixture()
 
 	updated, _ := model.Update(tea.KeyPressMsg{Code: tea.KeySpace})
-	model = updated.(ProviderModelSelectModel)
+	model = updated.(ModelSelectModel)
 	updated, _ = model.Update(tea.KeyPressMsg{Code: tea.KeyDown})
-	model = updated.(ProviderModelSelectModel)
+	model = updated.(ModelSelectModel)
 	updated, _ = model.Update(tea.KeyPressMsg{Code: tea.KeySpace})
-	model = updated.(ProviderModelSelectModel)
+	model = updated.(ModelSelectModel)
 
 	updated, _ = model.Update(tea.KeyPressMsg{Code: tea.KeyEnter})
 	if _, ok := updated.(BenchmarkModel); !ok {
@@ -151,6 +149,78 @@ func TestModelSelectionKeepsMarksWhileFiltering(t *testing.T) {
 
 	if got := model.selectedModelIDs(); len(got) != 1 || got[0] != "openai/gpt-4" {
 		t.Fatalf("filtering should preserve marked models, got %#v", got)
+	}
+}
+
+func TestProviderSelectionRoutesMissingKeyToAPIKeyPrompt(t *testing.T) {
+	state := &SharedState{Config: &config.Config{APIKeys: map[string]string{}}}
+	model := NewProviderSelectModel(state)
+
+	updated, _ := model.Update(tea.KeyPressMsg{Code: tea.KeyEnter})
+	if _, ok := updated.(APIKeyPromptModel); !ok {
+		t.Fatalf("provider without a key should open API key prompt, got %T", updated)
+	}
+	if state.ProviderKey != model.providers[model.selectedProvider].EnvKey {
+		t.Fatalf("selected provider key should be retained in shared state, got %q", state.ProviderKey)
+	}
+}
+
+func TestProviderSelectionRoutesConfiguredKeyToExecutionMode(t *testing.T) {
+	state := &SharedState{
+		Config:             &config.Config{APIKeys: map[string]string{"ANTHROPIC_API_KEY": "test-key"}},
+		ValidatedProviders: map[string]bool{"ANTHROPIC_API_KEY": true},
+	}
+	model := NewProviderSelectModel(state)
+	for i, provider := range model.providers {
+		if provider.EnvKey == "ANTHROPIC_API_KEY" {
+			model.selectedProvider = i
+			break
+		}
+	}
+	model.validating = false
+
+	updated, _ := model.Update(tea.KeyPressMsg{Code: tea.KeyEnter})
+	if _, ok := updated.(ExecutionModeModel); !ok {
+		t.Fatalf("configured provider should open execution mode, got %T", updated)
+	}
+}
+
+func TestProviderSelectionFromExecutionReturnsToExecutionMode(t *testing.T) {
+	model := NewProviderSelectFromExecution(modelSelectionFixture().state)
+
+	updated, _ := model.Update(tea.KeyPressMsg{Code: tea.KeyLeft})
+	if _, ok := updated.(ExecutionModeModel); !ok {
+		t.Fatalf("left should return to execution mode, got %T", updated)
+	}
+}
+
+func TestModelSelectionLeftReturnsToProviderSelection(t *testing.T) {
+	model := modelSelectionFixture()
+
+	updated, cmd := model.Update(tea.KeyPressMsg{Code: tea.KeyLeft})
+	provider, ok := updated.(ProviderSelectModel)
+	if !ok {
+		t.Fatalf("left should return to provider selection, got %T", updated)
+	}
+	if provider.exitOnBack {
+		t.Fatal("model-to-provider transition should preserve execution-mode back navigation")
+	}
+	if cmd != nil {
+		t.Fatal("model-to-provider transition should not start a command")
+	}
+}
+
+func TestModelSelectionRunsCustomModelIDWhenCatalogHasNoMatch(t *testing.T) {
+	model := modelSelectionFixture()
+	model.modelInput.SetValue("custom/vendor-model")
+	model.filteredModels = nil
+
+	updated, _ := model.Update(tea.KeyPressMsg{Code: tea.KeyEnter})
+	if _, ok := updated.(BenchmarkModel); !ok {
+		t.Fatalf("custom model ID should start a benchmark, got %T", updated)
+	}
+	if got, want := model.state.Model, "custom/vendor-model"; got != want {
+		t.Fatalf("expected custom model %q, got %q", want, got)
 	}
 }
 

@@ -56,7 +56,7 @@ func (m ResultsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m, tea.Quit
 			}
 		case "left":
-			model := NewProviderModelSelectModel(m.state)
+			model := NewProviderSelectModel(m.state)
 			return model, model.Init()
 
 		case "up":
@@ -77,7 +77,7 @@ func (m ResultsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m, m.openResults()
 			case 1:
 				// Run another benchmark
-				model := NewProviderModelSelectModel(m.state)
+				model := NewProviderSelectModel(m.state)
 				return model, model.Init()
 			case 2:
 				// Exit

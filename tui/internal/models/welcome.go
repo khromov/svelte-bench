@@ -56,7 +56,7 @@ func (m WelcomeModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 
 		case "enter":
-			model := NewProviderModelSelectModel(m.state)
+			model := NewProviderSelectModel(m.state)
 			return model, model.Init()
 		}
 	}

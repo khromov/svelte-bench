@@ -51,11 +51,11 @@ func (m APIKeyPromptModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m, tea.Quit
 			}
 			m.input.Blur()
-			model := NewProviderModelSelectModel(m.state)
+			model := NewProviderSelectModel(m.state)
 			return model, model.Init()
 		case "left":
 			m.input.Blur()
-			model := NewProviderModelSelectModel(m.state)
+			model := NewProviderSelectModel(m.state)
 			return model, model.Init()
 		case "enter":
 			if m.validating {
