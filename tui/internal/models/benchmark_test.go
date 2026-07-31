@@ -1,11 +1,16 @@
 package models
 
 import (
+	"context"
+	"errors"
 	"math"
 	"strings"
 	"testing"
+	"time"
 
 	"svelte-bench/tui/internal/bridge"
+
+	tea "charm.land/bubbletea/v2"
 )
 
 func TestBenchmarkViewShowsAllTestsAndPercentageScores(t *testing.T) {
@@ -86,5 +91,93 @@ func TestBenchmarkAggregatesProgressAndScoresAcrossSelectedModels(t *testing.T) 
 	model.handleEvent(bridge.BenchmarkEvent{Type: bridge.EventTestComplete, Test: "counter", Model: "rejected-model", Total: 10, Passed: true, PassAtOne: 1})
 	if test.Current != 11 || model.currentCount != 11 || math.Abs(test.PassAtOne-0.6) > 0.000001 {
 		t.Fatal("an unvalidated model must not inflate progress or scores")
+	}
+}
+
+func TestBenchmarkCancelStopsOwnedRunnerContext(t *testing.T) {
+	model := NewBenchmarkModel(&SharedState{Provider: "openai", Model: "gpt-4o-mini"})
+	stopped := make(chan struct{})
+	model.run = func(ctx context.Context, _ bridge.BenchmarkConfig, _ bridge.EventHandler) error {
+		<-ctx.Done()
+		close(stopped)
+		return ctx.Err()
+	}
+
+	go model.runBenchmark()()
+	if _, ok := model.waitForEvent()().(benchmarkStartMsg); !ok {
+		t.Fatal("expected benchmark start message")
+	}
+	_, cmd := model.Update(tea.KeyPressMsg(tea.Key{Code: 'c', Mod: tea.ModCtrl}))
+	if cmd == nil {
+		t.Fatal("expected quit command")
+	}
+
+	select {
+	case <-stopped:
+	case <-time.After(time.Second):
+		t.Fatal("runner context was not canceled")
+	}
+	terminal, ok := model.waitForEvent()().(benchmarkTerminalMsg)
+	if !ok || !terminal.canceled {
+		t.Fatalf("expected explicit canceled terminal message, got %#v", terminal)
+	}
+}
+
+func TestBenchmarkRunnerErrorDoesNotOpenResults(t *testing.T) {
+	state := &SharedState{}
+	model := NewBenchmarkModel(state)
+	updated, cmd := model.Update(benchmarkTerminalMsg{err: errors.New("runner failed")})
+	if cmd != nil {
+		t.Fatal("runner failure must not schedule result navigation")
+	}
+	if _, ok := updated.(BenchmarkModel); !ok {
+		t.Fatalf("runner failure should remain on benchmark screen, got %T", updated)
+	}
+	if state.Completed {
+		t.Fatal("runner failure must not mark the benchmark complete")
+	}
+	if state.Error != "runner failed" {
+		t.Fatalf("expected runner error in shared state, got %q", state.Error)
+	}
+}
+
+func TestBenchmarkEventErrorCannotBecomeSuccessfulCompletion(t *testing.T) {
+	state := &SharedState{}
+	model := NewBenchmarkModel(state)
+	updated, _ := model.Update(benchmarkEventMsg(bridge.BenchmarkEvent{Type: bridge.EventError, Error: "provider failed"}))
+	model = updated.(BenchmarkModel)
+	updated, _ = model.Update(benchmarkTerminalMsg{})
+	if _, ok := updated.(BenchmarkModel); !ok {
+		t.Fatalf("errored benchmark should not navigate to results, got %T", updated)
+	}
+	if state.Completed {
+		t.Fatal("event error must not mark the benchmark complete")
+	}
+}
+
+func TestBenchmarkSuccessNavigatesToResults(t *testing.T) {
+	state := &SharedState{}
+	model := NewBenchmarkModel(state)
+	updated, cmd := model.Update(benchmarkEventMsg(bridge.BenchmarkEvent{Type: bridge.EventComplete}))
+	if _, ok := updated.(BenchmarkModel); !ok {
+		t.Fatalf("stream completion event must wait for runner success, got %T", updated)
+	}
+	if cmd == nil {
+		t.Fatal("stream completion should continue waiting for the runner terminal result")
+	}
+	if state.Completed {
+		t.Fatal("stream completion alone must not mark shared state complete")
+	}
+
+	model = updated.(BenchmarkModel)
+	updated, cmd = model.Update(benchmarkTerminalMsg{})
+	if cmd != nil {
+		t.Fatal("successful completion should navigate immediately")
+	}
+	if _, ok := updated.(ResultsModel); !ok {
+		t.Fatalf("successful completion should open results, got %T", updated)
+	}
+	if !state.Completed {
+		t.Fatal("successful completion should mark shared state complete")
 	}
 }

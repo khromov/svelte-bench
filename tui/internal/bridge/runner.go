@@ -1,6 +1,8 @@
 package bridge
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -22,7 +24,7 @@ type BenchmarkConfig struct {
 }
 
 // RunBenchmark runs the TypeScript benchmark with the given configuration
-func RunBenchmark(config BenchmarkConfig, eventHandler EventHandler) error {
+func RunBenchmark(ctx context.Context, config BenchmarkConfig, eventHandler EventHandler) error {
 	// Get project root
 	projectRoot, err := getProjectRoot()
 	if err != nil {
@@ -45,7 +47,8 @@ func RunBenchmark(config BenchmarkConfig, eventHandler EventHandler) error {
 	// Build command
 	// Run the complete workflow so the visualization is built before the TUI
 	// presents the completed-benchmark actions.
-	cmd := exec.Command("pnpm", "start")
+	cmd := exec.CommandContext(ctx, "pnpm", "start")
+	configureProcessGroup(cmd)
 	cmd.Dir = projectRoot
 
 	if debugLog != nil {
@@ -149,6 +152,12 @@ func RunBenchmark(config BenchmarkConfig, eventHandler EventHandler) error {
 
 	// Wait for command to finish
 	waitErr := cmd.Wait()
+	if ctxErr := ctx.Err(); ctxErr != nil {
+		// CommandContext reports the process signal as the wait error. Return the
+		// context error instead so callers can distinguish cancellation from a
+		// benchmark failure.
+		return ctxErr
+	}
 
 	if debugLog != nil {
 		if waitErr != nil {
@@ -178,6 +187,9 @@ func RunBenchmark(config BenchmarkConfig, eventHandler EventHandler) error {
 	// Check for parsing errors
 	select {
 	case err := <-errChan:
+		if errors.Is(err, context.Canceled) {
+			return context.Canceled
+		}
 		return err
 	default:
 	}

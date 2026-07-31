@@ -1,6 +1,8 @@
 package models
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"image/color"
 	"strings"
@@ -14,8 +16,12 @@ import (
 
 type benchmarkStartMsg struct{}
 type benchmarkEventMsg bridge.BenchmarkEvent
-type benchmarkCompleteMsg struct{}
-type benchmarkErrorMsg struct{ err error }
+type benchmarkTerminalMsg struct {
+	err      error
+	canceled bool
+}
+
+type benchmarkRunner func(context.Context, bridge.BenchmarkConfig, bridge.EventHandler) error
 
 // BenchmarkModel handles benchmark execution
 type BenchmarkModel struct {
@@ -29,29 +35,40 @@ type BenchmarkModel struct {
 	width        int
 	height       int
 	frame        int // For animations
-	eventChan    chan bridge.BenchmarkEvent
+	eventChan    chan tea.Msg
 	modelCount   int
 	progress     map[string]int
 	completed    map[string]bool
 	scoreTotals  map[string]float64
 	scoreCounts  map[string]int
 	modelSamples map[string]int
+	ctx          context.Context
+	cancel       context.CancelFunc
+	run          benchmarkRunner
+	terminal     bool
 }
 
 // NewBenchmarkModel creates a new benchmark model
 func NewBenchmarkModel(state *SharedState) BenchmarkModel {
+	ctx, cancel := context.WithCancel(context.Background())
+	state.Completed = false
+	state.Error = ""
+	state.Results = nil
 	return BenchmarkModel{
 		state:        state,
 		tests:        make(map[string]*TestResult),
 		running:      false,
 		width:        80,
 		height:       24,
-		eventChan:    make(chan bridge.BenchmarkEvent, 1024),
+		eventChan:    make(chan tea.Msg, 1024),
 		progress:     make(map[string]int),
 		completed:    make(map[string]bool),
 		scoreTotals:  make(map[string]float64),
 		scoreCounts:  make(map[string]int),
 		modelSamples: make(map[string]int),
+		ctx:          ctx,
+		cancel:       cancel,
+		run:          bridge.RunBenchmark,
 	}
 }
 
@@ -65,12 +82,11 @@ func (m BenchmarkModel) Init() tea.Cmd {
 // waitForEvent waits for events from the benchmark runner
 func (m BenchmarkModel) waitForEvent() tea.Cmd {
 	return func() tea.Msg {
-		event, ok := <-m.eventChan
+		msg, ok := <-m.eventChan
 		if !ok {
-			// Channel closed, benchmark complete
-			return benchmarkCompleteMsg{}
+			return benchmarkTerminalMsg{err: errors.New("benchmark event stream closed without a terminal result")}
 		}
-		return benchmarkEventMsg(event)
+		return msg
 	}
 }
 
@@ -84,9 +100,11 @@ func (m BenchmarkModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyPressMsg:
 		switch msg.String() {
 		case "ctrl+c":
+			m.cancelBenchmark()
 			return m, tea.Quit
 		case "esc":
 			if DoubleEscapeRequestsExit() {
+				m.cancelBenchmark()
 				return m, tea.Quit
 			}
 		}
@@ -104,18 +122,31 @@ func (m BenchmarkModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case benchmarkEventMsg:
 		event := bridge.BenchmarkEvent(msg)
 		m.handleEvent(event)
+		if event.Type == bridge.EventError {
+			m.cancelBenchmark()
+		}
 		// The animation tick reschedules itself when it fires. Starting another
 		// tick here for every benchmark event would create concurrent timers and
 		// make the animation speed up as sample events arrive.
 		return m, m.waitForEvent()
 
-	case benchmarkErrorMsg:
+	case benchmarkTerminalMsg:
+		if m.terminal {
+			return m, nil
+		}
+		m.terminal = true
 		m.running = false
-		m.state.Error = msg.err.Error()
-		return m, nil
-
-	case benchmarkCompleteMsg:
-		m.running = false
+		m.cancelBenchmark()
+		if msg.canceled {
+			return m, nil
+		}
+		if msg.err != nil {
+			m.state.Error = msg.err.Error()
+			return m, nil
+		}
+		if m.state.Error != "" {
+			return m, nil
+		}
 		m.state.Completed = true
 		return NewResultsModel(m.state), nil
 
@@ -553,45 +584,64 @@ func (m *BenchmarkModel) recordProgress(samples int) {
 
 func (m BenchmarkModel) runBenchmark() tea.Cmd {
 	return func() tea.Msg {
-		// Start the actual TypeScript benchmark in a goroutine
-		go func() {
-			// Convert config to API keys map
-			apiKeys := make(map[string]string)
-			if m.state.Config != nil {
-				for key, value := range m.state.Config.APIKeys {
-					apiKeys[key] = value
-				}
+		m.eventChan <- benchmarkStartMsg{}
+
+		// Convert config to API keys map
+		apiKeys := make(map[string]string)
+		if m.state.Config != nil {
+			for key, value := range m.state.Config.APIKeys {
+				apiKeys[key] = value
 			}
 
-			config := bridge.BenchmarkConfig{
-				Provider: m.state.Provider,
-				Model:    m.state.Model,
-				APIKeys:  apiKeys,
-				Parallel: m.state.Parallel,
-				Madmax:   m.state.Madmax,
-				Samples:  10,
+		}
+
+		config := bridge.BenchmarkConfig{
+			Provider: m.state.Provider,
+			Model:    m.state.Model,
+			APIKeys:  apiKeys,
+			Parallel: m.state.Parallel,
+			Madmax:   m.state.Madmax,
+			Samples:  10,
+		}
+
+		// Run benchmark and handle events. Bubble Tea already runs commands
+		// asynchronously, so this command owns the runner directly rather than
+		// creating an untracked nested goroutine.
+		err := m.run(m.ctx, config, func(event bridge.BenchmarkEvent) {
+			select {
+			case m.eventChan <- benchmarkEventMsg(event):
+			case <-m.ctx.Done():
 			}
+		})
 
-			// Run benchmark and handle events
-			err := bridge.RunBenchmark(config, func(event bridge.BenchmarkEvent) {
-				// Preserve every progress event for the Update loop.
-				m.eventChan <- event
-			})
-
-			// Send error event if benchmark failed
-			if err != nil {
-				m.eventChan <- bridge.BenchmarkEvent{
-					Type:  bridge.EventError,
-					Error: err.Error(),
-				}
+		terminal := benchmarkTerminalMsg{}
+		switch {
+		case errors.Is(err, context.Canceled):
+			terminal.canceled = true
+		case err != nil:
+			terminal.err = err
+		}
+		// A dedicated terminal message distinguishes success, cancellation,
+		// and failure. Channel closure is only a cleanup detail.
+		if terminal.canceled {
+			// The UI may already be exiting and no longer draining progress. Avoid
+			// retaining the runner goroutine solely to deliver a cancellation notice.
+			select {
+			case m.eventChan <- terminal:
+			default:
 			}
+		} else {
+			m.eventChan <- terminal
+		}
+		close(m.eventChan)
 
-			// Close channel when done
-			close(m.eventChan)
-		}()
+		return nil
+	}
+}
 
-		// Signal benchmark is starting
-		return benchmarkStartMsg{}
+func (m *BenchmarkModel) cancelBenchmark() {
+	if m.cancel != nil {
+		m.cancel()
 	}
 }
 

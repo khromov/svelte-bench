@@ -31,7 +31,9 @@ func main() {
 
 	go func() {
 		<-sigChan
-		p.Quit()
+		// Route external termination through the active model so a running
+		// benchmark cancels its owned context before Bubble Tea exits.
+		p.Send(tea.KeyPressMsg(tea.Key{Code: 'c', Mod: tea.ModCtrl}))
 	}()
 
 	// Run
