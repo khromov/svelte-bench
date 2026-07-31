@@ -1,6 +1,22 @@
 package bridge
 
-import "testing"
+import (
+	"testing"
+	"time"
+)
+
+func TestOpenRouterModelParsingIncludesCatalogDate(t *testing.T) {
+	models, err := parseOpenRouterModels([]byte(`{"data":[{"id":"openai/gpt-4","name":"GPT-4","description":"Flagship","created":1692901234}]}`))
+	if err != nil {
+		t.Fatalf("parseOpenRouterModels returned error: %v", err)
+	}
+	if len(models) != 1 {
+		t.Fatalf("expected one model, got %#v", models)
+	}
+	if got, want := models[0].AddedAt, time.Unix(1692901234, 0).UTC(); !got.Equal(want) {
+		t.Fatalf("expected OpenRouter catalog date %s, got %s", want, got)
+	}
+}
 
 func TestFetchMoonshotModelsUsesOpenAICompatibleResponse(t *testing.T) {
 	models, err := parseMoonshotModels([]byte(`{"data":[{"id":"kimi-k2.5","object":"model","owned_by":"moonshot"},{"id":"moonshot-v1-128k"}]}`))

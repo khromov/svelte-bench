@@ -6,7 +6,8 @@ A beautiful terminal user interface for running Svelte component benchmarks, bui
 
 - 🎨 **Ultra-modern UI** with orange gradient theming
 - 🔑 **Self-contained** - No .env file required! Configure API keys directly in the TUI
-- 🚀 **Interactive** provider and model selection with autocomplete
+- 🚀 **Interactive** provider selection and searchable multi-model runs
+- 🗓️ **OpenRouter metadata** with each model's catalog-addition date
 - 📊 **Live progress** tracking with animated progress bars
 - ⚡ **Parallel or sequential** execution modes
 

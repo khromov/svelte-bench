@@ -18,6 +18,9 @@ type Model struct {
 	Name        string
 	Description string
 	IsPopular   bool
+	// AddedAt is the catalog timestamp reported by the provider. OpenRouter's
+	// `created` field is documented as the time a model was added to OpenRouter.
+	AddedAt time.Time
 }
 
 // modelCache caches fetched models
@@ -262,11 +265,16 @@ func fetchOpenRouterModels(apiKey string) ([]Model, error) {
 		return nil, err
 	}
 
+	return parseOpenRouterModels(body)
+}
+
+func parseOpenRouterModels(body []byte) ([]Model, error) {
 	var result struct {
 		Data []struct {
 			ID          string `json:"id"`
 			Name        string `json:"name"`
 			Description string `json:"description"`
+			Created     int64  `json:"created"`
 		} `json:"data"`
 	}
 
@@ -276,10 +284,15 @@ func fetchOpenRouterModels(apiKey string) ([]Model, error) {
 
 	models := make([]Model, 0)
 	for _, item := range result.Data {
+		var addedAt time.Time
+		if item.Created > 0 {
+			addedAt = time.Unix(item.Created, 0).UTC()
+		}
 		models = append(models, Model{
 			ID:          item.ID,
 			Name:        item.Name,
 			Description: item.Description,
+			AddedAt:     addedAt,
 		})
 	}
 
