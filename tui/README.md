@@ -31,14 +31,18 @@ pnpm tui:build
 tui/
 ├── cmd/tui/                  # Main entry point
 ├── internal/
+│   ├── models/               # Screen state, navigation, and benchmark lifecycle
+│   │   ├── provider_model_select.go  # Provider and multi-model selection
+│   │   ├── api_key_prompt.go         # On-demand provider key entry
+│   │   ├── execution_mode.go         # Sequential/parallel/madmax selection
+│   │   ├── benchmark.go              # Live benchmark progress
+│   │   └── results.go                # Completed-run summary
 │   ├── styles/              # Orange gradient theme system
 │   │   ├── theme.go         # Base styles & colors
 │   │   ├── gradients.go     # Gradient rendering
 │   │   └── animations.go    # Spinners & animations
 │   ├── components/          # Reusable UI components
-│   │   ├── progress_bar.go  # Progress visualization
-│   │   ├── masked_input.go  # Secure API key input
-│   │   └── card.go          # Selection cards
+│   │   └── masked_input.go  # Secure API key input
 │   ├── config/              # Configuration management
 │   │   ├── storage.go       # .env read/write
 │   │   └── validator.go     # API key validation
@@ -51,14 +55,12 @@ tui/
 
 ## Current Status
 
-🚧 **In Development** 🚧
-
-The TUI infrastructure is complete with:
-- ✅ Styles system (orange gradients, animations)
-- ✅ Core components (progress bars, cards, masked inputs)
-- ✅ Config storage & API key validation
-- ✅ TypeScript bridge (runner, parser, model API)
-- ✅ TUI event emitter in TypeScript
+The active flow supports:
+- Provider selection with on-demand API-key entry and validation
+- Searchable multi-model selection, including OpenRouter release dates
+- Sequential, parallel, and madmax execution modes
+- Live benchmark progress driven by the TypeScript event stream
+- Completed-run summaries and result opening
 
 Run the TUI with `pnpm tui`. The existing TypeScript runner remains available
 for scripts and CI via `pnpm run-tests`, and all existing environment
@@ -68,7 +70,8 @@ variables remain supported there.
 
 To extend the TUI:
 
-1. **Add new screens**: Create models in `internal/models/`
+1. **Add new screens**: Create focused models in `internal/models/` and connect
+   them through the existing navigation flow
 2. **Customize styling**: Edit `internal/styles/theme.go`
 3. **Add components**: Create in `internal/components/`
 

@@ -12,18 +12,6 @@ func newView(content string) tea.View {
 	return view
 }
 
-// Screen represents different screens in the TUI
-type Screen int
-
-const (
-	ScreenWelcome Screen = iota
-	ScreenAPIKeyConfig
-	ScreenExecutionMode
-	ScreenProviderModelSelect
-	ScreenBenchmark
-	ScreenResults
-)
-
 // SharedState holds state shared across screens
 type SharedState struct {
 	Config                   *config.Config

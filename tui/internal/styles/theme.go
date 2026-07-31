@@ -63,51 +63,6 @@ var (
 			Align(lipgloss.Center).
 			MarginBottom(2)
 
-	// Card styles - for option selections
-	CardStyle = lipgloss.NewStyle().
-			Border(lipgloss.RoundedBorder()).
-			BorderForeground(GrayMedium).
-			Padding(1, 2).
-			MarginBottom(1)
-
-	CardSelectedStyle = lipgloss.NewStyle().
-				Border(lipgloss.RoundedBorder()).
-				BorderForeground(OrangePrimary).
-				Padding(1, 2).
-				MarginBottom(1).
-				Bold(true)
-
-	// Large card for mode selection
-	LargeCardStyle = lipgloss.NewStyle().
-			Border(lipgloss.RoundedBorder()).
-			BorderForeground(GrayMedium).
-			Padding(2, 4).
-			MarginBottom(2).
-			Width(50).
-			Align(lipgloss.Center)
-
-	LargeCardSelectedStyle = lipgloss.NewStyle().
-				Border(lipgloss.ThickBorder()).
-				BorderForeground(OrangePrimary).
-				Padding(2, 4).
-				MarginBottom(2).
-				Width(50).
-				Align(lipgloss.Center).
-				Bold(true)
-
-	// Input field style
-	InputStyle = lipgloss.NewStyle().
-			Border(lipgloss.RoundedBorder()).
-			BorderForeground(GrayMedium).
-			Padding(0, 1).
-			Width(40)
-
-	InputFocusedStyle = lipgloss.NewStyle().
-				Border(lipgloss.RoundedBorder()).
-				BorderForeground(OrangePrimary).
-				Padding(0, 1).
-				Width(40)
-
 	// Help text style
 	HelpStyle = lipgloss.NewStyle().
 			Foreground(GrayMedium).
@@ -130,28 +85,7 @@ var (
 	ProgressTextStyle = lipgloss.NewStyle().
 				Foreground(OrangePrimary).
 				Bold(true)
-
-	// Stats bar at bottom
-	StatsBarStyle = lipgloss.NewStyle().
-			Border(lipgloss.RoundedBorder()).
-			BorderForeground(OrangeMid).
-			Padding(0, 2).
-			MarginTop(2)
 )
-
-// GetCardStyle returns the appropriate card style based on selection
-func GetCardStyle(selected bool, large bool) lipgloss.Style {
-	if large {
-		if selected {
-			return LargeCardSelectedStyle
-		}
-		return LargeCardStyle
-	}
-	if selected {
-		return CardSelectedStyle
-	}
-	return CardStyle
-}
 
 // Center centers text within a given width
 func Center(s string, width int) string {
