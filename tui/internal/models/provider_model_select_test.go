@@ -1,6 +1,7 @@
 package models
 
 import (
+	"errors"
 	"strings"
 	"testing"
 	"time"
@@ -8,8 +9,106 @@ import (
 	"svelte-bench/tui/internal/bridge"
 	"svelte-bench/tui/internal/config"
 
+	"charm.land/bubbles/v2/spinner"
 	tea "charm.land/bubbletea/v2"
 )
+
+func TestLoadModelsReturnsLoadingModelImmediately(t *testing.T) {
+	model := modelSelectionFixture()
+	provider := model.providers[model.selectedProvider]
+
+	loading, cmd := model.loadModels(provider)
+
+	if !loading.loadingModels {
+		t.Fatal("model should be loading before the fetch command runs")
+	}
+	if cmd == nil {
+		t.Fatal("loading transition should return the fetch and spinner command")
+	}
+	if loading.modelLoadError != "" {
+		t.Fatalf("loading transition should clear stale fetch errors, got %q", loading.modelLoadError)
+	}
+}
+
+func TestExecutionModeReturnsModelSelectionAlreadyLoading(t *testing.T) {
+	fixture := modelSelectionFixture()
+	execution := NewExecutionModeModel(fixture.state)
+
+	updated, cmd := execution.Update(tea.KeyPressMsg{Code: tea.KeyEnter})
+	selection, ok := updated.(ProviderModelSelectModel)
+	if !ok {
+		t.Fatalf("enter should open model selection, got %T", updated)
+	}
+	if !selection.loadingModels {
+		t.Fatal("model selection should be loading as soon as it is returned")
+	}
+	if cmd == nil {
+		t.Fatal("execution-mode transition should return the model-loading command")
+	}
+}
+
+func TestModelsLoadedSuccessEndsLoadingAndPopulatesCatalog(t *testing.T) {
+	model := modelSelectionFixture()
+	model.loadingModels = true
+	model.modelLoadError = "stale error"
+	want := []bridge.Model{{ID: "openai/gpt-4.1"}, {ID: "anthropic/claude-sonnet-4"}}
+
+	updated, cmd := model.Update(modelsLoadedMsg{models: want})
+	loaded := updated.(ProviderModelSelectModel)
+
+	if loaded.loadingModels {
+		t.Fatal("successful model fetch should end loading")
+	}
+	if cmd != nil {
+		t.Fatal("successful model fetch should not schedule another command")
+	}
+	if loaded.modelLoadError != "" {
+		t.Fatalf("successful model fetch should clear its error, got %q", loaded.modelLoadError)
+	}
+	if len(loaded.models) != len(want) || loaded.models[0].ID != want[0].ID {
+		t.Fatalf("successful model fetch should populate the catalog, got %#v", loaded.models)
+	}
+	if len(loaded.filteredModels) != len(want) || loaded.filteredModels[1].ID != want[1].ID {
+		t.Fatalf("successful model fetch should populate filtered models, got %#v", loaded.filteredModels)
+	}
+}
+
+func TestModelsLoadedErrorEndsLoadingAndRetainsDedicatedError(t *testing.T) {
+	model := modelSelectionFixture()
+	model.loadingModels = true
+	want := errors.New("catalog unavailable")
+
+	updated, cmd := model.Update(modelsLoadedMsg{err: want})
+	loaded := updated.(ProviderModelSelectModel)
+
+	if loaded.loadingModels {
+		t.Fatal("failed model fetch should end loading")
+	}
+	if cmd != nil {
+		t.Fatal("failed model fetch should not schedule another command")
+	}
+	if loaded.modelLoadError != want.Error() {
+		t.Fatalf("expected dedicated fetch error %q, got %q", want, loaded.modelLoadError)
+	}
+}
+
+func TestLoadingSpinnerOnlyReschedulesWhileLoading(t *testing.T) {
+	model := modelSelectionFixture()
+	model.loadingModels = true
+	tick := spinner.TickMsg{ID: model.loadingSpinner.ID()}
+
+	updated, cmd := model.Update(tick)
+	model = updated.(ProviderModelSelectModel)
+	if cmd == nil {
+		t.Fatal("spinner tick should schedule its successor while loading")
+	}
+
+	model.loadingModels = false
+	_, cmd = model.Update(tick)
+	if cmd != nil {
+		t.Fatal("spinner tick should stop scheduling after loading ends")
+	}
+}
 
 func modelSelectionFixture() ProviderModelSelectModel {
 	state := &SharedState{

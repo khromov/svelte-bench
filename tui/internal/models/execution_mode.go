@@ -59,7 +59,8 @@ func (m ExecutionModeModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.state.Parallel = (m.selectedOption == 0)
 			m.state.Madmax = (m.selectedOption == 2)
 			model := NewModelSelectionModel(m.state)
-			return model, model.loadModels(model.providers[model.selectedProvider])
+			model, cmd := model.loadModels(model.providers[model.selectedProvider])
+			return model, cmd
 		}
 	}
 

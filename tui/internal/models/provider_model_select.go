@@ -7,8 +7,8 @@ import (
 	"svelte-bench/tui/internal/config"
 	"svelte-bench/tui/internal/styles"
 	"sync"
-	"time"
 
+	"charm.land/bubbles/v2/spinner"
 	"charm.land/bubbles/v2/textinput"
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
@@ -38,7 +38,8 @@ type ProviderModelSelectModel struct {
 	selectedModel     int
 	selectedModels    map[string]bool
 	loadingModels     bool
-	loadingStart      time.Time
+	loadingSpinner    spinner.Model
+	modelLoadError    string
 	error             string
 	width             int
 	height            int
@@ -68,6 +69,10 @@ func NewProviderModelSelectModel(state *SharedState) ProviderModelSelectModel {
 	modelInputStyles.Focused.Text = lipgloss.NewStyle().Foreground(styles.OrangePrimary)
 	modelInputStyles.Blurred = modelInputStyles.Focused
 	modelInput.SetStyles(modelInputStyles)
+	loadingSpinner := spinner.New(
+		spinner.WithSpinner(spinner.MiniDot),
+		spinner.WithStyle(lipgloss.NewStyle().Foreground(styles.OrangePrimary)),
+	)
 
 	return ProviderModelSelectModel{
 		state:            state,
@@ -75,6 +80,7 @@ func NewProviderModelSelectModel(state *SharedState) ProviderModelSelectModel {
 		selectedProvider: 0,
 		step:             0,
 		modelInput:       modelInput,
+		loadingSpinner:   loadingSpinner,
 		selectedModels:   make(map[string]bool),
 		width:            80,
 		height:           24,
@@ -286,7 +292,7 @@ func (m ProviderModelSelectModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case modelsLoadedMsg:
 		m.loadingModels = false
 		if msg.err != nil {
-			m.error = msg.err.Error()
+			m.modelLoadError = msg.err.Error()
 		} else {
 			m.models = msg.models
 			m.filteredModels = msg.models
@@ -294,9 +300,17 @@ func (m ProviderModelSelectModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.selectedModels = make(map[string]bool)
 			}
 			m.selectedModel = 0
-			m.error = ""
+			m.modelLoadError = ""
 		}
 		return m, nil
+
+	case spinner.TickMsg:
+		if !m.loadingModels {
+			return m, nil
+		}
+		var cmd tea.Cmd
+		m.loadingSpinner, cmd = m.loadingSpinner.Update(msg)
+		return m, cmd
 
 	case providerValidationMsg:
 		m.validating = false
@@ -396,12 +410,11 @@ func (m ProviderModelSelectModel) View() tea.View {
 
 		// Suggestions
 		if m.loadingModels {
-			spinner := styles.SpinnerFrames[int(time.Since(m.loadingStart).Milliseconds()/100)%len(styles.SpinnerFrames)]
 			lines = append(lines, lipgloss.NewStyle().
 				Foreground(styles.OrangePrimary).
-				Render(spinner+" Loading models..."))
-		} else if m.error != "" {
-			lines = append(lines, styles.ErrorStyle.Render("Error: "+m.error))
+				Render(m.loadingSpinner.View()+" Loading models..."))
+		} else if m.modelLoadError != "" {
+			lines = append(lines, styles.ErrorStyle.Render("Error: "+m.modelLoadError))
 		} else if len(m.filteredModels) > 0 {
 			suggestionsLabel := lipgloss.NewStyle().
 				Foreground(styles.OrangeMid).
@@ -535,14 +548,16 @@ func truncateText(value string, width int) string {
 	return string(runes[:width-1]) + "…"
 }
 
-func (m ProviderModelSelectModel) loadModels(provider config.Provider) tea.Cmd {
+func (m ProviderModelSelectModel) loadModels(provider config.Provider) (ProviderModelSelectModel, tea.Cmd) {
 	m.loadingModels = true
-	m.loadingStart = time.Now()
+	m.modelLoadError = ""
 
-	return func() tea.Msg {
+	fetchModels := func() tea.Msg {
 		models, err := bridge.FetchModels(provider.EnvKey, provider.APIKey)
 		return modelsLoadedMsg{models: models, err: err}
 	}
+
+	return m, tea.Batch(fetchModels, m.loadingSpinner.Tick)
 }
 
 func (m ProviderModelSelectModel) validateConfiguredProviders() tea.Cmd {
