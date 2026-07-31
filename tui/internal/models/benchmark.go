@@ -35,57 +35,23 @@ type BenchmarkModel struct {
 	completed    map[string]bool
 	scoreTotals  map[string]float64
 	scoreCounts  map[string]int
+	modelSamples map[string]int
 }
 
 // NewBenchmarkModel creates a new benchmark model
 func NewBenchmarkModel(state *SharedState) BenchmarkModel {
-	// Initialize tests
-	testNames := []string{
-		"hello-world", "counter", "derived", "derived-by",
-		"each", "effect", "props", "snippets", "inspect",
-	}
-
-	modelIDs := selectedModelIDs(state.Model)
-	modelCount := len(modelIDs)
-	if modelCount == 0 {
-		modelCount = 1
-	}
-	samplesPerTest := 0
-	for _, modelID := range modelIDs {
-		if strings.HasPrefix(modelID, "o1-pro") {
-			samplesPerTest++
-		} else {
-			samplesPerTest += 10
-		}
-	}
-	if samplesPerTest == 0 {
-		samplesPerTest = 10
-	}
-
-	tests := make(map[string]*TestResult)
-	for _, name := range testNames {
-		tests[name] = &TestResult{
-			TestName: name,
-			Total:    samplesPerTest,
-			Current:  0,
-			Status:   StatusQueued,
-		}
-	}
-
 	return BenchmarkModel{
 		state:        state,
-		tests:        tests,
-		testOrder:    testNames,
-		totalSamples: len(testNames) * samplesPerTest,
+		tests:        make(map[string]*TestResult),
 		running:      false,
 		width:        80,
 		height:       24,
 		eventChan:    make(chan bridge.BenchmarkEvent, 1024),
-		modelCount:   modelCount,
 		progress:     make(map[string]int),
 		completed:    make(map[string]bool),
 		scoreTotals:  make(map[string]float64),
 		scoreCounts:  make(map[string]int),
+		modelSamples: make(map[string]int),
 	}
 }
 
@@ -436,6 +402,20 @@ func (m BenchmarkModel) renderActiveSummary() string {
 }
 
 func (m *BenchmarkModel) handleEvent(event bridge.BenchmarkEvent) {
+	if event.Type == bridge.EventRunStart {
+		m.initializeRun(event)
+		return
+	}
+
+	if _, ok := m.modelSamples[event.Model]; event.Model != "" && !ok {
+		return
+	}
+	if event.Test != "" {
+		if _, ok := m.tests[event.Test]; !ok {
+			return
+		}
+	}
+
 	key := modelTestKey(event.Model, event.Test)
 	switch event.Type {
 	case bridge.EventTestStart:
@@ -449,22 +429,24 @@ func (m *BenchmarkModel) handleEvent(event bridge.BenchmarkEvent) {
 		if test, ok := m.tests[event.Test]; ok {
 			test.Status = StatusRunning
 			previous := m.progress[key]
-			m.progress[key] = event.Sample
-			if event.Sample > previous {
-				m.recordProgress(event.Sample - previous)
-				test.Current += event.Sample - previous
+			current := min(event.Sample, m.modelSamples[event.Model])
+			m.progress[key] = current
+			if current > previous {
+				m.recordProgress(current - previous)
+				test.Current += current - previous
 			}
 		}
 
 	case bridge.EventTestComplete:
 		if test, ok := m.tests[event.Test]; ok {
 			previous := m.progress[key]
-			if event.Total > previous {
-				delta := event.Total - previous
+			completedSamples := m.modelSamples[event.Model]
+			if completedSamples > previous {
+				delta := completedSamples - previous
 				m.recordProgress(delta)
 				test.Current += delta
 			}
-			m.progress[key] = event.Total
+			m.progress[key] = completedSamples
 			if !m.completed[key] {
 				m.completed[key] = true
 				m.scoreTotals[event.Test] += event.PassAtOne
@@ -514,15 +496,36 @@ func (m *BenchmarkModel) handleEvent(event bridge.BenchmarkEvent) {
 	}
 }
 
-func selectedModelIDs(value string) []string {
-	parts := strings.Split(value, ",")
-	models := make([]string, 0, len(parts))
-	for _, part := range parts {
-		if model := strings.TrimSpace(part); model != "" {
-			models = append(models, model)
+func (m *BenchmarkModel) initializeRun(event bridge.BenchmarkEvent) {
+	m.tests = make(map[string]*TestResult, len(event.Tests))
+	m.testOrder = append([]string(nil), event.Tests...)
+	m.modelSamples = make(map[string]int, len(event.Models))
+	m.modelCount = len(event.Models)
+	m.totalSamples = 0
+	m.currentCount = 0
+	m.progress = make(map[string]int)
+	m.completed = make(map[string]bool)
+	m.scoreTotals = make(map[string]float64)
+	m.scoreCounts = make(map[string]int)
+
+	samplesPerTest := 0
+	for _, model := range event.Models {
+		if model.ID == "" || model.SamplesPerTest <= 0 {
+			continue
+		}
+		m.modelSamples[model.ID] = model.SamplesPerTest
+		samplesPerTest += model.SamplesPerTest
+	}
+	m.modelCount = len(m.modelSamples)
+
+	for _, name := range event.Tests {
+		m.tests[name] = &TestResult{
+			TestName: name,
+			Total:    samplesPerTest,
+			Status:   StatusQueued,
 		}
 	}
-	return models
+	m.totalSamples = len(event.Tests) * samplesPerTest
 }
 
 func modelTestKey(model, test string) string {
@@ -533,7 +536,7 @@ func modelTestKey(model, test string) string {
 }
 
 func modelRunSummary(value string) string {
-	models := selectedModelIDs(value)
+	models := strings.Split(value, ",")
 	if len(models) <= 1 {
 		return value
 	}

@@ -11,6 +11,7 @@ import (
 type EventType string
 
 const (
+	EventRunStart       EventType = "run_start"
 	EventTestStart      EventType = "test_start"
 	EventTestComplete   EventType = "test_complete"
 	EventSampleProgress EventType = "sample_progress"
@@ -19,9 +20,17 @@ const (
 	EventComplete       EventType = "complete"
 )
 
+// RunModel describes the sample schedule for one validated model.
+type RunModel struct {
+	ID             string `json:"id"`
+	SamplesPerTest int    `json:"samplesPerTest"`
+}
+
 // BenchmarkEvent represents an event from the benchmark runner
 type BenchmarkEvent struct {
 	Type         EventType              `json:"type"`
+	Models       []RunModel             `json:"models,omitempty"`
+	Tests        []string               `json:"tests,omitempty"`
 	Test         string                 `json:"test,omitempty"`
 	Model        string                 `json:"model,omitempty"`
 	Sample       int                    `json:"sample,omitempty"`

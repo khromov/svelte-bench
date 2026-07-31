@@ -3,35 +3,40 @@
  * Emits JSON events to stdout for the TUI to parse
  */
 
-export type TUIEventType =
-  | 'test_start'
-  | 'test_complete'
-  | 'sample_progress'
-  | 'rate_limit'
-  | 'error'
-  | 'complete';
-
-export interface TUIEvent {
-  type: TUIEventType;
-  test?: string;
-  model?: string;
-  sample?: number;
-  total?: number;
-  passed?: boolean;
-  retryAfter?: number;
-  retryAttempt?: number;
-  retryDelayMs?: number;
-  error?: string;
-  passAtOne?: number;
-  passAtTen?: number;
-  resultsSaved?: string;
+export interface TUIRunModel {
+  id: string;
+  samplesPerTest: number;
 }
+
+export type TUIEvent =
+  | { type: "run_start"; models: TUIRunModel[]; tests: string[] }
+  | { type: "test_start"; test: string; model?: string; sample: number; total: number }
+  | {
+      type: "test_complete";
+      test: string;
+      model?: string;
+      sample: number;
+      total: number;
+      passed: boolean;
+      passAtOne?: number;
+      passAtTen?: number;
+    }
+  | { type: "sample_progress"; test: string; model?: string; sample: number; total: number }
+  | {
+      type: "rate_limit";
+      test: string;
+      retryAfter: number;
+      retryAttempt: number;
+      retryDelayMs: number;
+    }
+  | { type: "error"; test: string; error: string }
+  | { type: "complete"; resultsSaved: string };
 
 /**
  * Check if running in TUI mode
  */
 export function isTUIMode(): boolean {
-  return process.env.TUI_MODE === 'true';
+  return process.env.TUI_MODE === "true";
 }
 
 /**
@@ -54,16 +59,18 @@ export function emitTUIEvent(event: TUIEvent): void {
 }
 
 /**
+ * Emit the validated run topology before any benchmark work begins.
+ */
+export function emitRunStart(models: TUIRunModel[], tests: string[]): void {
+  emitTUIEvent({ type: "run_start", models, tests });
+}
+
+/**
  * Emit test start event
  */
-export function emitTestStart(
-  testName: string,
-  sampleIndex: number,
-  total: number,
-  model?: string
-): void {
+export function emitTestStart(testName: string, sampleIndex: number, total: number, model?: string): void {
   emitTUIEvent({
-    type: 'test_start',
+    type: "test_start",
     test: testName,
     model,
     sample: sampleIndex,
@@ -81,10 +88,10 @@ export function emitTestComplete(
   passed: boolean,
   passAtOne?: number,
   passAtTen?: number,
-  model?: string
+  model?: string,
 ): void {
   emitTUIEvent({
-    type: 'test_complete',
+    type: "test_complete",
     test: testName,
     model,
     sample: sampleIndex,
@@ -98,14 +105,9 @@ export function emitTestComplete(
 /**
  * Emit sample progress event
  */
-export function emitSampleProgress(
-  testName: string,
-  current: number,
-  total: number,
-  model?: string
-): void {
+export function emitSampleProgress(testName: string, current: number, total: number, model?: string): void {
   emitTUIEvent({
-    type: 'sample_progress',
+    type: "sample_progress",
     test: testName,
     model,
     sample: current,
@@ -118,7 +120,7 @@ export function emitSampleProgress(
  */
 export function emitRateLimit(testName: string, retryAttempt: number, retryDelayMs: number): void {
   emitTUIEvent({
-    type: 'rate_limit',
+    type: "rate_limit",
     test: testName,
     retryAttempt,
     retryAfter: Math.ceil(retryDelayMs / 1000),
@@ -131,7 +133,7 @@ export function emitRateLimit(testName: string, retryAttempt: number, retryDelay
  */
 export function emitError(testName: string, error: string): void {
   emitTUIEvent({
-    type: 'error',
+    type: "error",
     test: testName,
     error,
   });
@@ -142,7 +144,7 @@ export function emitError(testName: string, error: string): void {
  */
 export function emitComplete(resultsSaved: string): void {
   emitTUIEvent({
-    type: 'complete',
+    type: "complete",
     resultsSaved,
   });
 }
