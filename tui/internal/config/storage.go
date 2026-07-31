@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"sort"
 	"strings"
+
+	"svelte-bench/tui/internal/bridge"
 )
 
 // Config holds the application configuration
@@ -27,25 +28,11 @@ type Provider struct {
 
 // AllProviders returns a list of all supported providers
 func AllProviders() []Provider {
-	providers := []Provider{
-		{Name: "OpenAI", EnvKey: "OPENAI_API_KEY"},
-		{Name: "Anthropic", EnvKey: "ANTHROPIC_API_KEY"},
-		{Name: "Google (Gemini)", EnvKey: "GOOGLE_API_KEY"},
-		{Name: "OpenRouter", EnvKey: "OPENROUTER_API_KEY"},
-		{Name: "Groq", EnvKey: "GROQ_API_KEY"},
-		{Name: "DeepSeek", EnvKey: "DEEPSEEK_API_KEY"},
-		{Name: "xAI (Grok)", EnvKey: "XAI_API_KEY"},
-		{Name: "Mistral", EnvKey: "MISTRAL_API_KEY"},
-		{Name: "Cohere", EnvKey: "COHERE_API_KEY"},
-		{Name: "Fireworks", EnvKey: "FIREWORKS_API_KEY"},
-		{Name: "Meta", EnvKey: "META_API_KEY"},
-		{Name: "Cursor", EnvKey: "CURSOR_API_KEY"},
-		{Name: "Moonshot", EnvKey: "MOONSHOT_API_KEY"},
-		{Name: "Z.ai", EnvKey: "Z_AI_API_KEY"},
+	descriptors := bridge.ProviderDescriptors()
+	providers := make([]Provider, len(descriptors))
+	for i, descriptor := range descriptors {
+		providers[i] = Provider{Name: descriptor.Name, EnvKey: descriptor.EnvKey}
 	}
-	sort.SliceStable(providers, func(i, j int) bool {
-		return strings.ToLower(providers[i].Name) < strings.ToLower(providers[j].Name)
-	})
 	return providers
 }
 
