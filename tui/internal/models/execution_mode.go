@@ -1,6 +1,7 @@
 package models
 
 import (
+	"fmt"
 	"svelte-bench/tui/internal/styles"
 
 	tea "charm.land/bubbletea/v2"
@@ -68,39 +69,20 @@ func (m ExecutionModeModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m ExecutionModeModel) View() tea.View {
 	var lines []string
 
-	// Title
 	title := styles.HeadingStyle.Render("EXECUTION MODE")
+	lines = append(lines, styles.SectionLabelStyle.Render("02 / EXECUTION"), title, "")
 
-	lines = append(lines, title, "", "")
-
-	// Parallel option
-	opt1 := "  Parallel (faster, concurrent samples)"
-	if m.selectedOption == 0 {
-		opt1 = lipgloss.NewStyle().
-			Foreground(styles.OrangePrimary).
-			Bold(true).
-			Render("> Parallel (faster, concurrent samples)")
+	options := []struct {
+		name        string
+		description string
+	}{
+		{"Parallel", "Models and samples run concurrently"},
+		{"Sequential", "One model and sample at a time"},
+		{"MADMAX", "Every model, category, and sample concurrent"},
 	}
-
-	// Sequential option
-	opt2 := "  Sequential (reliable, one at a time)"
-	if m.selectedOption == 1 {
-		opt2 = lipgloss.NewStyle().
-			Foreground(styles.OrangePrimary).
-			Bold(true).
-			Render("> Sequential (reliable, one at a time)")
+	for i, option := range options {
+		lines = append(lines, m.renderModeOption(i, option.name, option.description))
 	}
-
-	// MADMAX option
-	opt3 := "  MADMAX (all categories and samples concurrent)"
-	if m.selectedOption == 2 {
-		opt3 = lipgloss.NewStyle().
-			Foreground(styles.OrangePrimary).
-			Bold(true).
-			Render("> MADMAX (all categories and samples concurrent)")
-	}
-
-	lines = append(lines, opt1, opt2, opt3)
 
 	// Help text
 	lines = append(lines, "")
@@ -116,4 +98,25 @@ func (m ExecutionModeModel) View() tea.View {
 		Render(lipgloss.JoinVertical(lipgloss.Left, lines...))
 
 	return newView(content)
+}
+
+func (m ExecutionModeModel) renderModeOption(index int, name, description string) string {
+	width := m.width - 8
+	if width < 44 {
+		width = 44
+	}
+	if width > 76 {
+		width = 76
+	}
+
+	prefix := "  "
+	style := lipgloss.NewStyle().Width(width).Foreground(styles.GrayLight)
+	if index == m.selectedOption {
+		prefix = "> "
+		style = styles.SelectedRowStyle.Width(width)
+	}
+
+	nameColumn := lipgloss.NewStyle().Width(14).Bold(true).Render(fmt.Sprintf("%d  %s", index+1, name))
+	detail := lipgloss.NewStyle().Foreground(styles.GrayMedium).Render(description)
+	return style.Render(prefix + nameColumn + detail)
 }

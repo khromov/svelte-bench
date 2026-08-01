@@ -121,7 +121,7 @@ func (m ResultsModel) View() tea.View {
 
 	summary := lipgloss.NewStyle().
 		Foreground(styles.OrangeMid).
-		Render(fmt.Sprintf("%s • %s", m.state.Provider, m.state.Model))
+		Render(fmt.Sprintf("%s • %s", m.state.Provider, modelRunSummary(m.state.Model)))
 
 	passColor := styles.OrangeSuccess
 	if avgPass < 0.5 {

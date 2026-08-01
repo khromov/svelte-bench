@@ -217,7 +217,7 @@ export async function runHumanEvalTest(
     const samples: BenchmarkResult[] = [...existingSamples];
 
     // Emit test start event
-    emitTestStart(test.name, 0, numSamples);
+    emitTestStart(test.name, 0, numSamples, actualModelId);
 
     // Run samples starting from startSampleIndex with checkpointing after each API call
     for (let i = startSampleIndex; i < numSamples; i++) {
@@ -248,7 +248,7 @@ export async function runHumanEvalTest(
         }
 
         // Emit sample progress event
-        emitSampleProgress(test.name, i + 1, numSamples);
+        emitSampleProgress(test.name, i + 1, numSamples, actualModelId);
 
         // Save checkpoint after each API call (successful or not)
         if (testIndex !== undefined && completedResults !== undefined) {
@@ -333,7 +333,7 @@ export async function runHumanEvalTest(
 
     // Emit test complete event
     const passed = numCorrect > 0;
-    emitTestComplete(test.name, numSamples, numSamples, passed, pass1, pass10);
+    emitTestComplete(test.name, numSamples, numSamples, passed, pass1, pass10, actualModelId);
 
     // Format the results
     return {

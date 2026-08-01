@@ -40,6 +40,15 @@ var (
 			Foreground(OrangePrimary).
 			Bold(true)
 
+	SectionLabelStyle = lipgloss.NewStyle().
+				Foreground(GrayDim).
+				Bold(true)
+
+	SelectedRowStyle = lipgloss.NewStyle().
+				Background(BgMedium).
+				Foreground(White).
+				Bold(true)
+
 	// Subtitle style
 	SubtitleStyle = lipgloss.NewStyle().
 			Foreground(GrayMedium).

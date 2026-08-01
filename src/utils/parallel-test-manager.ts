@@ -253,7 +253,7 @@ async function runTestSamplesInParallelWithCheckpointing(
       .then(result => {
         completedSampleCount++;
         if (isTUIMode()) {
-          emitSampleProgress(test.name, completedSampleCount, numSamples);
+          emitSampleProgress(test.name, completedSampleCount, numSamples, modelId);
         }
         return { index: sampleIndex, result };
       })
@@ -261,7 +261,7 @@ async function runTestSamplesInParallelWithCheckpointing(
         console.error(`Error running sample ${sampleIndex + 1} for ${test.name}:`, error);
         completedSampleCount++;
         if (isTUIMode()) {
-          emitSampleProgress(test.name, completedSampleCount, numSamples);
+          emitSampleProgress(test.name, completedSampleCount, numSamples, modelId);
         }
         // Return a failed result
         return {
@@ -298,7 +298,7 @@ async function runTestSamplesInParallelWithCheckpointing(
   // Emit progress as each parallel request settles, rather than waiting for
   // Promise.all. The TUI can then show the actual in-flight work.
   if (isTUIMode()) {
-    emitTestStart(test.name, startSampleIndex + 1, numSamples);
+    emitTestStart(test.name, startSampleIndex + 1, numSamples, modelId);
   }
 
   console.log(`🔄 Running ${samplePromises.length} samples in parallel for ${test.name}...`);
@@ -434,7 +434,15 @@ export async function runHumanEvalTest(
 
     // Emit test complete event for TUI
     if (isTUIMode()) {
-      emitTestComplete(test.name, numSamples, numSamples, numCorrect > 0, pass1, pass10);
+      emitTestComplete(
+        test.name,
+        numSamples,
+        numSamples,
+        numCorrect > 0,
+        pass1,
+        pass10,
+        modelId,
+      );
     }
 
     return result;

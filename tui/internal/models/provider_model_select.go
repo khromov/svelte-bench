@@ -2,6 +2,7 @@ package models
 
 import (
 	"fmt"
+	"strings"
 	"svelte-bench/tui/internal/bridge"
 	"svelte-bench/tui/internal/config"
 	"svelte-bench/tui/internal/styles"
@@ -30,11 +31,12 @@ type ProviderModelSelectModel struct {
 	state             *SharedState
 	providers         []config.Provider
 	selectedProvider  int
-	step              int // 0 = select provider, 1 = type model
+	step              int // 0 = select provider, 1 = select one or more models
 	modelInput        textinput.Model
 	models            []bridge.Model
 	filteredModels    []bridge.Model
 	selectedModel     int
+	selectedModels    map[string]bool
 	loadingModels     bool
 	loadingStart      time.Time
 	error             string
@@ -59,7 +61,7 @@ func NewProviderModelSelectModel(state *SharedState) ProviderModelSelectModel {
 	}
 
 	modelInput := textinput.New()
-	modelInput.Placeholder = "Type model name or use arrows to select..."
+	modelInput.Placeholder = "Search model IDs..."
 	modelInput.SetWidth(60)
 	modelInputStyles := modelInput.Styles()
 	modelInputStyles.Focused.Prompt = lipgloss.NewStyle().Foreground(styles.OrangePrimary)
@@ -73,6 +75,7 @@ func NewProviderModelSelectModel(state *SharedState) ProviderModelSelectModel {
 		selectedProvider: 0,
 		step:             0,
 		modelInput:       modelInput,
+		selectedModels:   make(map[string]bool),
 		width:            80,
 		height:           24,
 		validated:        state.ValidatedProviders,
@@ -125,7 +128,7 @@ func (m ProviderModelSelectModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.width = msg.Width
 		m.height = msg.Height
 		if m.width < 80 {
-			m.modelInput.SetWidth(m.width - 20)
+			m.modelInput.SetWidth(max(12, m.width-20))
 		} else {
 			m.modelInput.SetWidth(60)
 		}
@@ -206,24 +209,31 @@ func (m ProviderModelSelectModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.filteredModels = nil
 				m.modelScrollOffset = 0
 				return m, nil
-			case "enter":
+			case "space":
 				if len(m.filteredModels) > 0 && m.selectedModel < len(m.filteredModels) {
-					// Select model
-					m.state.Provider = bridge.ConvertProviderNameToEnvKey(m.providers[m.selectedProvider].Name)
-					m.state.ProviderKey = m.providers[m.selectedProvider].EnvKey
-					m.state.Model = m.filteredModels[m.selectedModel].ID
-
-					model := NewBenchmarkModel(m.state)
-					return model, model.Init()
-				} else if m.modelInput.Value() != "" {
-					// User typed a custom model name
-					m.state.Provider = bridge.ConvertProviderNameToEnvKey(m.providers[m.selectedProvider].Name)
-					m.state.ProviderKey = m.providers[m.selectedProvider].EnvKey
-					m.state.Model = m.modelInput.Value()
-
-					model := NewBenchmarkModel(m.state)
-					return model, model.Init()
+					id := m.filteredModels[m.selectedModel].ID
+					m.selectedModels[id] = !m.selectedModels[id]
+					if !m.selectedModels[id] {
+						delete(m.selectedModels, id)
+					}
+					m.error = ""
 				}
+			case "enter":
+				selected := m.selectedModelIDs()
+				if len(selected) == 0 && len(m.filteredModels) > 0 && m.selectedModel < len(m.filteredModels) {
+					selected = []string{m.filteredModels[m.selectedModel].ID}
+				} else if len(selected) == 0 {
+					customModel := strings.TrimSpace(m.modelInput.Value())
+					if customModel != "" {
+						selected = []string{customModel}
+					}
+				}
+
+				if len(selected) == 0 {
+					m.error = "Select at least one model"
+					return m, nil
+				}
+				return m.startBenchmark(selected)
 			case "up":
 				if m.selectedModel == 0 && len(m.filteredModels) > 0 && len(m.filteredModels) < wrapNavigationLimit {
 					m.selectedModel = len(m.filteredModels) - 1
@@ -280,6 +290,9 @@ func (m ProviderModelSelectModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		} else {
 			m.models = msg.models
 			m.filteredModels = msg.models
+			if m.selectedModels == nil {
+				m.selectedModels = make(map[string]bool)
+			}
 			m.selectedModel = 0
 			m.error = ""
 		}
@@ -303,10 +316,10 @@ func (m ProviderModelSelectModel) View() tea.View {
 	// Header
 	if m.step == 0 {
 		title := styles.HeadingStyle.Render("SELECT PROVIDER")
-		lines = append(lines, title, "")
+		lines = append(lines, styles.SectionLabelStyle.Render("01 / PROVIDER"), title, "")
 	} else {
-		title := styles.HeadingStyle.Render("SELECT MODEL")
-		lines = append(lines, title, "")
+		title := styles.HeadingStyle.Render("SELECT MODELS")
+		lines = append(lines, styles.SectionLabelStyle.Render("03 / MODELS"), title, "")
 	}
 
 	if m.step == 0 {
@@ -360,19 +373,26 @@ func (m ProviderModelSelectModel) View() tea.View {
 			Foreground(styles.GrayDim).
 			Render("Up/Down: Navigate • Enter: Select • ✓ Valid • Stored • ! Invalid • Left: Back • Double Esc: Quit • Ctrl+C: Quit"))
 	} else {
-		// Model input with autocomplete
+		// Searchable, multi-select model catalog.
 		providerName := m.providers[m.selectedProvider].Name
-		lines = append(lines, lipgloss.NewStyle().
-			Foreground(styles.OrangeMid).
-			Render("Provider: "+providerName))
+		providerLine := lipgloss.NewStyle().Foreground(styles.GrayMedium).Render("PROVIDER  ") +
+			lipgloss.NewStyle().Foreground(styles.OrangeMid).Bold(true).Render(providerName)
+		lines = append(lines, providerLine)
 		lines = append(lines, "")
 
 		// Input box
 		inputLabel := lipgloss.NewStyle().
-			Foreground(styles.OrangeLight).
-			Render("Model: ")
+			Foreground(styles.GrayMedium).
+			Render("FILTER  ")
 		lines = append(lines, inputLabel+m.modelInput.View())
-		lines = append(lines, "")
+		selectedCount := len(m.selectedModels)
+		selectionStatus := "No models marked — Enter runs the focused model"
+		if selectedCount == 1 {
+			selectionStatus = "1 model marked for this run"
+		} else if selectedCount > 1 {
+			selectionStatus = fmt.Sprintf("%d models marked for this run", selectedCount)
+		}
+		lines = append(lines, lipgloss.NewStyle().Foreground(styles.GrayDim).Render(selectionStatus), "")
 
 		// Suggestions
 		if m.loadingModels {
@@ -385,7 +405,8 @@ func (m ProviderModelSelectModel) View() tea.View {
 		} else if len(m.filteredModels) > 0 {
 			suggestionsLabel := lipgloss.NewStyle().
 				Foreground(styles.OrangeMid).
-				Render("Suggestions:")
+				Bold(true).
+				Render("MODEL CATALOG")
 			lines = append(lines, suggestionsLabel)
 
 			maxSuggestions := m.height - 12
@@ -402,14 +423,7 @@ func (m ProviderModelSelectModel) View() tea.View {
 
 			for i := startIdx; i < endIdx; i++ {
 				model := m.filteredModels[i]
-				if i == m.selectedModel {
-					lines = append(lines, lipgloss.NewStyle().
-						Foreground(styles.OrangePrimary).
-						Bold(true).
-						Render("> "+model.ID))
-				} else {
-					lines = append(lines, "  "+model.ID)
-				}
+				lines = append(lines, m.renderModelRow(model, i == m.selectedModel))
 			}
 
 			if len(m.filteredModels) > endIdx {
@@ -426,10 +440,15 @@ func (m ProviderModelSelectModel) View() tea.View {
 			}
 		}
 
+		if !m.loadingModels && m.error == "" && len(m.filteredModels) == 0 && strings.TrimSpace(m.modelInput.Value()) != "" {
+			lines = append(lines, lipgloss.NewStyle().Foreground(styles.GrayMedium).
+				Render("No catalog match — Enter runs this custom model ID"))
+		}
+
 		lines = append(lines, "")
 		lines = append(lines, lipgloss.NewStyle().
 			Foreground(styles.GrayDim).
-			Render("Type to search • Up/Down: Navigate • Enter: Select • Left: Back • Double Esc: Quit • Ctrl+C: Quit"))
+			Render("Type: Filter • ↑/↓: Focus • Space: Mark • Enter: Run marked/focused • ←: Back • Ctrl+C: Quit"))
 	}
 
 	content := lipgloss.NewStyle().
@@ -439,6 +458,81 @@ func (m ProviderModelSelectModel) View() tea.View {
 		Render(lipgloss.JoinVertical(lipgloss.Left, lines...))
 
 	return newView(content)
+}
+
+func (m ProviderModelSelectModel) selectedModelIDs() []string {
+	selected := make([]string, 0, len(m.selectedModels))
+	for _, model := range m.models {
+		if m.selectedModels[model.ID] {
+			selected = append(selected, model.ID)
+		}
+	}
+	return selected
+}
+
+func (m ProviderModelSelectModel) startBenchmark(modelIDs []string) (tea.Model, tea.Cmd) {
+	m.state.Provider = bridge.ConvertProviderNameToEnvKey(m.providers[m.selectedProvider].Name)
+	m.state.ProviderKey = m.providers[m.selectedProvider].EnvKey
+	m.state.Model = strings.Join(modelIDs, ",")
+
+	model := NewBenchmarkModel(m.state)
+	return model, model.Init()
+}
+
+func (m ProviderModelSelectModel) renderModelRow(model bridge.Model, focused bool) string {
+	rowWidth := m.width - 8
+	if rowWidth < 36 {
+		rowWidth = 36
+	}
+	if rowWidth > 96 {
+		rowWidth = 96
+	}
+
+	marker := "[ ]"
+	markerColor := styles.GrayDim
+	if m.selectedModels[model.ID] {
+		marker = "[x]"
+		markerColor = styles.OrangePrimary
+	}
+
+	date := ""
+	if !model.AddedAt.IsZero() {
+		date = "Added " + model.AddedAt.Format("2006-01-02")
+	}
+	labelWidth := rowWidth - 7
+	if date != "" {
+		labelWidth -= len(date) + 1
+	}
+	if labelWidth < 8 {
+		labelWidth = 8
+	}
+	label := truncateText(model.ID, labelWidth)
+	label = lipgloss.NewStyle().Width(labelWidth).Render(label)
+
+	prefix := "  "
+	foreground := styles.GrayLight
+	rowStyle := lipgloss.NewStyle().Width(rowWidth).Foreground(foreground)
+	if focused {
+		prefix = "> "
+		rowStyle = styles.SelectedRowStyle.Width(rowWidth)
+	}
+
+	content := prefix + lipgloss.NewStyle().Foreground(markerColor).Bold(true).Render(marker) + " " + label
+	if date != "" {
+		content += " " + lipgloss.NewStyle().Foreground(styles.GrayDim).Render(date)
+	}
+	return rowStyle.Render(content)
+}
+
+func truncateText(value string, width int) string {
+	runes := []rune(value)
+	if len(runes) <= width {
+		return value
+	}
+	if width <= 1 {
+		return string(runes[:width])
+	}
+	return string(runes[:width-1]) + "…"
 }
 
 func (m ProviderModelSelectModel) loadModels(provider config.Provider) tea.Cmd {

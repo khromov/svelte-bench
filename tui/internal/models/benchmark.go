@@ -3,6 +3,7 @@ package models
 import (
 	"fmt"
 	"image/color"
+	"strings"
 	"svelte-bench/tui/internal/bridge"
 	"svelte-bench/tui/internal/styles"
 	"time"
@@ -29,6 +30,11 @@ type BenchmarkModel struct {
 	height       int
 	frame        int // For animations
 	eventChan    chan bridge.BenchmarkEvent
+	modelCount   int
+	progress     map[string]int
+	completed    map[string]bool
+	scoreTotals  map[string]float64
+	scoreCounts  map[string]int
 }
 
 // NewBenchmarkModel creates a new benchmark model
@@ -39,11 +45,28 @@ func NewBenchmarkModel(state *SharedState) BenchmarkModel {
 		"each", "effect", "props", "snippets", "inspect",
 	}
 
+	modelIDs := selectedModelIDs(state.Model)
+	modelCount := len(modelIDs)
+	if modelCount == 0 {
+		modelCount = 1
+	}
+	samplesPerTest := 0
+	for _, modelID := range modelIDs {
+		if strings.HasPrefix(modelID, "o1-pro") {
+			samplesPerTest++
+		} else {
+			samplesPerTest += 10
+		}
+	}
+	if samplesPerTest == 0 {
+		samplesPerTest = 10
+	}
+
 	tests := make(map[string]*TestResult)
 	for _, name := range testNames {
 		tests[name] = &TestResult{
 			TestName: name,
-			Total:    10,
+			Total:    samplesPerTest,
 			Current:  0,
 			Status:   StatusQueued,
 		}
@@ -53,11 +76,16 @@ func NewBenchmarkModel(state *SharedState) BenchmarkModel {
 		state:        state,
 		tests:        tests,
 		testOrder:    testNames,
-		totalSamples: len(testNames) * 10,
+		totalSamples: len(testNames) * samplesPerTest,
 		running:      false,
 		width:        80,
 		height:       24,
 		eventChan:    make(chan bridge.BenchmarkEvent, 1024),
+		modelCount:   modelCount,
+		progress:     make(map[string]int),
+		completed:    make(map[string]bool),
+		scoreTotals:  make(map[string]float64),
+		scoreCounts:  make(map[string]int),
 	}
 }
 
@@ -133,8 +161,6 @@ func (m BenchmarkModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		return m, nil
 	}
-
-	return m, nil
 }
 
 func (m BenchmarkModel) View() tea.View {
@@ -168,7 +194,7 @@ func (m BenchmarkModel) View() tea.View {
 
 	info := lipgloss.NewStyle().
 		Foreground(styles.GrayMedium).
-		Render(fmt.Sprintf("%s • %s • %s", m.state.Provider, m.state.Model, mode))
+		Render(fmt.Sprintf("%s • %s • %s", m.state.Provider, modelRunSummary(m.state.Model), mode))
 
 	sections = append(sections, title, info, "")
 
@@ -410,11 +436,11 @@ func (m BenchmarkModel) renderActiveSummary() string {
 }
 
 func (m *BenchmarkModel) handleEvent(event bridge.BenchmarkEvent) {
+	key := modelTestKey(event.Model, event.Test)
 	switch event.Type {
 	case bridge.EventTestStart:
 		if test, ok := m.tests[event.Test]; ok {
 			test.Status = StatusRunning
-			test.Current = 0
 			test.RetryAfter = 0
 			test.RetryAttempt = 0
 		}
@@ -422,26 +448,36 @@ func (m *BenchmarkModel) handleEvent(event bridge.BenchmarkEvent) {
 	case bridge.EventSampleProgress:
 		if test, ok := m.tests[event.Test]; ok {
 			test.Status = StatusRunning
-			previous := test.Current
-			test.Current = event.Sample
+			previous := m.progress[key]
+			m.progress[key] = event.Sample
 			if event.Sample > previous {
 				m.recordProgress(event.Sample - previous)
+				test.Current += event.Sample - previous
 			}
 		}
 
 	case bridge.EventTestComplete:
 		if test, ok := m.tests[event.Test]; ok {
-			if event.Total > test.Current {
-				m.recordProgress(event.Total - test.Current)
+			previous := m.progress[key]
+			if event.Total > previous {
+				delta := event.Total - previous
+				m.recordProgress(delta)
+				test.Current += delta
 			}
-			test.Current = event.Total
-			test.Passed = event.Passed
-			test.PassAtOne = event.PassAtOne
-			test.PassAtTen = event.PassAtTen
-			if event.Passed {
-				test.Status = StatusCompleted
-			} else {
-				test.Status = StatusFailed
+			m.progress[key] = event.Total
+			if !m.completed[key] {
+				m.completed[key] = true
+				m.scoreTotals[event.Test] += event.PassAtOne
+				m.scoreCounts[event.Test]++
+			}
+			test.PassAtOne = m.scoreTotals[event.Test] / float64(m.scoreCounts[event.Test])
+			test.Passed = test.PassAtOne > 0
+			if m.scoreCounts[event.Test] >= m.modelCount {
+				if test.Passed {
+					test.Status = StatusCompleted
+				} else {
+					test.Status = StatusFailed
+				}
 			}
 		}
 
@@ -472,10 +508,36 @@ func (m *BenchmarkModel) handleEvent(event bridge.BenchmarkEvent) {
 	case bridge.EventComplete:
 		// Benchmark complete
 		m.state.Results = make([]TestResult, 0, len(m.tests))
-		for _, test := range m.tests {
-			m.state.Results = append(m.state.Results, *test)
+		for _, name := range m.testOrder {
+			m.state.Results = append(m.state.Results, *m.tests[name])
 		}
 	}
+}
+
+func selectedModelIDs(value string) []string {
+	parts := strings.Split(value, ",")
+	models := make([]string, 0, len(parts))
+	for _, part := range parts {
+		if model := strings.TrimSpace(part); model != "" {
+			models = append(models, model)
+		}
+	}
+	return models
+}
+
+func modelTestKey(model, test string) string {
+	if model == "" {
+		model = "default"
+	}
+	return model + "\x00" + test
+}
+
+func modelRunSummary(value string) string {
+	models := selectedModelIDs(value)
+	if len(models) <= 1 {
+		return value
+	}
+	return fmt.Sprintf("%d models", len(models))
 }
 
 func (m *BenchmarkModel) recordProgress(samples int) {

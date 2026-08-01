@@ -37,9 +37,17 @@ function checkpointMatches(
 
 function emitCachedResult(result: HumanEvalResult, numSamples: number): void {
   if (!isTUIMode()) return;
-  emitTestStart(result.testName, 1, numSamples);
-  emitSampleProgress(result.testName, numSamples, numSamples);
-  emitTestComplete(result.testName, numSamples, numSamples, result.numCorrect > 0, result.pass1, result.pass10);
+  emitTestStart(result.testName, 1, numSamples, result.modelId);
+  emitSampleProgress(result.testName, numSamples, numSamples, result.modelId);
+  emitTestComplete(
+    result.testName,
+    numSamples,
+    numSamples,
+    result.numCorrect > 0,
+    result.pass1,
+    result.pass10,
+    result.modelId,
+  );
 }
 
 /**
@@ -86,7 +94,7 @@ export async function runAllTestsHumanEvalMadmax(
       // category with zero valid samples still needs a terminal event so the
       // TUI cannot remain stuck in the running state.
       if (isTUIMode() && result.numSamples === 0) {
-        emitTestComplete(test.name, numSamples, numSamples, false, 0, 0);
+        emitTestComplete(test.name, numSamples, numSamples, false, 0, 0, modelId);
       }
 
       const checkpointData: MadmaxCheckpoint = {

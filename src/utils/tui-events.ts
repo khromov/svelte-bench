@@ -14,6 +14,7 @@ export type TUIEventType =
 export interface TUIEvent {
   type: TUIEventType;
   test?: string;
+  model?: string;
   sample?: number;
   total?: number;
   passed?: boolean;
@@ -55,10 +56,16 @@ export function emitTUIEvent(event: TUIEvent): void {
 /**
  * Emit test start event
  */
-export function emitTestStart(testName: string, sampleIndex: number, total: number): void {
+export function emitTestStart(
+  testName: string,
+  sampleIndex: number,
+  total: number,
+  model?: string
+): void {
   emitTUIEvent({
     type: 'test_start',
     test: testName,
+    model,
     sample: sampleIndex,
     total,
   });
@@ -73,11 +80,13 @@ export function emitTestComplete(
   total: number,
   passed: boolean,
   passAtOne?: number,
-  passAtTen?: number
+  passAtTen?: number,
+  model?: string
 ): void {
   emitTUIEvent({
     type: 'test_complete',
     test: testName,
+    model,
     sample: sampleIndex,
     total,
     passed,
@@ -89,10 +98,16 @@ export function emitTestComplete(
 /**
  * Emit sample progress event
  */
-export function emitSampleProgress(testName: string, current: number, total: number): void {
+export function emitSampleProgress(
+  testName: string,
+  current: number,
+  total: number,
+  model?: string
+): void {
   emitTUIEvent({
     type: 'sample_progress',
     test: testName,
+    model,
     sample: current,
     total,
   });

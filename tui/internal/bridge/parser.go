@@ -23,6 +23,7 @@ const (
 type BenchmarkEvent struct {
 	Type         EventType              `json:"type"`
 	Test         string                 `json:"test,omitempty"`
+	Model        string                 `json:"model,omitempty"`
 	Sample       int                    `json:"sample,omitempty"`
 	Total        int                    `json:"total,omitempty"`
 	Passed       bool                   `json:"passed,omitempty"`
