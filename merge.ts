@@ -1,7 +1,7 @@
 import fs from "fs/promises";
 import path from "path";
 import type { HumanEvalResult } from "./src/utils/humaneval";
-import { ensureBenchmarksDir } from "./src/utils/test-manager";
+import { ensureBenchmarksDir, loadTestDefinitions } from "./src/utils/test-manager";
 
 /**
  * Interface to track the latest file for each provider/model combination
@@ -103,10 +103,27 @@ async function findLatestResultsForEachModel(): Promise<Map<string, LatestFileIn
 }
 
 /**
+ * Warn about results that ran fewer samples than the rest of the model's run.
+ * These stay in the merge, but their pass@k is computed over a smaller denominator.
+ */
+function warnAboutShortSampleCounts(key: string, results: HumanEvalResult[]): void {
+  const expectedSamples = Math.max(...results.map((r) => r.numSamples));
+
+  for (const result of results) {
+    if (result.numSamples < expectedSamples) {
+      console.warn(`⚠️ ${key}: test "${result.testName}" ran only ${result.numSamples}/${expectedSamples} samples`);
+    }
+  }
+}
+
+/**
  * Merge the latest results and save to a new file
  */
 async function mergeAndSaveResults(): Promise<void> {
   console.log("🔄 Merging benchmark results...");
+
+  // The canonical test suite, derived from src/tests so it stays correct as tests are added
+  const suite = (await loadTestDefinitions()).map((test) => test.name);
 
   // Get the latest results for each provider/model
   const latestResultsMap = await findLatestResultsForEachModel();
@@ -114,8 +131,24 @@ async function mergeAndSaveResults(): Promise<void> {
   // Merge all results
   const mergedResults: HumanEvalResult[] = [];
   const includedFiles = new Set<string>();
+  const skippedModels: string[] = [];
 
   for (const [key, info] of latestResultsMap.entries()) {
+    // Skip models that didn't cover the full suite. The leaderboard averages pass@1 over the
+    // tests present, so a partial run would rank against a smaller denominator.
+    const testsPresent = new Set(info.results.map((r) => r.testName));
+    const missingTests = suite.filter((name) => !testsPresent.has(name));
+
+    if (missingTests.length > 0) {
+      console.warn(
+        `⏭️ Skipping ${key} from ${path.basename(info.filePath)} — incomplete run, missing: ${missingTests.join(", ")}`,
+      );
+      skippedModels.push(key);
+      continue;
+    }
+
+    warnAboutShortSampleCounts(key, info.results);
+
     console.log(`📊 Including results for ${key} from ${path.basename(info.filePath)}`);
     mergedResults.push(...info.results);
     includedFiles.add(info.filePath);
@@ -128,7 +161,10 @@ async function mergeAndSaveResults(): Promise<void> {
   await fs.writeFile(outputPath, JSON.stringify(mergedResults, null, 2));
 
   console.log(`\n✅ Successfully merged results from ${includedFiles.size} files`);
-  console.log(`✅ Total provider/model combinations: ${latestResultsMap.size}`);
+  if (skippedModels.length > 0) {
+    console.log(`⏭️ Skipped ${skippedModels.length} incomplete provider/model combinations`);
+  }
+  console.log(`✅ Total provider/model combinations: ${latestResultsMap.size - skippedModels.length}`);
   console.log(`✅ Total result entries: ${mergedResults.length}`);
   console.log(`✅ Merged results saved to: ${outputPath}`);
 }

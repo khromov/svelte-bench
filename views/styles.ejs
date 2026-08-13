@@ -594,27 +594,33 @@
       transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    /* Smoother accordion animations */
+    /* Smoother accordion animations.
+       Uses grid-template-rows instead of max-height so open sections size to their
+       natural height. A fixed ceiling silently clipped large provider sections. */
     .accordion-content {
+      display: grid;
+      grid-template-rows: 0fr;
       overflow: hidden;
       font-size: 0.875rem;
-      transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
-                  opacity 0.3s ease-out,
-                  transform 0.3s ease-out;
-      max-height: 0;
+      transition: grid-template-rows 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                  opacity 0.3s ease-out;
       opacity: 0;
-      transform: translateY(-10px);
+    }
+
+    /* Grid items default to min-content, which would keep the row from collapsing
+       and let wide tables push the section past the viewport */
+    .accordion-content > * {
+      min-height: 0;
+      min-width: 0;
     }
 
     .accordion-content[data-state="open"] {
-      max-height: 50000px; /* Much larger for all content */
+      grid-template-rows: 1fr;
       opacity: 1;
-      transform: translateY(0);
     }
 
     .accordion-content-inner {
-      padding: 0 1rem;
-      margin-top: 0.75rem;
+      padding: 0.75rem 1rem 0;
     }
 
     /* Utility classes for shadcn-style components */
