@@ -7,8 +7,11 @@ import (
 	"os/exec"
 	"path/filepath"
 	"sort"
+	"strconv"
 	"strings"
 )
+
+const debugLogEnv = "TUI_DEBUG_LOG"
 
 // BenchmarkConfig holds the configuration for running a benchmark
 type BenchmarkConfig struct {
@@ -29,8 +32,12 @@ func RunBenchmark(config BenchmarkConfig, eventHandler EventHandler) error {
 		return fmt.Errorf("failed to get project root: %w", err)
 	}
 
-	// Create debug log file
-	debugLog, _ := os.Create(filepath.Join(projectRoot, "tui-debug.log"))
+	// Debug logging is opt-in because the log is only useful when diagnosing a
+	// benchmark run and otherwise leaves an untracked file in the project root.
+	var debugLog *os.File
+	if debugLogEnabled() {
+		debugLog, _ = os.Create(filepath.Join(projectRoot, "tui-debug.log"))
+	}
 	if debugLog != nil {
 		defer debugLog.Close()
 		fmt.Fprintf(debugLog, "=== TUI Debug Log ===\n")
@@ -183,6 +190,11 @@ func RunBenchmark(config BenchmarkConfig, eventHandler EventHandler) error {
 	}
 
 	return nil
+}
+
+func debugLogEnabled() bool {
+	enabled, err := strconv.ParseBool(os.Getenv(debugLogEnv))
+	return err == nil && enabled
 }
 
 // OpenResults opens the generated benchmark visualization in the user's

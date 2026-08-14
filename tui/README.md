@@ -10,6 +10,7 @@ A beautiful terminal user interface for running Svelte component benchmarks, bui
 - 🗓️ **OpenRouter metadata** with each model's catalog-addition date
 - 📊 **Live progress** tracking with animated progress bars
 - ⚡ **Parallel or sequential** execution modes
+- 📝 **Opt-in debug logging** with `TUI_DEBUG_LOG=true`
 
 ## Quick Start
 
@@ -59,6 +60,9 @@ The TUI infrastructure is complete with:
 - ✅ Config storage & API key validation
 - ✅ TypeScript bridge (runner, parser, model API)
 - ✅ TUI event emitter in TypeScript
+
+Debug logging is disabled by default. Set `TUI_DEBUG_LOG=true` before running
+the TUI to write diagnostics to `tui-debug.log` in the project root.
 
 Run the TUI with `pnpm tui`. The existing TypeScript runner remains available
 for scripts and CI via `pnpm run-tests`, and all existing environment

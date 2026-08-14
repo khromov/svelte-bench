@@ -5,6 +5,27 @@ import (
 	"testing"
 )
 
+func TestDebugLogEnabled(t *testing.T) {
+	t.Setenv(debugLogEnv, "")
+	if debugLogEnabled() {
+		t.Fatal("expected debug logging to be disabled by default")
+	}
+
+	for _, value := range []string{"true", "TRUE", "1"} {
+		t.Setenv(debugLogEnv, value)
+		if !debugLogEnabled() {
+			t.Fatalf("expected %q to enable debug logging", value)
+		}
+	}
+
+	for _, value := range []string{"false", "0", "no"} {
+		t.Setenv(debugLogEnv, value)
+		if debugLogEnabled() {
+			t.Fatalf("expected %q to disable debug logging", value)
+		}
+	}
+}
+
 func TestBuildBenchmarkEnvReplacesInheritedValues(t *testing.T) {
 	env := buildBenchmarkEnv(
 		[]string{"OPENAI_API_KEY=old", "PATH=/bin", "PARALLEL_EXECUTION=true"},
