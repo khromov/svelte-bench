@@ -2,17 +2,21 @@
 import "dotenv/config";
 
 import { getAllLLMProviders, getLLMProvider } from "./src/llms";
-import { cleanTmpDir, loadContextFile } from "./src/utils/file";
+import { loadContextFile } from "./src/utils/file";
 import {
   runAllTestsHumanEval as runAllTestsHumanEvalParallel,
   saveBenchmarkResults,
   loadTestDefinitions,
 } from "./src/utils/parallel-test-manager";
-import { runAllTestsHumanEval as runAllTestsHumanEvalSequential } from "./src/utils/test-manager";
+import { runAllTestsHumanEvalMadmax } from "./src/utils/madmax-test-manager";
+import {
+  runAllTestsHumanEval as runAllTestsHumanEvalSequential,
+} from "./src/utils/test-manager";
 import type { HumanEvalResult } from "./src/utils/humaneval";
 import { isRateLimitError } from "./src/utils/errors";
 import { ensureRequiredDirectories } from "./src/utils/ensure-dirs";
 import { validateModels } from "./src/utils/model-validator";
+import { isTUIMode, emitComplete, log } from "./src/utils/tui-events";
 import path from "path";
 
 /**
@@ -47,10 +51,11 @@ async function runBenchmark() {
     const { contextFile } = parseCommandLineArgs();
 
     // Check for parallel execution environment variable
-    const parallel = process.env.PARALLEL_EXECUTION === "true";
+    const madmax = process.env.MADMAX_EXECUTION === "true";
+    const parallel = !madmax && process.env.PARALLEL_EXECUTION === "true";
 
-    const executionMode = parallel ? "PARALLEL EXECUTION" : "SEQUENTIAL EXECUTION";
-    console.log(`🚀 Starting SvelteBench with HumanEval methodology (${executionMode})...`);
+    const executionMode = madmax ? "MADMAX EXECUTION" : parallel ? "PARALLEL EXECUTION" : "SEQUENTIAL EXECUTION";
+    log(`🚀 Starting SvelteBench with HumanEval methodology (${executionMode})...`);
 
     // Load context file if specified
     let contextContent = "";
@@ -59,7 +64,7 @@ async function runBenchmark() {
         // Resolve path relative to the current working directory
         const contextFilePath = path.resolve(process.cwd(), contextFile);
         contextContent = await loadContextFile(contextFilePath);
-        console.log(`👉 Using context file: ${contextFilePath}`);
+        log(`👉 Using context file: ${contextFilePath}`);
       } catch (error) {
         console.error(`Error loading context file: ${error}`);
         process.exit(1);
@@ -78,7 +83,7 @@ async function runBenchmark() {
     let selectedProviderModels: any[] = [];
 
     if (isDebugMode) {
-      console.log("🐛 Running in DEBUG_MODE");
+      log("🐛 Running in DEBUG_MODE");
 
       // Get debug settings
       const debugProvider = process.env.DEBUG_PROVIDER;
@@ -89,7 +94,9 @@ async function runBenchmark() {
       }
 
       if (!debugModel) {
-        throw new Error(`No model specified for provider "${debugProvider}". Use DEBUG_MODEL to specify models.`);
+        throw new Error(
+          `No model specified for provider "${debugProvider}". Use DEBUG_MODEL to specify models.`
+        );
       }
 
       // Parse comma-separated list of models
@@ -103,12 +110,12 @@ async function runBenchmark() {
       }
 
       // Validate models
-      console.log(`👉 Validating models for provider ${debugProvider}...`);
+      log(`👉 Validating models for provider ${debugProvider}...`);
       const validModels = await validateModels(debugProvider, requestedModels);
 
       if (validModels.length === 0) {
         throw new Error(
-          `None of the requested models are valid for provider "${debugProvider}". Models tested: ${requestedModels.join(", ")}`,
+          `None of the requested models are valid for provider "${debugProvider}". Models tested: ${requestedModels.join(", ")}`
         );
       }
 
@@ -122,16 +129,16 @@ async function runBenchmark() {
         });
       }
 
-      console.log(
+      log(
         `👉 Selected provider: ${selectedProviderModels[0].name} (${
           selectedProviderModels.length === 1
             ? selectedProviderModels[0].modelId
             : `${selectedProviderModels.length} models`
-        })`,
+        })`
       );
     } else {
       // Non-debug mode: Get all available LLM providers and models
-      console.log("👉 Discovering available LLM providers and models...");
+      log("👉 Discovering available LLM providers and models...");
       const providerModels = await getAllLLMProviders();
 
       if (providerModels.length === 0) {
@@ -139,7 +146,9 @@ async function runBenchmark() {
         throw new Error("No LLM provider/model combinations found. Use DEBUG_MODE to specify models.");
       }
 
-      console.log(`👉 Found ${providerModels.length} provider/model combinations`);
+      log(
+        `👉 Found ${providerModels.length} provider/model combinations`
+      );
 
       selectedProviderModels = providerModels;
     }
@@ -159,7 +168,7 @@ async function runBenchmark() {
         const matchingTest = allTests.find((test) => test.name === debugTest);
         if (matchingTest) {
           testDefinitions = [matchingTest];
-          console.log(`👉 Selected test: ${matchingTest.name}`);
+          log(`👉 Selected test: ${matchingTest.name}`);
         } else {
           console.warn(`⚠️ Test "${debugTest}" not found, using all tests`);
           testDefinitions = undefined; // Use all tests
@@ -167,7 +176,7 @@ async function runBenchmark() {
       } else {
         // No test specified, use all tests
         testDefinitions = undefined;
-        console.log(`👉 Using all available tests`);
+        log(`👉 Using all available tests`);
       }
     }
 
@@ -185,27 +194,62 @@ async function runBenchmark() {
       numSamples = debugTest ? 1 : 10;
     }
 
-    console.log(`👉 Running with ${numSamples} samples per test (for pass@k metrics)`);
+    log(
+      `👉 Running with ${numSamples} samples per test (for pass@k metrics)`
+    );
 
     const allResults: HumanEvalResult[] = [];
 
-    if (parallel) {
+    if (madmax) {
+      log(
+        `\n👉 Running MADMAX with ${selectedProviderModels.length} provider/model combinations; all test categories and samples will run concurrently...`
+      );
+
+      const providerPromises = selectedProviderModels.map(async (providerWithModel) => {
+        try {
+          log(`\n👉 Starting MADMAX tests with ${providerWithModel.name} (${providerWithModel.modelId})...`);
+          const modelNumSamples = providerWithModel.modelId.startsWith("o1-pro") ? 1 : numSamples;
+          const results = await runAllTestsHumanEvalMadmax(
+            providerWithModel.provider,
+            modelNumSamples,
+            testDefinitions,
+            contextContent
+          );
+
+          if (results.length > 0) {
+            await saveBenchmarkResults(results, contextFile, contextContent, undefined);
+          }
+          return results;
+        } catch (error) {
+          console.error(
+            `Error running MADMAX tests with ${providerWithModel.name} (${providerWithModel.modelId}):`,
+            error
+          );
+          return [];
+        }
+      });
+
+      const resultsArrays = await Promise.all(providerPromises);
+      for (const results of resultsArrays) {
+        allResults.push(...results);
+      }
+    } else if (parallel) {
       // Run all provider/model combinations in parallel
-      console.log(
-        `\n👉 Running tests with ${selectedProviderModels.length} provider/model combinations in parallel...`,
+      log(
+        `\n👉 Running tests with ${selectedProviderModels.length} provider/model combinations in parallel...`
       );
 
       // Create a promise for each provider/model combination
       const providerPromises = selectedProviderModels.map(async (providerWithModel) => {
         try {
-          console.log(`\n👉 Starting tests with ${providerWithModel.name} (${providerWithModel.modelId})...`);
+          log(`\n👉 Starting tests with ${providerWithModel.name} (${providerWithModel.modelId})...`);
 
           // Determine number of samples for this model
           // Use only 1 sample for expensive o1-pro models
           const modelNumSamples = providerWithModel.modelId.startsWith("o1-pro") ? 1 : numSamples;
 
           if (modelNumSamples !== numSamples) {
-            console.log(`  ⚠️  Using ${modelNumSamples} sample${modelNumSamples > 1 ? "s" : ""} for expensive model`);
+            log(`  ⚠️  Using ${modelNumSamples} sample${modelNumSamples > 1 ? 's' : ''} for expensive model`);
           }
 
           // Run tests with this provider model using parallel HumanEval methodology
@@ -213,14 +257,14 @@ async function runBenchmark() {
             providerWithModel.provider,
             modelNumSamples,
             testDefinitions, // Pass specific tests if in debug mode
-            contextContent, // Pass context content if available
+            contextContent // Pass context content if available
           );
 
           // Save individual model results immediately to prevent loss if later models fail
           if (results.length > 0) {
             try {
               await saveBenchmarkResults(results, contextFile, contextContent, undefined);
-              console.log(`💾 Saved individual results for ${providerWithModel.modelId}`);
+              log(`💾 Saved individual results for ${providerWithModel.modelId}`);
             } catch (saveError) {
               console.error(`⚠️  Failed to save individual results for ${providerWithModel.modelId}:`, saveError);
               // Don't fail the entire run, just log and continue
@@ -229,15 +273,16 @@ async function runBenchmark() {
 
           return results;
         } catch (error) {
-          // Stop immediately on rate limit errors
           if (isRateLimitError(error)) {
-            const msg = error instanceof Error ? error.message : String(error);
-            console.error(`\n❌ ${msg}`);
-            console.error("turn off parallel execution");
+            const message = error instanceof Error ? error.message : String(error);
+            console.error(`\n❌ ${message}`);
+            console.error("Turn off parallel execution and retry.");
             process.exit(1);
           }
-
-          console.error(`Error running tests with ${providerWithModel.name} (${providerWithModel.modelId}):`, error);
+          console.error(
+            `Error running tests with ${providerWithModel.name} (${providerWithModel.modelId}):`,
+            error
+          );
           // Return empty results rather than throwing
           return [];
         }
@@ -252,20 +297,20 @@ async function runBenchmark() {
       }
     } else {
       // Run provider/model combinations sequentially
-      console.log(
-        `\n👉 Running tests with ${selectedProviderModels.length} provider/model combinations sequentially...`,
+      log(
+        `\n👉 Running tests with ${selectedProviderModels.length} provider/model combinations sequentially...`
       );
 
       for (const providerWithModel of selectedProviderModels) {
         try {
-          console.log(`\n👉 Starting tests with ${providerWithModel.name} (${providerWithModel.modelId})...`);
+          log(`\n👉 Starting tests with ${providerWithModel.name} (${providerWithModel.modelId})...`);
 
           // Determine number of samples for this model
           // Use only 1 sample for expensive o1-pro models
           const modelNumSamples = providerWithModel.modelId.startsWith("o1-pro") ? 1 : numSamples;
 
           if (modelNumSamples !== numSamples) {
-            console.log(`  ⚠️  Using ${modelNumSamples} sample${modelNumSamples > 1 ? "s" : ""} for expensive model`);
+            log(`  ⚠️  Using ${modelNumSamples} sample${modelNumSamples > 1 ? 's' : ''} for expensive model`);
           }
 
           // Run tests with this provider model using sequential HumanEval methodology
@@ -273,7 +318,7 @@ async function runBenchmark() {
             providerWithModel.provider,
             modelNumSamples,
             testDefinitions, // Pass specific tests if in debug mode
-            contextContent, // Pass context content if available
+            contextContent // Pass context content if available
           );
 
           // Add results to combined array
@@ -283,30 +328,29 @@ async function runBenchmark() {
           if (results.length > 0) {
             try {
               await saveBenchmarkResults(results, contextFile, contextContent, undefined);
-              console.log(`💾 Saved individual results for ${providerWithModel.modelId}`);
+              log(`💾 Saved individual results for ${providerWithModel.modelId}`);
             } catch (saveError) {
               console.error(`⚠️  Failed to save individual results for ${providerWithModel.modelId}:`, saveError);
               // Don't fail the entire run, just log and continue
             }
           }
         } catch (error) {
-          // Stop immediately on rate limit errors
           if (isRateLimitError(error)) {
-            const msg = error instanceof Error ? error.message : String(error);
-            console.error(`\n❌ ${msg}`);
-            console.error("turn off parallel execution");
-            process.exit(1);
+            throw error;
           }
-
-          console.error(`Error running tests with ${providerWithModel.name} (${providerWithModel.modelId}):`, error);
+          console.error(
+            `Error running tests with ${providerWithModel.name} (${providerWithModel.modelId}):`,
+            error
+          );
           // Continue with next provider instead of failing completely
         }
       }
     }
 
+
     // Print summary
-    console.log(`\n📊 ${isDebugMode ? "Debug" : "Benchmark"} Summary:`);
-    console.log("===========================================");
+    log(`\n📊 ${isDebugMode ? "Debug" : "Benchmark"} Summary:`);
+    log("===========================================");
 
     // Group results by test name
     const resultsByTest: Record<string, HumanEvalResult[]> = {};
@@ -322,24 +366,35 @@ async function runBenchmark() {
 
     // Print results by test and provider
     for (const [testName, results] of Object.entries(resultsByTest)) {
-      console.log(`\nTest: ${testName}`);
+      log(`\nTest: ${testName}`);
 
       for (const result of results) {
-        console.log(`  ${result.provider} (${result.modelId}):`);
-        console.log(
+        log(`  ${result.provider} (${result.modelId}):`);
+        log(
           `    pass@1: ${result.pass1.toFixed(4)}${
             result.numSamples > 1 ? `, pass@10: ${result.pass10.toFixed(4)}` : ""
-          }`,
+          }`
         );
-        console.log(`    Samples: ${result.numSamples}, Correct: ${result.numCorrect}`);
+        log(
+          `    Samples: ${result.numSamples}, Correct: ${result.numCorrect}`
+        );
 
         totalSuccess += result.numCorrect;
         totalSamples += result.numSamples;
       }
     }
 
-    console.log("\n===========================================");
-    console.log(`Total Samples: ${totalSamples}, Passed: ${totalSuccess}, Failed: ${totalSamples - totalSuccess}`);
+    log("\n===========================================");
+    log(
+      `Total Samples: ${totalSamples}, Passed: ${totalSuccess}, Failed: ${
+        totalSamples - totalSuccess
+      }`
+    );
+
+    // Emit complete event for TUI
+    if (isTUIMode()) {
+      emitComplete("benchmark-complete");
+    }
 
     // Note: We no longer clean sample directories at the end - they're preserved for inspection
 
@@ -347,13 +402,6 @@ async function runBenchmark() {
     const exitCode = totalSuccess > 0 ? 0 : 1;
     process.exit(exitCode);
   } catch (error) {
-    if (isRateLimitError(error)) {
-      const msg = error instanceof Error ? error.message : String(error);
-      console.error(`\n❌ ${msg}`);
-      console.error("turn off parallel execution");
-      process.exit(1);
-    }
-
     console.error("Error running benchmark:", error);
     process.exit(1);
   }

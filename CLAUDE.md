@@ -26,11 +26,17 @@ SvelteBench supports two execution modes:
 ## Common Commands
 
 ```bash
-# Run full benchmark (sequential execution)
+# Run the full benchmark (sequential execution)
 pnpm start
 
+# Launch the interactive TUI
+pnpm tui
+
+# Run the env/CLI-compatible benchmark directly
+pnpm run-tests
+
 # Run with parallel execution (faster but more verbose)
-PARALLEL_EXECUTION=true pnpm start
+PARALLEL_EXECUTION=true pnpm run-tests
 
 # Run only tests (without building visualization)
 pnpm run run-tests

@@ -1,0 +1,95 @@
+package models
+
+import (
+	"svelte-bench/tui/internal/config"
+	"svelte-bench/tui/internal/styles"
+
+	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
+)
+
+// WelcomeModel is the welcome screen model
+type WelcomeModel struct {
+	state  *SharedState
+	width  int
+	height int
+}
+
+// NewWelcomeModel creates a new welcome model
+func NewWelcomeModel(cfg *config.Config) WelcomeModel {
+	state := &SharedState{
+		Config: cfg,
+	}
+
+	if cfg == nil {
+		// Initialize empty config
+		state.Config = &config.Config{
+			APIKeys: make(map[string]string),
+		}
+	}
+
+	return WelcomeModel{
+		state:  state,
+		width:  80,
+		height: 24,
+	}
+}
+
+func (m WelcomeModel) Init() tea.Cmd {
+	return nil
+}
+
+func (m WelcomeModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	switch msg := msg.(type) {
+	case tea.WindowSizeMsg:
+		m.width = msg.Width
+		m.height = msg.Height
+		return m, nil
+
+	case tea.KeyPressMsg:
+		switch msg.String() {
+		case "ctrl+c":
+			return m, tea.Quit
+		case "esc":
+			if DoubleEscapeRequestsExit() {
+				return m, tea.Quit
+			}
+
+		case "enter":
+			model := NewProviderModelSelectModel(m.state)
+			return model, model.Init()
+		}
+	}
+
+	return m, nil
+}
+
+func (m WelcomeModel) View() tea.View {
+	var lines []string
+
+	title := styles.CreateGradient("SVELTEBENCH", styles.PrimaryGradient)
+
+	subtitle := lipgloss.NewStyle().
+		Foreground(styles.OrangeMid).
+		Render("HumanEval-style component benchmarks for Svelte 5")
+
+	lines = append(lines, title, subtitle, "", "")
+
+	lines = append(lines, styles.ProgressTextStyle.Render("Press Enter to configure a benchmark run"))
+
+	// Help text
+	lines = append(lines, "")
+	var help string
+	help = "Enter: Continue • Double Esc: Quit • Ctrl+C: Quit"
+	lines = append(lines, lipgloss.NewStyle().
+		Foreground(styles.GrayDim).
+		Render(help))
+
+	content := lipgloss.NewStyle().
+		Padding(2, 2).
+		MaxWidth(m.width).
+		MaxHeight(m.height).
+		Render(lipgloss.JoinVertical(lipgloss.Left, lines...))
+
+	return newView(content)
+}

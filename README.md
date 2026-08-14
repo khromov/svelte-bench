@@ -28,14 +28,24 @@ SvelteBench supports multiple LLM providers:
 ```bash
 nvm use
 pnpm install
-
-# Create .env file from example
-cp .env.example .env
 ```
 
-Then edit the `.env` file and add your API keys:
+The recommended workflow is to choose a provider and configure its API key from
+the TUI. Start it with:
 
 ```bash
+pnpm tui
+```
+
+If the selected provider has no saved key, the TUI prompts for one and stores
+it in `.env` for future runs. You only need to configure the providers you use.
+
+For scripted or CI usage, create `.env` from the example and add your keys:
+
+```bash
+# Optional: create the env-compatible configuration file
+cp .env.example .env
+
 # OpenAI (optional)
 OPENAI_API_KEY=your_openai_api_key_here
 
@@ -76,33 +86,53 @@ CURSOR_API_KEY=your_cursor_api_key_here
 MINIMAX_API_KEY=your_minimax_api_key_here
 ```
 
-You only need to configure the providers you want to test with.
+The existing environment variables remain supported by `pnpm run-tests` and
+the standard `pnpm start` command.
 
 ## Running the Benchmark
 
-### Standard Execution
+### TUI Execution
 
 ```bash
-# Run the full benchmark (sequential execution)
+pnpm tui
+```
+
+The TUI guides you through:
+
+1. Selecting a provider
+2. Entering an API key if that provider has no saved key
+3. Choosing parallel or sequential execution
+4. Selecting a model
+5. Running the benchmark with live progress
+6. Reviewing the results
+
+Use `←` to go back between setup and selection screens. Double-press `Esc`
+within one second to exit, or use `Ctrl+C`.
+
+### Environment-Compatible Execution
+
+```bash
+# Run the full benchmark and build the visualization
 pnpm start
 
 # Run with parallel sample generation (faster)
 PARALLEL_EXECUTION=true pnpm start
 
 # Run tests only (without building visualization)
-pnpm run run-tests
+pnpm run-tests
 ```
 
 **NOTE: This will run all providers and models that are available!**
 
 ### Execution Modes
 
-SvelteBench supports two execution modes:
+SvelteBench supports three execution modes:
 
 - **Sequential (default)**: Tests and samples run one at a time. More reliable with detailed progress output.
 - **Parallel**: Tests run sequentially, but samples within each test are generated in parallel. Faster execution with `PARALLEL_EXECUTION=true`.
+- **MADMAX**: All test categories run concurrently, while samples inside every category also run concurrently. This is the fastest and most rate-limit-sensitive mode; enable it with `MADMAX_EXECUTION=true`.
 
-### Debug Mode
+### Debug Mode (Environment-Compatible)
 
 For faster development, or to run just one provider/model, you can enable debug mode in your `.env` file:
 
