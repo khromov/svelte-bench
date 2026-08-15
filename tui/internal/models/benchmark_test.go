@@ -67,3 +67,41 @@ func TestBenchmarkAggregatesProgressAndScoresAcrossSelectedModels(t *testing.T) 
 		t.Fatalf("expected average pass@1 of 0.6, got %v", test.PassAtOne)
 	}
 }
+
+func TestBenchmarkRejectsIncompleteCompletion(t *testing.T) {
+	state := &SharedState{Provider: "openai", Model: "gpt-4o"}
+	model := NewBenchmarkModel(state)
+
+	model.handleEvent(bridge.BenchmarkEvent{Type: bridge.EventTestStart, Test: "counter", Total: 10})
+	model.handleEvent(bridge.BenchmarkEvent{Type: bridge.EventSampleProgress, Test: "counter", Sample: 3, Total: 10})
+	model.handleEvent(bridge.BenchmarkEvent{Type: bridge.EventComplete})
+
+	if state.Error == "" {
+		t.Fatal("expected incomplete benchmark to be rejected")
+	}
+	if !strings.Contains(state.Error, "hello-world") {
+		t.Fatalf("expected missing test names in error, got %q", state.Error)
+	}
+	if len(state.Results) != 0 {
+		t.Fatalf("expected no results for incomplete benchmark, got %d", len(state.Results))
+	}
+}
+
+func TestBenchmarkAcceptsFullyRunFailedCategories(t *testing.T) {
+	state := &SharedState{Provider: "openai", Model: "gpt-4o"}
+	model := NewBenchmarkModel(state)
+
+	for _, name := range model.testOrder {
+		test := model.tests[name]
+		test.Status = StatusFailed
+		test.Current = test.Total
+	}
+	model.handleEvent(bridge.BenchmarkEvent{Type: bridge.EventComplete})
+
+	if state.Error != "" {
+		t.Fatalf("expected fully executed failed categories to complete, got %q", state.Error)
+	}
+	if len(state.Results) != len(model.testOrder) {
+		t.Fatalf("expected %d results, got %d", len(model.testOrder), len(state.Results))
+	}
+}

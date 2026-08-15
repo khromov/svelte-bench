@@ -149,6 +149,13 @@ func (m BenchmarkModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 
 	case benchmarkCompleteMsg:
+		if m.state.Error != "" {
+			// Keep the user on the benchmark screen so an execution error or an
+			// incomplete run is visible instead of presenting partial results as
+			// a successful completion.
+			m.running = false
+			return m, nil
+		}
 		m.running = false
 		m.state.Completed = true
 		return NewResultsModel(m.state), nil
@@ -506,12 +513,39 @@ func (m *BenchmarkModel) handleEvent(event bridge.BenchmarkEvent) {
 		m.state.Error = event.Error
 
 	case bridge.EventComplete:
+		if err := m.completionError(); err != "" {
+			m.running = false
+			m.state.Error = err
+			return
+		}
+
 		// Benchmark complete
 		m.state.Results = make([]TestResult, 0, len(m.tests))
 		for _, name := range m.testOrder {
 			m.state.Results = append(m.state.Results, *m.tests[name])
 		}
 	}
+}
+
+// completionError verifies that the event stream covered the full benchmark
+// suite before the TUI presents results. A failed category is still a valid
+// completed category when all of its samples ran; a queued/running category or
+// one with short progress indicates that the run was incomplete.
+func (m BenchmarkModel) completionError() string {
+	missing := make([]string, 0)
+	for _, name := range m.testOrder {
+		test := m.tests[name]
+		if test == nil || test.Current < test.Total ||
+			(test.Status != StatusCompleted && test.Status != StatusFailed) {
+			missing = append(missing, name)
+		}
+	}
+
+	if len(missing) == 0 {
+		return ""
+	}
+
+	return fmt.Sprintf("Benchmark incomplete; missing or unfinished tests: %s", strings.Join(missing, ", "))
 }
 
 func selectedModelIDs(value string) []string {
