@@ -61,7 +61,7 @@ export async function runTest(testName: string, provider?: string, testDir?: str
     // Race between the test execution and the timeout
     const testPromise = async (): Promise<TestResult> => {
       try {
-        const vitest = await startVitest("test", [testFilePath], {
+        const vitest = await startVitest([testFilePath], {
           watch: false,
           reporters: ["verbose"],
         });
