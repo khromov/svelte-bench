@@ -37,14 +37,14 @@ export class OpenAIProvider implements LLMProvider {
   } {
     const reasoningPattern = /-reasoning-(minimal|low|medium|high)$/;
     const match = modelName.match(reasoningPattern);
-    
+
     if (match) {
       return {
         model: modelName.replace(reasoningPattern, ""),
         reasoningEffort: match[1] as Exclude<ReasoningEffort, null>,
       };
     }
-    
+
     return { model: modelName };
   }
 
@@ -63,12 +63,13 @@ export class OpenAIProvider implements LLMProvider {
     try {
       // Extract reasoning effort from model name if present
       const { model: cleanModelId, reasoningEffort } = this.extractReasoningEffort(this.modelId);
-      
+
       // Check if the model supports temperature
-      const supportsTemperature = !cleanModelId.startsWith("o4") && 
-                                  !cleanModelId.startsWith("o3") && 
-                                  !cleanModelId.startsWith("gpt-5");
-      
+      const supportsTemperature = !cleanModelId.startsWith("o4") &&
+                                  !cleanModelId.startsWith("o3") &&
+                                  !cleanModelId.startsWith("gpt-5") &&
+                                  !cleanModelId.startsWith("gpt-6");
+
       // Build the log message
       let logMessage = `🤖 Generating code with OpenAI using model: ${cleanModelId}`;
       if (reasoningEffort) {
