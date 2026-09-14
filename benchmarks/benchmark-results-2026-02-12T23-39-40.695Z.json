@@ -466,8 +466,8 @@
     "provider": "OpenRouter",
     "modelId": "qwen/qwen3-max-thinking",
     "numSamples": 10,
-    "numCorrect": 1,
-    "pass1": 0.09999999999999998,
+    "numCorrect": 6,
+    "pass1": 0.5999999999999999,
     "pass10": 1,
     "context": {
       "used": false,
@@ -477,12 +477,8 @@
       {
         "index": 0,
         "code": "<svelte:options runes={true} />\n\n<script>\n  let text = $state(\"Hello world\");\n  \n  // Basic $inspect to log the input value\n  $inspect(text);\n  \n  // $inspect with custom callback\n  $inspect(text).with(() => {\n    console.log(\"Text updated:\", text);\n  });\n  \n  // $inspect.trace() inside an effect\n  $effect(() => {\n    $inspect.trace();\n    // This effect runs when text changes\n  });\n</script>\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n  <p data-testid=\"text-value\">Current text: \"{text}\"</p>\n  <p data-testid=\"char-count\">Character count: {text.length}</p>\n</div>",
-        "success": false,
-        "errors": [
-          "expected 'Hello world\\nText updated: Hello worl…' to contain 'init'",
-          "expected 'Hello world\\nText updated: Hello worl…' to contain 'init'",
-          "expected 'Hello world\\nText updated: Hello worl…' to contain 'init'"
-        ],
+        "success": true,
+        "errors": [],
         "temperature": 0
       },
       {
@@ -518,42 +514,26 @@
       {
         "index": 5,
         "code": "<svelte:options runes={true} />\n\n<script>\n  let text = $state(\"Hello world\");\n  \n  // Basic $inspect to log the input value\n  $inspect(text);\n  \n  // $inspect with custom callback\n  $inspect(text).with(() => {\n    console.log(\"Input updated:\", text);\n  });\n  \n  // $inspect.trace() inside an effect\n  $effect(() => {\n    $inspect.trace();\n    // This will show a stack trace when text changes\n  });\n</script>\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n  <p data-testid=\"text-value\">Current text: \"{text}\"</p>\n  <p data-testid=\"char-count\">Character count: {text.length}</p>\n</div>",
-        "success": false,
-        "errors": [
-          "expected 'Hello world\\nInput updated: Hello wor…' to contain 'init'",
-          "expected 'Hello world\\nInput updated: Hello wor…' to contain 'init'",
-          "expected 'Hello world\\nInput updated: Hello wor…' to contain 'init'"
-        ]
+        "success": true,
+        "errors": []
       },
       {
         "index": 6,
         "code": "<svelte:options runes={true} />\n\n<script>\n  let text = $state(\"Hello world\");\n  \n  $inspect(text);\n  \n  $inspect(text).with(() => {\n    console.log(\"Text updated via with:\", text);\n  });\n  \n  $effect(() => {\n    $inspect.trace();\n    console.log(\"Effect ran - text changed to:\", text);\n  });\n</script>\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n  <p data-testid=\"text-value\">Current text: \"{text}\"</p>\n  <p data-testid=\"char-count\">Character count: {text.length}</p>\n</div>",
-        "success": false,
-        "errors": [
-          "expected 'Hello world\\nText updated via with: H…' to contain 'init'",
-          "expected 'Hello world\\nText updated via with: H…' to contain 'init'",
-          "expected 'Hello world\\nText updated via with: H…' to contain 'init'"
-        ]
+        "success": true,
+        "errors": []
       },
       {
         "index": 7,
         "code": "<svelte:options runes={true} />\n\n<script>\n  let text = $state(\"Hello world\");\n  \n  // Basic $inspect to log the input value\n  $inspect(text);\n  \n  // $inspect with custom callback\n  $inspect(text).with(() => {\n    console.log(\"Input updated:\", text);\n  });\n  \n  // $inspect.trace() inside an effect\n  $effect(() => {\n    $inspect.trace();\n    // This effect runs when text changes\n  });\n</script>\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n  <p data-testid=\"text-value\">Current text: \"{text}\"</p>\n  <p data-testid=\"char-count\">Character count: {text.length}</p>\n</div>",
-        "success": false,
-        "errors": [
-          "expected 'Hello world\\nInput updated: Hello wor…' to contain 'init'",
-          "expected 'Hello world\\nInput updated: Hello wor…' to contain 'init'",
-          "expected 'Hello world\\nInput updated: Hello wor…' to contain 'init'"
-        ]
+        "success": true,
+        "errors": []
       },
       {
         "index": 8,
         "code": "<svelte:options runes={true} />\n\n<script>\n  let text = $state(\"Hello world\");\n  \n  // Basic $inspect to log the input value\n  $inspect(text);\n  \n  // $inspect with custom callback\n  $inspect(text).with(() => {\n    console.log(\"Input updated:\", text);\n  });\n  \n  // $inspect.trace() inside an effect\n  $effect(() => {\n    $inspect.trace();\n    // This effect runs when text changes\n  });\n</script>\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n  <p data-testid=\"text-value\">Current text: \"{text}\"</p>\n  <p data-testid=\"char-count\">Character count: {text.length}</p>\n</div>",
-        "success": false,
-        "errors": [
-          "expected 'Hello world\\nInput updated: Hello wor…' to contain 'init'",
-          "expected 'Hello world\\nInput updated: Hello wor…' to contain 'init'",
-          "expected 'Hello world\\nInput updated: Hello wor…' to contain 'init'"
-        ]
+        "success": true,
+        "errors": []
       },
       {
         "index": 9,

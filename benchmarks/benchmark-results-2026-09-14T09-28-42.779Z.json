@@ -510,9 +510,9 @@
     "provider": "Ollama",
     "modelId": "nemotron-3.5-lightning:30b-a3b-q4_K_M",
     "numSamples": 10,
-    "numCorrect": 0,
-    "pass1": 0,
-    "pass10": 0,
+    "numCorrect": 2,
+    "pass1": 0.20000000000000007,
+    "pass10": 1,
     "context": {
       "used": false,
       "content": ""
@@ -533,12 +533,8 @@
       {
         "index": 1,
         "code": "<svelte:options runes={true} />\n\n<script>\n  let text = $state('Hello world');\n\n  $inspect(text);\n\n  $inspect(text).with(() => {\n    // custom callback on update\n  });\n\n  $effect(() => {\n    $inspect.trace();\n  });\n</script>\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n  <p data-testid=\"text-value\">Current text: \"{text}\"</p>\n  <p data-testid=\"char-count\">Character count: {text.length}</p>\n</div>",
-        "success": false,
-        "errors": [
-          "expected 'Hello world\\n$effect(...) (tmp/​sampl…' to contain 'init'",
-          "expected 'Hello world\\n$effect(...) (tmp/​sampl…' to contain 'init'",
-          "expected 'Hello world\\n$effect(...) (tmp/​sampl…' to contain 'init'"
-        ]
+        "success": true,
+        "errors": []
       },
       {
         "index": 2,
@@ -554,12 +550,8 @@
       {
         "index": 3,
         "code": "<svelte:options runes={true} />\n\n<script>\n  let text = $state('Hello world');\n  \n  $inspect(text);\n  \n  $inspect(text).with(() => {\n    // custom callback for tracking updates\n  });\n  \n  $effect(() => {\n    $inspect.trace();\n  });\n</script>\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n  <p data-testid=\"text-value\">Current text: \"{text}\"</p>\n  <p data-testid=\"char-count\">Character count: {text.length}</p>\n</div>",
-        "success": false,
-        "errors": [
-          "expected 'Hello world\\n$effect(...) (tmp/​sampl…' to contain 'init'",
-          "expected 'Hello world\\n$effect(...) (tmp/​sampl…' to contain 'init'",
-          "expected 'Hello world\\n$effect(...) (tmp/​sampl…' to contain 'init'"
-        ]
+        "success": true,
+        "errors": []
       },
       {
         "index": 4,

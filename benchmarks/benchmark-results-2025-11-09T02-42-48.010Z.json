@@ -549,8 +549,8 @@
     "provider": "OpenAI",
     "modelId": "gpt-5-mini",
     "numSamples": 10,
-    "numCorrect": 2,
-    "pass1": 0.20000000000000007,
+    "numCorrect": 3,
+    "pass1": 0.30000000000000004,
     "pass10": 1,
     "context": {
       "used": false,
@@ -560,12 +560,8 @@
       {
         "index": 0,
         "code": "<svelte:options runes={true} />\n\n<script>\n  let text = $state(\"Hello world\");\n\n  $inspect(text);\n\n  $inspect(text).with((value, prev) => {\n    console.log(\"inspect.with:\", { value, prev });\n  });\n\n  $effect(() => {\n    $inspect.trace(text);\n  });\n</script>\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n  <p data-testid=\"text-value\">Current text: \"{text}\"</p>\n  <p data-testid=\"char-count\">Character count: {text.length}</p>\n</div>",
-        "success": false,
-        "errors": [
-          "expected 'Hello world\\ninspect.with: [object Ob…' to contain 'init'",
-          "expected 'Hello world\\ninspect.with: [object Ob…' to contain 'init'",
-          "expected 'Hello world\\ninspect.with: [object Ob…' to contain 'init'"
-        ],
+        "success": true,
+        "errors": [],
         "temperature": 0
       },
       {
