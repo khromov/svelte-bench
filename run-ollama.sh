@@ -5,11 +5,9 @@ set -uo pipefail
 cd "$(dirname "$0")"
 
 MODELS=(
-  "gemma4:26b-a4b-it-q4_K_M"
-  "gpt-oss:20b"
-  "llama3.1:8b-instruct-q4_K_M"
-  "qwen3.6:35b-a3b-q4_K_M"
-  "qwen3.8:27b-mtp-q4_K_M"
+  #"gemma4:26b-a4b-it-q4_K_M"
+  #"gpt-oss:20b"
+  #"llama3.1:8b-instruct-q4_K_M"
   "muse-glimmer:30b-q4_K_M"
   "nemotron-3.5-lightning:30b-a3b-q4_K_M"
   "gemma4:31b-it-q4_K_M"
@@ -21,6 +19,8 @@ MODELS=(
   "granite4.2:30b-q4_K_M"
   "wcamaralopes/bonsai-27b-Q4_K_M:latest"
   "wcamaralopes/bonsai-27b-Q4_K_M-fix:latest"
+  "qwen3.6:35b-a3b-q4_K_M"
+  "qwen3.8:27b-mtp-q4_K_M"
 )
 
 mkdir -p logs

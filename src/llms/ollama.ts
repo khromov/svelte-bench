@@ -114,13 +114,9 @@ export class OllamaProvider implements LLMProvider {
       return response.message?.content || "";
     } catch (error) {
       if (error instanceof Error && error.name === "TimeoutError") {
-        // Fail the sample instead of retrying another 60 minute request
-        const timeoutError = new Error(
-          `Ollama request timed out after ${OLLAMA_TIMEOUT_MS / 60000} minutes`
-        );
-        timeoutError.name = "NonRetryableError";
-        console.error(`⏱️ ${timeoutError.message} (model: ${this.modelId})`);
-        throw timeoutError;
+        const message = `Ollama request timed out after ${OLLAMA_TIMEOUT_MS / 60000} minutes`;
+        console.error(`⏱️ ${message} (model: ${this.modelId})`);
+        throw new Error(message);
       }
 
       console.error("Error generating code with Ollama:", error);
