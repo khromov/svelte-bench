@@ -466,8 +466,8 @@
     "provider": "OpenRouter",
     "modelId": "xiaomi/mimo-v2-omni",
     "numSamples": 10,
-    "numCorrect": 4,
-    "pass1": 0.4,
+    "numCorrect": 6,
+    "pass1": 0.5999999999999999,
     "pass10": 1,
     "context": {
       "used": false,
@@ -528,22 +528,14 @@
       {
         "index": 7,
         "code": "<svelte:options runes={true} />\n\n<script>\n\tlet text = $state('Hello world');\n\n\t$inspect(text);\n\n\t$inspect(text).with(() => {\n\t\tconsole.log('Text updated:', text);\n\t});\n\n\t$effect(() => {\n\t\t$inspect.trace();\n\t\tconsole.log('Effect ran, text length:', text.length);\n\t});\n\n\tlet charCount = $derived(text.length);\n</script>\n\n<div>\n\t<input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n\t<p data-testid=\"text-value\">Current text: \"{text}\"</p>\n\t<p data-testid=\"char-count\">Character count: {charCount}</p>\n</div>",
-        "success": false,
-        "errors": [
-          "expected 'Hello world\\nText updated: Hello worl…' to contain 'init'",
-          "expected 'Hello world\\nText updated: Hello worl…' to contain 'init'",
-          "expected 'Hello world\\nText updated: Hello worl…' to contain 'init'"
-        ]
+        "success": true,
+        "errors": []
       },
       {
         "index": 8,
         "code": "<svelte:options runes={true} />\n\n<script>\n\tlet text = $state('Hello world');\n\t\n\t$inspect(text);\n\t$inspect(text).with(console.warn);\n\t\n\t$effect(() => {\n\t\t$inspect.trace();\n\t\tconsole.log(`Text length: ${text.length}`);\n\t});\n</script>\n\n<div>\n\t<input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n\t<p data-testid=\"text-value\">Current text: \"{text}\"</p>\n\t<p data-testid=\"char-count\">Character count: {text.length}</p>\n</div>",
-        "success": false,
-        "errors": [
-          "expected 'Hello world\\nText length: 11\\n$effect…' to contain 'init'",
-          "expected 'Hello world\\nText length: 11\\n$effect…' to contain 'init'",
-          "expected 'Hello world\\nText length: 11\\n$effect…' to contain 'init'"
-        ]
+        "success": true,
+        "errors": []
       },
       {
         "index": 9,

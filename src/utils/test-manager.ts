@@ -1,13 +1,14 @@
 import path from "path";
 import fs from "fs/promises";
 import type { LLMProvider } from "../llms";
-import { cleanTmpDir, cleanCheckpointDir, writeToTmpFile, readFile, saveCheckpoint, loadCheckpoint, removeCheckpoint } from "./file";
+import { cleanTmpDir, writeToTmpFile, readFile, saveCheckpoint, loadCheckpoint, removeCheckpoint } from "./file";
 import { runTest } from "./test-runner";
 import type { TestResult } from "./test-runner";
 import { calculatePassAtK, type HumanEvalResult } from "./humaneval";
 import { cleanCodeMarkdown } from "./code-cleaner";
 import { withRetry } from "./retry-wrapper";
 import { emitTestStart, emitSampleProgress, emitTestComplete, log } from "./tui-events";
+import { countMissingSamples, getMissingSampleIndices, getRecordedSamples, replaceTestResult } from "./resume";
 
 export interface TestDefinition {
   name: string;
@@ -209,18 +210,19 @@ export async function runHumanEvalTest(
   testIndex?: number,
   completedResults?: HumanEvalResult[],
   existingSamples: BenchmarkResult[] = [],
-  startSampleIndex: number = 0
+  sampleIndices: number[] = getMissingSampleIndices(existingSamples, numSamples)
 ): Promise<HumanEvalResult> {
   try {
     const actualProviderName = providerName || llmProvider.name;
     const actualModelId = modelId || llmProvider.getModelIdentifier();
     const samples: BenchmarkResult[] = [...existingSamples];
+    let attemptedSamples = numSamples - sampleIndices.length;
 
     // Emit test start event
     emitTestStart(test.name, 0, numSamples, actualModelId);
 
-    // Run samples starting from startSampleIndex with checkpointing after each API call
-    for (let i = startSampleIndex; i < numSamples; i++) {
+    // Run the missing samples with checkpointing after each API call
+    for (const i of sampleIndices) {
       try {
         // Clean the tmp directory before each sample
         await cleanTmpDir(actualProviderName);
@@ -248,7 +250,8 @@ export async function runHumanEvalTest(
         }
 
         // Emit sample progress event
-        emitSampleProgress(test.name, i + 1, numSamples, actualModelId);
+        attemptedSamples++;
+        emitSampleProgress(test.name, attemptedSamples, numSamples, actualModelId);
 
         // Save checkpoint after each API call (successful or not)
         if (testIndex !== undefined && completedResults !== undefined) {
@@ -302,7 +305,9 @@ export async function runHumanEvalTest(
     }
 
     // Calculate pass@k metrics - only count samples that were successfully run
-    const validSamples = samples.filter((s) => s !== null && s !== undefined);
+    const validSamples = samples
+      .filter((s) => s !== null && s !== undefined)
+      .sort((a, b) => (a.sampleIndex ?? 0) - (b.sampleIndex ?? 0));
     const numValidSamples = validSamples.length;
     const numCorrect = validSamples.filter((s) => s.testResult.success).length;
 
@@ -414,52 +419,44 @@ export async function runAllTestsHumanEval(
     // Check for existing checkpoint
     const checkpoint = await loadCheckpoint(providerName, modelId);
     let results: HumanEvalResult[] = [];
-    let startTestIndex = 0;
-    let startSampleIndex = 0;
-    let currentTestSamples: BenchmarkResult[] = [];
+    let checkpointSamples: BenchmarkResult[] = [];
 
     if (checkpoint) {
       console.log(`🔄 Found checkpoint for ${providerName}/${modelId}`);
-      console.log(`🔄 Resuming from checkpoint at test ${checkpoint.currentTestIndex + 1}/${tests.length}, sample ${checkpoint.currentSampleIndex + 1}`);
-      results = checkpoint.completedResults || [];
-      startTestIndex = checkpoint.currentTestIndex;
-      startSampleIndex = checkpoint.currentSampleIndex + 1; // Resume from next sample
-      currentTestSamples = checkpoint.currentTestSamples || [];
-      
-      // If we finished all samples for the current test, move to next test
-      if (startSampleIndex >= numSamples) {
-        startTestIndex = checkpoint.currentTestIndex + 1;
-        startSampleIndex = 0;
-        currentTestSamples = [];
-      }
-      
+
       // Verify checkpoint context matches current run
       if (checkpoint.contextContent !== contextContent || checkpoint.numSamples !== numSamples) {
         console.warn(`⚠️ Checkpoint context/samples mismatch - starting fresh`);
-        results = [];
-        startTestIndex = 0;
-        startSampleIndex = 0;
-        currentTestSamples = [];
-        // Clear checkpoints for fresh start
-        await cleanCheckpointDir(providerName);
+        // Only clear this model's checkpoint, so other models can still resume
+        await removeCheckpoint(providerName, modelId);
+      } else {
+        // Work out what is left from the recorded samples, so samples dropped
+        // after API failures are retried along with the ones never run
+        results = checkpoint.completedResults || [];
+        checkpointSamples = checkpoint.currentTestSamples || [];
+        const totalSamples = tests.length * numSamples;
+        const missingSamples = countMissingSamples(tests, results, numSamples, checkpointSamples);
+        console.log(`🔄 Resuming from checkpoint: ${totalSamples - missingSamples}/${totalSamples} samples recorded, running the ${missingSamples} missing`);
       }
-      // No cleaning when resuming from valid checkpoint
-    } else {
-      // Clear checkpoints at the beginning for new runs (but leave samples intact)
-      await cleanCheckpointDir(providerName);
     }
 
-    // Run remaining tests from checkpoint or start
-    for (let i = startTestIndex; i < tests.length; i++) {
+    for (let i = 0; i < tests.length; i++) {
       const test = tests[i];
-      
+
+      // Skip tests whose completed result already has every sample
+      if (getMissingSampleIndices(getRecordedSamples(test, results), numSamples).length === 0) {
+        continue;
+      }
+
       try {
         log(`\n🧪 Running test: ${test.name} with ${providerName} (${i + 1}/${tests.length})`);
-        
-        // Determine starting sample index (0 for new tests, checkpoint value for resumed tests)
-        const sampleStartIndex = (i === startTestIndex) ? startSampleIndex : 0;
-        const existingSamples = (i === startTestIndex) ? currentTestSamples : [];
-        
+
+        const existingSamples = getRecordedSamples(test, results, checkpointSamples);
+        const missingIndices = getMissingSampleIndices(existingSamples, numSamples);
+        if (existingSamples.length > 0) {
+          log(`🔁 Resuming ${test.name}: ${existingSamples.length}/${numSamples} samples recorded, running missing sample(s) ${missingIndices.map((index) => index + 1).join(", ")}`);
+        }
+
         // Run the test with sample-level checkpointing
         const result = await runHumanEvalTest(
           test,
@@ -471,12 +468,12 @@ export async function runAllTestsHumanEval(
           i,
           results,
           existingSamples,
-          sampleStartIndex
+          missingIndices
         );
-        
+
         // Only add result if it has valid samples (not just API failures)
         if (result.numSamples > 0) {
-          results.push(result);
+          results = replaceTestResult(results, result, tests);
 
           // Log the pass@k metrics
           console.log(
@@ -552,8 +549,13 @@ export async function runAllTestsHumanEval(
       }
     }
 
-    // Clean up checkpoint after successful completion
-    await removeCheckpoint(providerName, modelId);
+    const missingSamples = countMissingSamples(tests, results, numSamples);
+    if (missingSamples > 0) {
+      log(`⚠️ ${missingSamples} sample(s) for ${modelId} are missing after API failures - keeping the checkpoint so the next run retries them`);
+    } else {
+      // Clean up checkpoint after successful completion
+      await removeCheckpoint(providerName, modelId);
+    }
 
     return results;
   } catch (error) {

@@ -466,8 +466,8 @@
     "provider": "xAI",
     "modelId": "grok-4.5",
     "numSamples": 10,
-    "numCorrect": 9,
-    "pass1": 0.9,
+    "numCorrect": 10,
+    "pass1": 1,
     "pass10": 1,
     "context": {
       "used": false,
@@ -477,12 +477,8 @@
       {
         "index": 0,
         "code": "<svelte:options runes={true} />\n\n<script>\n\tlet text = $state('Hello world');\n\n\t$inspect(text);\n\n\t$inspect(text).with((type, value) => {\n\t\tif (type === 'update') {\n\t\t\tconsole.log('text updated to', value);\n\t\t}\n\t});\n\n\t$effect(() => {\n\t\t$inspect.trace();\n\t\ttext;\n\t});\n</script>\n\n<div>\n\t<input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n\t<p data-testid=\"text-value\">Current text: \"{text}\"</p>\n\t<p data-testid=\"char-count\">Character count: {text.length}</p>\n</div>",
-        "success": false,
-        "errors": [
-          "expected 'Hello world\\n$effect(...) (tmp/​sampl…' to contain 'init'",
-          "expected 'Hello world\\n$effect(...) (tmp/​sampl…' to contain 'init'",
-          "expected 'Hello world\\n$effect(...) (tmp/​sampl…' to contain 'init'"
-        ],
+        "success": true,
+        "errors": [],
         "temperature": 0
       },
       {

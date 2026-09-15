@@ -469,8 +469,8 @@
     "provider": "OpenAI",
     "modelId": "gpt-5.3-chat-latest",
     "numSamples": 10,
-    "numCorrect": 7,
-    "pass1": 0.7,
+    "numCorrect": 8,
+    "pass1": 0.7999999999999999,
     "pass10": 1,
     "context": {
       "used": false,
@@ -516,12 +516,8 @@
       {
         "index": 5,
         "code": "<svelte:options runes={true} />\n\n<script>\n\tlet text = $state(\"Hello world\");\n\n\t$inspect(text);\n\n\t$inspect(text).with((type, value, previous) => {\n\t\tconsole.log(\"inspect update:\", { type, value, previous });\n\t});\n\n\t$effect(() => {\n\t\t$inspect.trace();\n\t\ttext;\n\t});\n</script>\n\n<div>\n\t<input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n\t<p data-testid=\"text-value\">Current text: \"{text}\"</p>\n\t<p data-testid=\"char-count\">Character count: {text.length}</p>\n</div>",
-        "success": false,
-        "errors": [
-          "expected 'Hello world\\ninspect update: [object …' to contain 'init'",
-          "expected 'Hello world\\ninspect update: [object …' to contain 'init'",
-          "expected 'Hello world\\ninspect update: [object …' to contain 'init'"
-        ]
+        "success": true,
+        "errors": []
       },
       {
         "index": 6,

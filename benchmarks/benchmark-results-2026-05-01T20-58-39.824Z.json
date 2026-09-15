@@ -472,8 +472,8 @@
     "provider": "OpenRouter",
     "modelId": "poolside/laguna-xs.2:free",
     "numSamples": 10,
-    "numCorrect": 6,
-    "pass1": 0.5999999999999999,
+    "numCorrect": 9,
+    "pass1": 0.9,
     "pass10": 1,
     "context": {
       "used": false,
@@ -516,12 +516,8 @@
       {
         "index": 5,
         "code": "<svelte:options runes={true} />\n\n<script>\n  let text = $state(\"Hello world\");\n  \n  $inspect(text);\n  \n  $inspect(text).with((type, count) => {\n    console.log(`Input changed ${count} times`);\n  });\n  \n  $effect(() => {\n    $inspect.trace(text);\n  });\n</script>\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n  <p data-testid=\"text-value\">Current text: \"{text}\"</p>\n  <p data-testid=\"char-count\">Character count: {text.length}</p>\n</div>",
-        "success": false,
-        "errors": [
-          "expected 'Hello world\\nInput changed Hello worl…' to contain 'init'",
-          "expected 'Hello world\\nInput changed Hello worl…' to contain 'init'",
-          "expected 'Hello world\\nInput changed Hello worl…' to contain 'init'"
-        ]
+        "success": true,
+        "errors": []
       },
       {
         "index": 6,
@@ -532,22 +528,14 @@
       {
         "index": 7,
         "code": "<svelte:options runes={true} />\n\n<script>\n  let text = $state(\"Hello world\");\n  \n  $inspect(text);\n  \n  $inspect(text).with((type, count, value) => {\n    console.log(`Text updated ${count} times: ${value}`);\n  });\n  \n  $effect(() => {\n    $inspect.trace();\n    console.log(\"Current text:\", text);\n  });\n</script>\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n  <p data-testid=\"text-value\">Current text: \"{text}\"</p>\n  <p data-testid=\"char-count\">Character count: {text.length}</p>\n</div>",
-        "success": false,
-        "errors": [
-          "expected 'Hello world\\nText updated Hello world…' to contain 'init'",
-          "expected 'Hello world\\nText updated Hello world…' to contain 'init'",
-          "expected 'Hello world\\nText updated Hello world…' to contain 'init'"
-        ]
+        "success": true,
+        "errors": []
       },
       {
         "index": 8,
         "code": "<svelte:options runes={true} />\n\n<script>\n  let text = $state(\"Hello world\");\n  \n  $inspect(text);\n  \n  $inspect(text).with((type, count) => {\n    console.log(`Text changed: ${count} times`);\n  });\n  \n  $effect(() => {\n    $inspect.trace();\n    const _ = text;\n  });\n</script>\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n  <p data-testid=\"text-value\">Current text: \"{text}\"</p>\n  <p data-testid=\"char-count\">Character count: {text.length}</p>\n</div>",
-        "success": false,
-        "errors": [
-          "expected 'Hello world\\nText changed: Hello worl…' to contain 'init'",
-          "expected 'Hello world\\nText changed: Hello worl…' to contain 'init'",
-          "expected 'Hello world\\nText changed: Hello worl…' to contain 'init'"
-        ]
+        "success": true,
+        "errors": []
       },
       {
         "index": 9,

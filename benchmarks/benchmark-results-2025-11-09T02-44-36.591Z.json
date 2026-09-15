@@ -470,9 +470,9 @@
     "provider": "OpenAI",
     "modelId": "gpt-5",
     "numSamples": 10,
-    "numCorrect": 0,
-    "pass1": 0,
-    "pass10": 0,
+    "numCorrect": 1,
+    "pass1": 0.09999999999999998,
+    "pass10": 1,
     "context": {
       "used": false,
       "content": ""
@@ -481,12 +481,8 @@
       {
         "index": 0,
         "code": "<svelte:options runes={true} />\n\n<script>\n  let text = $state(\"Hello world\");\n  let charCount = $derived(text.length);\n\n  $effect(() => {\n    $inspect(text);\n  });\n\n  $effect(() => {\n    $inspect(text).with((value, prev) => {\n      console.log(\"Input updated:\", { value, prev });\n    });\n  });\n\n  $effect(() => {\n    $inspect.trace();\n    text;\n  });\n</script>\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n  <p data-testid=\"text-value\">Current text: \"{text}\"</p>\n  <p data-testid=\"char-count\">Character count: {charCount}</p>\n</div>",
-        "success": false,
-        "errors": [
-          "expected 'Hello world\\nInput updated: [object O…' to contain 'init'",
-          "expected 'Hello world\\nInput updated: [object O…' to contain 'init'",
-          "expected 'Hello world\\nInput updated: [object O…' to contain 'init'"
-        ],
+        "success": true,
+        "errors": [],
         "temperature": 0
       },
       {

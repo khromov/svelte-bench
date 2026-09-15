@@ -466,8 +466,8 @@
     "provider": "OpenAI",
     "modelId": "gpt-5.4",
     "numSamples": 10,
-    "numCorrect": 6,
-    "pass1": 0.5999999999999999,
+    "numCorrect": 10,
+    "pass1": 1,
     "pass10": 1,
     "context": {
       "used": false,
@@ -484,32 +484,20 @@
       {
         "index": 1,
         "code": "<svelte:options runes={true} />\n\n<script>\n\tlet text = $state('Hello world');\n\n\t$inspect(text);\n\n\t$inspect(text).with((type, count) => {\n\t\tconsole.log('text update', { type, count, value: text });\n\t});\n\n\t$effect(() => {\n\t\t$inspect.trace();\n\t\ttext;\n\t});\n</script>\n\n<div>\n\t<input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n\t<p data-testid=\"text-value\">Current text: \"{text}\"</p>\n\t<p data-testid=\"char-count\">Character count: {text.length}</p>\n</div>",
-        "success": false,
-        "errors": [
-          "expected 'Hello world\\ntext update [object Obje…' to contain 'init'",
-          "expected 'Hello world\\ntext update [object Obje…' to contain 'init'",
-          "expected 'Hello world\\ntext update [object Obje…' to contain 'init'"
-        ]
+        "success": true,
+        "errors": []
       },
       {
         "index": 2,
         "code": "<svelte:options runes={true} />\n\n<script>\n\tlet text = $state('Hello world');\n\n\t$inspect(text);\n\n\t$inspect(text).with((type, count, value) => {\n\t\tconsole.log('inspect.with', { type, count, value });\n\t});\n\n\t$effect(() => {\n\t\t$inspect.trace();\n\t\ttext;\n\t});\n</script>\n\n<div>\n\t<input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n\t<p data-testid=\"text-value\">Current text: \"{text}\"</p>\n\t<p data-testid=\"char-count\">Character count: {text.length}</p>\n</div>",
-        "success": false,
-        "errors": [
-          "expected 'Hello world\\ninspect.with [object Obj…' to contain 'init'",
-          "expected 'Hello world\\ninspect.with [object Obj…' to contain 'init'",
-          "expected 'Hello world\\ninspect.with [object Obj…' to contain 'init'"
-        ]
+        "success": true,
+        "errors": []
       },
       {
         "index": 3,
         "code": "<svelte:options runes={true} />\n\n<script>\n\tlet text = $state('Hello world');\n\n\t$inspect(text);\n\n\t$inspect(text).with((type, count, value) => {\n\t\tconsole.log('inspect.with', { type, count, value });\n\t});\n\n\t$effect(() => {\n\t\t$inspect.trace();\n\t\ttext;\n\t});\n</script>\n\n<div>\n\t<input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n\t<p data-testid=\"text-value\">Current text: \"{text}\"</p>\n\t<p data-testid=\"char-count\">Character count: {text.length}</p>\n</div>",
-        "success": false,
-        "errors": [
-          "expected 'Hello world\\ninspect.with [object Obj…' to contain 'init'",
-          "expected 'Hello world\\ninspect.with [object Obj…' to contain 'init'",
-          "expected 'Hello world\\ninspect.with [object Obj…' to contain 'init'"
-        ]
+        "success": true,
+        "errors": []
       },
       {
         "index": 4,
@@ -544,12 +532,8 @@
       {
         "index": 9,
         "code": "<svelte:options runes={true} />\n\n<script>\n\tlet text = $state('Hello world');\n\n\t$inspect(text);\n\n\t$inspect(text).with((type, count) => {\n\t\tconsole.log('Input inspection update', { type, count, value: text });\n\t});\n\n\t$effect(() => {\n\t\t$inspect.trace();\n\t\ttext;\n\t});\n</script>\n\n<div>\n\t<input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n\t<p data-testid=\"text-value\">Current text: \"{text}\"</p>\n\t<p data-testid=\"char-count\">Character count: {text.length}</p>\n</div>",
-        "success": false,
-        "errors": [
-          "expected 'Hello world\\nInput inspection update …' to contain 'init'",
-          "expected 'Hello world\\nInput inspection update …' to contain 'init'",
-          "expected 'Hello world\\nInput inspection update …' to contain 'init'"
-        ]
+        "success": true,
+        "errors": []
       }
     ],
     "timestamp": "2026-03-08T20:47:26.508Z"
