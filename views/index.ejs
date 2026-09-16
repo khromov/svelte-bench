@@ -285,6 +285,10 @@
     // Only show the speed column when at least one model has been measured
     const showTpsColumn = topModelsList.some(model => model.tps !== null);
 
+    // Local models are the ones served by Ollama; they get their own leaderboard tab
+    const isLocalProvider = (provider) => provider.toLowerCase() === 'ollama';
+    const localModelCount = topModelsList.filter(model => isLocalProvider(model.provider)).length;
+
     // The fastest measured model fills the speed bar completely; everything else is relative to it
     const maxTps = groupedResults.reduce((max, providerData) => {
       Object.values(providerData.models).forEach(results => {
@@ -307,6 +311,20 @@
           <h2 class="top-models-title">Top Models Leaderboard</h2>
           <span class="top-models-badge">Average pass@1 scores</span>
         </div>
+
+        <% if (localModelCount > 0) { %>
+          <!-- Leaderboard tabs: every model, or only local (Ollama) models -->
+          <div class="leaderboard-tabs" id="leaderboard-tabs" role="tablist" aria-label="Model group">
+            <button type="button" class="leaderboard-tab active" role="tab" data-tab="all" aria-selected="true">
+              All models
+              <span class="leaderboard-tab-count"><%= topModelsList.length %></span>
+            </button>
+            <button type="button" class="leaderboard-tab" role="tab" data-tab="local" aria-selected="false" title="Models run locally through Ollama">
+              Local models
+              <span class="leaderboard-tab-count"><%= localModelCount %></span>
+            </button>
+          </div>
+        <% } %>
 
         <!-- Search bar for models -->
         <div class="model-search-container">
@@ -346,7 +364,8 @@
               <tr class="top-model-row <%= index >= 5 ? 'hidden-model' : '' %>"
                   data-rank="<%= index + 1 %>"
                   data-model-name="<%= model.model.toLowerCase() %>"
-                  data-provider-name="<%= model.provider.toLowerCase() %>">
+                  data-provider-name="<%= model.provider.toLowerCase() %>"
+                  data-local="<%= isLocalProvider(model.provider) ? 'true' : 'false' %>">
                 <td style="text-align: center;">
                   <span class="rank rank-<%= index + 1 %>"><%= index + 1 %></span>
                 </td>
@@ -417,7 +436,7 @@
     <% if (groupedResults.length > 0) { %>
       <div class="accordion grouped-results">
         <% groupedResults.forEach(providerData => { %>
-          <div class="accordion-item card provider-section" id="provider-<%= providerData.provider.replace(/\s+/g, '-').replace(/[^\w-]/g, '').toLowerCase() %>">
+          <div class="accordion-item card provider-section" id="provider-<%= providerData.provider.replace(/\s+/g, '-').replace(/[^\w-]/g, '').toLowerCase() %>" data-local="<%= providerData.provider.toLowerCase() === 'ollama' ? 'true' : 'false' %>">
             <button class="accordion-trigger" onclick="toggleAccordion(this)" data-state="open">
               <h2 style="margin: 0; font-size: 1.5rem; font-weight: 600;"><%= providerData.provider %></h2>
               <svg class="chevron-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -681,7 +700,7 @@
 
               if (expandText) {
                 expandText.textContent = isExpanded
-                  ? `Show All ${document.querySelectorAll('.top-model-row').length} Models`
+                  ? `Show All ${document.querySelectorAll('.top-model-row:not(.tab-hidden)').length} Models`
                   : 'Show Top 5 Models';
               }
 
@@ -976,84 +995,138 @@
         };
 
         // ============================================
-        // Model Search Module
+        // Model Search & Tabs Module
         // ============================================
+        // The leaderboard is filtered by two things at once: the active tab
+        // (all models, or only local Ollama models) and the search query.
         const ModelSearch = {
           init() {
           const searchInput = document.getElementById('model-search-input');
           const expandButton = document.getElementById('expand-button-container');
           const noResultsDiv = document.getElementById('search-no-results');
+          const tabs = Array.from(document.querySelectorAll('#leaderboard-tabs .leaderboard-tab'));
 
           if (!searchInput) return;
 
-          // Check for search query param on load
+          const VALID_TABS = ['all', 'local'];
+          let activeTab = 'all';
+
+          // Restore state from the URL
           const urlParams = new URLSearchParams(window.location.search);
-          const searchQuery = urlParams.get('search');
+          const initialTab = urlParams.get('tab');
+          if (tabs.length > 0 && VALID_TABS.includes(initialTab)) {
+            activeTab = initialTab;
+          }
+          const searchQuery = urlParams.get('search') || '';
           if (searchQuery) {
             searchInput.value = searchQuery;
-            performSearch(searchQuery);
           }
 
-          // Add search event listener
-          searchInput.addEventListener('input', (e) => {
-            const query = e.target.value.trim();
-            performSearch(query);
+          renderTabs();
+          applyFilters();
 
-            // Update URL with search query
+          // Search as you type
+          searchInput.addEventListener('input', () => {
+            applyFilters();
+            updateUrl();
+          });
+
+          // Switch tabs
+          tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+              activeTab = tab.getAttribute('data-tab');
+              renderTabs();
+              applyFilters();
+              updateUrl();
+            });
+          });
+
+          function updateUrl() {
             const url = new URL(window.location);
+            const query = searchInput.value.trim();
             if (query) {
               url.searchParams.set('search', query);
             } else {
               url.searchParams.delete('search');
             }
+            if (activeTab !== 'all') {
+              url.searchParams.set('tab', activeTab);
+            } else {
+              url.searchParams.delete('tab');
+            }
             window.history.replaceState({}, '', url);
-          });
+          }
 
-          function performSearch(query) {
+          function renderTabs() {
+            tabs.forEach(tab => {
+              const isActive = tab.getAttribute('data-tab') === activeTab;
+              tab.classList.toggle('active', isActive);
+              tab.setAttribute('aria-selected', isActive ? 'true' : 'false');
+            });
+
+            // In the local tab, the detailed results below only show local providers too
+            document.querySelectorAll('.provider-section').forEach(section => {
+              const isLocal = section.getAttribute('data-local') === 'true';
+              section.style.display = activeTab === 'local' && !isLocal ? 'none' : '';
+            });
+          }
+
+          function rowInActiveTab(row) {
+            return activeTab === 'all' || row.getAttribute('data-local') === 'true';
+          }
+
+          function applyFilters() {
+            const query = searchInput.value.trim().toLowerCase();
             const rows = document.querySelectorAll('.top-model-row');
             let visibleCount = 0;
+            let tabCount = 0;
 
-            if (query === '') {
-              // Reset to default state
-              rows.forEach((row, index) => {
-                row.style.display = index < 5 ? 'table-row' : 'none';
-                if (index < 5) visibleCount++;
-              });
+            rows.forEach((row) => {
+              const inTab = rowInActiveTab(row);
+              row.classList.toggle('tab-hidden', !inTab);
 
-              // Show expand button again
-              if (expandButton) {
-                expandButton.style.display = 'block';
+              if (!inTab) {
+                row.classList.remove('hidden-model');
+                row.style.display = 'none';
+                return;
+              }
+
+              tabCount++;
+
+              if (query === '') {
+                // Default state: the top 5 of the tab, the rest behind the expand button
+                const beyondTop = tabCount > 5;
+                row.classList.toggle('hidden-model', beyondTop);
+                row.style.display = beyondTop ? 'none' : 'table-row';
+                if (!beyondTop) visibleCount++;
+              } else {
+                // Searching: show every match in the tab
+                row.classList.remove('hidden-model');
+                const modelName = row.getAttribute('data-model-name');
+                const providerName = row.getAttribute('data-provider-name');
+                const matches = modelName.includes(query) || providerName.includes(query);
+                row.style.display = matches ? 'table-row' : 'none';
+                if (matches) visibleCount++;
+              }
+            });
+
+            if (expandButton) {
+              // The expand button only makes sense without a query and with more than 5 rows in the tab
+              const showExpand = query === '' && tabCount > 5;
+              expandButton.style.display = showExpand ? 'block' : 'none';
+
+              if (showExpand) {
                 const expandBtn = expandButton.querySelector('.btn[onclick="toggleTopModels()"]');
                 const expandText = expandBtn.querySelector('.expand-text');
                 const expandIcon = expandBtn.querySelector('.expand-icon');
-                expandText.textContent = `Show All ${rows.length} Models`;
+                expandText.textContent = `Show All ${tabCount} Models`;
                 expandIcon.textContent = '↓';
                 expandBtn.classList.remove('expanded');
               }
-
-              noResultsDiv.style.display = 'none';
-            } else {
-              // Show all models when searching
-              const lowerQuery = query.toLowerCase();
-
-              rows.forEach((row) => {
-                const modelName = row.getAttribute('data-model-name');
-                const providerName = row.getAttribute('data-provider-name');
-                const matches = modelName.includes(lowerQuery) || providerName.includes(lowerQuery);
-
-                row.style.display = matches ? 'table-row' : 'none';
-                if (matches) visibleCount++;
-              });
-
-              // Hide expand button when searching
-              if (expandButton) {
-                expandButton.style.display = 'none';
-              }
-
-              // Show no results message if needed
-              noResultsDiv.style.display = visibleCount === 0 ? 'block' : 'none';
-              }
             }
+
+            noResultsDiv.style.display = visibleCount === 0 ? 'block' : 'none';
+          }
           }
         };
 
