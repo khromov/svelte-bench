@@ -17,18 +17,17 @@ MODELS=(
   #"nemotron-3.5-lightning:30b-8k"                                            
   #"mistral-nemo:12b-instruct-2407-q4_K_M"
   #"granite4.2:30b-q4_K_M"
-  # "wcamaralopes/bonsai-27b-Q4_K_M-fix:latest" # TODO: god this one is so slow
   #"qwen3.6:35b-a3b-q4_K_M"
   #"qwen3.8:27b-mtp-q4_K_M"
   # NEW RUN: Delete above models first
-  #"glm-4.7-flash:q4_K_M"
-  #"qwen3.6:27b-coding-mtp-q4_K_M"
-  #"gemma4:12b-it-q4_K_M" 
-  #"lfm2:24b"
-  #"hf.co/bartowski/nex-agi_Nex-N2.5-mini-GGUF:Q4_K_M"
-  #"hf.co/IFM/K2-Horizon-32B-GGUF:Q4_K_M"
-  #"hf.co/IFM/K2-Horizon-MoVA-36B-A4B-GGUF:Q4_K_M"
-  #"JetBrains/mellum2-instruct-q4_k_m"
+  "glm-4.7-flash:q4_K_M"
+  "qwen3.6:27b-coding-mtp-q4_K_M"
+  "gemma4:12b-it-q4_K_M" 
+  "lfm2:24b"
+  "hf.co/bartowski/nex-agi_Nex-N2.5-mini-GGUF:Q4_K_M"
+  "hf.co/IFM/K2-Horizon-32B-GGUF:Q4_K_M"
+  "hf.co/IFM/K2-Horizon-MoVA-36B-A4B-GGUF:Q4_K_M"
+  "JetBrains/mellum2-instruct-q4_k_m"
 )
 
 mkdir -p logs
