@@ -16,8 +16,8 @@ MODELS=(
   #"llama3.3:70b-instruct-q2_K"
   #"nemotron-3.5-lightning:30b-8k"
   #"mistral-nemo:12b-instruct-2407-q4_K_M"
-  "granite4.2:30b-q4_K_M"
-  "wcamaralopes/bonsai-27b-Q4_K_M-fix:latest"
+  #"granite4.2:30b-q4_K_M"
+  # "wcamaralopes/bonsai-27b-Q4_K_M-fix:latest" # TODO: god this one is so slow
   "qwen3.6:35b-a3b-q4_K_M"
   "qwen3.8:27b-mtp-q4_K_M"
   # NEW RUN: Delete above models first
