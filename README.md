@@ -286,6 +286,35 @@ pnpm run verify
 
 This checks that each test has required files (prompt.md, test.ts, Reference.svelte).
 
+### Local Model Speed (Ollama)
+
+For local models, generation speed matters as much as accuracy. After benchmarking Ollama models,
+measure their tokens per second and store the figure alongside the results:
+
+```bash
+pnpm ollama-tps
+```
+
+The script scans every benchmark JSON file for results from the `ollama` provider, loads each model
+on the Ollama host (`OLLAMA_HOST`), sends it a single test prompt (`counter` by default) and derives
+tokens per second from the timings Ollama reports. The result is written into each affected benchmark
+file as `tps` (plus a `tpsDetails` record of the measurement), and shows up as a **Speed** column in the
+leaderboard and as a badge next to the model name in the detailed results after the next `pnpm build`.
+
+Models that already have a `tps` value are skipped, so the script is safe to re-run after each batch.
+
+```bash
+# Only list what would be measured
+pnpm ollama-tps -- --dry-run
+
+# Re-measure models that already have a tps value
+pnpm ollama-tps -- --force
+
+# Use a different test prompt, or pull models missing from the Ollama host
+OLLAMA_TPS_TEST=hello-world pnpm ollama-tps
+OLLAMA_TPS_PULL=true pnpm ollama-tps
+```
+
 ## Current Test Suite
 
 The benchmark includes tests for core Svelte 5 features:

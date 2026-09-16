@@ -55,6 +55,9 @@ pnpm run build
 
 # Verify benchmark results
 pnpm run verify
+
+# Measure tokens/second for benchmarked Ollama models and store it in their result files
+pnpm ollama-tps
 ```
 
 ## Environment Variables

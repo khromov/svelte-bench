@@ -264,11 +264,14 @@
 
           if (testCount > 0) {
             const avgPass1 = totalPass1 / testCount;
+            // Generation speed (tokens/second) is measured once per model and stored on every result
+            const tpsResult = results.find(result => typeof result.tps === 'number' && result.tps > 0);
             modelScores.set(`${providerData.provider}|${modelName}`, {
               provider: providerData.provider,
               model: modelName,
               averagePass1: avgPass1,
-              score: avgPass1 * 100 // Convert to percentage
+              score: avgPass1 * 100, // Convert to percentage
+              tps: tpsResult ? tpsResult.tps : null
             });
           }
         });
@@ -278,6 +281,12 @@
       topModelsList = Array.from(modelScores.values())
         .sort((a, b) => b.averagePass1 - a.averagePass1);
     }
+
+    // Only show the speed column when at least one model has been measured
+    const showTpsColumn = topModelsList.some(model => model.tps !== null);
+
+    // Format a tokens/second figure for display
+    const formatTps = (tps) => tps >= 100 ? Math.round(tps).toString() : tps.toFixed(1);
     %>
 
     <% if (topModelsList.length > 0) { %>
@@ -316,6 +325,9 @@
               <th style="width: 60px; text-align: center;">Rank</th>
               <th>Model</th>
               <th style="width: 200px;">Score</th>
+              <% if (showTpsColumn) { %>
+                <th class="mobile-hide tps-column" style="width: 110px; text-align: right;" title="Generation speed measured via Ollama on the benchmark hardware (tokens per second)">Speed</th>
+              <% } %>
             </tr>
           </thead>
           <tbody id="top-models-tbody">
@@ -341,6 +353,15 @@
                     </div>
                   </div>
                 </td>
+                <% if (showTpsColumn) { %>
+                  <td class="mobile-hide tps-column" style="text-align: right;">
+                    <% if (model.tps !== null) { %>
+                      <span class="tps-value"><%= formatTps(model.tps) %> <span class="tps-unit">tok/s</span></span>
+                    <% } else { %>
+                      <span class="tps-missing">—</span>
+                    <% } %>
+                  </td>
+                <% } %>
               </tr>
             <% }); %>
           </tbody>
@@ -393,8 +414,21 @@
                 <div class="accordion" style="margin-top: 0.5rem;">
                   <% Object.entries(providerData.models).forEach(([model, results]) => { %>
                     <div class="accordion-item" id="model-<%= providerData.provider.replace(/\s+/g, '-').replace(/[^\w-]/g, '').toLowerCase() %>-<%= model.replace(/\s+/g, '-').replace(/[^\w-]/g, '').toLowerCase() %>">
+                      <%
+                        // Generation speed (tokens/second), present for local models measured with `pnpm ollama-tps`
+                        const modelTpsResult = results.find(result => typeof result.tps === 'number' && result.tps > 0);
+                        const modelTpsDetails = modelTpsResult && modelTpsResult.tpsDetails;
+                        const modelTpsTitle = modelTpsDetails
+                          ? `Generation speed measured with the "${modelTpsDetails.testName}" prompt: ${modelTpsDetails.evalCount} tokens generated, prompt processing ${modelTpsDetails.promptTps} tok/s`
+                          : 'Generation speed (tokens per second)';
+                      %>
                       <button class="accordion-trigger" onclick="toggleAccordion(this)" data-state="open">
-                        <h3 style="margin: 0; font-size: 1.125rem; font-weight: 600;"><%= model %></h3>
+                        <span class="model-title">
+                          <h3 style="margin: 0; font-size: 1.125rem; font-weight: 600;"><%= model %></h3>
+                          <% if (modelTpsResult) { %>
+                            <span class="tps-badge" title="<%= modelTpsTitle %>">⚡ <%= modelTpsResult.tps >= 100 ? Math.round(modelTpsResult.tps) : modelTpsResult.tps.toFixed(1) %> tok/s</span>
+                          <% } %>
+                        </span>
                         <svg class="chevron-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                           <polyline points="6,9 12,15 18,9"></polyline>
                         </svg>

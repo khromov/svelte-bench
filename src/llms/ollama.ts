@@ -33,6 +33,21 @@ const timeoutFetch = (
   } as any);
 };
 
+/**
+ * Resolve the Ollama host from the environment, falling back to the local default
+ */
+export function getOllamaHost(): string {
+  return process.env.OLLAMA_HOST || "http://127.0.0.1:11434";
+}
+
+/**
+ * Create an Ollama client with the long request timeouts the benchmark needs
+ */
+export function createOllamaClient(host: string = getOllamaHost()): Ollama {
+  // The wrapper only implements the call signature, not fetch's static helpers
+  return new Ollama({ host, fetch: timeoutFetch as typeof fetch });
+}
+
 export class OllamaProvider implements LLMProvider {
   private client: Ollama;
   private modelId: string;
@@ -42,10 +57,7 @@ export class OllamaProvider implements LLMProvider {
   ];
 
   constructor(modelId?: string) {
-    // Get Ollama host from environment variable or use default
-    const host = process.env.OLLAMA_HOST || "http://127.0.0.1:11434";
-
-    this.client = new Ollama({ host, fetch: timeoutFetch });
+    this.client = createOllamaClient();
     this.modelId = modelId || this.availableModels[0];
   }
 

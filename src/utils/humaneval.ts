@@ -59,4 +59,30 @@ export interface HumanEvalResult {
     errors: string[];
     temperature?: number; // Added temperature tracking
   }[];
+  /**
+   * Generation speed in tokens per second, measured separately from the benchmark run
+   * (see ollama-tps.ts). Only populated for local (Ollama) models.
+   */
+  tps?: number;
+  tpsDetails?: TpsDetails;
+}
+
+/**
+ * How a `tps` figure was obtained, so the measurement can be reproduced or audited
+ */
+export interface TpsDetails {
+  /** The test whose prompt was sent to the model */
+  testName: string;
+  /** Generated (decode) tokens and how long they took, in nanoseconds, as reported by Ollama */
+  evalCount: number;
+  evalDurationNs: number;
+  /** Prompt (prefill) tokens and how long they took, in nanoseconds, as reported by Ollama */
+  promptEvalCount: number;
+  promptEvalDurationNs: number;
+  /** Prompt processing speed in tokens per second */
+  promptTps: number;
+  /** Time to load the model into memory, in nanoseconds */
+  loadDurationNs: number;
+  /** When the measurement was taken (ISO 8601) */
+  measuredAt: string;
 }
