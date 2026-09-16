@@ -25,8 +25,6 @@ MODELS=(
   "gemma4:12b-it-q4_K_M" 
   "lfm2:24b"
   "hf.co/bartowski/nex-agi_Nex-N2.5-mini-GGUF:Q4_K_M"
-  "hf.co/IFM/K2-Horizon-32B-GGUF:Q4_K_M"
-  "hf.co/IFM/K2-Horizon-MoVA-36B-A4B-GGUF:Q4_K_M"
   "JetBrains/mellum2-instruct-q4_k_m"
 )
 
