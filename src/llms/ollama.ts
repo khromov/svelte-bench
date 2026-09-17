@@ -8,7 +8,7 @@ import { Ollama, type ChatRequest } from "ollama";
 import { log } from "../utils/tui-events";
 
 // Hard cap for a single Ollama request (including reading the response body)
-const OLLAMA_TIMEOUT_MS = 60 * 60 * 1000;
+const OLLAMA_TIMEOUT_MS = 4 * 60 * 60 * 1000;
 
 // Raise undici's default 5 minute timeouts, since non-streaming responses only
 // arrive once generation finishes: https://github.com/ollama/ollama-js/issues/103
@@ -126,7 +126,7 @@ export class OllamaProvider implements LLMProvider {
       return response.message?.content || "";
     } catch (error) {
       if (error instanceof Error && error.name === "TimeoutError") {
-        const message = `Ollama request timed out after ${OLLAMA_TIMEOUT_MS / 60000} minutes`;
+        const message = `Ollama request timed out after ${OLLAMA_TIMEOUT_MS / 3600000} hours`;
         console.error(`⏱️ ${message} (model: ${this.modelId})`);
         throw new Error(message);
       }
