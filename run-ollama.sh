@@ -20,8 +20,8 @@ MODELS=(
   #"qwen3.6:35b-a3b-q4_K_M"
   #"qwen3.8:27b-mtp-q4_K_M"
   # NEW RUN: Delete above models first
-  "glm-4.7-flash:q4_K_M"
-  "qwen3.6:27b-coding-mtp-q4_K_M"
+  #"glm-4.7-flash:q4_K_M"
+  #"qwen3.6:27b-coding-mtp-q4_K_M"
   "gemma4:12b-it-q4_K_M" 
   "lfm2:24b"
   "hf.co/bartowski/nex-agi_Nex-N2.5-mini-GGUF:Q4_K_M"
