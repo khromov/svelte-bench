@@ -195,6 +195,18 @@ async function measureModel(
   };
 }
 
+/**
+ * Ollama normalises model names when it stores them: a name without a tag gets
+ * ":latest", and tags are case-insensitive. Compare names the same way so a
+ * model benchmarked as "org/model" is found even though Ollama lists it as
+ * "org/model:latest".
+ */
+function normalizeModelName(name: string): string {
+  const lastSlash = name.lastIndexOf("/");
+  const hasTag = name.indexOf(":", lastSlash + 1) !== -1;
+  return (hasTag ? name : `${name}:latest`).toLowerCase();
+}
+
 function round(value: number, decimals: number = 2): number {
   const factor = 10 ** decimals;
   return Math.round(value * factor) / factor;
@@ -276,7 +288,7 @@ async function main(): Promise<void> {
   const client = createOllamaClient(host);
 
   // Models present on the host, so we can tell a missing model from a failed request
-  const installed = new Set((await client.list()).models.map((m) => m.name));
+  const installed = new Set((await client.list()).models.map((m) => normalizeModelName(m.name)));
 
   const measured: Array<{ modelId: string; measurement: Measurement }> = [];
   const failed: Array<{ modelId: string; reason: string }> = [];
@@ -286,13 +298,13 @@ async function main(): Promise<void> {
     console.log(`\n🤖 [${i + 1}/${work.length}] ${modelId}`);
 
     try {
-      if (!installed.has(modelId)) {
+      if (!installed.has(normalizeModelName(modelId))) {
         if (!pullMissing) {
           throw new Error("model is not installed on the Ollama host (set OLLAMA_TPS_PULL=true to pull it)");
         }
         console.log(`⬇️ Pulling ${modelId}...`);
         await client.pull({ model: modelId, stream: false });
-        installed.add(modelId);
+        installed.add(normalizeModelName(modelId));
       }
 
       console.log("🔥 Warming up...");
@@ -315,7 +327,7 @@ async function main(): Promise<void> {
       console.error(`❌ ${modelId}: ${reason}`);
       failed.push({ modelId, reason });
     } finally {
-      if (installed.has(modelId)) {
+      if (installed.has(normalizeModelName(modelId))) {
         await unloadModel(client, modelId);
       }
     }
