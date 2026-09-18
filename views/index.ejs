@@ -391,7 +391,7 @@
               <th style="width: 60px; text-align: center;">Rank</th>
               <th>Model</th>
               <th style="width: 200px;">
-                <% if (showResponseTimeColumn) { %>
+                <% if (showTpsColumn || showResponseTimeColumn) { %>
                   <%# Sorting is only offered in the local models tab; the buttons stay disabled elsewhere %>
                   <button type="button" class="sort-button" data-sort="score" disabled>Score<span class="sort-indicator" aria-hidden="true"></span></button>
                 <% } else { %>
@@ -399,7 +399,9 @@
                 <% } %>
               </th>
               <% if (showTpsColumn) { %>
-                <th class="mobile-hide tps-column" style="width: 180px;" title="Generation speed measured via Ollama on the benchmark hardware (tokens per second), relative to the fastest measured model">Speed</th>
+                <th class="mobile-hide tps-column" style="width: 180px;" title="Generation speed measured via Ollama on the benchmark hardware (tokens per second), relative to the fastest measured model. In the local models tab, click to sort by it.">
+                  <button type="button" class="sort-button" data-sort="tps" disabled>Speed<span class="sort-indicator" aria-hidden="true"></span></button>
+                </th>
               <% } %>
               <% if (showResponseTimeColumn) { %>
                 <th class="mobile-hide time-column" style="width: 140px;" title="Estimated time per response: average output tokens including thinking (one sample per test, measured via Ollama) divided by the measured speed. In the local models tab, click to sort by it.">
@@ -415,6 +417,7 @@
                   data-model-name="<%= model.model.toLowerCase() %>"
                   data-provider-name="<%= model.provider.toLowerCase() %>"
                   data-local="<%= isLocalProvider(model.provider) ? 'true' : 'false' %>"
+                  data-tps="<%= model.tps !== null ? model.tps : '' %>"
                   data-response-seconds="<%= model.tokenTimes && model.tokenTimes.avgResponseSeconds !== null ? model.tokenTimes.avgResponseSeconds : '' %>">
                 <td style="text-align: center;">
                   <span class="rank rank-<%= index + 1 %>"><%= index + 1 %></span>
@@ -1081,12 +1084,33 @@
           const VALID_TABS = ['all', 'local'];
           let activeTab = 'all';
 
-          // Sorting by estimated response time is offered in the local models tab only, since
-          // only local models have that figure. 'score' is the default leaderboard order.
+          // Sorting by speed or estimated response time is offered in the local models tab only,
+          // since only local models have those figures. 'score' is the default leaderboard order.
           const tbody = document.getElementById('top-models-tbody');
           const sortButtons = Array.from(document.querySelectorAll('.top-models-table .sort-button'));
-          const VALID_SORTS = ['score', 'time', 'time-desc'];
-          let sortMode = 'score';
+
+          // Each sortable column reads its value from a row attribute. `first` is the direction of the
+          // first click (the "best first" one); the second click flips it.
+          const SORT_COLUMNS = {
+            tps: { attribute: 'data-tps', first: 'desc' },
+            time: { attribute: 'data-response-seconds', first: 'asc' }
+          };
+          const DEFAULT_SORT = { key: 'score', direction: 'desc' };
+          let sortState = DEFAULT_SORT;
+
+          // In the URL a sort is "<key>" for the first-click direction, or "<key>-<direction>" for the flipped one
+          function parseSort(value) {
+            if (!value) return null;
+            const [key, direction] = value.split('-');
+            const column = SORT_COLUMNS[key];
+            if (!column || !sortButtons.some(button => button.getAttribute('data-sort') === key)) return null;
+            if (direction !== undefined && direction !== 'asc' && direction !== 'desc') return null;
+            return { key, direction: direction || column.first };
+          }
+
+          function serializeSort(state) {
+            return state.direction === SORT_COLUMNS[state.key].first ? state.key : `${state.key}-${state.direction}`;
+          }
 
           // Restore state from the URL
           const urlParams = new URLSearchParams(window.location.search);
@@ -1098,10 +1122,7 @@
           if (searchQuery) {
             searchInput.value = searchQuery;
           }
-          const initialSort = urlParams.get('sort');
-          if (sortButtons.length > 0 && VALID_SORTS.includes(initialSort)) {
-            sortMode = initialSort;
-          }
+          sortState = parseSort(urlParams.get('sort')) || DEFAULT_SORT;
 
           renderTabs();
           applySort();
@@ -1124,14 +1145,19 @@
             });
           });
 
-          // Sort headers: "Avg. response" toggles fastest-first / slowest-first, "Score" restores the default
+          // Sort headers: "Speed" and "Avg. response" start best-first and flip on the next click,
+          // "Score" restores the default order
           sortButtons.forEach(button => {
             button.addEventListener('click', () => {
               if (activeTab !== 'local') return;
-              if (button.getAttribute('data-sort') === 'time') {
-                sortMode = sortMode === 'time' ? 'time-desc' : 'time';
+              const key = button.getAttribute('data-sort');
+              const column = SORT_COLUMNS[key];
+              if (!column) {
+                sortState = DEFAULT_SORT;
+              } else if (sortState.key === key) {
+                sortState = { key, direction: sortState.direction === 'asc' ? 'desc' : 'asc' };
               } else {
-                sortMode = 'score';
+                sortState = { key, direction: column.first };
               }
 
               // Re-filtering collapses the list to the top 5, so put it back if it was expanded
@@ -1158,8 +1184,8 @@
             } else {
               url.searchParams.delete('tab');
             }
-            if (effectiveSort() !== 'score') {
-              url.searchParams.set('sort', sortMode);
+            if (effectiveSort().key !== 'score') {
+              url.searchParams.set('sort', serializeSort(sortState));
             } else {
               url.searchParams.delete('sort');
             }
@@ -1168,33 +1194,34 @@
 
           // The sort only applies in the local tab; every other view keeps the score order
           function effectiveSort() {
-            return activeTab === 'local' ? sortMode : 'score';
+            return activeTab === 'local' ? sortState : DEFAULT_SORT;
           }
 
           // Reorder the rows in the DOM, then let applyFilters() decide which ones are visible
           function applySort() {
             if (!tbody) return;
 
-            const mode = effectiveSort();
+            const state = effectiveSort();
+            const column = SORT_COLUMNS[state.key];
             const rank = (row) => Number(row.getAttribute('data-rank'));
-            const seconds = (row) => {
-              const value = row.getAttribute('data-response-seconds');
+            const measured = (row) => {
+              const value = row.getAttribute(column.attribute);
               return value === null || value === '' ? null : Number(value);
             };
 
             const rows = Array.from(tbody.querySelectorAll('.top-model-row'));
             rows.sort((a, b) => {
-              if (mode === 'score') return rank(a) - rank(b);
+              if (!column) return rank(a) - rank(b);
 
               // Models without a measurement go last in either direction
-              const secondsA = seconds(a);
-              const secondsB = seconds(b);
-              if (secondsA === null || secondsB === null) {
-                if (secondsA === secondsB) return rank(a) - rank(b);
-                return secondsA === null ? 1 : -1;
+              const valueA = measured(a);
+              const valueB = measured(b);
+              if (valueA === null || valueB === null) {
+                if (valueA === valueB) return rank(a) - rank(b);
+                return valueA === null ? 1 : -1;
               }
 
-              const diff = mode === 'time' ? secondsA - secondsB : secondsB - secondsA;
+              const diff = state.direction === 'asc' ? valueA - valueB : valueB - valueA;
               return diff !== 0 ? diff : rank(a) - rank(b);
             });
             rows.forEach(row => tbody.appendChild(row));
@@ -1203,13 +1230,12 @@
           }
 
           function renderSortButtons() {
-            const mode = effectiveSort();
+            const state = effectiveSort();
             const enabled = activeTab === 'local';
 
             sortButtons.forEach(button => {
-              const isTime = button.getAttribute('data-sort') === 'time';
-              const isActive = enabled && (isTime ? mode !== 'score' : mode === 'score');
-              const descending = !isTime || mode === 'time-desc';
+              const isActive = enabled && button.getAttribute('data-sort') === state.key;
+              const descending = state.direction === 'desc';
 
               button.disabled = !enabled;
               button.classList.toggle('active', isActive);
