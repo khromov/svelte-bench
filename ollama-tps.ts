@@ -7,6 +7,17 @@ import { DEFAULT_SYSTEM_PROMPT } from "./src/utils/prompt";
 import { loadTestDefinitions } from "./src/utils/test-manager";
 import { createOllamaClient, getOllamaHost } from "./src/llms/ollama";
 import type { HumanEvalResult, TpsDetails } from "./src/utils/humaneval";
+import {
+  ensureModelInstalled,
+  isOllamaResult,
+  listInstalledModels,
+  loadBenchmarkFiles,
+  normalizeModelName,
+  round,
+  unloadModel,
+  warmUpModel,
+  type BenchmarkFile,
+} from "./src/utils/ollama-results";
 
 /**
  * Measure generation speed (tokens per second) for every Ollama model that has
@@ -31,14 +42,6 @@ import type { HumanEvalResult, TpsDetails } from "./src/utils/humaneval";
  */
 
 const DEFAULT_TEST_NAME = "counter";
-const OLLAMA_PROVIDER_NAME = "ollama";
-
-interface BenchmarkFile {
-  filePath: string;
-  results: HumanEvalResult[];
-  /** Whether the original file ended with a newline, so we write it back the same way */
-  trailingNewline: boolean;
-}
 
 interface ModelWork {
   modelId: string;
@@ -64,46 +67,8 @@ function parseCliOptions(): CliOptions {
   };
 }
 
-function isOllamaResult(result: HumanEvalResult): boolean {
-  return typeof result.provider === "string" && result.provider.toLowerCase() === OLLAMA_PROVIDER_NAME;
-}
-
 function hasTps(result: HumanEvalResult): boolean {
   return typeof result.tps === "number" && Number.isFinite(result.tps) && result.tps > 0;
-}
-
-/**
- * Load every timestamped benchmark JSON file (the merged file is derived, so it is skipped)
- */
-async function loadBenchmarkFiles(): Promise<BenchmarkFile[]> {
-  const benchmarksDir = path.resolve(process.cwd(), "benchmarks");
-  const entries = await fs.readdir(benchmarksDir);
-
-  const jsonFiles = entries
-    .filter(
-      (file) =>
-        file.endsWith(".json") &&
-        file.includes("benchmark-results") &&
-        /\d{4}-\d{2}-\d{2}T/.test(file) &&
-        !file.includes("merged"),
-    )
-    .sort();
-
-  const files: BenchmarkFile[] = [];
-
-  for (const file of jsonFiles) {
-    const filePath = path.join(benchmarksDir, file);
-    try {
-      const content = await fs.readFile(filePath, "utf-8");
-      const results = JSON.parse(content);
-      if (!Array.isArray(results)) continue;
-      files.push({ filePath, results, trailingNewline: content.endsWith("\n") });
-    } catch (error) {
-      console.warn(`⚠️ Skipping unreadable benchmark file ${file}: ${error instanceof Error ? error.message : error}`);
-    }
-  }
-
-  return files;
 }
 
 /**
@@ -145,15 +110,7 @@ async function measureModel(
   testName: string,
   prompt: string,
 ): Promise<Measurement> {
-  // Warm-up: make sure the model is loaded and the first real request is not
-  // paying for weight loading. eval_duration excludes load time anyway, but a
-  // cold model can still produce a slower first decode.
-  await client.chat({
-    model: modelId,
-    messages: [{ role: "user", content: "Say hi." }],
-    stream: false,
-    options: { num_predict: 1 },
-  });
+  await warmUpModel(client, modelId);
 
   const response = await client.chat({
     model: modelId,
@@ -193,34 +150,6 @@ async function measureModel(
       measuredAt: new Date().toISOString(),
     },
   };
-}
-
-/**
- * Ollama normalises model names when it stores them: a name without a tag gets
- * ":latest", and tags are case-insensitive. Compare names the same way so a
- * model benchmarked as "org/model" is found even though Ollama lists it as
- * "org/model:latest".
- */
-function normalizeModelName(name: string): string {
-  const lastSlash = name.lastIndexOf("/");
-  const hasTag = name.indexOf(":", lastSlash + 1) !== -1;
-  return (hasTag ? name : `${name}:latest`).toLowerCase();
-}
-
-function round(value: number, decimals: number = 2): number {
-  const factor = 10 ** decimals;
-  return Math.round(value * factor) / factor;
-}
-
-/**
- * Ask Ollama to unload the model so the next one gets the full GPU
- */
-async function unloadModel(client: ReturnType<typeof createOllamaClient>, modelId: string): Promise<void> {
-  try {
-    await client.generate({ model: modelId, prompt: "", keep_alive: 0 });
-  } catch (error) {
-    console.warn(`⚠️ Could not unload ${modelId}: ${error instanceof Error ? error.message : error}`);
-  }
 }
 
 /**
@@ -288,7 +217,7 @@ async function main(): Promise<void> {
   const client = createOllamaClient(host);
 
   // Models present on the host, so we can tell a missing model from a failed request
-  const installed = new Set((await client.list()).models.map((m) => normalizeModelName(m.name)));
+  const installed = await listInstalledModels(client);
 
   const measured: Array<{ modelId: string; measurement: Measurement }> = [];
   const failed: Array<{ modelId: string; reason: string }> = [];
@@ -298,14 +227,7 @@ async function main(): Promise<void> {
     console.log(`\n🤖 [${i + 1}/${work.length}] ${modelId}`);
 
     try {
-      if (!installed.has(normalizeModelName(modelId))) {
-        if (!pullMissing) {
-          throw new Error("model is not installed on the Ollama host (set OLLAMA_TPS_PULL=true to pull it)");
-        }
-        console.log(`⬇️ Pulling ${modelId}...`);
-        await client.pull({ model: modelId, stream: false });
-        installed.add(normalizeModelName(modelId));
-      }
+      await ensureModelInstalled(client, installed, modelId, pullMissing, "OLLAMA_TPS_PULL=true");
 
       console.log("🔥 Warming up...");
       const started = Date.now();

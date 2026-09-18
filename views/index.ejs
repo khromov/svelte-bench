@@ -269,12 +269,16 @@
             const avgPass1 = totalPass1 / testCount;
             // Generation speed (tokens/second) is measured once per model and stored on every result
             const tpsResult = results.find(result => typeof result.tps === 'number' && result.tps > 0);
+            // Average response size (output tokens) and the time estimate derived from it, merged in from
+            // benchmarks/token-times-ollama/ by `pnpm merge`
+            const tokenTimesResult = results.find(result => result.tokenTimes && result.tokenTimes.sampleCount > 0);
             modelScores.set(`${providerData.provider}|${modelName}`, {
               provider: providerData.provider,
               model: modelName,
               averagePass1: avgPass1,
               score: avgPass1 * 100, // Convert to percentage
-              tps: tpsResult ? tpsResult.tps : null
+              tps: tpsResult ? tpsResult.tps : null,
+              tokenTimes: tokenTimesResult ? tokenTimesResult.tokenTimes : null
             });
           }
         });
@@ -311,6 +315,30 @@
 
     // Format a tokens/second figure for display
     const formatTps = (tps) => tps >= 100 ? Math.round(tps).toString() : tps.toFixed(1);
+
+    // Estimated time per response (average output tokens / tps), measured with `pnpm ollama-token-times`
+    const showResponseTimeColumn = topModelsList.some(model => model.tokenTimes !== null);
+
+    // Format a duration in seconds as "8.5s", "42s", "3m 12s" or "1h 05m"
+    const formatDuration = (seconds) => {
+      if (seconds < 10) return `${seconds.toFixed(1)}s`;
+      const total = Math.round(seconds);
+      if (total < 60) return `${total}s`;
+      const minutes = Math.floor(total / 60);
+      const rest = total % 60;
+      if (minutes < 60) return rest > 0 ? `${minutes}m ${rest}s` : `${minutes}m`;
+      return `${Math.floor(minutes / 60)}h ${String(minutes % 60).padStart(2, '0')}m`;
+    };
+    const formatTokens = (tokens) => Math.round(tokens).toLocaleString('en-US');
+
+    // Tooltip explaining where a response time figure comes from
+    const responseTimeTitle = (tokenTimes, tps) => {
+      const samples = `${tokenTimes.sampleCount} sample${tokenTimes.sampleCount === 1 ? '' : 's'}, one per test`;
+      const tokens = `${formatTokens(tokenTimes.avgOutputTokens)} output tokens per response on average (${samples})`;
+      return tokenTimes.avgResponseSeconds !== null && tps
+        ? `Estimated time per response: ${tokens} at ${formatTps(tps)} tok/s`
+        : `${tokens}; no speed measurement, so no time estimate`;
+    };
     %>
 
     <% if (topModelsList.length > 0) { %>
@@ -366,6 +394,9 @@
               <% if (showTpsColumn) { %>
                 <th class="mobile-hide tps-column" style="width: 180px;" title="Generation speed measured via Ollama on the benchmark hardware (tokens per second), relative to the fastest measured model">Speed</th>
               <% } %>
+              <% if (showResponseTimeColumn) { %>
+                <th class="mobile-hide time-column" style="width: 140px;" title="Estimated time per response: average output tokens (one sample per test, measured via Ollama) divided by the measured speed">Avg. response</th>
+              <% } %>
             </tr>
           </thead>
           <tbody id="top-models-tbody">
@@ -401,6 +432,18 @@
                         </div>
                         <span class="tps-value"><%= formatTps(model.tps) %> <span class="tps-unit">tok/s</span></span>
                       </div>
+                    <% } else { %>
+                      <span class="tps-missing">—</span>
+                    <% } %>
+                  </td>
+                <% } %>
+                <% if (showResponseTimeColumn) { %>
+                  <td class="mobile-hide time-column">
+                    <% if (model.tokenTimes) { %>
+                      <span class="time-value" title="<%= responseTimeTitle(model.tokenTimes, model.tps) %>">
+                        <span><% if (model.tokenTimes.avgResponseSeconds !== null) { %>~<%= formatDuration(model.tokenTimes.avgResponseSeconds) %><% } else { %>—<% } %></span>
+                        <span class="time-tokens"><%= formatTokens(model.tokenTimes.avgOutputTokens) %> tok</span>
+                      </span>
                     <% } else { %>
                       <span class="tps-missing">—</span>
                     <% } %>
@@ -465,6 +508,9 @@
                         const modelTpsTitle = modelTpsDetails
                           ? `Generation speed measured with the "${modelTpsDetails.testName}" prompt: ${modelTpsDetails.evalCount} tokens generated, prompt processing ${modelTpsDetails.promptTps} tok/s`
                           : 'Generation speed (tokens per second)';
+                        // Average response size / estimated time, merged in from `pnpm ollama-token-times` measurements
+                        const modelTokenTimesResult = results.find(result => result.tokenTimes && result.tokenTimes.sampleCount > 0);
+                        const modelTokenTimes = modelTokenTimesResult ? modelTokenTimesResult.tokenTimes : null;
                       %>
                       <button class="accordion-trigger" onclick="toggleAccordion(this)" data-state="open">
                         <span class="model-title">
@@ -475,6 +521,11 @@
                                 <span class="progress-indicator tps-progress-indicator" style="width: <%= tpsPercent(modelTpsResult.tps) %>%; transform: translateX(0);"></span>
                               </span>
                               <%= formatTps(modelTpsResult.tps) %> tok/s
+                            </span>
+                          <% } %>
+                          <% if (modelTokenTimes) { %>
+                            <span class="tps-badge time-badge" title="<%= responseTimeTitle(modelTokenTimes, modelTpsResult ? modelTpsResult.tps : null) %>">
+                              <% if (modelTokenTimes.avgResponseSeconds !== null) { %>~<%= formatDuration(modelTokenTimes.avgResponseSeconds) %> / response<% } else { %><%= formatTokens(modelTokenTimes.avgOutputTokens) %> tok / response<% } %>
                             </span>
                           <% } %>
                         </span>

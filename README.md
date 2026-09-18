@@ -315,6 +315,42 @@ OLLAMA_TPS_TEST=hello-world pnpm ollama-tps
 OLLAMA_TPS_PULL=true pnpm ollama-tps
 ```
 
+### Local Model Response Time (Ollama)
+
+Tokens per second only tells half the story: a model that thinks for thousands of tokens is slow
+even at a high speed. The benchmark run itself does not record token counts, so a separate script
+measures how many output tokens each Ollama model produces per response:
+
+```bash
+pnpm ollama-token-times
+```
+
+For every Ollama model in the benchmark results it sends **one sample per test** (9 requests per model)
+at the model's default temperature and records the token counts and timings Ollama reports in
+`benchmarks/token-times-ollama/<model>.json`. `pnpm merge` (part of `pnpm build`) joins those files
+with the results: the average output token count divided by the model's `tps` estimates how long a
+typical response took, shown as an **Avg. response** column in the leaderboard and as a badge next to
+the model name (hover it for the token count). The measurements only affect the merged report; the
+individual benchmark files are left untouched.
+
+Progress is saved after every sample, so an interrupted run resumes where it stopped, and models whose
+file already covers every test are skipped. `run-ollama-token-times.sh` runs it for a list of models
+one at a time, logging to `logs/`, and rebuilds the report afterwards.
+
+```bash
+# Only the given model(s)
+pnpm ollama-token-times -- --model gpt-oss:20b --model lfm2:24b
+
+# Only list what would be measured
+pnpm ollama-token-times -- --dry-run
+
+# Discard existing samples and measure again
+pnpm ollama-token-times -- --force
+
+# Pull models missing from the Ollama host
+OLLAMA_TOKEN_TIMES_PULL=true pnpm ollama-token-times
+```
+
 ## Current Test Suite
 
 The benchmark includes tests for core Svelte 5 features:

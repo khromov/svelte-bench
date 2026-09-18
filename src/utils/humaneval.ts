@@ -65,6 +65,12 @@ export interface HumanEvalResult {
    */
   tps?: number;
   tpsDetails?: TpsDetails;
+  /**
+   * How many output tokens a typical response contains and, derived from `tps`, how long
+   * it took to generate. Measured separately (see ollama-token-times.ts) and joined in by
+   * merge.ts, so it is only present in the merged results of local (Ollama) models.
+   */
+  tokenTimes?: TokenTimes;
 }
 
 /**
@@ -85,4 +91,45 @@ export interface TpsDetails {
   loadDurationNs: number;
   /** When the measurement was taken (ISO 8601) */
   measuredAt: string;
+}
+
+/**
+ * One measurement request: a single sample of one test prompt, with the counts and
+ * timings Ollama reported for it
+ */
+export interface TokenTimeSample {
+  /** The test whose prompt was sent to the model */
+  testName: string;
+  /** Generated (decode) tokens and how long they took, in nanoseconds, as reported by Ollama */
+  evalCount: number;
+  evalDurationNs: number;
+  /** Prompt (prefill) tokens and how long they took, in nanoseconds, as reported by Ollama */
+  promptEvalCount: number;
+  promptEvalDurationNs: number;
+  /** Wall time of the whole request as seen by Ollama, in nanoseconds */
+  totalDurationNs: number;
+  /** When the sample was taken (ISO 8601) */
+  measuredAt: string;
+}
+
+/**
+ * Average response size of a model, from one sample per test (see ollama-token-times.ts)
+ */
+export interface TokenTimes {
+  /** Number of samples the averages are based on (one per test) */
+  sampleCount: number;
+  /** Mean generated tokens per response */
+  avgOutputTokens: number;
+  /** Mean prompt tokens per request */
+  avgPromptTokens: number;
+  /** Mean generation time per response as timed by Ollama during the measurement, in nanoseconds */
+  avgEvalDurationNs: number;
+  /**
+   * Estimated seconds a typical response took during the benchmark: avgOutputTokens / tps.
+   * Null when the model has no `tps` measurement to divide by.
+   */
+  avgResponseSeconds: number | null;
+  /** When the last sample was taken (ISO 8601) */
+  measuredAt: string;
+  samples: TokenTimeSample[];
 }
