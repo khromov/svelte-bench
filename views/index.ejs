@@ -245,6 +245,9 @@
     <% } %>
 
     <%
+    // Local models are the ones served by Ollama; they get their own leaderboard tab
+    const isLocalProvider = (provider) => provider.toLowerCase() === 'ollama';
+
     // Check if this is the merged results file and calculate top models
     let topModelsList = [];
     if (selectedFile && selectedFile.includes('merged') && groupedResults.length > 0) {
@@ -277,16 +280,22 @@
         });
       });
 
-      // Sort models by average pass@1 in descending order
+      // Sort models by average pass@1 in descending order.
+      // When two Ollama models tie on score, the faster one (higher tokens/second) ranks first.
+      // Non-Ollama models keep their existing order.
       topModelsList = Array.from(modelScores.values())
-        .sort((a, b) => b.averagePass1 - a.averagePass1);
+        .sort((a, b) => {
+          const scoreDiff = b.averagePass1 - a.averagePass1;
+          if (Math.abs(scoreDiff) > 1e-9) return scoreDiff;
+          const bothLocal = isLocalProvider(a.provider) && isLocalProvider(b.provider);
+          if (bothLocal && a.tps !== null && b.tps !== null) return b.tps - a.tps;
+          return 0;
+        });
     }
 
     // Only show the speed column when at least one model has been measured
     const showTpsColumn = topModelsList.some(model => model.tps !== null);
 
-    // Local models are the ones served by Ollama; they get their own leaderboard tab
-    const isLocalProvider = (provider) => provider.toLowerCase() === 'ollama';
     const localModelCount = topModelsList.filter(model => isLocalProvider(model.provider)).length;
 
     // The fastest measured model fills the speed bar completely; everything else is relative to it
