@@ -185,6 +185,9 @@ async function measureSample(
     stream: false,
   });
 
+  // eval_count / eval_duration cover the whole generation, thinking and answer alike: Ollama
+  // counts every decoded token and only separates `message.thinking` from `message.content`
+  // when parsing the text. (Checked: response + thinking length ≈ 3.5 chars per counted token.)
   const evalCount = response.eval_count ?? 0;
   const evalDurationNs = response.eval_duration ?? 0;
 
@@ -194,7 +197,7 @@ async function measureSample(
     );
   }
 
-  return {
+  const sample: TokenTimeSample = {
     testName: test.name,
     evalCount,
     evalDurationNs,
@@ -202,7 +205,13 @@ async function measureSample(
     promptEvalDurationNs: response.prompt_eval_duration ?? 0,
     totalDurationNs: response.total_duration ?? 0,
     measuredAt: new Date().toISOString(),
+    // Kept for manual validation of what the model actually produced
+    prompt,
+    response: response.message?.content ?? "",
   };
+  if (response.message?.thinking) sample.thinking = response.message.thinking;
+
+  return sample;
 }
 
 function formatSeconds(seconds: number): string {
@@ -264,7 +273,8 @@ async function main(): Promise<void> {
     console.log(`\n🤖 [${i + 1}/${work.length}] ${item.modelId}`);
 
     const samples = [...item.existing];
-    let file: TokenTimesFile = { provider: item.provider, modelId: item.modelId, ...summarizeSamples(samples) };
+    const fileHeader = { provider: item.provider, modelId: item.modelId, systemPrompt: DEFAULT_SYSTEM_PROMPT };
+    let file: TokenTimesFile = { ...fileHeader, ...summarizeSamples(samples) };
 
     try {
       await ensureModelInstalled(client, installed, item.modelId, pullMissing, "OLLAMA_TOKEN_TIMES_PULL=true");
@@ -281,7 +291,7 @@ async function main(): Promise<void> {
         samples.push(sample);
 
         // Save after every sample so an interrupted run can resume
-        file = { provider: item.provider, modelId: item.modelId, ...summarizeSamples(samples) };
+        file = { ...fileHeader, ...summarizeSamples(samples) };
         await writeTokenTimesFile(file);
 
         const measuredTps = round(sample.evalCount / (sample.evalDurationNs / 1e9), 1);

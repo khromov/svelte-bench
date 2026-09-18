@@ -1,0 +1,120 @@
+{
+  "provider": "Ollama",
+  "modelId": "ornith-1.5:35b-q4_K_M",
+  "systemPrompt": "You are an expert Svelte developer. Generate only the Svelte component code requested. Return just the code with no explanation, comments, or markdown. Runes starting with $ like $state and $effect are never imported, they are built-in.",
+  "sampleCount": 9,
+  "avgOutputTokens": 310,
+  "avgPromptTokens": 311.4,
+  "avgEvalDurationNs": 12182717000,
+  "measuredAt": "2026-09-18T02:54:26.734Z",
+  "samples": [
+    {
+      "testName": "counter",
+      "evalCount": 240,
+      "evalDurationNs": 9412548000,
+      "promptEvalCount": 290,
+      "promptEvalDurationNs": 2277044000,
+      "totalDurationNs": 11753411619,
+      "measuredAt": "2026-09-18T02:52:31.754Z",
+      "prompt": "# Counter Component Task\n\nCreate a Svelte 5 component called Counter that implements a simple counter with increment and decrement functionality.\n\n## Requirements:\n\n1. Use Svelte 5's `$state` for reactivity\n2. The counter should start at 0\n3. Include a decrement button with the `data-testid=\"decrement-button\"` attribute\n4. Include an increment button with the `data-testid=\"increment-button\"` attribute\n5. Display the current count with the `data-testid=\"count-value\"` attribute\n6. Clicking increment should increase the count by 1\n7. Clicking decrement should decrease the count by 1\n8. Style the counter with a CSS class \"counter\"\n\nExample structure:\n\n```html\n<div class=\"counter\">\n  <button data-testid=\"decrement-button\">-</button>\n  <span data-testid=\"count-value\">0</span>\n  <button data-testid=\"increment-button\">+</button>\n</div>\n```\n\nPlease implement this component using Svelte 5 syntax. Make sure you only return one component.\n",
+      "response": "```svelte\n<script>\n  let count = $state(0);\n</script>\n\n<div class=\"counter\">\n  <button data-testid=\"decrement-button\" onclick={() => (count -= 1)}>-</button>\n  <span data-testid=\"count-value\">{count}</span>\n  <button data-testid=\"increment-button\" onclick={() => (count += 1)}>+</button>\n</div>\n\n<style>\n  .counter {\n    display: flex;\n    align-items: center;\n    gap: 16px;\n  }\n\n  button {\n    cursor: pointer;\n    font-size: 1.25rem;\n    padding: 4px 12px;\n  }\n\n  span {\n    min-width: 2ch;\n    text-align: center;\n  }\n</style>\n```",
+      "thinking": "The user wants a Svelte 5 Counter component. Let me create it with $state for reactivity.\n\nI'll use Svelte 5 syntax with runes. Since $state is built-in, I don't import it.\n"
+    },
+    {
+      "testName": "derived",
+      "evalCount": 209,
+      "evalDurationNs": 8202659000,
+      "promptEvalCount": 270,
+      "promptEvalDurationNs": 1655832000,
+      "totalDurationNs": 9955521098,
+      "measuredAt": "2026-09-18T02:52:41.727Z",
+      "prompt": "# $effect Rune Component Task\n\nCreate a simple Svelte 5 component that demonstrates the `$derived` rune.\n\n## Requirements:\n\n1. Use `$state` for a number input starting at 5\n2. Use `$derived` to calculate the doubled value of the number\n3. Display both the number and the doubled value\n4. Include a button to increment the number by 1\n\nElements should have these data-testid attributes:\n\n- \"number-value\" for displaying the number\n- \"doubled-value\" for displaying the doubled result\n- \"increment-button\" for the increment button\n\nExample structure:\n\n```html\n<div>\n  <p data-testid=\"number-value\">Number: {number}</p>\n  <p data-testid=\"doubled-value\">Doubled: {doubled}</p>\n  <button data-testid=\"increment-button\">Increment</button>\n</div>\n```\n\nPlease implement this component using Svelte 5 runes.\n",
+      "response": "```svelte\n<script>\n  let number = $state(5);\n  let doubled = $derived(number * 2);\n</script>\n\n<div>\n  <p data-testid=\"number-value\">Number: {number}</p>\n  <p data-testid=\"doubled-value\">Doubled: {doubled}</p>\n  <button data-testid=\"increment-button\" onclick={() => number += 1}>Increment</button>\n</div>\n```",
+      "thinking": "The user wants a simple Svelte 5 component demonstrating the $derived rune. Let me create it.\n\nRequirements:\n1. $state for a number input starting at 5\n2. $derived to calculate doubled value\n3. Display both number and doubled value\n4. Button to increment by 1\n\ndata-testid attributes:\n- \"number-value\" for number\n- \"doubled-value\" for doubled\n- \"increment-button\" for button\n\nLet me write the component.\n"
+    },
+    {
+      "testName": "derived-by",
+      "evalCount": 366,
+      "evalDurationNs": 14376593000,
+      "promptEvalCount": 393,
+      "promptEvalDurationNs": 1963382000,
+      "totalDurationNs": 16457436646,
+      "measuredAt": "2026-09-18T02:52:58.203Z",
+      "prompt": "# $derived.by Component Task\n\nCreate a Svelte 5 component that demonstrates the `$derived.by` rune for complex derivations.\n\n## Requirements:\n\n1. Create a text input field that allows the user to enter text\n2. Use `$state` to store the current text value, starting with an empty string\n3. Use `$derived.by` to calculate:\n   - The number of words in the text\n   - The number of characters in the text\n   - Whether the text is considered \"long\" (more than 15 words)\n4. Display all these derived values below the input field\n5. Include a \"Clear\" button that resets the text to an empty string\n\nElements should have these data-testid attributes:\n\n- \"text-input\" for the input field\n- \"word-count\" for displaying the word count\n- \"char-count\" for displaying the character count\n- \"length-indicator\" for displaying whether the text is long\n- \"clear-button\" for the clear button\n\nExample structure:\n\n```html\n<div>\n  <input data-testid=\"text-input\" type=\"text\" />\n  <button data-testid=\"clear-button\">Clear</button>\n  <div>\n    <p data-testid=\"word-count\">Words: 0</p>\n    <p data-testid=\"char-count\">Characters: 0</p>\n    <p data-testid=\"length-indicator\">Status: Short text</p>\n  </div>\n</div>\n```\n\nPlease implement this component using Svelte 5 runes.\n",
+      "response": "```svelte\n<script>\n\tlet text = $state('');\n\n\tconst wordCount = $derived.by(() => {\n\t\tif (text.trim() === '') {\n\t\t\treturn 0;\n\t\t}\n\t\treturn text.trim().split(/\\s+/).length;\n\t});\n\n\tconst charCount = $derived.by(() => text.length);\n\n\tconst isLong = $derived.by(() => {\n\t\treturn wordCount > 15;\n\t});\n</script>\n\n<div>\n\t<input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n\t<button data-testid=\"clear-button\" onclick={() => (text = '')}>Clear</button>\n\t<div>\n\t\t<p data-testid=\"word-count\">Words: {wordCount}</p>\n\t\t<p data-testid=\"char-count\">Characters: {charCount}</p>\n\t\t<p data-testid=\"length-indicator\">Status: {isLong ? 'Long text' : 'Short text'}</p>\n\t</div>\n</div>\n```",
+      "thinking": "Let me create a Svelte 5 component using runes that demonstrates `$derived.by`.\n\nRequirements:\n1. Text input field\n2. `$state` for storing current text, starting empty\n3. `$derived.by` to calculate word count, char count, and whether long (>15 words)\n4. Display derived values\n5. Clear button to reset to empty string\n\ndata-testid attributes:\n- \"text-input\" for input\n- \"word-count\" for word count\n- \"char-count\" for char count\n- \"length-indicator\" for whether text is long\n- \"clear-button\" for clear button\n\nLet me write the component.\n"
+    },
+    {
+      "testName": "each",
+      "evalCount": 170,
+      "evalDurationNs": 6651376000,
+      "promptEvalCount": 286,
+      "promptEvalDurationNs": 1580219000,
+      "totalDurationNs": 8356685704,
+      "measuredAt": "2026-09-18T02:53:06.574Z",
+      "prompt": "# Each Block Component Task\n\nCreate a simple Svelte 5 component that demonstrates the `{#each}` block.\n\n## Requirements:\n\n1. Create a component with a hardcoded array of 3 Seinfeld characters: \"Jerry\", \"Elaine\", \"Kramer\"\n2. Use the `{#each}` block to render all characters in a list\n3. Add a button that adds another character \"George\" to the array when clicked\n4. Each item should display just the character name\n\nElements should have these data-testid attributes:\n\n- \"characters-list\" for the list container\n- \"character\" for each character item\n- \"add-george-button\" for the button to add George\n\nExample structure:\n\n```html\n<div>\n  <ul data-testid=\"characters-list\">\n    <li data-testid=\"character\">Jerry</li>\n    ...\n  </ul>\n  <button data-testid=\"add-george-button\">Add George</button>\n</div>\n```\n\nPlease implement this component using Svelte 5 runes.\n",
+      "response": "```svelte\n<script>\n  let characters = $state([\"Jerry\", \"Elaine\", \"Kramer\"]);\n\n  function addGeorge() {\n    characters = [...characters, \"George\"];\n  }\n</script>\n\n<div>\n  <ul data-testid=\"characters-list\">\n    {#each characters as character (character)}\n      <li data-testid=\"character\">{character}</li>\n    {/each}\n  </ul>\n  <button data-testid=\"add-george-button\" onclick={addGeorge}>Add George</button>\n</div>\n```",
+      "thinking": "The user wants a Svelte 5 component using runes. I need to create an array of characters and render them with {#each}. Add a button to add George.\n\nLet me write this.\n"
+    },
+    {
+      "testName": "effect",
+      "evalCount": 174,
+      "evalDurationNs": 6802084000,
+      "promptEvalCount": 270,
+      "promptEvalDurationNs": 1563759000,
+      "totalDurationNs": 8486303042,
+      "measuredAt": "2026-09-18T02:53:15.075Z",
+      "prompt": "# $effect Rune Component Task\n\nCreate a simple Svelte 5 component that demonstrates the `$effect` rune.\n\n## Requirements:\n\n1. Use `$state` for a number input starting at 5\n2. Use `$effect` to calculate the doubled value of the number\n3. Display both the number and the doubled value\n4. Include a button to increment the number by 1\n\nElements should have these data-testid attributes:\n\n- \"number-value\" for displaying the number\n- \"doubled-value\" for displaying the doubled result\n- \"increment-button\" for the increment button\n\nExample structure:\n\n```html\n<div>\n  <p data-testid=\"number-value\">Number: {number}</p>\n  <p data-testid=\"doubled-value\">Doubled: {doubled}</p>\n  <button data-testid=\"increment-button\">Increment</button>\n</div>\n```\n\nPlease implement this component using Svelte 5 runes.\n",
+      "response": "```svelte\n<script>\n  let number = $state(5);\n  let doubled = $state(0);\n\n  $effect(() => {\n    doubled = number * 2;\n  });\n</script>\n\n<div>\n  <p data-testid=\"number-value\">Number: {number}</p>\n  <p data-testid=\"doubled-value\">Doubled: {doubled}</p>\n  <button data-testid=\"increment-button\" onclick={() => number += 1}>Increment</button>\n</div>\n```",
+      "thinking": "The user wants a Svelte 5 component using runes. Let me create it.\n\nI need to use `$state` for a number, `$effect` for doubling, display both, and a button to increment.\n\nLet me write this.\n"
+    },
+    {
+      "testName": "hello-world",
+      "evalCount": 176,
+      "evalDurationNs": 6879044000,
+      "promptEvalCount": 225,
+      "promptEvalDurationNs": 1402382000,
+      "totalDurationNs": 8403536851,
+      "measuredAt": "2026-09-18T02:53:23.491Z",
+      "prompt": "# Hello World Component Task\n\nCreate a simple Svelte 5 component that displays \"Hello, World!\" with some styling.\n\n## Requirements:\n\n1. Create a Svelte component called HelloWorld\n2. The component should display the text \"Hello, World!\" in a div with data-testid=\"greeting\"\n3. Add a CSS class \"greeting\" to style the text\n4. Make the text color blue\n5. Center the text on the page\n6. Add a small margin around the text\n\nExample structure (you can modify it as needed):\n\n```html\n<div data-testid=\"greeting\" class=\"greeting\">Hello, World!</div>\n```\n\nPlease implement this component using Svelte 5 syntax. Make sure you only return one component.\n",
+      "response": "```svelte\n<script>\n\tlet greeting = $state(\"Hello, World!\");\n</script>\n\n<div data-testid=\"greeting\" class=\"greeting\">{greeting}</div>\n\n<style>\n\t.greeting {\n\t\tcolor: blue;\n\t\ttext-align: center;\n\t\tmargin: 1rem;\n\t}\n</style>\n```",
+      "thinking": "The user wants a simple Svelte 5 component that displays \"Hello, World!\". Let me create it with the required styling.\n\nRequirements:\n1. Component called HelloWorld\n2. Display \"Hello, World!\" in a div with data-testid=\"greeting\"\n3. CSS class \"greeting\"\n4. Blue text color\n5. Center text on page\n6. Small margin around text\n\nLet me write this in Svelte 5 syntax.\n"
+    },
+    {
+      "testName": "inspect",
+      "evalCount": 901,
+      "evalDurationNs": 35554638000,
+      "promptEvalCount": 323,
+      "promptEvalDurationNs": 1770207000,
+      "totalDurationNs": 37442796769,
+      "measuredAt": "2026-09-18T02:54:00.944Z",
+      "prompt": "# $inspect Rune Component Task\n\nCreate a Svelte 5 component that demonstrates the `$inspect` rune functionality using a single input field.\n\n## Requirements:\n\n1. Use Svelte 5's `$state` for a text input starting with \"Hello world\"\n2. Use basic `$inspect` to log the input value\n3. Implement `$inspect(...).with` to track updates to the input with a custom callback\n4. Implement `$inspect.trace()` inside an effect that runs when the input changes\n5. Display the character count of the input text (to demonstrate a derived value that depends on the input)\n6. Include an input field with `data-testid=\"text-input\"`\n7. Display the input value with `data-testid=\"text-value\"`\n8. Display the character count with `data-testid=\"char-count\"`\n\nExample structure:\n\n```html\n<div>\n  <input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n  <p data-testid=\"text-value\">Current text: \"{text}\"</p>\n  <p data-testid=\"char-count\">Character count: {text.length}</p>\n</div>\n```\n\nPlease implement this component using Svelte 5 runes.\n",
+      "response": "```svelte\n<script>\n  let text = $state(\"Hello world\");\n\n  // Basic $inspect - logs the input value whenever it changes\n  $inspect(text);\n\n  // $inspect(...).with - custom callback to track updates to the input\n  $inspect(text).with((value) => {\n    console.log(\"Custom callback: text changed to\", value);\n  });\n\n  // Effect that runs when the input changes, using $inspect.trace()\n  $effect(() => {\n    $inspect.trace();\n    console.log(\"Effect ran with text:\", text);\n  });\n</script>\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n  <p data-testid=\"text-value\">Current text: \"{text}\"</p>\n  <p data-testid=\"char-count\">Character count: {text.length}</p>\n</div>\n```",
+      "thinking": "The user wants me to create a Svelte 5 component that demonstrates the `$inspect` rune functionality.\n\nRequirements:\n1. Use `$state` for a text input starting with \"Hello world\"\n2. Use basic `$inspect` to log the input value\n3. Implement `$inspect(...).with` to track updates with a custom callback\n4. Implement `$inspect.trace()` inside an effect\n5. Display character count\n6. Input field with `data-testid=\"text-input\"`\n7. Display input value with `data-testid=\"text-value\"`\n8. Display character count with `data-testid=\"char-count\"`\n\nLet me create this component:\n\n```svelte\n<script>\n  let text = $state(\"Hello world\");\n\n  // Basic $inspect - logs the input value\n  $inspect(text);\n\n  // $inspect(...).with - custom callback to track updates\n  $inspect(text).with((value) => {\n    console.log(\"Custom callback: text changed to\", value);\n  });\n</script>\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n  <p data-testid=\"text-value\">Current text: \"{text}\"</p>\n  <p data-testid=\"char-count\">Character count: {text.length}</p>\n</div>\n```\n\nWait, I need to think about the `$inspect.trace()` requirement and the effect. Let me reconsider.\n\nFor `$inspect.trace()`, it's used inside effects or derived to trace the specific reactive values that are accessed. Let me add an effect.\n\nActually, the `$inspect.trace()` is typically used inside an effect. Let me structure this properly.\n\nThe `$inspect` call needs to be inside `<script>`. For `$inspect.trace()`, it should be inside an `$effect`.\n\nLet me write:\n\n```svelte\n<script>\n  let text = $state(\"Hello world\");\n\n  // Basic $inspect - logs the input value\n  $inspect(text);\n\n  // $inspect(...).with - custom callback to track updates\n  $inspect(text).with((value) => {\n    console.log(\"Custom callback: text changed to\", value);\n  });\n\n  // Effect with $inspect.trace()\n  $effect(() => {\n    $inspect.trace();\n  });\n</script>\n```\n\nHmm, but the requirement says \"Implement `$inspect.trace()` inside an effect that runs when the input changes\". So the effect should depend on the text value.\n\nLet me write:\n\n```svelte\n<script>\n  let text = $state(\"Hello world\");\n\n  // Basic $inspect - logs the input value\n  $inspect(text);\n\n  // $inspect(...).with - custom callback to track updates\n  $inspect(text).with((value) => {\n    console.log(\"Custom callback: text changed to\", value);\n  });\n\n  // Effect with $inspect.trace()\n  $effect(() => {\n    $inspect.trace();\n    console.log(\"Effect ran. text is now:\", text);\n  });\n</script>\n```\n\nThis should work. The effect depends on `text` so it runs when text changes, and `$inspect.trace()` traces the reactive reads within it.\n\nLet me finalize the component.\n"
+    },
+    {
+      "testName": "props",
+      "evalCount": 320,
+      "evalDurationNs": 12586699000,
+      "promptEvalCount": 442,
+      "promptEvalDurationNs": 2099453000,
+      "totalDurationNs": 14809153995,
+      "measuredAt": "2026-09-18T02:54:15.762Z",
+      "prompt": "# $props Rune Component Task\n\nCreate a Svelte 5 component that demonstrates the `$props` rune for accepting and using component properties.\n\n## Requirements:\n\n1. Create a component called PropsDemo that uses the `$props` rune to accept the following properties:\n\n   - `name` (string) with a default value of \"World\"\n   - `count` (number) with a default value of 0\n   - `showDetails` (boolean) with a default value of false\n\n2. Use `$state` to create a reactive variable for the count that can be updated\n3. Display the name in a heading with `data-testid=\"name-display\"`\n4. Display the count value in a paragraph with `data-testid=\"count-display\"`\n5. Include a button with `data-testid=\"increment-button\"` that increments the count by 1\n6. If `showDetails` is true, display a div with `data-testid=\"details\"` containing additional information about the props\n7. If `showDetails` is false, this div should not be rendered\n\nExample HTML structure:\n\n```html\n<div>\n  <h1 data-testid=\"name-display\">Hello, World!</h1>\n  <p data-testid=\"count-display\">Count: 0</p>\n  <button data-testid=\"increment-button\">Increment</button>\n\n  <div data-testid=\"details\">\n    <p>Name is World</p>\n    <p>Count is 0</p>\n    <p>ShowDetails is true</p>\n  </div>\n</div>\n```\n\nNote: The details div should only be shown when showDetails is true.\n\nPlease implement this component using Svelte 5 syntax with the `$props` rune. Make sure you only return one component.\n",
+      "response": "```svelte\n<script>\n  let { name = \"World\", count = 0, showDetails = false } = $props();\n\n  let localCount = $state(count);\n\n  function increment() {\n    localCount += 1;\n  }\n</script>\n\n<div>\n  <h1 data-testid=\"name-display\">Hello, {name}!</h1>\n  <p data-testid=\"count-display\">Count: {localCount}</p>\n  <button data-testid=\"increment-button\" onclick={increment}>Increment</button>\n\n  {#if showDetails}\n    <div data-testid=\"details\">\n      <p>Name is {name}</p>\n      <p>Count is {localCount}</p>\n      <p>ShowDetails is {showDetails}</p>\n    </div>\n  {/if}\n</div>\n```",
+      "thinking": "The user wants a Svelte 5 component using the `$props` rune. Let me create the PropsDemo component.\n\nI need to:\n1. Use `$props` rune to accept name, count, showDetails with defaults\n2. Use `$state` for count that can be updated\n3. Display name in h1 with data-testid=\"name-display\"\n4. Display count in p with data-testid=\"count-display\"\n5. Button with data-testid=\"increment-button\" that increments count\n6. If showDetails true, display div with data-testid=\"details\"\n\nLet me write the component.\n"
+    },
+    {
+      "testName": "snippets",
+      "evalCount": 234,
+      "evalDurationNs": 9178812000,
+      "promptEvalCount": 304,
+      "promptEvalDurationNs": 1659499000,
+      "totalDurationNs": 10960137160,
+      "measuredAt": "2026-09-18T02:54:26.734Z",
+      "prompt": "# Snippet Component Task\n\nCreate a simple Svelte 5 component that demonstrates the basic use of snippets.\n\n## Requirements:\n\n1. Create a component with a hardcoded array of 3 book titles (strings) - \"The Lord of the Rings\", \"To Kill a Mockingbird\", and \"1984\"\n2. Create a snippet called `title` that takes a book title string as a parameter\n3. The snippet should display the book title in a `<span>` element with `data-testid=\"book-title\"`\n4. Use the `{@render ...}` syntax to render the snippet for each book title in a list\n5. Each rendered title should be wrapped in a `<li>` element with `data-testid=\"book-item\"`\n\n## Example HTML structure:\n\n```html\n<ul>\n  <li data-testid=\"book-item\">The Lord of the Rings</li>\n  <li data-testid=\"book-item\">To Kill a Mockingbird</li>\n  <li data-testid=\"book-item\">1984</li>\n</ul>\n```\n\nPlease implement this component using Svelte 5 runes.\n",
+      "response": "```svelte\n<script>\n\tconst books = [\n\t\t\"The Lord of the Rings\",\n\t\t\"To Kill a Mockingbird\",\n\t\t\"1984\"\n\t];\n\n\tfunction title(book) {\n\t\t<>\n\t\t\t<span data-testid=\"book-title\">{book}</span>\n\t\t</>\n\t}\n</script>\n\n<ul>\n\t{#each books as book}\n\t\t<li data-testid=\"book-item\">\n\t\t\t{@render title(book)}\n\t\t</li>\n\t{/each}\n</ul>\n```",
+      "thinking": "The user wants a Svelte 5 component demonstrating snippets. Let me write the code.\n\nThe component should:\n1. Have a hardcoded array of 3 book titles\n2. Create a snippet `title` that takes a book title string parameter\n3. Display in a `<span>` with `data-testid=\"book-title\"`\n4. Use `{@render ...}` to render for each book\n5. Each wrapped in `<li>` with `data-testid=\"book-item\"`\n\nLet me write this.\n"
+    }
+  ]
+}

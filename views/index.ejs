@@ -334,7 +334,7 @@
     // Tooltip explaining where a response time figure comes from
     const responseTimeTitle = (tokenTimes, tps) => {
       const samples = `${tokenTimes.sampleCount} sample${tokenTimes.sampleCount === 1 ? '' : 's'}, one per test`;
-      const tokens = `${formatTokens(tokenTimes.avgOutputTokens)} output tokens per response on average (${samples})`;
+      const tokens = `${formatTokens(tokenTimes.avgOutputTokens)} output tokens per response on average, thinking included (${samples})`;
       return tokenTimes.avgResponseSeconds !== null && tps
         ? `Estimated time per response: ${tokens} at ${formatTps(tps)} tok/s`
         : `${tokens}; no speed measurement, so no time estimate`;
@@ -390,12 +390,21 @@
             <tr>
               <th style="width: 60px; text-align: center;">Rank</th>
               <th>Model</th>
-              <th style="width: 200px;">Score</th>
+              <th style="width: 200px;">
+                <% if (showResponseTimeColumn) { %>
+                  <%# Sorting is only offered in the local models tab; the buttons stay disabled elsewhere %>
+                  <button type="button" class="sort-button" data-sort="score" disabled>Score<span class="sort-indicator" aria-hidden="true"></span></button>
+                <% } else { %>
+                  Score
+                <% } %>
+              </th>
               <% if (showTpsColumn) { %>
                 <th class="mobile-hide tps-column" style="width: 180px;" title="Generation speed measured via Ollama on the benchmark hardware (tokens per second), relative to the fastest measured model">Speed</th>
               <% } %>
               <% if (showResponseTimeColumn) { %>
-                <th class="mobile-hide time-column" style="width: 140px;" title="Estimated time per response: average output tokens (one sample per test, measured via Ollama) divided by the measured speed">Avg. response</th>
+                <th class="mobile-hide time-column" style="width: 140px;" title="Estimated time per response: average output tokens including thinking (one sample per test, measured via Ollama) divided by the measured speed. In the local models tab, click to sort by it.">
+                  <button type="button" class="sort-button" data-sort="time" disabled>Avg. response<span class="sort-indicator" aria-hidden="true"></span></button>
+                </th>
               <% } %>
             </tr>
           </thead>
@@ -405,7 +414,8 @@
                   data-rank="<%= index + 1 %>"
                   data-model-name="<%= model.model.toLowerCase() %>"
                   data-provider-name="<%= model.provider.toLowerCase() %>"
-                  data-local="<%= isLocalProvider(model.provider) ? 'true' : 'false' %>">
+                  data-local="<%= isLocalProvider(model.provider) ? 'true' : 'false' %>"
+                  data-response-seconds="<%= model.tokenTimes && model.tokenTimes.avgResponseSeconds !== null ? model.tokenTimes.avgResponseSeconds : '' %>">
                 <td style="text-align: center;">
                   <span class="rank rank-<%= index + 1 %>"><%= index + 1 %></span>
                 </td>
@@ -1071,6 +1081,13 @@
           const VALID_TABS = ['all', 'local'];
           let activeTab = 'all';
 
+          // Sorting by estimated response time is offered in the local models tab only, since
+          // only local models have that figure. 'score' is the default leaderboard order.
+          const tbody = document.getElementById('top-models-tbody');
+          const sortButtons = Array.from(document.querySelectorAll('.top-models-table .sort-button'));
+          const VALID_SORTS = ['score', 'time', 'time-desc'];
+          let sortMode = 'score';
+
           // Restore state from the URL
           const urlParams = new URLSearchParams(window.location.search);
           const initialTab = urlParams.get('tab');
@@ -1081,8 +1098,13 @@
           if (searchQuery) {
             searchInput.value = searchQuery;
           }
+          const initialSort = urlParams.get('sort');
+          if (sortButtons.length > 0 && VALID_SORTS.includes(initialSort)) {
+            sortMode = initialSort;
+          }
 
           renderTabs();
+          applySort();
           applyFilters();
 
           // Search as you type
@@ -1096,7 +1118,29 @@
             tab.addEventListener('click', () => {
               activeTab = tab.getAttribute('data-tab');
               renderTabs();
+              applySort();
               applyFilters();
+              updateUrl();
+            });
+          });
+
+          // Sort headers: "Avg. response" toggles fastest-first / slowest-first, "Score" restores the default
+          sortButtons.forEach(button => {
+            button.addEventListener('click', () => {
+              if (activeTab !== 'local') return;
+              if (button.getAttribute('data-sort') === 'time') {
+                sortMode = sortMode === 'time' ? 'time-desc' : 'time';
+              } else {
+                sortMode = 'score';
+              }
+
+              // Re-filtering collapses the list to the top 5, so put it back if it was expanded
+              const expandBtn = expandButton && expandButton.querySelector('.btn[onclick="toggleTopModels()"]');
+              const wasExpanded = expandBtn && expandBtn.classList.contains('expanded');
+
+              applySort();
+              applyFilters();
+              if (wasExpanded && searchInput.value.trim() === '') toggleTopModels();
               updateUrl();
             });
           });
@@ -1114,7 +1158,74 @@
             } else {
               url.searchParams.delete('tab');
             }
+            if (effectiveSort() !== 'score') {
+              url.searchParams.set('sort', sortMode);
+            } else {
+              url.searchParams.delete('sort');
+            }
             window.history.replaceState({}, '', url);
+          }
+
+          // The sort only applies in the local tab; every other view keeps the score order
+          function effectiveSort() {
+            return activeTab === 'local' ? sortMode : 'score';
+          }
+
+          // Reorder the rows in the DOM, then let applyFilters() decide which ones are visible
+          function applySort() {
+            if (!tbody) return;
+
+            const mode = effectiveSort();
+            const rank = (row) => Number(row.getAttribute('data-rank'));
+            const seconds = (row) => {
+              const value = row.getAttribute('data-response-seconds');
+              return value === null || value === '' ? null : Number(value);
+            };
+
+            const rows = Array.from(tbody.querySelectorAll('.top-model-row'));
+            rows.sort((a, b) => {
+              if (mode === 'score') return rank(a) - rank(b);
+
+              // Models without a measurement go last in either direction
+              const secondsA = seconds(a);
+              const secondsB = seconds(b);
+              if (secondsA === null || secondsB === null) {
+                if (secondsA === secondsB) return rank(a) - rank(b);
+                return secondsA === null ? 1 : -1;
+              }
+
+              const diff = mode === 'time' ? secondsA - secondsB : secondsB - secondsA;
+              return diff !== 0 ? diff : rank(a) - rank(b);
+            });
+            rows.forEach(row => tbody.appendChild(row));
+
+            renderSortButtons();
+          }
+
+          function renderSortButtons() {
+            const mode = effectiveSort();
+            const enabled = activeTab === 'local';
+
+            sortButtons.forEach(button => {
+              const isTime = button.getAttribute('data-sort') === 'time';
+              const isActive = enabled && (isTime ? mode !== 'score' : mode === 'score');
+              const descending = !isTime || mode === 'time-desc';
+
+              button.disabled = !enabled;
+              button.classList.toggle('active', isActive);
+
+              const indicator = button.querySelector('.sort-indicator');
+              if (indicator) indicator.textContent = !enabled ? '' : !isActive ? '↕' : descending ? '↓' : '↑';
+
+              const th = button.closest('th');
+              if (th) {
+                if (isActive) {
+                  th.setAttribute('aria-sort', descending ? 'descending' : 'ascending');
+                } else {
+                  th.removeAttribute('aria-sort');
+                }
+              }
+            });
           }
 
           function renderTabs() {

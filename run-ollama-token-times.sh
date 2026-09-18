@@ -2,7 +2,8 @@
 # Measure output tokens per response (one sample per test) for each Ollama model, one at a time,
 # then rebuild the report so the estimated response time shows up next to the speed figure.
 # Host comes from OLLAMA_HOST in .env. A failed model is logged and skipped; progress is saved
-# per sample, so re-running the script resumes where it stopped.
+# per sample, so re-running the script resumes where it stopped. Extra arguments are passed
+# through to pnpm ollama-token-times, e.g. ./run-ollama-token-times.sh --force
 set -uo pipefail
 cd "$(dirname "$0")"
 
@@ -40,7 +41,7 @@ failed=()
 
 for model in "${MODELS[@]}"; do
   echo "=== $(date '+%F %T') Starting $model ==="
-  if pnpm ollama-token-times -- --model "$model" 2>&1 | tee "logs/ollama-token-times-${model//[\/:]/_}.log"; then
+  if pnpm ollama-token-times -- --model "$model" "$@" 2>&1 | tee "logs/ollama-token-times-${model//[\/:]/_}.log"; then
     echo "=== $(date '+%F %T') Finished $model ==="
   else
     echo "=== $(date '+%F %T') FAILED $model ==="

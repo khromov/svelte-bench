@@ -327,10 +327,12 @@ pnpm ollama-token-times
 
 For every Ollama model in the benchmark results it sends **one sample per test** (9 requests per model)
 at the model's default temperature and records the token counts and timings Ollama reports in
-`benchmarks/token-times-ollama/<model>.json`. `pnpm merge` (part of `pnpm build`) joins those files
+`benchmarks/token-times-ollama/<model>.json`. The counts cover everything the model generated,
+thinking tokens included, and each sample keeps the prompt and raw response for manual validation. `pnpm merge` (part of `pnpm build`) joins those files
 with the results: the average output token count divided by the model's `tps` estimates how long a
 typical response took, shown as an **Avg. response** column in the leaderboard and as a badge next to
-the model name (hover it for the token count). The measurements only affect the merged report; the
+the model name (hover it for the token count). In the **Local models** tab the leaderboard can be
+sorted by that column (click the header; click **Score** to return to the default order). The measurements only affect the merged report; the
 individual benchmark files are left untouched.
 
 Progress is saved after every sample, so an interrupted run resumes where it stopped, and models whose

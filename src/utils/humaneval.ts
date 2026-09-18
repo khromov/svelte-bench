@@ -100,7 +100,11 @@ export interface TpsDetails {
 export interface TokenTimeSample {
   /** The test whose prompt was sent to the model */
   testName: string;
-  /** Generated (decode) tokens and how long they took, in nanoseconds, as reported by Ollama */
+  /**
+   * Generated (decode) tokens and how long they took, in nanoseconds, as reported by Ollama.
+   * Covers everything the model generated, thinking/reasoning tokens included, since Ollama
+   * counts the whole decode loop and only splits thinking out of the text afterwards.
+   */
   evalCount: number;
   evalDurationNs: number;
   /** Prompt (prefill) tokens and how long they took, in nanoseconds, as reported by Ollama */
@@ -110,6 +114,14 @@ export interface TokenTimeSample {
   totalDurationNs: number;
   /** When the sample was taken (ISO 8601) */
   measuredAt: string;
+  /**
+   * What was sent and what came back, kept in the measurement files for manual validation.
+   * Stripped by merge.ts, so they never reach the merged results or the report.
+   */
+  prompt?: string;
+  response?: string;
+  /** Reasoning content, when Ollama returns it separately from the response */
+  thinking?: string;
 }
 
 /**
@@ -118,7 +130,7 @@ export interface TokenTimeSample {
 export interface TokenTimes {
   /** Number of samples the averages are based on (one per test) */
   sampleCount: number;
-  /** Mean generated tokens per response */
+  /** Mean generated tokens per response, thinking tokens included */
   avgOutputTokens: number;
   /** Mean prompt tokens per request */
   avgPromptTokens: number;

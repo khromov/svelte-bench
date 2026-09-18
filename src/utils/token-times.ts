@@ -17,6 +17,8 @@ export const TOKEN_TIMES_DIR_NAME = "token-times-ollama";
 export interface TokenTimesFile extends Omit<TokenTimes, "avgResponseSeconds"> {
   provider: string;
   modelId: string;
+  /** The system prompt every sample was sent with (the user prompt is stored per sample) */
+  systemPrompt?: string;
 }
 
 export function getTokenTimesDir(): string {
@@ -111,11 +113,15 @@ export async function loadAllTokenTimes(): Promise<Map<string, TokenTimesFile>> 
  * estimating the response time from the model's tokens per second
  */
 export function toTokenTimes(file: TokenTimesFile, tps: number | undefined): TokenTimes {
-  const { provider: _provider, modelId: _modelId, ...measurement } = file;
+  const { provider: _provider, modelId: _modelId, systemPrompt: _systemPrompt, ...measurement } = file;
   const hasTps = typeof tps === "number" && Number.isFinite(tps) && tps > 0;
 
   return {
     ...measurement,
+    // The prompts and responses are for manual validation only; keep them out of the report
+    samples: measurement.samples.map(
+      ({ prompt: _prompt, response: _response, thinking: _thinking, ...sample }) => sample,
+    ),
     avgResponseSeconds: hasTps && measurement.sampleCount > 0 ? round(measurement.avgOutputTokens / tps, 1) : null,
   };
 }
