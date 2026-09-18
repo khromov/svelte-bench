@@ -22,7 +22,7 @@ MODELS=(
   # NEW RUN: Delete above models first
   #"glm-4.7-flash:q4_K_M"
   #"qwen3.6:27b-coding-mtp-q4_K_M"
-  "gemma4:12b-it-q4_K_M" 
+  #"gemma4:12b-it-q4_K_M"  # <- this one just WILL NOT RUN
   "lfm2:24b"
   "hf.co/bartowski/nex-agi_Nex-N2.5-mini-GGUF:Q4_K_M"
   "JetBrains/mellum2-instruct-q4_k_m"
