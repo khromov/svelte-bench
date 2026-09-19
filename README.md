@@ -251,7 +251,7 @@ SvelteBench automatically saves checkpoints at the sample level, allowing you to
 
 - Checkpoints are saved in `tmp/checkpoint/` after each sample completion
 - If a run is interrupted, it will automatically resume from the last checkpoint
-- Checkpoints are cleaned up after successful completion
+- Checkpoints are cleaned up once every sample is recorded. If samples were dropped after API failures (e.g. timeouts), the checkpoint is kept and the next run of the same model (with the same sample count and context) retries only the missing samples
 
 ### Retry Mechanism
 

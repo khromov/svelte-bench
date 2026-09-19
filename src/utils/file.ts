@@ -318,6 +318,21 @@ export async function removeTestCheckpoint(provider: string, modelId: string, te
 }
 
 /**
+ * Replace a file's contents atomically: write a temporary sibling, then rename it into place.
+ * An interrupted write leaves the original file intact instead of truncated.
+ */
+export async function writeFileAtomic(filePath: string, content: string): Promise<void> {
+  const tempPath = `${filePath}.${process.pid}.${Date.now()}.tmp`;
+  try {
+    await fs.writeFile(tempPath, content);
+    await fs.rename(tempPath, filePath);
+  } catch (error) {
+    await fs.rm(tempPath, { force: true }).catch(() => undefined);
+    throw error;
+  }
+}
+
+/**
  * Save checkpoint data to file
  * @param provider The provider name
  * @param modelId The model identifier

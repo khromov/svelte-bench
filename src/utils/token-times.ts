@@ -1,6 +1,7 @@
 import fs from "fs/promises";
 import path from "path";
 import type { TokenTimeSample, TokenTimes } from "./humaneval";
+import { writeFileAtomic } from "./file";
 import { modelFileName, round } from "./ollama-results";
 
 /**
@@ -70,7 +71,8 @@ export async function readTokenTimesFile(modelId: string): Promise<TokenTimesFil
 export async function writeTokenTimesFile(data: TokenTimesFile): Promise<string> {
   const filePath = getTokenTimesFilePath(data.modelId);
   await fs.mkdir(path.dirname(filePath), { recursive: true });
-  await fs.writeFile(filePath, JSON.stringify(data, null, 2) + "\n");
+  // Rewritten after every sample, so never leave a truncated file if the run is interrupted mid-write
+  await writeFileAtomic(filePath, JSON.stringify(data, null, 2) + "\n");
   return filePath;
 }
 

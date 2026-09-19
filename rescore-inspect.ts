@@ -17,6 +17,7 @@
 import fs from "fs/promises";
 import path from "path";
 import { runTest, type TestResult } from "./src/utils/test-runner";
+import { writeFileAtomic } from "./src/utils/file";
 import { calculatePassAtK, type HumanEvalResult } from "./src/utils/humaneval";
 
 const TEST_NAME = "inspect";
@@ -237,7 +238,7 @@ async function rescoreInspect(): Promise<void> {
         skippedResults.push(`${file.fileName} (formatting would change, not written)`);
         continue;
       }
-      await fs.writeFile(file.filePath, serialize(file));
+      await writeFileAtomic(file.filePath, serialize(file));
     }
   }
 
