@@ -487,8 +487,8 @@
     "provider": "OpenRouter",
     "modelId": "nvidia/nemotron-3-super-120b-a12b:free",
     "numSamples": 10,
-    "numCorrect": 5,
-    "pass1": 0.5,
+    "numCorrect": 6,
+    "pass1": 0.5999999999999999,
     "pass10": 1,
     "context": {
       "used": false,
@@ -550,12 +550,8 @@
       {
         "index": 6,
         "code": "<svelte:options runes={true} />\n\n<script>\n  let text = $state('Hello world');\n\n  // Basic $inspect – logs the value whenever it changes\n  $inspect(text);\n\n  // $inspect with a custom callback\n  $inspect(text).with((value, previous) => {\n    console.log('Custom inspect:', { value, previous });\n  });\n\n  // Effect that runs when the input changes, using $inspect.trace()\n  $effect(() => {\n    $inspect.trace();\n    // The trace logs a stack trace to help track where the change originated\n  });\n\n  // Derived character count\n  const charCount = $derived(text.length);\n</script>\n\n<div>\n  <input\n    data-testid=\"text-input\"\n    type=\"text\"\n    bind:value={text}\n  />\n  <p data-testid=\"text-value\">Current text: \"{text}\"</p>\n  <p data-testid=\"char-count\">Character count: {charCount}</p>\n</div>",
-        "success": false,
-        "errors": [
-          "expected 'Hello world\\nCustom inspect: [object …' to contain 'init'",
-          "expected 'Hello world\\nCustom inspect: [object …' to contain 'init'",
-          "expected 'Hello world\\nCustom inspect: [object …' to contain 'init'"
-        ]
+        "success": true,
+        "errors": []
       },
       {
         "index": 7,

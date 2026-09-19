@@ -245,6 +245,9 @@
     <% } %>
 
     <%
+    // Local models are the ones served by Ollama; they get their own leaderboard tab
+    const isLocalProvider = (provider) => provider.toLowerCase() === 'ollama';
+
     // Check if this is the merged results file and calculate top models
     let topModelsList = [];
     if (selectedFile && selectedFile.includes('merged') && groupedResults.length > 0) {
@@ -264,20 +267,78 @@
 
           if (testCount > 0) {
             const avgPass1 = totalPass1 / testCount;
+            // Generation speed (tokens/second) is measured once per model and stored on every result
+            const tpsResult = results.find(result => typeof result.tps === 'number' && result.tps > 0);
+            // Average response size (output tokens) and the time estimate derived from it, merged in from
+            // benchmarks/token-times-ollama/ by `pnpm merge`
+            const tokenTimesResult = results.find(result => result.tokenTimes && result.tokenTimes.sampleCount > 0);
             modelScores.set(`${providerData.provider}|${modelName}`, {
               provider: providerData.provider,
               model: modelName,
               averagePass1: avgPass1,
-              score: avgPass1 * 100 // Convert to percentage
+              score: avgPass1 * 100, // Convert to percentage
+              tps: tpsResult ? tpsResult.tps : null,
+              tokenTimes: tokenTimesResult ? tokenTimesResult.tokenTimes : null
             });
           }
         });
       });
 
-      // Sort models by average pass@1 in descending order
+      // Sort models by average pass@1 in descending order.
+      // When two Ollama models tie on score, the faster one (higher tokens/second) ranks first.
+      // Non-Ollama models keep their existing order.
       topModelsList = Array.from(modelScores.values())
-        .sort((a, b) => b.averagePass1 - a.averagePass1);
+        .sort((a, b) => {
+          const scoreDiff = b.averagePass1 - a.averagePass1;
+          if (Math.abs(scoreDiff) > 1e-9) return scoreDiff;
+          const bothLocal = isLocalProvider(a.provider) && isLocalProvider(b.provider);
+          if (bothLocal && a.tps !== null && b.tps !== null) return b.tps - a.tps;
+          return 0;
+        });
     }
+
+    // Only show the speed column when at least one model has been measured
+    const showTpsColumn = topModelsList.some(model => model.tps !== null);
+
+    const localModelCount = topModelsList.filter(model => isLocalProvider(model.provider)).length;
+
+    // The fastest measured model fills the speed bar completely; everything else is relative to it
+    const maxTps = groupedResults.reduce((max, providerData) => {
+      Object.values(providerData.models).forEach(results => {
+        results.forEach(result => {
+          if (typeof result.tps === 'number' && result.tps > max) max = result.tps;
+        });
+      });
+      return max;
+    }, 0);
+    const tpsPercent = (tps) => maxTps > 0 ? Math.max(2, Math.round((tps / maxTps) * 100)) : 0;
+
+    // Format a tokens/second figure for display
+    const formatTps = (tps) => tps >= 100 ? Math.round(tps).toString() : tps.toFixed(1);
+
+    // Estimated time per response (average output tokens / tps), measured with `pnpm ollama-token-times`
+    const showResponseTimeColumn = topModelsList.some(model => model.tokenTimes !== null);
+
+    // Format a duration in seconds as "8.5s", "42s", "3m 12s" or "1h 05m"
+    const formatDuration = (seconds) => {
+      if (seconds < 10) return `${seconds.toFixed(1)}s`;
+      const total = Math.round(seconds);
+      if (total < 60) return `${total}s`;
+      const minutes = Math.floor(total / 60);
+      const rest = total % 60;
+      if (minutes < 60) return rest > 0 ? `${minutes}m ${rest}s` : `${minutes}m`;
+      return `${Math.floor(minutes / 60)}h ${String(minutes % 60).padStart(2, '0')}m`;
+    };
+    const formatTokens = (tokens) => Math.round(tokens).toLocaleString('en-US');
+
+    // Tooltip explaining where a response time figure comes from
+    const responseTimeTitle = (tokenTimes, tps) => {
+      const samples = `${tokenTimes.sampleCount} sample${tokenTimes.sampleCount === 1 ? '' : 's'}, one per test`;
+      const tokens = `${formatTokens(tokenTimes.avgOutputTokens)} output tokens per response on average, thinking included (${samples})`;
+      return tokenTimes.avgResponseSeconds !== null && tps
+        ? `Estimated time per response: ${tokens} at ${formatTps(tps)} tok/s`
+        : `${tokens}; no speed measurement, so no time estimate`;
+    };
     %>
 
     <% if (topModelsList.length > 0) { %>
@@ -287,6 +348,20 @@
           <h2 class="top-models-title">Top Models Leaderboard</h2>
           <span class="top-models-badge">Average pass@1 scores</span>
         </div>
+
+        <% if (localModelCount > 0) { %>
+          <!-- Leaderboard tabs: every model, or only local (Ollama) models -->
+          <div class="leaderboard-tabs" id="leaderboard-tabs" role="tablist" aria-label="Model group">
+            <button type="button" class="leaderboard-tab active" role="tab" data-tab="all" aria-selected="true">
+              All models
+              <span class="leaderboard-tab-count"><%= topModelsList.length %></span>
+            </button>
+            <button type="button" class="leaderboard-tab" role="tab" data-tab="local" aria-selected="false" title="Models run locally through Ollama">
+              Local models
+              <span class="leaderboard-tab-count"><%= localModelCount %></span>
+            </button>
+          </div>
+        <% } %>
 
         <!-- Search bar for models -->
         <div class="model-search-container">
@@ -315,7 +390,24 @@
             <tr>
               <th style="width: 60px; text-align: center;">Rank</th>
               <th>Model</th>
-              <th style="width: 200px;">Score</th>
+              <th style="width: 200px;">
+                <% if (showTpsColumn || showResponseTimeColumn) { %>
+                  <%# Sorting is only offered in the local models tab; the buttons stay disabled elsewhere %>
+                  <button type="button" class="sort-button" data-sort="score" disabled>Score<span class="sort-indicator" aria-hidden="true"></span></button>
+                <% } else { %>
+                  Score
+                <% } %>
+              </th>
+              <% if (showTpsColumn) { %>
+                <th class="mobile-hide tps-column" style="width: 180px;" title="Generation speed measured via Ollama on the benchmark hardware (tokens per second), relative to the fastest measured model. In the local models tab, click to sort by it.">
+                  <button type="button" class="sort-button" data-sort="tps" disabled>Speed<span class="sort-indicator" aria-hidden="true"></span></button>
+                </th>
+              <% } %>
+              <% if (showResponseTimeColumn) { %>
+                <th class="mobile-hide time-column" style="width: 140px;" title="Estimated time per response: average output tokens including thinking (one sample per test, measured via Ollama) divided by the measured speed. In the local models tab, click to sort by it.">
+                  <button type="button" class="sort-button" data-sort="time" disabled>Avg. response<span class="sort-indicator" aria-hidden="true"></span></button>
+                </th>
+              <% } %>
             </tr>
           </thead>
           <tbody id="top-models-tbody">
@@ -323,7 +415,10 @@
               <tr class="top-model-row <%= index >= 5 ? 'hidden-model' : '' %>"
                   data-rank="<%= index + 1 %>"
                   data-model-name="<%= model.model.toLowerCase() %>"
-                  data-provider-name="<%= model.provider.toLowerCase() %>">
+                  data-provider-name="<%= model.provider.toLowerCase() %>"
+                  data-local="<%= isLocalProvider(model.provider) ? 'true' : 'false' %>"
+                  data-tps="<%= model.tps !== null ? model.tps : '' %>"
+                  data-response-seconds="<%= model.tokenTimes && model.tokenTimes.avgResponseSeconds !== null ? model.tokenTimes.avgResponseSeconds : '' %>">
                 <td style="text-align: center;">
                   <span class="rank rank-<%= index + 1 %>"><%= index + 1 %></span>
                 </td>
@@ -341,6 +436,32 @@
                     </div>
                   </div>
                 </td>
+                <% if (showTpsColumn) { %>
+                  <td class="mobile-hide tps-column">
+                    <% if (model.tps !== null) { %>
+                      <div class="tps-bar-wrapper" title="<%= formatTps(model.tps) %> tok/s (<%= tpsPercent(model.tps) %>% of the fastest measured model)">
+                        <div class="progress tps-progress">
+                          <div class="progress-indicator tps-progress-indicator" style="width: <%= tpsPercent(model.tps) %>%; transform: translateX(0);"></div>
+                        </div>
+                        <span class="tps-value"><%= formatTps(model.tps) %> <span class="tps-unit">tok/s</span></span>
+                      </div>
+                    <% } else { %>
+                      <span class="tps-missing">—</span>
+                    <% } %>
+                  </td>
+                <% } %>
+                <% if (showResponseTimeColumn) { %>
+                  <td class="mobile-hide time-column">
+                    <% if (model.tokenTimes) { %>
+                      <span class="time-value" title="<%= responseTimeTitle(model.tokenTimes, model.tps) %>">
+                        <span><% if (model.tokenTimes.avgResponseSeconds !== null) { %>~<%= formatDuration(model.tokenTimes.avgResponseSeconds) %><% } else { %>—<% } %></span>
+                        <span class="time-tokens"><%= formatTokens(model.tokenTimes.avgOutputTokens) %> tok</span>
+                      </span>
+                    <% } else { %>
+                      <span class="tps-missing">—</span>
+                    <% } %>
+                  </td>
+                <% } %>
               </tr>
             <% }); %>
           </tbody>
@@ -380,7 +501,7 @@
     <% if (groupedResults.length > 0) { %>
       <div class="accordion grouped-results">
         <% groupedResults.forEach(providerData => { %>
-          <div class="accordion-item card provider-section" id="provider-<%= providerData.provider.replace(/\s+/g, '-').replace(/[^\w-]/g, '').toLowerCase() %>">
+          <div class="accordion-item card provider-section" id="provider-<%= providerData.provider.replace(/\s+/g, '-').replace(/[^\w-]/g, '').toLowerCase() %>" data-local="<%= providerData.provider.toLowerCase() === 'ollama' ? 'true' : 'false' %>">
             <button class="accordion-trigger" onclick="toggleAccordion(this)" data-state="open">
               <h2 style="margin: 0; font-size: 1.5rem; font-weight: 600;"><%= providerData.provider %></h2>
               <svg class="chevron-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -393,8 +514,34 @@
                 <div class="accordion" style="margin-top: 0.5rem;">
                   <% Object.entries(providerData.models).forEach(([model, results]) => { %>
                     <div class="accordion-item" id="model-<%= providerData.provider.replace(/\s+/g, '-').replace(/[^\w-]/g, '').toLowerCase() %>-<%= model.replace(/\s+/g, '-').replace(/[^\w-]/g, '').toLowerCase() %>">
+                      <%
+                        // Generation speed (tokens/second), present for local models measured with `pnpm ollama-tps`
+                        const modelTpsResult = results.find(result => typeof result.tps === 'number' && result.tps > 0);
+                        const modelTpsDetails = modelTpsResult && modelTpsResult.tpsDetails;
+                        const modelTpsTitle = modelTpsDetails
+                          ? `Generation speed measured with the "${modelTpsDetails.testName}" prompt: ${modelTpsDetails.evalCount} tokens generated, prompt processing ${modelTpsDetails.promptTps} tok/s`
+                          : 'Generation speed (tokens per second)';
+                        // Average response size / estimated time, merged in from `pnpm ollama-token-times` measurements
+                        const modelTokenTimesResult = results.find(result => result.tokenTimes && result.tokenTimes.sampleCount > 0);
+                        const modelTokenTimes = modelTokenTimesResult ? modelTokenTimesResult.tokenTimes : null;
+                      %>
                       <button class="accordion-trigger" onclick="toggleAccordion(this)" data-state="open">
-                        <h3 style="margin: 0; font-size: 1.125rem; font-weight: 600;"><%= model %></h3>
+                        <span class="model-title">
+                          <h3 style="margin: 0; font-size: 1.125rem; font-weight: 600;"><%= model %></h3>
+                          <% if (modelTpsResult) { %>
+                            <span class="tps-badge" title="<%= modelTpsTitle %>">
+                              <span class="progress tps-progress tps-progress-small">
+                                <span class="progress-indicator tps-progress-indicator" style="width: <%= tpsPercent(modelTpsResult.tps) %>%; transform: translateX(0);"></span>
+                              </span>
+                              <%= formatTps(modelTpsResult.tps) %> tok/s
+                            </span>
+                          <% } %>
+                          <% if (modelTokenTimes) { %>
+                            <span class="tps-badge time-badge" title="<%= responseTimeTitle(modelTokenTimes, modelTpsResult ? modelTpsResult.tps : null) %>">
+                              <% if (modelTokenTimes.avgResponseSeconds !== null) { %>~<%= formatDuration(modelTokenTimes.avgResponseSeconds) %> / response<% } else { %><%= formatTokens(modelTokenTimes.avgOutputTokens) %> tok / response<% } %>
+                            </span>
+                          <% } %>
+                        </span>
                         <svg class="chevron-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                           <polyline points="6,9 12,15 18,9"></polyline>
                         </svg>
@@ -626,7 +773,7 @@
 
               if (expandText) {
                 expandText.textContent = isExpanded
-                  ? `Show All ${document.querySelectorAll('.top-model-row').length} Models`
+                  ? `Show All ${document.querySelectorAll('.top-model-row:not(.tab-hidden)').length} Models`
                   : 'Show Top 5 Models';
               }
 
@@ -921,84 +1068,262 @@
         };
 
         // ============================================
-        // Model Search Module
+        // Model Search & Tabs Module
         // ============================================
+        // The leaderboard is filtered by two things at once: the active tab
+        // (all models, or only local Ollama models) and the search query.
         const ModelSearch = {
           init() {
           const searchInput = document.getElementById('model-search-input');
           const expandButton = document.getElementById('expand-button-container');
           const noResultsDiv = document.getElementById('search-no-results');
+          const tabs = Array.from(document.querySelectorAll('#leaderboard-tabs .leaderboard-tab'));
 
           if (!searchInput) return;
 
-          // Check for search query param on load
-          const urlParams = new URLSearchParams(window.location.search);
-          const searchQuery = urlParams.get('search');
-          if (searchQuery) {
-            searchInput.value = searchQuery;
-            performSearch(searchQuery);
+          const VALID_TABS = ['all', 'local'];
+          let activeTab = 'all';
+
+          // Sorting by speed or estimated response time is offered in the local models tab only,
+          // since only local models have those figures. 'score' is the default leaderboard order.
+          const tbody = document.getElementById('top-models-tbody');
+          const sortButtons = Array.from(document.querySelectorAll('.top-models-table .sort-button'));
+
+          // Each sortable column reads its value from a row attribute. `first` is the direction of the
+          // first click (the "best first" one); the second click flips it.
+          const SORT_COLUMNS = {
+            tps: { attribute: 'data-tps', first: 'desc' },
+            time: { attribute: 'data-response-seconds', first: 'asc' }
+          };
+          const DEFAULT_SORT = { key: 'score', direction: 'desc' };
+          let sortState = DEFAULT_SORT;
+
+          // In the URL a sort is "<key>" for the first-click direction, or "<key>-<direction>" for the flipped one
+          function parseSort(value) {
+            if (!value) return null;
+            const [key, direction] = value.split('-');
+            const column = SORT_COLUMNS[key];
+            if (!column || !sortButtons.some(button => button.getAttribute('data-sort') === key)) return null;
+            if (direction !== undefined && direction !== 'asc' && direction !== 'desc') return null;
+            return { key, direction: direction || column.first };
           }
 
-          // Add search event listener
-          searchInput.addEventListener('input', (e) => {
-            const query = e.target.value.trim();
-            performSearch(query);
+          function serializeSort(state) {
+            return state.direction === SORT_COLUMNS[state.key].first ? state.key : `${state.key}-${state.direction}`;
+          }
 
-            // Update URL with search query
+          // Restore state from the URL
+          const urlParams = new URLSearchParams(window.location.search);
+          const initialTab = urlParams.get('tab');
+          if (tabs.length > 0 && VALID_TABS.includes(initialTab)) {
+            activeTab = initialTab;
+          }
+          const searchQuery = urlParams.get('search') || '';
+          if (searchQuery) {
+            searchInput.value = searchQuery;
+          }
+          sortState = parseSort(urlParams.get('sort')) || DEFAULT_SORT;
+
+          renderTabs();
+          applySort();
+          applyFilters();
+
+          // Search as you type
+          searchInput.addEventListener('input', () => {
+            applyFilters();
+            updateUrl();
+          });
+
+          // Switch tabs
+          tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+              activeTab = tab.getAttribute('data-tab');
+              renderTabs();
+              applySort();
+              applyFilters();
+              updateUrl();
+            });
+          });
+
+          // Sort headers: "Speed" and "Avg. response" start best-first and flip on the next click,
+          // "Score" restores the default order
+          sortButtons.forEach(button => {
+            button.addEventListener('click', () => {
+              if (activeTab !== 'local') return;
+              const key = button.getAttribute('data-sort');
+              const column = SORT_COLUMNS[key];
+              if (!column) {
+                sortState = DEFAULT_SORT;
+              } else if (sortState.key === key) {
+                sortState = { key, direction: sortState.direction === 'asc' ? 'desc' : 'asc' };
+              } else {
+                sortState = { key, direction: column.first };
+              }
+
+              // Re-filtering collapses the list to the top 5, so put it back if it was expanded
+              const expandBtn = expandButton && expandButton.querySelector('.btn[onclick="toggleTopModels()"]');
+              const wasExpanded = expandBtn && expandBtn.classList.contains('expanded');
+
+              applySort();
+              applyFilters();
+              if (wasExpanded && searchInput.value.trim() === '') toggleTopModels();
+              updateUrl();
+            });
+          });
+
+          function updateUrl() {
             const url = new URL(window.location);
+            const query = searchInput.value.trim();
             if (query) {
               url.searchParams.set('search', query);
             } else {
               url.searchParams.delete('search');
             }
+            if (activeTab !== 'all') {
+              url.searchParams.set('tab', activeTab);
+            } else {
+              url.searchParams.delete('tab');
+            }
+            if (effectiveSort().key !== 'score') {
+              url.searchParams.set('sort', serializeSort(sortState));
+            } else {
+              url.searchParams.delete('sort');
+            }
             window.history.replaceState({}, '', url);
-          });
+          }
 
-          function performSearch(query) {
+          // The sort only applies in the local tab; every other view keeps the score order
+          function effectiveSort() {
+            return activeTab === 'local' ? sortState : DEFAULT_SORT;
+          }
+
+          // Reorder the rows in the DOM, then let applyFilters() decide which ones are visible
+          function applySort() {
+            if (!tbody) return;
+
+            const state = effectiveSort();
+            const column = SORT_COLUMNS[state.key];
+            const rank = (row) => Number(row.getAttribute('data-rank'));
+            const measured = (row) => {
+              const value = row.getAttribute(column.attribute);
+              return value === null || value === '' ? null : Number(value);
+            };
+
+            const rows = Array.from(tbody.querySelectorAll('.top-model-row'));
+            rows.sort((a, b) => {
+              if (!column) return rank(a) - rank(b);
+
+              // Models without a measurement go last in either direction
+              const valueA = measured(a);
+              const valueB = measured(b);
+              if (valueA === null || valueB === null) {
+                if (valueA === valueB) return rank(a) - rank(b);
+                return valueA === null ? 1 : -1;
+              }
+
+              const diff = state.direction === 'asc' ? valueA - valueB : valueB - valueA;
+              return diff !== 0 ? diff : rank(a) - rank(b);
+            });
+            rows.forEach(row => tbody.appendChild(row));
+
+            renderSortButtons();
+          }
+
+          function renderSortButtons() {
+            const state = effectiveSort();
+            const enabled = activeTab === 'local';
+
+            sortButtons.forEach(button => {
+              const isActive = enabled && button.getAttribute('data-sort') === state.key;
+              const descending = state.direction === 'desc';
+
+              button.disabled = !enabled;
+              button.classList.toggle('active', isActive);
+
+              const indicator = button.querySelector('.sort-indicator');
+              if (indicator) indicator.textContent = !enabled ? '' : !isActive ? '↕' : descending ? '↓' : '↑';
+
+              const th = button.closest('th');
+              if (th) {
+                if (isActive) {
+                  th.setAttribute('aria-sort', descending ? 'descending' : 'ascending');
+                } else {
+                  th.removeAttribute('aria-sort');
+                }
+              }
+            });
+          }
+
+          function renderTabs() {
+            tabs.forEach(tab => {
+              const isActive = tab.getAttribute('data-tab') === activeTab;
+              tab.classList.toggle('active', isActive);
+              tab.setAttribute('aria-selected', isActive ? 'true' : 'false');
+            });
+
+            // In the local tab, the detailed results below only show local providers too
+            document.querySelectorAll('.provider-section').forEach(section => {
+              const isLocal = section.getAttribute('data-local') === 'true';
+              section.style.display = activeTab === 'local' && !isLocal ? 'none' : '';
+            });
+          }
+
+          function rowInActiveTab(row) {
+            return activeTab === 'all' || row.getAttribute('data-local') === 'true';
+          }
+
+          function applyFilters() {
+            const query = searchInput.value.trim().toLowerCase();
             const rows = document.querySelectorAll('.top-model-row');
             let visibleCount = 0;
+            let tabCount = 0;
 
-            if (query === '') {
-              // Reset to default state
-              rows.forEach((row, index) => {
-                row.style.display = index < 5 ? 'table-row' : 'none';
-                if (index < 5) visibleCount++;
-              });
+            rows.forEach((row) => {
+              const inTab = rowInActiveTab(row);
+              row.classList.toggle('tab-hidden', !inTab);
 
-              // Show expand button again
-              if (expandButton) {
-                expandButton.style.display = 'block';
+              if (!inTab) {
+                row.classList.remove('hidden-model');
+                row.style.display = 'none';
+                return;
+              }
+
+              tabCount++;
+
+              if (query === '') {
+                // Default state: the top 5 of the tab, the rest behind the expand button
+                const beyondTop = tabCount > 5;
+                row.classList.toggle('hidden-model', beyondTop);
+                row.style.display = beyondTop ? 'none' : 'table-row';
+                if (!beyondTop) visibleCount++;
+              } else {
+                // Searching: show every match in the tab
+                row.classList.remove('hidden-model');
+                const modelName = row.getAttribute('data-model-name');
+                const providerName = row.getAttribute('data-provider-name');
+                const matches = modelName.includes(query) || providerName.includes(query);
+                row.style.display = matches ? 'table-row' : 'none';
+                if (matches) visibleCount++;
+              }
+            });
+
+            if (expandButton) {
+              // The expand button only makes sense without a query and with more than 5 rows in the tab
+              const showExpand = query === '' && tabCount > 5;
+              expandButton.style.display = showExpand ? 'block' : 'none';
+
+              if (showExpand) {
                 const expandBtn = expandButton.querySelector('.btn[onclick="toggleTopModels()"]');
                 const expandText = expandBtn.querySelector('.expand-text');
                 const expandIcon = expandBtn.querySelector('.expand-icon');
-                expandText.textContent = `Show All ${rows.length} Models`;
+                expandText.textContent = `Show All ${tabCount} Models`;
                 expandIcon.textContent = '↓';
                 expandBtn.classList.remove('expanded');
               }
-
-              noResultsDiv.style.display = 'none';
-            } else {
-              // Show all models when searching
-              const lowerQuery = query.toLowerCase();
-
-              rows.forEach((row) => {
-                const modelName = row.getAttribute('data-model-name');
-                const providerName = row.getAttribute('data-provider-name');
-                const matches = modelName.includes(lowerQuery) || providerName.includes(lowerQuery);
-
-                row.style.display = matches ? 'table-row' : 'none';
-                if (matches) visibleCount++;
-              });
-
-              // Hide expand button when searching
-              if (expandButton) {
-                expandButton.style.display = 'none';
-              }
-
-              // Show no results message if needed
-              noResultsDiv.style.display = visibleCount === 0 ? 'block' : 'none';
-              }
             }
+
+            noResultsDiv.style.display = visibleCount === 0 ? 'block' : 'none';
+          }
           }
         };
 

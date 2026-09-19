@@ -59,4 +59,89 @@ export interface HumanEvalResult {
     errors: string[];
     temperature?: number; // Added temperature tracking
   }[];
+  /**
+   * Generation speed in tokens per second, measured separately from the benchmark run
+   * (see ollama-tps.ts). Only populated for local (Ollama) models.
+   */
+  tps?: number;
+  tpsDetails?: TpsDetails;
+  /**
+   * How many output tokens a typical response contains and, derived from `tps`, how long
+   * it took to generate. Measured separately (see ollama-token-times.ts) and joined in by
+   * merge.ts, so it is only present in the merged results of local (Ollama) models.
+   */
+  tokenTimes?: TokenTimes;
+}
+
+/**
+ * How a `tps` figure was obtained, so the measurement can be reproduced or audited
+ */
+export interface TpsDetails {
+  /** The test whose prompt was sent to the model */
+  testName: string;
+  /** Generated (decode) tokens and how long they took, in nanoseconds, as reported by Ollama */
+  evalCount: number;
+  evalDurationNs: number;
+  /** Prompt (prefill) tokens and how long they took, in nanoseconds, as reported by Ollama */
+  promptEvalCount: number;
+  promptEvalDurationNs: number;
+  /** Prompt processing speed in tokens per second */
+  promptTps: number;
+  /** Time to load the model into memory, in nanoseconds */
+  loadDurationNs: number;
+  /** When the measurement was taken (ISO 8601) */
+  measuredAt: string;
+}
+
+/**
+ * One measurement request: a single sample of one test prompt, with the counts and
+ * timings Ollama reported for it
+ */
+export interface TokenTimeSample {
+  /** The test whose prompt was sent to the model */
+  testName: string;
+  /**
+   * Generated (decode) tokens and how long they took, in nanoseconds, as reported by Ollama.
+   * Covers everything the model generated, thinking/reasoning tokens included, since Ollama
+   * counts the whole decode loop and only splits thinking out of the text afterwards.
+   */
+  evalCount: number;
+  evalDurationNs: number;
+  /** Prompt (prefill) tokens and how long they took, in nanoseconds, as reported by Ollama */
+  promptEvalCount: number;
+  promptEvalDurationNs: number;
+  /** Wall time of the whole request as seen by Ollama, in nanoseconds */
+  totalDurationNs: number;
+  /** When the sample was taken (ISO 8601) */
+  measuredAt: string;
+  /**
+   * What was sent and what came back, kept in the measurement files for manual validation.
+   * Stripped by merge.ts, so they never reach the merged results or the report.
+   */
+  prompt?: string;
+  response?: string;
+  /** Reasoning content, when Ollama returns it separately from the response */
+  thinking?: string;
+}
+
+/**
+ * Average response size of a model, from one sample per test (see ollama-token-times.ts)
+ */
+export interface TokenTimes {
+  /** Number of samples the averages are based on (one per test) */
+  sampleCount: number;
+  /** Mean generated tokens per response, thinking tokens included */
+  avgOutputTokens: number;
+  /** Mean prompt tokens per request */
+  avgPromptTokens: number;
+  /** Mean generation time per response as timed by Ollama during the measurement, in nanoseconds */
+  avgEvalDurationNs: number;
+  /**
+   * Estimated seconds a typical response took during the benchmark: avgOutputTokens / tps.
+   * Null when the model has no `tps` measurement to divide by.
+   */
+  avgResponseSeconds: number | null;
+  /** When the last sample was taken (ISO 8601) */
+  measuredAt: string;
+  samples: TokenTimeSample[];
 }

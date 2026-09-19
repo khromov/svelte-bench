@@ -468,8 +468,8 @@
     "provider": "OpenRouter",
     "modelId": "upstage/solar-pro4",
     "numSamples": 10,
-    "numCorrect": 4,
-    "pass1": 0.4,
+    "numCorrect": 6,
+    "pass1": 0.5999999999999999,
     "pass10": 1,
     "context": {
       "used": false,
@@ -506,22 +506,14 @@
       {
         "index": 4,
         "code": "<svelte:options runes={true} />\n\n<script>\n\tlet text = $state(\"Hello world\");\n\n\t// Basic $inspect to log the input value\n\t$inspect(text);\n\n\t// $inspect(...).with to track updates with a custom callback\n\t$inspect(text).with((type, variable, value) => {\n\t\tconsole.log(`[custom] ${variable}: ${value}`);\n\t});\n\n\t// $inspect.trace() inside an effect that runs when the input changes\n\t$effect(() => {\n\t\t$inspect.trace();\n\t});\n\n\t// Derived value (demonstrates reactivity with $inspect)\n\tlet charCount = $derived(text.length);\n</script>\n\n<div>\n\t<input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n\t<p data-testid=\"text-value\">Current text: \"{text}\"</p>\n\t<p data-testid=\"char-count\">Character count: {charCount}</p>\n</div>",
-        "success": false,
-        "errors": [
-          "expected 'Hello world\\n[custom] Hello world: un…' to contain 'init'",
-          "expected 'Hello world\\n[custom] Hello world: un…' to contain 'init'",
-          "expected 'Hello world\\n[custom] Hello world: un…' to contain 'init'"
-        ]
+        "success": true,
+        "errors": []
       },
       {
         "index": 5,
         "code": "<svelte:options runes={true} />\n\n<script>\n\tlet text = $state(\"Hello world\");\n\n\t$inspect(text);\n\n\t$inspect(text).with((update) => {\n\t\tconsole.log(`Custom callback - update: ${update.type}`, update.value);\n\t});\n\n\t$inspect(text).with((update) => {\n\t\tconsole.log(\"Update source:\", update.source);\n\t\tconsole.log(\"Update.old:\", update.old);\n\t\tconsole.log(\"Update.value:\", update.value);\n\t});\n\n\t$effect(() => {\n\t\t$inspect.trace();\n\t\tconst _ = text;\n\t\tconsole.log(\"Effect ran with text:\", text);\n\t});\n\n\tconst charCount = $derived(text.length);\n</script>\n\n<div>\n\t<input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n\t<p data-testid=\"text-value\">Current text: \"{text}\"</p>\n\t<p data-testid=\"char-count\">Character count: {charCount}</p>\n</div>",
-        "success": false,
-        "errors": [
-          "expected 'Hello world\\nCustom callback - update…' to contain 'init'",
-          "expected 'Hello world\\nCustom callback - update…' to contain 'init'",
-          "expected 'Hello world\\nCustom callback - update…' to contain 'init'"
-        ]
+        "success": true,
+        "errors": []
       },
       {
         "index": 6,

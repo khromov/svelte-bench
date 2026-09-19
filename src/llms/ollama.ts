@@ -7,18 +7,46 @@ import type { LLMProvider } from "./index";
 import { Ollama, type ChatRequest } from "ollama";
 import { log } from "../utils/tui-events";
 
-// https://github.com/ollama/ollama-js/issues/103
-const noTimeoutFetch = (
+// Hard cap for a single Ollama request (including reading the response body)
+const OLLAMA_TIMEOUT_MS = 4 * 60 * 60 * 1000;
+
+// Raise undici's default 5 minute timeouts, since non-streaming responses only
+// arrive once generation finishes: https://github.com/ollama/ollama-js/issues/103
+const dispatcher = new Agent({
+  headersTimeout: OLLAMA_TIMEOUT_MS,
+  bodyTimeout: OLLAMA_TIMEOUT_MS,
+});
+
+const timeoutFetch = (
   input: string | URL | globalThis.Request,
   init?: RequestInit
 ) => {
   const someInit = init || {};
+  const timeoutSignal = AbortSignal.timeout(OLLAMA_TIMEOUT_MS);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return fetch(input, {
     ...someInit,
-    dispatcher: new Agent({ headersTimeout: 2700000 }),
+    signal: someInit.signal
+      ? AbortSignal.any([someInit.signal, timeoutSignal])
+      : timeoutSignal,
+    dispatcher,
   } as any);
 };
+
+/**
+ * Resolve the Ollama host from the environment, falling back to the local default
+ */
+export function getOllamaHost(): string {
+  return process.env.OLLAMA_HOST || "http://127.0.0.1:11434";
+}
+
+/**
+ * Create an Ollama client with the long request timeouts the benchmark needs
+ */
+export function createOllamaClient(host: string = getOllamaHost()): Ollama {
+  // The wrapper only implements the call signature, not fetch's static helpers
+  return new Ollama({ host, fetch: timeoutFetch as typeof fetch });
+}
 
 export class OllamaProvider implements LLMProvider {
   private client: Ollama;
@@ -29,10 +57,7 @@ export class OllamaProvider implements LLMProvider {
   ];
 
   constructor(modelId?: string) {
-    // Get Ollama host from environment variable or use default
-    const host = process.env.OLLAMA_HOST || "http://127.0.0.1:11434";
-
-    this.client = new Ollama({ host, fetch: noTimeoutFetch });
+    this.client = createOllamaClient();
     this.modelId = modelId || this.availableModels[0];
   }
 
@@ -100,6 +125,12 @@ export class OllamaProvider implements LLMProvider {
 
       return response.message?.content || "";
     } catch (error) {
+      if (error instanceof Error && error.name === "TimeoutError") {
+        const message = `Ollama request timed out after ${OLLAMA_TIMEOUT_MS / 3600000} hours`;
+        console.error(`⏱️ ${message} (model: ${this.modelId})`);
+        throw new Error(message);
+      }
+
       console.error("Error generating code with Ollama:", error);
       throw new Error(
         `Failed to generate code: ${

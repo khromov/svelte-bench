@@ -474,8 +474,8 @@
     "provider": "OpenRouter",
     "modelId": "openai/gpt-5.1",
     "numSamples": 10,
-    "numCorrect": 3,
-    "pass1": 0.30000000000000004,
+    "numCorrect": 4,
+    "pass1": 0.4,
     "pass10": 1,
     "context": {
       "used": false,
@@ -541,12 +541,8 @@
       {
         "index": 7,
         "code": "<svelte:options runes={true} />\n\n<script>\n\tlet text = $state(\"Hello world\");\n\n\t$inspect(text);\n\n\t$inspect(text).with((value, oldValue) => {\n\t\tconsole.log(\"Custom inspect callback - text changed:\", { value, oldValue });\n\t});\n\n\tlet charCount = $derived(text.length);\n\n\t$effect(() => {\n\t\t$inspect.trace(\"text change effect\");\n\t\tconsole.log(\"Effect triggered by text change:\", text);\n\t});\n</script>\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n  <p data-testid=\"text-value\">Current text: \"{text}\"</p>\n  <p data-testid=\"char-count\">Character count: {charCount}</p>\n</div>",
-        "success": false,
-        "errors": [
-          "expected 'Hello world\\nCustom inspect callback …' to contain 'init'",
-          "expected 'Hello world\\nCustom inspect callback …' to contain 'init'",
-          "expected 'Hello world\\nCustom inspect callback …' to contain 'init'"
-        ]
+        "success": true,
+        "errors": []
       },
       {
         "index": 8,

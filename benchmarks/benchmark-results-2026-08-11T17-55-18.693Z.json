@@ -466,8 +466,8 @@
     "provider": "OpenRouter",
     "modelId": "inclusionai/ling-2.6-1t",
     "numSamples": 10,
-    "numCorrect": 2,
-    "pass1": 0.20000000000000007,
+    "numCorrect": 10,
+    "pass1": 1,
     "pass10": 1,
     "context": {
       "used": false,
@@ -477,12 +477,8 @@
       {
         "index": 0,
         "code": "<svelte:options runes={true} />\n\n<script>\n  let text = $state('Hello world')\n\n  $inspect(text)\n\n  $inspect(text).with((value, oldValue) => {\n    console.log('Custom inspect:', { value, oldValue })\n  })\n\n  $effect(() => {\n    $inspect.trace()\n    text\n  })\n</script>\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n  <p data-testid=\"text-value\">Current text: \"{text}\"</p>\n  <p data-testid=\"char-count\">Character count: {text.length}</p>\n</div>",
-        "success": false,
-        "errors": [
-          "expected 'Hello world\\nCustom inspect: [object …' to contain 'init'",
-          "expected 'Hello world\\nCustom inspect: [object …' to contain 'init'",
-          "expected 'Hello world\\nCustom inspect: [object …' to contain 'init'"
-        ],
+        "success": true,
+        "errors": [],
         "temperature": 0
       },
       {
@@ -494,52 +490,32 @@
       {
         "index": 2,
         "code": "<svelte:options runes={true} />\n\n<script>\n  let text = $state('Hello world')\n\n  $inspect(text)\n\n  $inspect(text).with((value, oldValue) => {\n    console.log('Custom inspector:', { value, oldValue })\n  })\n\n  $effect(() => {\n    $inspect.trace()\n    text\n  })\n</script>\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n  <p data-testid=\"text-value\">Current text: \"{text}\"</p>\n  <p data-testid=\"char-count\">Character count: {text.length}</p>\n</div>",
-        "success": false,
-        "errors": [
-          "expected 'Hello world\\nCustom inspector: [objec…' to contain 'init'",
-          "expected 'Hello world\\nCustom inspector: [objec…' to contain 'init'",
-          "expected 'Hello world\\nCustom inspector: [objec…' to contain 'init'"
-        ]
+        "success": true,
+        "errors": []
       },
       {
         "index": 3,
         "code": "<svelte:options runes={true} />\n\n<script>\n  let text = $state('Hello world')\n\n  $inspect(text)\n\n  $inspect(text).with((value, oldValue) => {\n    console.log('Custom tracking:', { value, oldValue })\n  })\n\n  $effect(() => {\n    $inspect.trace()\n    text\n  })\n</script>\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n  <p data-testid=\"text-value\">Current text: \"{text}\"</p>\n  <p data-testid=\"char-count\">Character count: {text.length}</p>\n</div>",
-        "success": false,
-        "errors": [
-          "expected 'Hello world\\nCustom tracking: [object…' to contain 'init'",
-          "expected 'Hello world\\nCustom tracking: [object…' to contain 'init'",
-          "expected 'Hello world\\nCustom tracking: [object…' to contain 'init'"
-        ]
+        "success": true,
+        "errors": []
       },
       {
         "index": 4,
         "code": "<svelte:options runes={true} />\n\n<script>\n  let text = $state(\"Hello world\");\n\n  $inspect(text);\n\n  $inspect(text).with((value, oldValue) => {\n    console.log(\"Custom inspection:\", { value, oldValue });\n  });\n\n  $effect(() => {\n    $inspect.trace();\n    text;\n  });\n</script>\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n  <p data-testid=\"text-value\">Current text: \"{text}\"</p>\n  <p data-testid=\"char-count\">Character count: {text.length}</p>\n</div>",
-        "success": false,
-        "errors": [
-          "expected 'Hello world\\nCustom inspection: [obje…' to contain 'init'",
-          "expected 'Hello world\\nCustom inspection: [obje…' to contain 'init'",
-          "expected 'Hello world\\nCustom inspection: [obje…' to contain 'init'"
-        ]
+        "success": true,
+        "errors": []
       },
       {
         "index": 5,
         "code": "<svelte:options runes={true} />\n\n<script>\n  let text = $state(\"Hello world\");\n\n  $inspect(text);\n\n  $inspect(text).with((value, oldValue) => {\n    console.log(\"Custom inspect:\", { value, oldValue });\n  });\n\n  $effect(() => {\n    $inspect.trace();\n  });\n</script>\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n  <p data-testid=\"text-value\">Current text: \"{text}\"</p>\n  <p data-testid=\"char-count\">Character count: {text.length}</p>\n</div>",
-        "success": false,
-        "errors": [
-          "expected 'Hello world\\nCustom inspect: [object …' to contain 'init'",
-          "expected 'Hello world\\nCustom inspect: [object …' to contain 'init'",
-          "expected 'Hello world\\nCustom inspect: [object …' to contain 'init'"
-        ]
+        "success": true,
+        "errors": []
       },
       {
         "index": 6,
         "code": "<svelte:options runes={true} />\n\n<script>\n  let text = $state('Hello world')\n\n  $inspect(text)\n\n  $inspect(text).with((value, oldValue) => {\n    console.log('Custom inspection:', { value, oldValue })\n  })\n\n  $effect(() => {\n    $inspect.trace()\n    text\n  })\n</script>\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n  <p data-testid=\"text-value\">Current text: \"{text}\"</p>\n  <p data-testid=\"char-count\">Character count: {text.length}</p>\n</div>",
-        "success": false,
-        "errors": [
-          "expected 'Hello world\\nCustom inspection: [obje…' to contain 'init'",
-          "expected 'Hello world\\nCustom inspection: [obje…' to contain 'init'",
-          "expected 'Hello world\\nCustom inspection: [obje…' to contain 'init'"
-        ]
+        "success": true,
+        "errors": []
       },
       {
         "index": 7,
@@ -550,22 +526,14 @@
       {
         "index": 8,
         "code": "<svelte:options runes={true} />\n\n<script>\n  let text = $state('Hello world');\n  \n  $inspect(text);\n  \n  $inspect(text).with((value, oldValue) => {\n    console.log('Custom inspector:', { value, oldValue });\n  });\n  \n  $effect(() => {\n    $inspect.trace();\n    text;\n  });\n</script>\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n  <p data-testid=\"text-value\">Current text: \"{text}\"</p>\n  <p data-testid=\"char-count\">Character count: {text.length}</p>\n</div>",
-        "success": false,
-        "errors": [
-          "expected 'Hello world\\nCustom inspector: [objec…' to contain 'init'",
-          "expected 'Hello world\\nCustom inspector: [objec…' to contain 'init'",
-          "expected 'Hello world\\nCustom inspector: [objec…' to contain 'init'"
-        ]
+        "success": true,
+        "errors": []
       },
       {
         "index": 9,
         "code": "<svelte:options runes={true} />\n\n<script>\n  let text = $state('Hello world')\n\n  $inspect(text)\n\n  $inspect(text).with((current, previous) => {\n    console.log('Text changed:', { current, previous })\n  })\n\n  $effect(() => {\n    $inspect.trace()\n    text\n  })\n</script>\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n  <p data-testid=\"text-value\">Current text: \"{text}\"</p>\n  <p data-testid=\"char-count\">Character count: {text.length}</p>\n</div>",
-        "success": false,
-        "errors": [
-          "expected 'Hello world\\nText changed: [object Ob…' to contain 'init'",
-          "expected 'Hello world\\nText changed: [object Ob…' to contain 'init'",
-          "expected 'Hello world\\nText changed: [object Ob…' to contain 'init'"
-        ]
+        "success": true,
+        "errors": []
       }
     ],
     "timestamp": "2026-08-11T17:55:18.693Z"
