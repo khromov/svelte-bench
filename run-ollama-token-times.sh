@@ -8,32 +8,32 @@ set -uo pipefail
 cd "$(dirname "$0")"
 
 # Models must be present on the Ollama host (or set OLLAMA_TOKEN_TIMES_PULL=true to pull them).
-# The commented ones have benchmark results but are no longer downloaded.
+# Models whose measurement file already covers every test are skipped unless --force is passed.
 MODELS=(
-  #"gemma4:26b-a4b-it-q4_K_M"
-  #"gpt-oss:20b"
-  #"llama3.1:8b-instruct-q4_K_M"
-  #"muse-glimmer:30b-q4_K_M"
-  #"nemotron-3.5-lightning:30b-a3b-q4_K_M"
-  #"gemma4:31b-it-q4_K_M"
-  #"laguna-xs-2.1:q4_K_M"
-  #"north-mini-code-1.0:q4_K_M"
-  #"llama3.3:70b-instruct-q2_K"
-  #"nemotron-3.5-lightning:30b-8k"
-  #"mistral-nemo:12b-instruct-2407-q4_K_M"
-  #"granite4.2:30b-q4_K_M"
-  #"qwen3.6:35b-a3b-q4_K_M"
-  #"qwen3.8:27b-mtp-q4_K_M"
-  # Still installed from earlier runs
-  "ornith-1.5:35b-q4_K_M"
-  "qwen3.5:9b-q4_K_M"
-  # NEW RUN
-  "glm-4.7-flash:q4_K_M"
-  "qwen3.6:27b-coding-mtp-q4_K_M"
-  #"gemma4:12b-it-q4_K_M"  # <- this one just WILL NOT RUN
+  # Ordered roughly fastest first, so the quick models finish before the slow ones
   "lfm2:24b"
-  "hf.co/bartowski/nex-agi_Nex-N2.5-mini-GGUF:Q4_K_M"
   "JetBrains/mellum2-instruct-q4_k_m"
+  "laguna-xs-2.1:q4_K_M"
+  "north-mini-code-1.0:q4_K_M"
+  "nemotron-3.5-lightning:30b-a3b-q4_K_M"
+  #"nemotron-3.5-lightning:30b-8k"  # <- locally created variant, not on the host; recreate it to measure
+  "ornith-1.5:35b-q4_K_M"
+  "qwen3.6:35b-a3b-q4_K_M"
+  "glm-4.7-flash:q4_K_M"
+  "gemma4:26b-a4b-it-q4_K_M"
+  "hf.co/bartowski/nex-agi_Nex-N2.5-mini-GGUF:Q4_K_M"
+  "gpt-oss:20b"
+  "llama3.1:8b-instruct-q4_K_M"
+  "qwen3.5:9b-q4_K_M"
+  "qwen3.8:27b-mtp-q4_K_M"
+  "mistral-nemo:12b-instruct-2407-q4_K_M"
+  "qwen3.6:27b-coding-mtp-q4_K_M"
+  # Under 5 tok/s: these can take hours if they think at length
+  "muse-glimmer:30b-q4_K_M"
+  "granite4.2:30b-q4_K_M"
+  "gemma4:31b-it-q4_K_M"
+  "llama3.3:70b-instruct-q2_K"
+  #"gemma4:12b-it-q4_K_M"  # <- this one just WILL NOT RUN
 )
 
 mkdir -p logs
