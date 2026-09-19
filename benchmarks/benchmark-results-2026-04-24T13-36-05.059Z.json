@@ -466,8 +466,8 @@
     "provider": "OpenRouter",
     "modelId": "deepseek/deepseek-v4-flash",
     "numSamples": 10,
-    "numCorrect": 4,
-    "pass1": 0.4,
+    "numCorrect": 6,
+    "pass1": 0.5999999999999999,
     "pass10": 1,
     "context": {
       "used": false,
@@ -494,12 +494,8 @@
       {
         "index": 2,
         "code": "<svelte:options runes={true} />\n\n<script>\n  let text = $state('Hello world');\n\n  $inspect(text);\n\n  $inspect(text).with((value, previous) => {\n    console.log('Custom inspect:', { value, previous });\n  });\n\n  $effect(() => {\n    $inspect.trace();\n    text;\n  });\n</script>\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n  <p data-testid=\"text-value\">Current text: \"{text}\"</p>\n  <p data-testid=\"char-count\">Character count: {text.length}</p>\n</div>",
-        "success": false,
-        "errors": [
-          "expected 'Hello world\\nCustom inspect: [object …' to contain 'init'",
-          "expected 'Hello world\\nCustom inspect: [object …' to contain 'init'",
-          "expected 'Hello world\\nCustom inspect: [object …' to contain 'init'"
-        ]
+        "success": true,
+        "errors": []
       },
       {
         "index": 3,
@@ -544,12 +540,8 @@
       {
         "index": 9,
         "code": "<svelte:options runes={true} />\n\n<script>\n  let text = $state(\"Hello world\");\n\n  // Basic $inspect\n  $inspect(text);\n\n  // $inspect with custom callback\n  $inspect(text).with((newVal, oldVal) => {\n    console.log(\"Custom inspect:\", { newVal, oldVal });\n  });\n\n  // $inspect.trace inside an effect\n  $effect(() => {\n    $inspect.trace();\n    // This effect runs whenever text changes, and $inspect.trace() logs the dependency\n  });\n</script>\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n  <p data-testid=\"text-value\">Current text: &quot;{text}&quot;</p>\n  <p data-testid=\"char-count\">Character count: {text.length}</p>\n</div>",
-        "success": false,
-        "errors": [
-          "expected 'Hello world\\nCustom inspect: [object …' to contain 'init'",
-          "expected 'Hello world\\nCustom inspect: [object …' to contain 'init'",
-          "expected 'Hello world\\nCustom inspect: [object …' to contain 'init'"
-        ]
+        "success": true,
+        "errors": []
       }
     ],
     "timestamp": "2026-04-24T13:36:05.059Z"

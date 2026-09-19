@@ -2,6 +2,8 @@ import fs from "fs/promises";
 import path from "path";
 import type { HumanEvalResult } from "./src/utils/humaneval";
 import { ensureBenchmarksDir, loadTestDefinitions } from "./src/utils/test-manager";
+import { isOllamaResult } from "./src/utils/ollama-results";
+import { TOKEN_TIMES_DIR_NAME, loadAllTokenTimes, toTokenTimes } from "./src/utils/token-times";
 
 /**
  * Interface to track the latest file for each provider/model combination
@@ -117,6 +119,64 @@ function warnAboutShortSampleCounts(key: string, results: HumanEvalResult[]): vo
 }
 
 /**
+ * Join the per-model response size measurements (benchmarks/token-times-ollama/, produced by
+ * `pnpm ollama-token-times`) into the merged results. Each Ollama model's average output token
+ * count is divided by its measured `tps` to estimate how long a typical response took.
+ */
+async function attachTokenTimes(results: HumanEvalResult[], suiteSize: number): Promise<void> {
+  const measurements = await loadAllTokenTimes();
+
+  if (measurements.size === 0) {
+    console.log(
+      `ℹ️ No token-time measurements in benchmarks/${TOKEN_TIMES_DIR_NAME}/ (run \`pnpm ollama-token-times\`)`,
+    );
+    return;
+  }
+
+  const attached = new Set<string>();
+  const unmeasured = new Set<string>();
+  const withoutTps = new Set<string>();
+  const partial = new Set<string>();
+
+  for (const result of results) {
+    if (!isOllamaResult(result)) continue;
+
+    const measurement = measurements.get(result.modelId);
+    if (!measurement) {
+      unmeasured.add(result.modelId);
+      continue;
+    }
+
+    result.tokenTimes = toTokenTimes(measurement, result.tps);
+    attached.add(result.modelId);
+    if (result.tokenTimes.avgResponseSeconds === null) withoutTps.add(result.modelId);
+    if (measurement.sampleCount < suiteSize) partial.add(result.modelId);
+  }
+
+  console.log(`⏱️ Attached token-time measurements to ${attached.size} Ollama model(s)`);
+  if (partial.size > 0) {
+    console.warn(
+      `⚠️ Token-time measurement covers fewer than ${suiteSize} tests for: ${Array.from(partial).join(", ")} (re-run \`pnpm ollama-token-times\` to finish)`,
+    );
+  }
+  if (withoutTps.size > 0) {
+    console.warn(
+      `⚠️ Token counts but no tps, so no response time estimate, for: ${Array.from(withoutTps).join(", ")} (run \`pnpm ollama-tps\`)`,
+    );
+  }
+  if (unmeasured.size > 0) {
+    console.log(
+      `ℹ️ ${unmeasured.size} Ollama model(s) without a token-time measurement: ${Array.from(unmeasured).join(", ")}`,
+    );
+  }
+
+  const unused = Array.from(measurements.keys()).filter((modelId) => !attached.has(modelId));
+  if (unused.length > 0) {
+    console.log(`ℹ️ Token-time measurements for models not in the merged results: ${unused.join(", ")}`);
+  }
+}
+
+/**
  * Merge the latest results and save to a new file
  */
 async function mergeAndSaveResults(): Promise<void> {
@@ -153,6 +213,9 @@ async function mergeAndSaveResults(): Promise<void> {
     mergedResults.push(...info.results);
     includedFiles.add(info.filePath);
   }
+
+  // Add the response size / time estimates for local models
+  await attachTokenTimes(mergedResults, suite.length);
 
   // Save merged results
   await ensureBenchmarksDir();

@@ -86,7 +86,7 @@ export async function runAllTestsHumanEvalMadmax(
         undefined,
         undefined,
         [],
-        0,
+        undefined,
         { retryRateLimits: true },
       );
 

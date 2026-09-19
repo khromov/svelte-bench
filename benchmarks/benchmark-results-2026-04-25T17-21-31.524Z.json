@@ -466,8 +466,8 @@
     "provider": "OpenAI",
     "modelId": "gpt-5.5",
     "numSamples": 10,
-    "numCorrect": 8,
-    "pass1": 0.7999999999999999,
+    "numCorrect": 10,
+    "pass1": 1,
     "pass10": 1,
     "context": {
       "used": false,
@@ -477,12 +477,8 @@
       {
         "index": 0,
         "code": "<svelte:options runes={true} />\n\n<script>\n\tlet text = $state('Hello world');\n\tlet charCount = $derived(text.length);\n\n\t$inspect(text);\n\n\t$inspect(text).with((type, value) => {\n\t\tif (type === 'update') {\n\t\t\tconsole.log('Text updated:', value);\n\t\t}\n\t});\n\n\t$effect(() => {\n\t\t$inspect.trace('text effect');\n\t\ttext;\n\t});\n</script>\n\n<div>\n\t<input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n\t<p data-testid=\"text-value\">Current text: \"{text}\"</p>\n\t<p data-testid=\"char-count\">Character count: {charCount}</p>\n</div>",
-        "success": false,
-        "errors": [
-          "expected 'Hello world\\ntext effect %c(0.36ms) c…' to contain 'init'",
-          "expected 'Hello world\\ntext effect %c(0.30ms) c…' to contain 'init'",
-          "expected 'Hello world\\ntext effect %c(0.30ms) c…' to contain 'init'"
-        ],
+        "success": true,
+        "errors": [],
         "temperature": 0
       },
       {
@@ -494,12 +490,8 @@
       {
         "index": 2,
         "code": "<svelte:options runes={true} />\n\n<script>\n\tlet text = $state('Hello world');\n\tlet charCount = $derived(text.length);\n\n\t$inspect(text);\n\n\t$inspect(text).with((type, value) => {\n\t\tif (type === 'update') {\n\t\t\tconsole.log('Input updated:', value);\n\t\t}\n\t});\n\n\t$effect(() => {\n\t\t$inspect.trace('text effect');\n\t\ttext;\n\t});\n</script>\n\n<div>\n\t<input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n\t<p data-testid=\"text-value\">Current text: \"{text}\"</p>\n\t<p data-testid=\"char-count\">Character count: {charCount}</p>\n</div>",
-        "success": false,
-        "errors": [
-          "expected 'Hello world\\ntext effect %c(0.41ms) c…' to contain 'init'",
-          "expected 'Hello world\\ntext effect %c(0.27ms) c…' to contain 'init'",
-          "expected 'Hello world\\ntext effect %c(0.31ms) c…' to contain 'init'"
-        ]
+        "success": true,
+        "errors": []
       },
       {
         "index": 3,

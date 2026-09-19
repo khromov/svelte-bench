@@ -466,8 +466,8 @@
     "provider": "OpenRouter",
     "modelId": "z-ai/glm-5.3-flash",
     "numSamples": 10,
-    "numCorrect": 4,
-    "pass1": 0.4,
+    "numCorrect": 9,
+    "pass1": 0.9,
     "pass10": 1,
     "context": {
       "used": false,
@@ -484,22 +484,14 @@
       {
         "index": 1,
         "code": "<svelte:options runes={true} />\n\n<script>\n  let text = $state('Hello world');\n\n  let charCount = $derived(text.length);\n\n  $inspect(text);\n\n  $inspect(text).with((type, value) => {\n    if (type === 'update') {\n      console.log('text updated to:', value);\n    }\n  });\n\n  $effect(() => {\n    $inspect.trace();\n    console.log('effect ran, character count:', charCount);\n  });\n</script>\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n  <p data-testid=\"text-value\">Current text: \"{text}\"</p>\n  <p data-testid=\"char-count\">Character count: {charCount}</p>\n</div>",
-        "success": false,
-        "errors": [
-          "expected 'Hello world\\neffect ran, character co…' to contain 'init'",
-          "expected 'Hello world\\neffect ran, character co…' to contain 'init'",
-          "expected 'Hello world\\neffect ran, character co…' to contain 'init'"
-        ]
+        "success": true,
+        "errors": []
       },
       {
         "index": 2,
         "code": "<svelte:options runes={true} />\n\n<script>\n  let text = $state('Hello world');\n  let charCount = $derived(text.length);\n\n  $inspect(text);\n\n  $inspect(text).with((type, value) => {\n    if (type === 'update') {\n      console.log('text updated:', value);\n    }\n  });\n\n  $effect(() => {\n    $inspect.trace();\n    console.log('effect re-ran, current text:', text, 'character count:', charCount);\n  });\n</script>\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n  <p data-testid=\"text-value\">Current text: \"{text}\"</p>\n  <p data-testid=\"char-count\">Character count: {charCount}</p>\n</div>",
-        "success": false,
-        "errors": [
-          "expected 'Hello world\\neffect re-ran, current t…' to contain 'init'",
-          "expected 'Hello world\\neffect re-ran, current t…' to contain 'init'",
-          "expected 'Hello world\\neffect re-ran, current t…' to contain 'init'"
-        ]
+        "success": true,
+        "errors": []
       },
       {
         "index": 3,
@@ -524,32 +516,20 @@
       {
         "index": 6,
         "code": "<svelte:options runes={true} />\n\n<script>\n  let text = $state('Hello world');\n  let charCount = $derived(text.length);\n\n  $inspect(text);\n\n  $inspect(text).with((type, value) => {\n    if (type === 'update') {\n      console.log('text updated:', value);\n    }\n  });\n\n  $effect(() => {\n    $inspect.trace();\n    console.log('effect re-ran, text:', text);\n  });\n</script>\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n  <p data-testid=\"text-value\">Current text: \"{text}\"</p>\n  <p data-testid=\"char-count\">Character count: {charCount}</p>\n</div>",
-        "success": false,
-        "errors": [
-          "expected 'Hello world\\neffect re-ran, text: Hel…' to contain 'init'",
-          "expected 'Hello world\\neffect re-ran, text: Hel…' to contain 'init'",
-          "expected 'Hello world\\neffect re-ran, text: Hel…' to contain 'init'"
-        ]
+        "success": true,
+        "errors": []
       },
       {
         "index": 7,
         "code": "<svelte:options runes={true} />\n\n<script>\n  let text = $state('Hello world');\n  let charCount = $derived(text.length);\n\n  $inspect(text);\n\n  $inspect(text).with((type, value) => {\n    if (type === 'update') {\n      console.log('Text updated:', value);\n    }\n  });\n\n  $effect(() => {\n    $inspect.trace('text effect');\n    console.log('Effect ran with text:', text);\n  });\n</script>\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n  <p data-testid=\"text-value\">Current text: \"{text}\"</p>\n  <p data-testid=\"char-count\">Character count: {charCount}</p>\n</div>",
-        "success": false,
-        "errors": [
-          "expected 'Hello world\\nEffect ran with text: He…' to contain 'init'",
-          "expected 'Hello world\\nEffect ran with text: He…' to contain 'init'",
-          "expected 'Hello world\\nEffect ran with text: He…' to contain 'init'"
-        ]
+        "success": true,
+        "errors": []
       },
       {
         "index": 8,
         "code": "<svelte:options runes={true} />\n\n<script>\n  let text = $state('Hello world');\n  let charCount = $derived(text.length);\n\n  $inspect(text);\n\n  $inspect(text).with((type, value) => {\n    if (type === 'update') {\n      console.log('Input updated:', value);\n    }\n  });\n\n  $effect(() => {\n    $inspect.trace();\n    console.log('Effect ran with text:', text, 'and char count:', charCount);\n  });\n</script>\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n  <p data-testid=\"text-value\">Current text: \"{text}\"</p>\n  <p data-testid=\"char-count\">Character count: {charCount}</p>\n</div>",
-        "success": false,
-        "errors": [
-          "expected 'Hello world\\nEffect ran with text: He…' to contain 'init'",
-          "expected 'Hello world\\nEffect ran with text: He…' to contain 'init'",
-          "expected 'Hello world\\nEffect ran with text: He…' to contain 'init'"
-        ]
+        "success": true,
+        "errors": []
       },
       {
         "index": 9,

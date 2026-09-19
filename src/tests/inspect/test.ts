@@ -26,6 +26,35 @@ const getAllConsoleOutput = (consoleSpy: any) => {
   return consoleSpy.mock.calls.map((call: any[]) => call.join(" ")).join("\n");
 };
 
+// Same as above, but serializes objects so logged values like `{ text: "..." }` are searchable
+const getSerializedConsoleOutput = (consoleSpy: any) => {
+  const serialize = (arg: any) => {
+    if (typeof arg === "string") return arg;
+    try {
+      return JSON.stringify(arg) ?? String(arg);
+    } catch {
+      return String(arg);
+    }
+  };
+  return consoleSpy.mock.calls.map((call: any[]) => call.map(serialize).join(" ")).join("\n");
+};
+
+// Verify standard $inspect output is present. Svelte < 5.42 labels it with "init"/"update".
+// Svelte >= 5.42 logs the bare initial value, then a "stack trace" group on every change.
+const expectInspectOutput = (consoleSpy: any) => {
+  const output = getAllConsoleOutput(consoleSpy);
+  const serializedOutput = getSerializedConsoleOutput(consoleSpy);
+
+  expect(
+    output.includes("init") || serializedOutput.includes("Hello world"),
+    `Expected $inspect to log the initial value, but console output was: ${output.slice(0, 300)}`,
+  ).toBe(true);
+  expect(
+    output.includes("update") || output.includes("stack trace"),
+    `Expected $inspect to log updates, but console output was: ${output.slice(0, 300)}`,
+  ).toBe(true);
+};
+
 describe("InspectDemo component", () => {
   test("renders with initial state", () => {
     render(InspectDemo);
@@ -58,10 +87,8 @@ describe("InspectDemo component", () => {
     // This proves $inspect, $inspect.with, and $inspect.trace are working
     expect(consoleSpy).toHaveBeenCalled();
 
-    // Verify standard $inspect output is present
-    const output = getAllConsoleOutput(consoleSpy);
-    expect(output).toContain("init"); // Basic $inspect always logs init event
-    expect(output).toContain("update"); // Should have update events from typing
+    // Verify standard $inspect output is present, with update events from typing
+    expectInspectOutput(consoleSpy);
 
     // Restore original console.log
     consoleSpy.mockRestore();
@@ -87,10 +114,8 @@ describe("InspectDemo component", () => {
     // Verify $inspect features are working
     expect(consoleSpy).toHaveBeenCalled();
 
-    // Verify standard $inspect output is present
-    const output = getAllConsoleOutput(consoleSpy);
-    expect(output).toContain("init"); // Basic $inspect always logs init event
-    expect(output).toContain("update"); // Should have update events from typing
+    // Verify standard $inspect output is present, with update events from typing
+    expectInspectOutput(consoleSpy);
 
     consoleSpy.mockRestore();
   });
@@ -114,10 +139,8 @@ describe("InspectDemo component", () => {
     // Verify $inspect features are working
     expect(consoleSpy).toHaveBeenCalled();
 
-    // Verify standard $inspect output is present
-    const output = getAllConsoleOutput(consoleSpy);
-    expect(output).toContain("init"); // Basic $inspect always logs init event
-    expect(output).toContain("update"); // Should have update events from clearing input
+    // Verify standard $inspect output is present, with update events from clearing input
+    expectInspectOutput(consoleSpy);
 
     consoleSpy.mockRestore();
   });

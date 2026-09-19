@@ -1819,6 +1819,58 @@
       margin-bottom: 20px;
     }
 
+    /* Leaderboard tabs (all models / local models) */
+    .leaderboard-tabs {
+      display: inline-flex;
+      gap: 4px;
+      padding: 4px;
+      margin-bottom: 16px;
+      border-radius: var(--radius-md);
+      background: var(--surface-secondary);
+      border: 1px solid var(--border);
+    }
+
+    .leaderboard-tab {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      border: none;
+      border-radius: calc(var(--radius-md) - 2px);
+      background: transparent;
+      color: var(--text-secondary);
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .leaderboard-tab:hover {
+      color: var(--text-primary);
+    }
+
+    .leaderboard-tab.active {
+      background: var(--surface);
+      color: var(--text-primary);
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+    }
+
+    .leaderboard-tab-count {
+      padding: 1px 7px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+      background: var(--surface-secondary);
+      color: var(--text-secondary);
+    }
+
+    .leaderboard-tab.active .leaderboard-tab-count {
+      background: var(--primary);
+      color: var(--primary-foreground);
+    }
+
     /* Model search styles */
     .model-search-container {
       position: relative;
@@ -2063,6 +2115,139 @@
       color: var(--text-secondary);
       font-size: 14px;
       margin-left: 8px;
+    }
+
+    /* Generation speed (tokens per second) in the leaderboard */
+    .tps-bar-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .tps-progress {
+      flex: 1;
+      min-width: 60px;
+      background: var(--success-bg);
+    }
+
+    .tps-progress-indicator {
+      background: var(--success);
+    }
+
+    .tps-progress-small {
+      display: inline-block;
+      width: 48px;
+      min-width: 48px;
+      height: 6px;
+      flex: none;
+      margin-right: 6px;
+    }
+
+    .tps-progress-small .progress-indicator {
+      display: block;
+    }
+
+    .tps-value {
+      font-variant-numeric: tabular-nums;
+      font-weight: 600;
+      font-size: 0.875rem;
+      color: var(--text-primary);
+      white-space: nowrap;
+      min-width: 4.5rem;
+      text-align: right;
+    }
+
+    .tps-unit {
+      font-weight: 400;
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    .tps-missing {
+      color: var(--text-secondary);
+    }
+
+    /* Sortable leaderboard headers (enabled in the local models tab only) */
+    .sort-button {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0;
+      margin: 0;
+      border: none;
+      background: none;
+      font: inherit;
+      color: inherit;
+      text-transform: inherit;
+      letter-spacing: inherit;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .sort-button:disabled {
+      cursor: default;
+    }
+
+    .sort-button:not(:disabled):hover,
+    .sort-button.active {
+      color: var(--text-primary);
+    }
+
+    .sort-button:focus-visible {
+      outline: 2px solid var(--accent-blue);
+      outline-offset: 3px;
+      border-radius: 4px;
+    }
+
+    .sort-indicator {
+      font-size: 12px;
+      opacity: 0.6;
+    }
+
+    .sort-button.active .sort-indicator {
+      opacity: 1;
+      color: var(--accent-blue);
+    }
+
+    /* Estimated time per response in the leaderboard */
+    .time-value {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: flex-start;
+      line-height: 1.25;
+      font-variant-numeric: tabular-nums;
+      font-weight: 600;
+      font-size: 0.875rem;
+      color: var(--text-primary);
+      white-space: nowrap;
+    }
+
+    .time-tokens {
+      font-weight: 400;
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    /* Generation speed badge next to a model name in the detailed results */
+    .model-title {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .tps-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+      color: var(--text-secondary);
+      background: var(--surface-secondary);
+      border: 1px solid var(--border);
     }
 
     /* Expand/collapse button for top models */

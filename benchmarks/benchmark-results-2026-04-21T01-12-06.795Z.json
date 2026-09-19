@@ -490,8 +490,8 @@
     "provider": "Moonshot",
     "modelId": "kimi-k2.6",
     "numSamples": 10,
-    "numCorrect": 3,
-    "pass1": 0.30000000000000004,
+    "numCorrect": 4,
+    "pass1": 0.4,
     "pass10": 1,
     "context": {
       "used": false,
@@ -557,12 +557,8 @@
       {
         "index": 7,
         "code": "<svelte:options runes={true} />\n\n<div class=\"demo-container\">\n  <div class=\"inspect-demo\">\n    <h1>$inspect Rune Demo</h1>\n    \n    <div class=\"input-section\">\n      <label for=\"text-input\">Enter some text:</label>\n      <input \n        id=\"text-input\"\n        data-testid=\"text-input\" \n        type=\"text\" \n        bind:value={text} \n      />\n    </div>\n\n    <div class=\"output-section\">\n      <p data-testid=\"text-value\">Current text: \"{text}\"</p>\n      <p data-testid=\"char-count\">Character count: {text.length}</p>\n    </div>\n\n    <div class=\"info-box\">\n      <p>\n        Open your browser's developer console to see the \n        <code>$inspect</code> rune in action!\n      </p>\n      <ul>\n        <li>Basic <code>$inspect(text)</code> logs value changes</li>\n        <li><code>$inspect(text).with(...)</code> shows custom formatted logs</li>\n        <li><code>$inspect.trace()</code> inside the effect logs execution traces</li>\n      </ul>\n    </div>\n  </div>\n</div>\n\n<script>\n  let text = $state(\"Hello world\");\n\n  $inspect(text);\n\n  $inspect(text).with((type, value) => {\n    console.log(`$inspect.with -> [${type.toUpperCase()}] \"${value}\"`);\n  });\n\n  $effect(() => {\n    $inspect.trace();\n    const current = text;\n    const count = current.length;\n    console.log(`Effect executed: \"${current}\" has ${count} characters`);\n  });\n</script>\n\n<style>\n  .demo-container {\n    display: flex;\n    justify-content: center;\n    align-items: flex-start;\n    min-height: 100vh;\n    padding: 2rem;\n    background-color: #f5f5f5;\n    font-family: system-ui, -apple-system, sans-serif;\n  }\n\n  .inspect-demo {\n    background: white;\n    border-radius: 12px;\n    padding: 2rem;\n    width: 100%;\n    max-width: 500px;\n    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);\n  }\n\n  h1 {\n    margin: 0 0 1.5rem 0;\n    font-size: 1.5rem;\n    color: #1a1a1a;\n    border-bottom: 2px solid #ff3e00;\n    padding-bottom: 0.75rem;\n  }\n\n  .input-section {\n    margin-bottom: 1.5rem;\n  }\n\n  label {\n    display: block;\n    margin-bottom: 0.5rem;\n    font-weight: 600;\n    color: #333;\n  }\n\n  input {\n    width: 100%;\n    padding: 0.75rem;\n    font-size: 1rem;\n    border: 2px solid #ddd;\n    border-radius: 8px;\n    box-sizing: border-box;\n    transition: border-color 0.2s;\n  }\n\n  input:focus {\n    outline: none;\n    border-color: #ff3e00;\n  }\n\n  .output-section {\n    background-color: #fafafa;\n    border-radius: 8px;\n    padding: 1rem;\n    margin-bottom: 1.5rem;\n  }\n\n  .output-section p {\n    margin: 0.5rem 0;\n    color: #444;\n    font-size: 1.05rem;\n  }\n\n  .info-box {\n    background-color: #fff8e1;\n    border-left: 4px solid #ff9800;\n    border-radius: 0 8px 8px 0;\n    padding: 1rem;\n  }\n\n  .info-box p {\n    margin: 0 0 0.75rem 0;\n    font-weight: 600;\n    color: #5d4037;\n  }\n\n  .info-box ul {\n    margin: 0;\n    padding-left: 1.25rem;\n    color: #6d4c41;\n  }\n\n  .info-box li {\n    margin-bottom: 0.5rem;\n    line-height: 1.5;\n  }\n\n  code {\n    background-color: #e8e8e8;\n    padding: 0.15rem 0.35rem;\n    border-radius: 4px;\n    font-family: 'SF Mono', monospace;\n    font-size: 0.9em;\n    color: #d81b60;\n  }\n</style>",
-        "success": false,
-        "errors": [
-          "expected 'Hello world\\n$inspect.with -> [INIT] …' to contain 'init'",
-          "expected 'Hello world\\n$inspect.with -> [INIT] …' to contain 'init'",
-          "expected 'Hello world\\n$inspect.with -> [INIT] …' to contain 'init'"
-        ]
+        "success": true,
+        "errors": []
       },
       {
         "index": 8,

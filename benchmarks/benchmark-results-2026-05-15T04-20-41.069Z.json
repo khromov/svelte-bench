@@ -466,8 +466,8 @@
     "provider": "Google",
     "modelId": "gemini-3.1-flash-lite",
     "numSamples": 10,
-    "numCorrect": 1,
-    "pass1": 0.09999999999999998,
+    "numCorrect": 3,
+    "pass1": 0.30000000000000004,
     "pass10": 1,
     "context": {
       "used": false,
@@ -477,12 +477,8 @@
       {
         "index": 0,
         "code": "<svelte:options runes={true} />\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n  <p data-testid=\"text-value\">Current text: \"{text}\"</p>\n  <p data-testid=\"char-count\">Character count: {text.length}</p>\n</div>\n\n<script>\n  let text = $state('Hello world');\n\n  $inspect(text);\n\n  $inspect(text).with((type, filename, line, column, value) => {\n    console.log(`Custom inspect: ${value} at ${filename}:${line}`);\n  });\n\n  $effect(() => {\n    $inspect.trace();\n    console.log('Effect triggered by:', text);\n  });\n</script>",
-        "success": false,
-        "errors": [
-          "expected 'Hello world\\nCustom inspect: undefine…' to contain 'init'",
-          "expected 'Hello world\\nCustom inspect: undefine…' to contain 'init'",
-          "expected 'Hello world\\nCustom inspect: undefine…' to contain 'init'"
-        ],
+        "success": true,
+        "errors": [],
         "temperature": 0
       },
       {
@@ -512,12 +508,8 @@
       {
         "index": 4,
         "code": "<svelte:options runes={true} />\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n  <p data-testid=\"text-value\">Current text: \"{text}\"</p>\n  <p data-testid=\"char-count\">Character count: {text.length}</p>\n</div>\n\n<script>\n  let text = $state('Hello world');\n\n  $inspect(text);\n\n  $inspect(text).with((type, filename, line, column, value) => {\n    console.log(`Update at ${filename}:${line}:${column} - New value: ${value}`);\n  });\n\n  $effect(() => {\n    $inspect.trace();\n    console.log('Effect triggered by:', text);\n  });\n</script>",
-        "success": false,
-        "errors": [
-          "expected 'Hello world\\nUpdate at Hello world:un…' to contain 'init'",
-          "expected 'Hello world\\nUpdate at Hello world:un…' to contain 'init'",
-          "expected 'Hello world\\nUpdate at Hello world:un…' to contain 'init'"
-        ]
+        "success": true,
+        "errors": []
       },
       {
         "index": 5,

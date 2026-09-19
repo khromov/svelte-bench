@@ -503,8 +503,8 @@
     "provider": "OpenRouter",
     "modelId": "nvidia/nemotron-3.5-lightning",
     "numSamples": 10,
-    "numCorrect": 1,
-    "pass1": 0.09999999999999998,
+    "numCorrect": 2,
+    "pass1": 0.20000000000000007,
     "pass10": 1,
     "context": {
       "used": false,
@@ -514,12 +514,8 @@
       {
         "index": 0,
         "code": "<svelte:options runes={true} />\n\n<script>\n  let text = $state('Hello world');\n  $inspect(text);\n  $inspect(text).with((value) => {});\n  $effect(() => { $inspect.trace(); });\n</script>\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n  <p data-testid=\"text-value\">Current text: \"{text}\"</p>\n  <p data-testid=\"char-count\">Character count: {text.length}</p>\n</div>",
-        "success": false,
-        "errors": [
-          "expected 'Hello world\\n$effect(...) (tmp/​sampl…' to contain 'init'",
-          "expected 'Hello world\\n$effect(...) (tmp/​sampl…' to contain 'init'",
-          "expected 'Hello world\\n$effect(...) (tmp/​sampl…' to contain 'init'"
-        ],
+        "success": true,
+        "errors": [],
         "temperature": 0
       },
       {
@@ -577,9 +573,9 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n  let text = $state('Hello world');\n  $inspect(text).with(() => {});\n  $effect(() => {\n    $inspect.trace(text);\n  });\n</script>\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n  <p data-testid=\"text-value\">Current text: \"{text}\"</p>\n  <p data-testid=\"char-count\">Character count: {text.length}</p>\n</div>",
         "success": false,
         "errors": [
-          "expected '[object Object] %cno reactive depende…' to contain 'init'",
-          "expected '[object Object] %cno reactive depende…' to contain 'init'",
-          "expected '[object Object] %cno reactive depende…' to contain 'init'"
+          "Expected $inspect to log the initial value, but console output was: [object Object] %cno reactive dependencies (0.00ms) color: grey: expected false to be true // Object.is equality",
+          "Expected $inspect to log the initial value, but console output was: [object Object] %cno reactive dependencies (0.00ms) color: grey: expected false to be true // Object.is equality",
+          "Expected $inspect to log the initial value, but console output was: [object Object] %cno reactive dependencies (0.00ms) color: grey: expected false to be true // Object.is equality"
         ]
       },
       {
@@ -587,9 +583,9 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n  let text = $state(\"Hello world\");\n  \n  $inspect(text).with(() => {\n    console.log(\"Text value changed:\", text);\n  });\n  \n  $effect(() => {\n    $inspect.trace();\n  });\n</script>\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n  <p data-testid=\"text-value\">Current text: \"{text}\"</p>\n  <p data-testid=\"char-count\">Character count: {text.length}</p>\n</div>",
         "success": false,
         "errors": [
-          "expected 'Text value changed: Hello world\\n$eff…' to contain 'init'",
-          "expected 'Text value changed: Hello world\\n$eff…' to contain 'init'",
-          "expected 'Text value changed: Hello world\\n$eff…' to contain 'init'"
+          "Expected $inspect to log updates, but console output was: Text value changed: Hello world\n$effect(...) (tmp/​rescore-inspect/​74/​Component.svelte:10:10) %cno reactive dependencies (0.00ms) color: grey\nText value changed: \nText value changed: T\nText value changed: Te\nText value changed: Tes\nText value changed: Test\nText value changed: Testi\nText value chan: expected false to be true // Object.is equality",
+          "Expected $inspect to log updates, but console output was: Text value changed: Hello world\n$effect(...) (tmp/​rescore-inspect/​74/​Component.svelte:10:10) %cno reactive dependencies (0.00ms) color: grey\nText value changed: \nText value changed: !\nText value changed: !@\nText value changed: !@#\nText value changed: !@#$\nText value changed: !@#$%\nText value chan: expected false to be true // Object.is equality",
+          "Expected $inspect to log updates, but console output was: Text value changed: Hello world\n$effect(...) (tmp/​rescore-inspect/​74/​Component.svelte:10:10) %cno reactive dependencies (0.00ms) color: grey\nText value changed: : expected false to be true // Object.is equality"
         ]
       },
       {
@@ -597,9 +593,9 @@
         "code": "<svelte:options runes={true} />\n\n<script>\n  let text = $state('Hello world')\n  \n  $inspect(text).with(() => {})\n  \n  $effect(() => {\n    $inspect.trace()\n  })\n</script>\n\n<div>\n  <input data-testid=\"text-input\" type=\"text\" bind:value={text} />\n  <p data-testid=\"text-value\">Current text: \"{text}\"</p>\n  <p data-testid=\"char-count\">Character count: {text.length}</p>\n</div>",
         "success": false,
         "errors": [
-          "expected '$effect(...) (tmp/​samples/​openroute…' to contain 'init'",
-          "expected '$effect(...) (tmp/​samples/​openroute…' to contain 'init'",
-          "expected '$effect(...) (tmp/​samples/​openroute…' to contain 'init'"
+          "Expected $inspect to log the initial value, but console output was: $effect(...) (tmp/​rescore-inspect/​75/​Component.svelte:8:10) %cno reactive dependencies (0.00ms) color: grey: expected false to be true // Object.is equality",
+          "Expected $inspect to log the initial value, but console output was: $effect(...) (tmp/​rescore-inspect/​75/​Component.svelte:8:10) %cno reactive dependencies (0.00ms) color: grey: expected false to be true // Object.is equality",
+          "Expected $inspect to log the initial value, but console output was: $effect(...) (tmp/​rescore-inspect/​75/​Component.svelte:8:10) %cno reactive dependencies (0.00ms) color: grey: expected false to be true // Object.is equality"
         ]
       },
       {

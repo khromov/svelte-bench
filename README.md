@@ -251,7 +251,7 @@ SvelteBench automatically saves checkpoints at the sample level, allowing you to
 
 - Checkpoints are saved in `tmp/checkpoint/` after each sample completion
 - If a run is interrupted, it will automatically resume from the last checkpoint
-- Checkpoints are cleaned up after successful completion
+- Checkpoints are cleaned up once every sample is recorded. If samples were dropped after API failures (e.g. timeouts), the checkpoint is kept and the next run of the same model (with the same sample count and context) retries only the missing samples
 
 ### Retry Mechanism
 
@@ -285,6 +285,74 @@ pnpm run verify
 ```
 
 This checks that each test has required files (prompt.md, test.ts, Reference.svelte).
+
+### Local Model Speed (Ollama)
+
+For local models, generation speed matters as much as accuracy. After benchmarking Ollama models,
+measure their tokens per second and store the figure alongside the results:
+
+```bash
+pnpm ollama-tps
+```
+
+The script scans every benchmark JSON file for results from the `ollama` provider, loads each model
+on the Ollama host (`OLLAMA_HOST`), sends it a single test prompt (`counter` by default) and derives
+tokens per second from the timings Ollama reports. The result is written into each affected benchmark
+file as `tps` (plus a `tpsDetails` record of the measurement), and shows up as a **Speed** column in the
+leaderboard and as a badge next to the model name in the detailed results after the next `pnpm build`.
+
+Models that already have a `tps` value are skipped, so the script is safe to re-run after each batch.
+
+```bash
+# Only list what would be measured
+pnpm ollama-tps -- --dry-run
+
+# Re-measure models that already have a tps value
+pnpm ollama-tps -- --force
+
+# Use a different test prompt, or pull models missing from the Ollama host
+OLLAMA_TPS_TEST=hello-world pnpm ollama-tps
+OLLAMA_TPS_PULL=true pnpm ollama-tps
+```
+
+### Local Model Response Time (Ollama)
+
+Tokens per second only tells half the story: a model that thinks for thousands of tokens is slow
+even at a high speed. The benchmark run itself does not record token counts, so a separate script
+measures how many output tokens each Ollama model produces per response:
+
+```bash
+pnpm ollama-token-times
+```
+
+For every Ollama model in the benchmark results it sends **one sample per test** (9 requests per model)
+at the model's default temperature and records the token counts and timings Ollama reports in
+`benchmarks/token-times-ollama/<model>.json`. The counts cover everything the model generated,
+thinking tokens included, and each sample keeps the prompt and raw response for manual validation. `pnpm merge` (part of `pnpm build`) joins those files
+with the results: the average output token count divided by the model's `tps` estimates how long a
+typical response took, shown as an **Avg. response** column in the leaderboard and as a badge next to
+the model name (hover it for the token count). In the **Local models** tab the leaderboard can be
+sorted by the **Speed** and **Avg. response** columns (click a header, click again to reverse, click
+**Score** to return to the default order). The measurements only affect the merged report; the
+individual benchmark files are left untouched.
+
+Progress is saved after every sample, so an interrupted run resumes where it stopped, and models whose
+file already covers every test are skipped. `run-ollama-token-times.sh` runs it for a list of models
+one at a time, logging to `logs/`, and rebuilds the report afterwards.
+
+```bash
+# Only the given model(s)
+pnpm ollama-token-times -- --model gpt-oss:20b --model lfm2:24b
+
+# Only list what would be measured
+pnpm ollama-token-times -- --dry-run
+
+# Discard existing samples and measure again
+pnpm ollama-token-times -- --force
+
+# Pull models missing from the Ollama host
+OLLAMA_TOKEN_TIMES_PULL=true pnpm ollama-token-times
+```
 
 ## Current Test Suite
 
