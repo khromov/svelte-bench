@@ -454,7 +454,7 @@
                   <td class="mobile-hide time-column">
                     <% if (model.tokenTimes) { %>
                       <span class="time-value" title="<%= responseTimeTitle(model.tokenTimes, model.tps) %>">
-                        <span><% if (model.tokenTimes.avgResponseSeconds !== null) { %>~<%= formatDuration(model.tokenTimes.avgResponseSeconds) %><% } else { %>—<% } %></span>
+                        <span><% if (model.tokenTimes.avgResponseSeconds !== null) { %>~<%= formatDuration(model.tokenTimes.avgResponseSeconds) %><span class="time-footnote">*</span><% } else { %>—<% } %></span>
                         <span class="time-tokens"><%= formatTokens(model.tokenTimes.avgOutputTokens) %> tok</span>
                       </span>
                     <% } else { %>
@@ -482,14 +482,10 @@
       </div>
     <% } %>
 
-    <!-- Notes and Errata sections -->
+    <!-- Footnote for the local model timing columns -->
     <div class="notes-box">
       <p>
-        <i><strong>Note:</strong> Certain OpenAI thinking models (o3, o4) and gpt-5 do not support temperature adjustments (only default value of 1 is supported). Models with "-reasoning-" suffix (e.g., gpt-5-2025-08-07-reasoning-medium) will use the specified reasoning effort setting.</i>
-      </p>
-
-      <p>
-        <i><strong>Errata:</strong> The "inspect" test has known correctness issues but is retained in the benchmark suite to maintain consistency and fairness in scoring across all evaluated models.</i>
+        <i><strong>* Local models:</strong> Models in the local models tab were run through Ollama on an AMD Ryzen&trade; 5 7640HS processor (50W TDP) with Radeon&trade; 760M RDNA3 graphics. Speed is the generation rate measured on that hardware. The average response time is an average value based on one response sample per test.</i>
       </p>
     </div>
 
@@ -538,7 +534,7 @@
                           <% } %>
                           <% if (modelTokenTimes) { %>
                             <span class="tps-badge time-badge" title="<%= responseTimeTitle(modelTokenTimes, modelTpsResult ? modelTpsResult.tps : null) %>">
-                              <% if (modelTokenTimes.avgResponseSeconds !== null) { %>~<%= formatDuration(modelTokenTimes.avgResponseSeconds) %> / response<% } else { %><%= formatTokens(modelTokenTimes.avgOutputTokens) %> tok / response<% } %>
+                              <% if (modelTokenTimes.avgResponseSeconds !== null) { %>~<%= formatDuration(modelTokenTimes.avgResponseSeconds) %><span class="time-footnote">*</span> / response<% } else { %><%= formatTokens(modelTokenTimes.avgOutputTokens) %> tok / response<% } %>
                             </span>
                           <% } %>
                         </span>
