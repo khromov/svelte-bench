@@ -13,6 +13,7 @@ import {
   listInstalledModels,
   loadBenchmarkFiles,
   normalizeModelName,
+  parseModelFlags,
   round,
   unloadModel,
   warmUpModel,
@@ -73,33 +74,10 @@ interface ModelWork {
 
 function parseCliOptions(): CliOptions {
   const args = process.argv.slice(2);
-  const models: string[] = [];
-
-  for (let i = 0; i < args.length; i++) {
-    if (args[i] === "--model" || args[i] === "-m") {
-      const value = args[++i];
-      if (!value) throw new Error("--model needs a model id");
-      models.push(
-        ...value
-          .split(",")
-          .map((m) => m.trim())
-          .filter(Boolean),
-      );
-    } else if (args[i].startsWith("--model=")) {
-      models.push(
-        ...args[i]
-          .slice("--model=".length)
-          .split(",")
-          .map((m) => m.trim())
-          .filter(Boolean),
-      );
-    }
-  }
-
   return {
     dryRun: args.includes("--dry-run"),
     force: args.includes("--force"),
-    models,
+    models: parseModelFlags(args),
   };
 }
 

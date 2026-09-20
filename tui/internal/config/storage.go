@@ -12,6 +12,7 @@ import (
 // Config holds the application configuration
 type Config struct {
 	APIKeys      map[string]string
+	OllamaHost   string
 	LastProvider string
 	LastModel    string
 	LastExecMode string
@@ -23,6 +24,17 @@ type Provider struct {
 	Name   string
 	EnvKey string
 	APIKey string
+}
+
+// OllamaEnvKey identifies the Ollama provider. Ollama runs locally and needs
+// no API key, so its "key" is the host URL instead.
+const OllamaEnvKey = "OLLAMA_HOST"
+
+const defaultOllamaHost = "http://127.0.0.1:11434"
+
+// RequiresAPIKey reports whether the provider must have a key before it can be used.
+func (p Provider) RequiresAPIKey() bool {
+	return p.EnvKey != OllamaEnvKey
 }
 
 // AllProviders returns a list of all supported providers
@@ -41,6 +53,7 @@ func AllProviders() []Provider {
 		{Name: "Meta", EnvKey: "META_API_KEY"},
 		{Name: "Cursor", EnvKey: "CURSOR_API_KEY"},
 		{Name: "Moonshot", EnvKey: "MOONSHOT_API_KEY"},
+		{Name: "Ollama (local)", EnvKey: OllamaEnvKey},
 		{Name: "Z.ai", EnvKey: "Z_AI_API_KEY"},
 	}
 	sort.SliceStable(providers, func(i, j int) bool {
@@ -89,6 +102,8 @@ func LoadFromEnv() (*Config, error) {
 
 		// Load last used settings
 		switch key {
+		case OllamaEnvKey:
+			config.OllamaHost = value
 		case "LAST_PROVIDER":
 			config.LastProvider = value
 		case "LAST_MODEL":
@@ -185,6 +200,17 @@ func (c *Config) apiKey(envKey string) string {
 	// GEMINI_API_KEY is the legacy name used by the CLI and .env.example.
 	if envKey == "GOOGLE_API_KEY" {
 		return c.APIKeys["GEMINI_API_KEY"]
+	}
+	// Same order the benchmark resolves it in: dotenv never overrides the real
+	// environment, so the environment wins over .env.
+	if envKey == OllamaEnvKey {
+		if host := os.Getenv(OllamaEnvKey); host != "" {
+			return host
+		}
+		if c.OllamaHost != "" {
+			return c.OllamaHost
+		}
+		return defaultOllamaHost
 	}
 	return ""
 }

@@ -14,6 +14,7 @@ import {
   listInstalledModels,
   loadBenchmarkFiles,
   normalizeModelName,
+  parseModelFlags,
   round,
   unloadModel,
   warmUpModel,
@@ -32,9 +33,10 @@ import {
  * this script only does work for newly benchmarked models.
  *
  * Usage:
- *   pnpm ollama-tps                 # measure every Ollama model that lacks a tps value
- *   pnpm ollama-tps -- --dry-run    # only list what would be measured
- *   pnpm ollama-tps -- --force      # re-measure models that already have a tps value
+ *   pnpm ollama-tps                          # measure every Ollama model that lacks a tps value
+ *   pnpm ollama-tps -- --model gpt-oss:20b   # only the given model(s); repeat the flag for more
+ *   pnpm ollama-tps -- --dry-run             # only list what would be measured
+ *   pnpm ollama-tps -- --force               # re-measure models that already have a tps value
  *
  * Environment:
  *   OLLAMA_HOST       Ollama server (defaults to http://127.0.0.1:11434)
@@ -58,6 +60,8 @@ interface Measurement {
 interface CliOptions {
   dryRun: boolean;
   force: boolean;
+  /** Restrict the run to these model ids (empty = every benchmarked Ollama model) */
+  models: string[];
 }
 
 function parseCliOptions(): CliOptions {
@@ -65,6 +69,7 @@ function parseCliOptions(): CliOptions {
   return {
     dryRun: args.includes("--dry-run"),
     force: args.includes("--force"),
+    models: parseModelFlags(args),
   };
 }
 
@@ -75,17 +80,25 @@ function hasTps(result: HumanEvalResult): boolean {
 /**
  * Work out which Ollama models still need a speed measurement, and in which files
  */
-function collectWork(files: BenchmarkFile[], force: boolean): { work: ModelWork[]; alreadyMeasured: Set<string> } {
+function collectWork(
+  files: BenchmarkFile[],
+  options: CliOptions,
+): { work: ModelWork[]; alreadyMeasured: Set<string>; unknown: string[] } {
   const work = new Map<string, ModelWork>();
   const alreadyMeasured = new Set<string>();
+  const requested = new Set(options.models.map(normalizeModelName));
+  const found = new Set<string>();
 
   for (const file of files) {
     const ollamaResults = file.results.filter(isOllamaResult);
     const modelIds = new Set(ollamaResults.map((r) => r.modelId));
 
     for (const modelId of modelIds) {
+      if (requested.size > 0 && !requested.has(normalizeModelName(modelId))) continue;
+      found.add(normalizeModelName(modelId));
+
       const modelResults = ollamaResults.filter((r) => r.modelId === modelId);
-      const needsMeasurement = force || modelResults.some((r) => !hasTps(r));
+      const needsMeasurement = options.force || modelResults.some((r) => !hasTps(r));
 
       if (!needsMeasurement) {
         alreadyMeasured.add(modelId);
@@ -99,7 +112,10 @@ function collectWork(files: BenchmarkFile[], force: boolean): { work: ModelWork[
     }
   }
 
-  return { work: Array.from(work.values()), alreadyMeasured };
+  // The tps value is stored in the benchmark results, so a model without results has nowhere to put it
+  const unknown = options.models.filter((modelId) => !found.has(normalizeModelName(modelId)));
+
+  return { work: Array.from(work.values()), alreadyMeasured, unknown };
 }
 
 /**
@@ -192,7 +208,10 @@ async function main(): Promise<void> {
   const prompt = await fs.readFile(test.promptPath, "utf-8");
 
   const files = await loadBenchmarkFiles();
-  const { work, alreadyMeasured } = collectWork(files, options.force);
+  const { work, alreadyMeasured, unknown } = collectWork(files, options);
+  if (unknown.length > 0) {
+    throw new Error(`No Ollama benchmark results found for: ${unknown.join(", ")}. Benchmark the model first.`);
+  }
 
   console.log(`🔍 Scanned ${files.length} benchmark files`);
   if (alreadyMeasured.size > 0) {
@@ -202,7 +221,7 @@ async function main(): Promise<void> {
   }
 
   if (work.length === 0) {
-    console.log("✅ Nothing to do - every Ollama model already has a tps value.");
+    console.log("✅ Nothing to do - every selected Ollama model already has a tps value (use --force to re-measure).");
     return;
   }
 

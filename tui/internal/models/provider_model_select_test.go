@@ -67,3 +67,21 @@ func TestOpenRouterModelRowShowsCatalogDate(t *testing.T) {
 		t.Fatalf("expected OpenRouter catalog date in row, got %q", row)
 	}
 }
+
+func TestSelectingOllamaSkipsTheAPIKeyPrompt(t *testing.T) {
+	model := NewProviderModelSelectModel(&SharedState{Config: &config.Config{APIKeys: map[string]string{}}})
+	model.validating = false
+	for i, provider := range model.providers {
+		if provider.EnvKey == config.OllamaEnvKey {
+			model.selectedProvider = i
+		}
+	}
+
+	updated, _ := model.Update(tea.KeyPressMsg{Code: tea.KeyEnter})
+	if _, ok := updated.(ExecutionModeModel); !ok {
+		t.Fatalf("Ollama should go straight to execution mode, got %T", updated)
+	}
+	if got := model.state.Provider; got != "ollama" {
+		t.Fatalf("expected benchmark provider ollama, got %q", got)
+	}
+}

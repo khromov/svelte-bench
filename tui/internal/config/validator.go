@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -42,6 +43,8 @@ func ValidateAPIKey(provider, apiKey string) error {
 		return validateBearerModels("https://api.moonshot.ai/v1/models", apiKey)
 	case "Z_AI_API_KEY":
 		return validateBearerModels("https://open.bigmodel.cn/api/paas/v4/models", apiKey)
+	case OllamaEnvKey:
+		return validateOllama(apiKey)
 	default:
 		return fmt.Errorf("unknown provider: %s", provider)
 	}
@@ -54,11 +57,26 @@ func SupportsAPIKeyValidation(provider string) bool {
 	case "OPENAI_API_KEY", "ANTHROPIC_API_KEY", "GOOGLE_API_KEY", "OPENROUTER_API_KEY",
 		"GROQ_API_KEY", "DEEPSEEK_API_KEY", "XAI_API_KEY", "MISTRAL_API_KEY",
 		"COHERE_API_KEY", "FIREWORKS_API_KEY", "META_API_KEY", "MOONSHOT_API_KEY",
-		"Z_AI_API_KEY":
+		"Z_AI_API_KEY", OllamaEnvKey:
 		return true
 	default:
 		return false
 	}
+}
+
+// validateOllama checks that an Ollama server answers on the given host.
+func validateOllama(host string) error {
+	client := &http.Client{Timeout: 3 * time.Second}
+	resp, err := client.Get(strings.TrimRight(host, "/") + "/api/tags")
+	if err != nil {
+		return fmt.Errorf("Ollama is not reachable at %s (is `ollama serve` running?)", host)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("Ollama at %s returned status %d", host, resp.StatusCode)
+	}
+	return nil
 }
 
 func validateBearerModels(url, apiKey string) error {

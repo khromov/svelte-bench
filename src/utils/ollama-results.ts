@@ -69,6 +69,32 @@ export function normalizeModelName(name: string): string {
 }
 
 /**
+ * Collect the model ids given with --model / -m (repeatable, comma-separated values allowed)
+ */
+export function parseModelFlags(args: string[]): string[] {
+  const models: string[] = [];
+  const add = (value: string) =>
+    models.push(
+      ...value
+        .split(",")
+        .map((m) => m.trim())
+        .filter(Boolean),
+    );
+
+  for (let i = 0; i < args.length; i++) {
+    if (args[i] === "--model" || args[i] === "-m") {
+      const value = args[++i];
+      if (!value) throw new Error("--model needs a model id");
+      add(value);
+    } else if (args[i].startsWith("--model=")) {
+      add(args[i].slice("--model=".length));
+    }
+  }
+
+  return models;
+}
+
+/**
  * Turn a model id into something safe to use as a file name ("gpt-oss:20b" -> "gpt-oss_20b")
  */
 export function modelFileName(modelId: string): string {

@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
-# Run the full benchmark (all tests, 10 samples) for each Ollama model, one at a time.
+# Batch runner: the full benchmark (all tests, 10 samples) for each Ollama model below, one at a time.
+# For a single model, skip this script and use the env vars directly:
+#   DEBUG_MODE=true DEBUG_PROVIDER=ollama DEBUG_MODEL=<model> pnpm run-tests
 # Host comes from OLLAMA_HOST in .env. A failed model is logged and skipped.
+# Run `pnpm build` afterwards to rebuild the report.
 set -uo pipefail
 cd "$(dirname "$0")"
 
@@ -28,6 +31,11 @@ MODELS=(
   #"JetBrains/mellum2-instruct-q4_k_m"
 )
 
+if [ ${#MODELS[@]} -eq 0 ]; then
+  echo "No models to run: uncomment or add entries (as shown by \`ollama ls\`) in the MODELS list in $0" >&2
+  exit 1
+fi
+
 mkdir -p logs
 failed=()
 
@@ -43,11 +51,9 @@ for model in "${MODELS[@]}"; do
   fi
 done
 
-pnpm build
-
 if [ ${#failed[@]} -gt 0 ]; then
-  echo "Failed models:"
+  echo "Failed models (see logs/ollama-<model>.log):"
   printf '  %s\n' "${failed[@]}"
   exit 1
 fi
-echo "All models done."
+echo "All models done. Run \`pnpm build\` to rebuild the report."

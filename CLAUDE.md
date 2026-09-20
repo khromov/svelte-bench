@@ -29,7 +29,7 @@ SvelteBench supports two execution modes:
 # Run the full benchmark (sequential execution)
 pnpm start
 
-# Launch the interactive TUI
+# Launch the optional interactive TUI (requires Go)
 pnpm tui
 
 # Run the env/CLI-compatible benchmark directly
