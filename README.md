@@ -43,19 +43,28 @@ ollama pull gpt-oss:20b
 
 # Smoke test: one test, one sample
 DEBUG_MODE=true DEBUG_PROVIDER=ollama DEBUG_MODEL=gpt-oss:20b DEBUG_TEST=hello-world pnpm run-tests
-
-# Full benchmark (all tests, 10 samples each) for that model, then build the report
-DEBUG_MODE=true DEBUG_PROVIDER=ollama DEBUG_MODEL=gpt-oss:20b pnpm run-tests
-pnpm build
 ```
 
 `DEBUG_MODEL` accepts any model name shown by `ollama ls` - there is no list of allowed models to
 edit. Set `OLLAMA_HOST` if Ollama is not on `http://127.0.0.1:11434`.
 
-Once a model has benchmark results, two optional follow-up scripts add speed figures to the report:
-`pnpm ollama-tps` ([tokens per second](#local-model-speed-ollama)) and `pnpm ollama-token-times`
-([estimated response time](#local-model-response-time-ollama)). Neither is needed to run the
-benchmark itself.
+To fully benchmark an Ollama model and get it into the report:
+
+```bash
+# 1. Run the full benchmark (all tests, 10 samples each)
+DEBUG_MODE=true DEBUG_PROVIDER=ollama DEBUG_MODEL=gpt-oss:20b pnpm run-tests
+
+# 2. Optional: measure tokens per second and output tokens per response for that model
+pnpm ollama-tps -- --model gpt-oss:20b
+pnpm ollama-token-times -- --model gpt-oss:20b
+
+# 3. Always finish by rebuilding the report, otherwise the new results do not show up in it
+pnpm run build
+```
+
+Step 2 adds the [Speed](#local-model-speed-ollama) and
+[Avg. response](#local-model-response-time-ollama) columns for the model. Without `--model`, both
+scripts measure every benchmarked Ollama model that has not been measured yet.
 
 ### Configuring providers
 
@@ -337,6 +346,12 @@ leaderboard and as a badge next to the model name in the detailed results after 
 Models that already have a `tps` value are skipped, so the script is safe to re-run after each batch.
 
 ```bash
+# Only a single model (repeat the flag, or comma-separate, for more); it must already have benchmark results
+pnpm ollama-tps -- --model gpt-oss:20b
+
+# Re-measure a single model that already has a tps value
+pnpm ollama-tps -- --model gpt-oss:20b --force
+
 # Only list what would be measured
 pnpm ollama-tps -- --dry-run
 
