@@ -1,4 +1,4 @@
-import { Agent } from "undici";
+import { Agent, fetch as undiciFetch } from "undici";
 import {
   DEFAULT_SYSTEM_PROMPT,
   DEFAULT_SYSTEM_PROMPT_WITH_CONTEXT,
@@ -23,8 +23,10 @@ const timeoutFetch = (
 ) => {
   const someInit = init || {};
   const timeoutSignal = AbortSignal.timeout(OLLAMA_TIMEOUT_MS);
+  // Must be undici's own fetch: Node's built-in fetch bundles a different undici
+  // version and rejects this Agent with "invalid onRequestStart method"
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return fetch(input, {
+  return undiciFetch(input as any, {
     ...someInit,
     signal: someInit.signal
       ? AbortSignal.any([someInit.signal, timeoutSignal])
@@ -44,8 +46,9 @@ export function getOllamaHost(): string {
  * Create an Ollama client with the long request timeouts the benchmark needs
  */
 export function createOllamaClient(host: string = getOllamaHost()): Ollama {
-  // The wrapper only implements the call signature, not fetch's static helpers
-  return new Ollama({ host, fetch: timeoutFetch as typeof fetch });
+  // The wrapper only implements the call signature, not fetch's static helpers,
+  // and returns undici's Response rather than the global one
+  return new Ollama({ host, fetch: timeoutFetch as unknown as typeof fetch });
 }
 
 export class OllamaProvider implements LLMProvider {

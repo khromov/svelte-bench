@@ -85,3 +85,22 @@ func TestFuzzySearchPrefersModelIDMatchesOverDescriptionMatches(t *testing.T) {
 		t.Fatalf("expected ID match first, got %#v", results)
 	}
 }
+
+func TestOllamaModelParsingListsInstalledModels(t *testing.T) {
+	models, err := parseOllamaModels([]byte(`{"models":[{"name":"gpt-oss:20b","details":{"parameter_size":"20.9B","quantization_level":"MXFP4"}},{"name":"gemma4:e2b-it-qat","details":{}},{"name":""}]}`))
+	if err != nil {
+		t.Fatalf("parseOllamaModels returned error: %v", err)
+	}
+	if len(models) != 2 || models[0].ID != "gemma4:e2b-it-qat" || models[1].ID != "gpt-oss:20b" {
+		t.Fatalf("unexpected models: %#v", models)
+	}
+	if got, want := models[1].Description, "20.9B MXFP4"; got != want {
+		t.Fatalf("expected description %q, got %q", want, got)
+	}
+}
+
+func TestOllamaProviderNameMapsToBenchmarkProvider(t *testing.T) {
+	if got := ConvertProviderNameToEnvKey("Ollama (local)"); got != "ollama" {
+		t.Fatalf("expected ollama, got %q", got)
+	}
+}

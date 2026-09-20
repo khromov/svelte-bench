@@ -25,22 +25,42 @@ SvelteBench supports multiple LLM providers:
 
 ## Setup
 
+Requirements: Node.js 24 (see `.nvmrc`) and pnpm. Nothing else is needed to run the benchmark;
+Go is only required for the optional [TUI](#tui-execution-optional).
+
 ```bash
 nvm use
 pnpm install
 ```
 
-The recommended workflow is to choose a provider and configure its API key from
-the TUI. Start it with:
+### Quick start with a local model (Ollama)
+
+The only thing you need besides the steps above is a running [Ollama](https://ollama.com) with at
+least one model pulled. No API key or `.env` file is required:
 
 ```bash
-pnpm tui
+ollama pull gpt-oss:20b
+
+# Smoke test: one test, one sample
+DEBUG_MODE=true DEBUG_PROVIDER=ollama DEBUG_MODEL=gpt-oss:20b DEBUG_TEST=hello-world pnpm run-tests
+
+# Full benchmark (all tests, 10 samples each) for that model, then build the report
+DEBUG_MODE=true DEBUG_PROVIDER=ollama DEBUG_MODEL=gpt-oss:20b pnpm run-tests
+pnpm build
 ```
 
-If the selected provider has no saved key, the TUI prompts for one and stores
-it in `.env` for future runs. You only need to configure the providers you use.
+`DEBUG_MODEL` accepts any model name shown by `ollama ls` - there is no list of allowed models to
+edit. Set `OLLAMA_HOST` if Ollama is not on `http://127.0.0.1:11434`.
 
-For scripted or CI usage, create `.env` from the example and add your keys:
+Once a model has benchmark results, two optional follow-up scripts add speed figures to the report:
+`pnpm ollama-tps` ([tokens per second](#local-model-speed-ollama)) and `pnpm ollama-token-times`
+([estimated response time](#local-model-response-time-ollama)). Neither is needed to run the
+benchmark itself.
+
+### Configuring providers
+
+The default way to run the benchmark is with environment variables, either inline as above or in a
+`.env` file. Create `.env` from the example and add keys for the providers you use:
 
 ```bash
 # Optional: create the env-compatible configuration file
@@ -86,30 +106,9 @@ CURSOR_API_KEY=your_cursor_api_key_here
 MINIMAX_API_KEY=your_minimax_api_key_here
 ```
 
-The existing environment variables remain supported by `pnpm run-tests` and
-the standard `pnpm start` command.
-
 ## Running the Benchmark
 
-### TUI Execution
-
-```bash
-pnpm tui
-```
-
-The TUI guides you through:
-
-1. Selecting a provider
-2. Entering an API key if that provider has no saved key
-3. Choosing parallel or sequential execution
-4. Selecting a model
-5. Running the benchmark with live progress
-6. Reviewing the results
-
-Use `←` to go back between setup and selection screens. Double-press `Esc`
-within one second to exit, or use `Ctrl+C`.
-
-### Environment-Compatible Execution
+### Environment Variable Execution (default)
 
 ```bash
 # Run the full benchmark and build the visualization
@@ -156,6 +155,40 @@ DEBUG_MODEL=<model-id-1>,<model-id-2>,<model-id-3>
 ```
 
 This will run tests with all three models sequentially while still staying within the same provider.
+
+### Batch Runs for Ollama Models
+
+To benchmark a single Ollama model, use the environment variables shown in the
+[quick start](#quick-start-with-a-local-model-ollama). `run-ollama.sh` is only a convenience for
+batch runs: it runs the full benchmark for a list of models one after another, logs each run to
+`logs/`, and keeps going when a model fails. Edit the `MODELS` list at the top of the script (all
+entries are commented out by default), then:
+
+```bash
+./run-ollama.sh
+pnpm build
+```
+
+### TUI Execution (optional)
+
+The TUI is an optional interactive front end for the same benchmark - you never have to use it. It
+is written in Go, so it additionally requires [Go](https://go.dev/dl/) 1.25 or newer:
+
+```bash
+pnpm tui
+```
+
+The TUI guides you through:
+
+1. Selecting a provider (including Ollama, which lists the models installed on `OLLAMA_HOST`)
+2. Entering an API key if that provider needs one and has no saved key (stored in `.env`)
+3. Choosing parallel or sequential execution
+4. Selecting a model
+5. Running the benchmark with live progress
+6. Reviewing the results
+
+Use `←` to go back between setup and selection screens. Double-press `Esc`
+within one second to exit, or use `Ctrl+C`.
 
 ### Running with Context
 

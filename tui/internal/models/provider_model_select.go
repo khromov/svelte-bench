@@ -184,7 +184,7 @@ func (m ProviderModelSelectModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				provider := m.providers[m.selectedProvider]
 				m.state.Provider = bridge.ConvertProviderNameToEnvKey(provider.Name)
 				m.state.ProviderKey = provider.EnvKey
-				if provider.APIKey == "" || m.validationErrors[provider.EnvKey] != "" {
+				if provider.RequiresAPIKey() && (provider.APIKey == "" || m.validationErrors[provider.EnvKey] != "") {
 					return NewAPIKeyPromptModel(m.state, provider), nil
 				}
 				if m.validating && config.SupportsAPIKeyValidation(provider.EnvKey) && !m.validated[provider.EnvKey] {

@@ -337,6 +337,7 @@ func ConvertProviderNameToEnvKey(providerName string) string {
 		"Z.ai":            "zai",
 		"Meta":            "meta",
 		"Cursor":          "cursor",
+		"Ollama (local)":  "ollama",
 	}
 
 	if key, ok := mapping[providerName]; ok {

@@ -14,6 +14,9 @@ A beautiful terminal user interface for running Svelte component benchmarks, bui
 
 ## Quick Start
 
+The TUI is optional: the benchmark itself runs without it (see the main README). It requires
+[Go](https://go.dev/dl/) 1.25+ on your `PATH`.
+
 ### Run directly:
 ```bash
 pnpm tui
@@ -81,4 +84,4 @@ To extend the TUI:
 - [Bubble Tea](https://github.com/charmbracelet/bubbletea) - TUI framework
 - [Lip Gloss](https://github.com/charmbracelet/lipgloss) - Styling
 - [Bubbles](https://github.com/charmbracelet/bubbles) - Components
-- Go 1.21+
+- Go 1.25+

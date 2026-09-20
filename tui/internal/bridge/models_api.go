@@ -70,6 +70,9 @@ func FetchModels(providerKey, apiKey string) ([]Model, error) {
 		models, err = fetchOpenAICompatibleModels("https://api.meta.ai/v1/models", apiKey)
 	case "CURSOR_API_KEY":
 		models = []Model{{ID: "composer-1", Name: "Composer 1", IsPopular: true}}
+	case "OLLAMA_HOST":
+		// Ollama has no API key; the host URL is passed in its place.
+		models, err = fetchOllamaModels(apiKey)
 	default:
 		return nil, fmt.Errorf("unsupported provider: %s", providerKey)
 	}
@@ -618,6 +621,58 @@ func containsString(values []string, target string) bool {
 		}
 	}
 	return false
+}
+
+// fetchOllamaModels lists the models installed on the Ollama host.
+func fetchOllamaModels(host string) ([]Model, error) {
+	client := &http.Client{Timeout: 10 * time.Second}
+	resp, err := client.Get(strings.TrimRight(host, "/") + "/api/tags")
+	if err != nil {
+		return nil, fmt.Errorf("Ollama is not reachable at %s (is `ollama serve` running?)", host)
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("Ollama at %s returned status %d", host, resp.StatusCode)
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	models, err := parseOllamaModels(body)
+	if err != nil {
+		return nil, err
+	}
+	if len(models) == 0 {
+		return nil, fmt.Errorf("no models installed on %s; pull one first, e.g. `ollama pull gpt-oss:20b`", host)
+	}
+	return models, nil
+}
+
+func parseOllamaModels(body []byte) ([]Model, error) {
+	var result struct {
+		Models []struct {
+			Name    string `json:"name"`
+			Details struct {
+				ParameterSize     string `json:"parameter_size"`
+				QuantizationLevel string `json:"quantization_level"`
+			} `json:"details"`
+		} `json:"models"`
+	}
+	if err := json.Unmarshal(body, &result); err != nil {
+		return nil, err
+	}
+
+	models := make([]Model, 0, len(result.Models))
+	for _, item := range result.Models {
+		if item.Name == "" {
+			continue
+		}
+		description := strings.TrimSpace(item.Details.ParameterSize + " " + item.Details.QuantizationLevel)
+		models = append(models, Model{ID: item.Name, Name: item.Name, Description: description})
+	}
+	sort.Slice(models, func(i, j int) bool { return models[i].ID < models[j].ID })
+	return models, nil
 }
 
 func fetchOpenAICompatibleModels(url, apiKey string) ([]Model, error) {
