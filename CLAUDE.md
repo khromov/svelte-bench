@@ -56,6 +56,9 @@ pnpm run build
 # Verify benchmark results
 pnpm run verify
 
+# Benchmark one Ollama model end to end (benchmark, tps, token times, rebuild report)
+pnpm ollama-test gpt-oss:20b
+
 # Measure tokens/second for benchmarked Ollama models and store it in their result files
 pnpm ollama-tps
 

@@ -48,13 +48,20 @@ DEBUG_MODE=true DEBUG_PROVIDER=ollama DEBUG_MODEL=gpt-oss:20b DEBUG_TEST=hello-w
 `DEBUG_MODEL` accepts any model name shown by `ollama ls` - there is no list of allowed models to
 edit. Set `OLLAMA_HOST` if Ollama is not on `http://127.0.0.1:11434`.
 
-To fully benchmark an Ollama model and get it into the report:
+To fully benchmark an Ollama model and get it into the report, run the helper script with any model
+name shown by `ollama ls`:
+
+```bash
+pnpm ollama-test gpt-oss:20b
+```
+
+It runs these steps for you and stops at the first one that fails. To run them by hand instead:
 
 ```bash
 # 1. Run the full benchmark (all tests, 10 samples each)
 DEBUG_MODE=true DEBUG_PROVIDER=ollama DEBUG_MODEL=gpt-oss:20b pnpm run-tests
 
-# 2. Optional: measure tokens per second and output tokens per response for that model
+# 2. Measure tokens per second and output tokens per response for that model
 pnpm ollama-tps -- --model gpt-oss:20b
 pnpm ollama-token-times -- --model gpt-oss:20b
 
@@ -62,7 +69,7 @@ pnpm ollama-token-times -- --model gpt-oss:20b
 pnpm run build
 ```
 
-Step 2 adds the [Speed](#local-model-speed-ollama) and
+Step 2 is optional when running by hand; it adds the [Speed](#local-model-speed-ollama) and
 [Avg. response](#local-model-response-time-ollama) columns for the model. Without `--model`, both
 scripts measure every benchmarked Ollama model that has not been measured yet.
 
