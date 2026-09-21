@@ -29,6 +29,15 @@ MODELS=(
   #"lfm2:24b"
   #"hf.co/bartowski/nex-agi_Nex-N2.5-mini-GGUF:Q4_K_M"
   #"JetBrains/mellum2-instruct-q4_k_m"
+  # NEW RUN: Svelte-finetuned community models
+  "hf.co/rockypod/svelte-coder:Q4_K_M"
+  "hf.co/rockypod/svelte-coder-8b:Q4_K_M"
+  "hf.co/rockypod/svelte-coder-4b:Q4_K_M"
+  "hf.co/mrgnw/gemma-4-e2b-svelte5:Q4_K_M"
+  "hf.co/naren-1219/SvelteMind:F16"
+  "hf.co/naren-1219/SvelteMind:Q4_K_M"
+  "hf.co/kusonooyasumi/qwen-2.5-coder-1.5b-svelte:Q8_0"
+  "hf.co/kusonooyasumi/qwen-2.5-coder-1.5b-svelte:Q4_K_M"
 )
 
 if [ ${#MODELS[@]} -eq 0 ]; then
