@@ -36,8 +36,8 @@ MODELS=(
   "hf.co/mrgnw/gemma-4-e2b-svelte5:Q4_K_M"
   "hf.co/naren-1219/SvelteMind:F16"
   "hf.co/naren-1219/SvelteMind:Q4_K_M"
-  "hf.co/kusonooyasumi/qwen-2.5-coder-1.5b-svelte:Q8_0"
-  "hf.co/kusonooyasumi/qwen-2.5-coder-1.5b-svelte:Q4_K_M"
+  #"hf.co/kusonooyasumi/qwen-2.5-coder-1.5b-svelte:Q8_0" <- loops, unusable
+  #"hf.co/kusonooyasumi/qwen-2.5-coder-1.5b-svelte:Q4_K_M" <- loops, unusable
 )
 
 if [ ${#MODELS[@]} -eq 0 ]; then
