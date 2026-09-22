@@ -1,10 +1,7 @@
 package config
 
 import (
-	"bytes"
-	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 	"strings"
 	"time"
@@ -129,39 +126,30 @@ func validateOpenAI(apiKey string) error {
 }
 
 func validateAnthropic(apiKey string) error {
-	// Minimal messages API call
-	reqBody := map[string]interface{}{
-		"model":      "claude-3-haiku-20240307",
-		"max_tokens": 1,
-		"messages": []map[string]string{
-			{"role": "user", "content": "hi"},
-		},
-	}
+	return validateAnthropicModels(&http.Client{Timeout: 10 * time.Second}, "https://api.anthropic.com/v1/models?limit=1", apiKey)
+}
 
-	body, _ := json.Marshal(reqBody)
-	req, err := http.NewRequest("POST", "https://api.anthropic.com/v1/messages", bytes.NewBuffer(body))
+func validateAnthropicModels(client *http.Client, endpoint, apiKey string) error {
+	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
 	if err != nil {
 		return err
 	}
 
 	req.Header.Set("x-api-key", apiKey)
 	req.Header.Set("anthropic-version", "2023-06-01")
-	req.Header.Set("Content-Type", "application/json")
 
-	client := &http.Client{Timeout: 10 * time.Second}
 	resp, err := client.Do(req)
 	if err != nil {
 		return fmt.Errorf("network error: %w", err)
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode == 401 {
+	if resp.StatusCode == http.StatusUnauthorized {
 		return fmt.Errorf("invalid API key")
 	}
 
-	if resp.StatusCode != 200 {
-		body, _ := io.ReadAll(resp.Body)
-		return fmt.Errorf("API error: %s", string(body))
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("API returned status %d", resp.StatusCode)
 	}
 
 	return nil

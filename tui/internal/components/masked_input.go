@@ -1,8 +1,6 @@
 package components
 
 import (
-	"strings"
-
 	"svelte-bench/tui/internal/styles"
 
 	"charm.land/bubbles/v2/textinput"
@@ -15,7 +13,6 @@ type MaskedInput struct {
 	Input       textinput.Model
 	Placeholder string
 	Width       int
-	ShowMasked  bool // If true, shows ••••last8chars
 }
 
 // NewMaskedInput creates a new masked input
@@ -24,8 +21,7 @@ func NewMaskedInput(placeholder string, width int) MaskedInput {
 	ti.Placeholder = placeholder
 	ti.SetWidth(width)
 	ti.CharLimit = 200
-	ti.EchoMode = textinput.EchoPassword
-	ti.EchoCharacter = '•'
+	ti.EchoMode = textinput.EchoNone
 
 	// Style the input
 	inputStyles := ti.Styles()
@@ -39,7 +35,6 @@ func NewMaskedInput(placeholder string, width int) MaskedInput {
 		Input:       ti,
 		Placeholder: placeholder,
 		Width:       width,
-		ShowMasked:  false,
 	}
 }
 
@@ -52,7 +47,8 @@ func (m *MaskedInput) Update(msg tea.Msg) tea.Cmd {
 
 // View renders the input
 func (m MaskedInput) View() string {
-	return m.Input.View()
+	// Keep the rendered field fixed so neither the key nor its length appears.
+	return lipgloss.NewStyle().Foreground(styles.GrayMedium).Render("API key input hidden")
 }
 
 // Value returns the current value
@@ -73,13 +69,4 @@ func (m *MaskedInput) Focus() tea.Cmd {
 // Blur removes focus
 func (m *MaskedInput) Blur() {
 	m.Input.Blur()
-}
-
-// MaskAPIKey masks an API key showing only the last 8 characters
-func MaskAPIKey(key string) string {
-	if len(key) <= 8 {
-		return strings.Repeat("•", len(key))
-	}
-	masked := strings.Repeat("•", len(key)-8)
-	return masked + key[len(key)-8:]
 }
