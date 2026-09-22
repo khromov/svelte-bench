@@ -81,14 +81,16 @@ func (m APIKeyPromptModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case apiKeyValidatedMsg:
 		m.validating = false
 		if msg.err != nil {
-			m.error = "API key validation failed: " + msg.err.Error()
+			m.error = "API key validation failed: " + redactAPIKey(msg.err.Error(), msg.key)
 			return m, nil
 		}
 		return m.saveKey(msg.key)
-
 	}
 
-	return m, nil
+	if m.validating {
+		return m, nil
+	}
+	return m, m.input.Update(msg)
 }
 
 func (m APIKeyPromptModel) View() tea.View {

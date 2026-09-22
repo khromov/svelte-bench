@@ -146,6 +146,9 @@ func (m APIKeyConfigModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 	}
 
+	if m.editing && !m.validating {
+		return m, m.input.Update(msg)
+	}
 	return m, nil
 }
 
@@ -254,7 +257,7 @@ func (m APIKeyConfigModel) validateKey(provider, key string) tea.Cmd {
 			return validationMsg{
 				provider: provider,
 				success:  false,
-				error:    err.Error(),
+				error:    redactAPIKey(err.Error(), key),
 			}
 		}
 		return validationMsg{

@@ -24,6 +24,8 @@ func NewMaskedInput(placeholder string, width int) MaskedInput {
 	ti.Placeholder = placeholder
 	ti.SetWidth(width)
 	ti.CharLimit = 200
+	ti.EchoMode = textinput.EchoPassword
+	ti.EchoCharacter = '•'
 
 	// Style the input
 	inputStyles := ti.Styles()
