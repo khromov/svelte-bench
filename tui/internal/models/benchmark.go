@@ -197,7 +197,7 @@ func (m BenchmarkModel) View() tea.View {
 		mode = "MADMAX: parallel categories + samples"
 	}
 
-	title := styles.HeadingStyle.Render("BENCHMARK RUNNING")
+	title := styles.CreateBoldGradient("BENCHMARK RUNNING", styles.PrimaryGradient)
 
 	info := lipgloss.NewStyle().
 		Foreground(styles.GrayMedium).
@@ -219,9 +219,10 @@ func (m BenchmarkModel) View() tea.View {
 		percent = int((float64(m.currentCount) / float64(m.totalSamples)) * 100)
 	}
 
-	progressLabel := lipgloss.NewStyle().
-		Foreground(styles.OrangeLight).
-		Render(fmt.Sprintf("Overall progress: %d%% • %d/%d samples", percent, m.currentCount, m.totalSamples))
+	progressLabel := styles.CreateGradient(
+		fmt.Sprintf("Overall progress: %d%% • %d/%d samples", percent, m.currentCount, m.totalSamples),
+		styles.ProgressGradient,
+	)
 
 	// Keep the rest of the UI on the normal animation clock while making only
 	// the progress-bar highlight travel three times faster.
@@ -231,10 +232,7 @@ func (m BenchmarkModel) View() tea.View {
 	sections = append(sections, m.renderActiveSummary(), "")
 
 	// Tests - scrollable
-	testsHeader := lipgloss.NewStyle().
-		Foreground(styles.OrangeLight).
-		Bold(true).
-		Render("TEST PROGRESS")
+	testsHeader := styles.CreateBoldGradient("TEST PROGRESS", styles.AccentGradient)
 
 	sections = append(sections, testsHeader)
 
@@ -272,10 +270,7 @@ func (m BenchmarkModel) View() tea.View {
 	// Show error if present
 	if m.state.Error != "" {
 		sections = append(sections, "")
-		sections = append(sections, lipgloss.NewStyle().
-			Foreground(styles.OrangeError).
-			Bold(true).
-			Render("Error: "+m.state.Error))
+		sections = append(sections, styles.CreateBoldGradient("Error: "+m.state.Error, styles.ErrorGradient))
 	}
 
 	// Help
@@ -344,8 +339,7 @@ func (m *BenchmarkModel) renderTest(test *TestResult) string {
 	progressText := lipgloss.NewStyle().
 		Width(5).
 		Align(lipgloss.Right).
-		Foreground(styles.OrangeLight).
-		Render(fmt.Sprintf("%2d/%d", test.Current, test.Total))
+		Render(styles.CreateGradient(fmt.Sprintf("%2d/%d", test.Current, test.Total), styles.ProgressGradient))
 
 	// Status or result
 	statusText := ""

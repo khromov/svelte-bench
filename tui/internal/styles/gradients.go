@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"image/color"
 	"math"
+	"strings"
 
 	"charm.land/lipgloss/v2"
 	"github.com/lucasb-eyer/go-colorful"
@@ -14,44 +15,68 @@ type GradientType int
 
 const (
 	PrimaryGradient GradientType = iota
+	AccentGradient
 	SuccessGradient
 	ErrorGradient
 	ProgressGradient
 )
 
-// CreateGradient creates a color gradient string
-func CreateGradient(text string, gradientType GradientType) string {
-	var startColor, endColor colorful.Color
-
+// gradientColors keeps all text gradients in the same warm Svelte-inspired
+// palette. In particular, success colors stay gold instead of introducing a
+// green accent that clashes with the rest of the interface.
+func gradientColors(gradientType GradientType) (colorful.Color, colorful.Color) {
+	var startHex, endHex string
 	switch gradientType {
 	case PrimaryGradient:
-		startColor, _ = colorful.Hex("#FF6B35")
-		endColor, _ = colorful.Hex("#FFA500")
+		startHex, endHex = "#FF3E00", "#FFB347"
+	case AccentGradient:
+		startHex, endHex = "#FF7A3D", "#F59E0B"
 	case SuccessGradient:
-		startColor, _ = colorful.Hex("#F6D365")
-		endColor, _ = colorful.Hex("#E98A3A")
+		startHex, endHex = "#FFD166", "#FF8C42"
 	case ErrorGradient:
-		startColor, _ = colorful.Hex("#EF4444")
-		endColor, _ = colorful.Hex("#FF6B35")
+		startHex, endHex = "#EF4444", "#FF6B35"
 	case ProgressGradient:
-		startColor, _ = colorful.Hex("#F4D06F")
-		endColor, _ = colorful.Hex("#E88A3A")
+		startHex, endHex = "#F4D06F", "#E88A3A"
 	default:
-		startColor, _ = colorful.Hex("#FF6B35")
-		endColor, _ = colorful.Hex("#FFA500")
+		startHex, endHex = "#FF3E00", "#FFB347"
 	}
 
-	result := ""
-	length := len([]rune(text))
+	startColor, _ := colorful.Hex(startHex)
+	endColor, _ := colorful.Hex(endHex)
+	return startColor, endColor
+}
 
-	for i, char := range text {
-		ratio := float64(i) / math.Max(float64(length-1), 1)
-		color := startColor.BlendLuv(endColor, ratio)
-		hexColor := color.Hex()
-		result += lipgloss.NewStyle().Foreground(lipgloss.Color(hexColor)).Render(string(char))
+// gradientColor returns a clamped point along one of the theme gradients.
+func gradientColor(gradientType GradientType, ratio float64) colorful.Color {
+	startColor, endColor := gradientColors(gradientType)
+	ratio = math.Max(0, math.Min(1, ratio))
+	return startColor.BlendLuv(endColor, ratio).Clamped()
+}
+
+// CreateGradient creates a color gradient string.
+func CreateGradient(text string, gradientType GradientType) string {
+	return createGradient(text, gradientType, false)
+}
+
+// CreateBoldGradient creates a bold color gradient string for headings and
+// primary actions.
+func CreateBoldGradient(text string, gradientType GradientType) string {
+	return createGradient(text, gradientType, true)
+}
+
+func createGradient(text string, gradientType GradientType, bold bool) string {
+	runes := []rune(text)
+	var result strings.Builder
+
+	for i, char := range runes {
+		ratio := float64(i) / math.Max(float64(len(runes)-1), 1)
+		style := lipgloss.NewStyle().
+			Foreground(lipgloss.Color(gradientColor(gradientType, ratio).Hex())).
+			Bold(bold)
+		result.WriteString(style.Render(string(char)))
 	}
 
-	return result
+	return result.String()
 }
 
 // RenderProgressBar creates an orange gradient progress bar
@@ -70,12 +95,8 @@ func RenderProgressBar(current, total, width int) string {
 	bar := ""
 	for i := 0; i < width; i++ {
 		if i < filled {
-			// Create gradient effect in filled portion
 			ratio := float64(i) / math.Max(float64(filled-1), 1)
-			startColor, _ := colorful.Hex("#F4D06F")
-			endColor, _ := colorful.Hex("#E88A3A")
-			color := startColor.BlendLuv(endColor, ratio)
-			hexColor := color.Hex()
+			hexColor := gradientColor(ProgressGradient, ratio).Hex()
 			bar += lipgloss.NewStyle().Foreground(lipgloss.Color(hexColor)).Render("█")
 		} else {
 			bar += lipgloss.NewStyle().Foreground(GrayDim).Render("░")
@@ -115,12 +136,8 @@ func RenderAnimatedProgressBar(current, total, width int, frame int) string {
 				// Yellow highlight
 				bar += lipgloss.NewStyle().Foreground(lipgloss.Color("#F9D98C")).Render("█")
 			} else {
-				// Orange gradient
 				ratio := float64(i) / math.Max(float64(filled-1), 1)
-				startColor, _ := colorful.Hex("#F4D06F")
-				endColor, _ := colorful.Hex("#E88A3A")
-				color := startColor.BlendLuv(endColor, ratio)
-				hexColor := color.Hex()
+				hexColor := gradientColor(ProgressGradient, ratio).Hex()
 				bar += lipgloss.NewStyle().Foreground(lipgloss.Color(hexColor)).Render("█")
 			}
 		} else {
@@ -141,7 +158,7 @@ func RenderProgressBarWithPercentage(current, total, width int) string {
 	bar := RenderProgressBar(current, total, width)
 
 	percentText := fmt.Sprintf(" %d%%", percent)
-	return bar + lipgloss.NewStyle().Foreground(OrangePrimary).Bold(true).Render(percentText)
+	return bar + CreateBoldGradient(percentText, ProgressGradient)
 }
 
 // AnimatedBorderColor returns a color for animated border based on frame number

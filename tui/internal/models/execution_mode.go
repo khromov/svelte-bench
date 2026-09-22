@@ -69,7 +69,7 @@ func (m ExecutionModeModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m ExecutionModeModel) View() tea.View {
 	var lines []string
 
-	title := styles.HeadingStyle.Render("EXECUTION MODE")
+	title := styles.CreateBoldGradient("EXECUTION MODE", styles.PrimaryGradient)
 	lines = append(lines, styles.SectionLabelStyle.Render("02 / EXECUTION"), title, "")
 
 	options := []struct {

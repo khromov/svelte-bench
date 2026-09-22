@@ -133,8 +133,9 @@ pnpm tui:build
   - `emitError()` - Error occurred
 
 ### Orange Gradient System
-- Primary: `#FF6B35` → `#FF8C42` → `#FFA500`
-- Success: `#4ADE80` → `#FF8C42`
+- Primary: `#FF3E00` → `#FFB347`
+- Accent: `#FF7A3D` → `#F59E0B`
+- Success: `#FFD166` → `#FF8C42`
 - Error: `#EF4444` → `#FF6B35`
 - Progress bars use smooth gradient fills
 - Animated borders with color cycling
@@ -166,7 +167,7 @@ TypeScript Benchmark
 - **Animations**: Spinners, pulsing rate limits
 - **Cards**: Rounded borders with gradient accents
 - **Masked inputs**: Show last 8 characters only
-- **Color coding**: Green (success), Orange (running), Red (error), Gray (queued)
+- **Color coding**: Gold (success), Orange (running), Red (error), Gray (queued)
 
 ## 📝 Configuration
 

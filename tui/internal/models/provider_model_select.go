@@ -315,10 +315,10 @@ func (m ProviderModelSelectModel) View() tea.View {
 
 	// Header
 	if m.step == 0 {
-		title := styles.HeadingStyle.Render("SELECT PROVIDER")
+		title := styles.CreateBoldGradient("SELECT PROVIDER", styles.PrimaryGradient)
 		lines = append(lines, styles.SectionLabelStyle.Render("01 / PROVIDER"), title, "")
 	} else {
-		title := styles.HeadingStyle.Render("SELECT MODELS")
+		title := styles.CreateBoldGradient("SELECT MODELS", styles.PrimaryGradient)
 		lines = append(lines, styles.SectionLabelStyle.Render("03 / MODELS"), title, "")
 	}
 
@@ -376,7 +376,7 @@ func (m ProviderModelSelectModel) View() tea.View {
 		// Searchable, multi-select model catalog.
 		providerName := m.providers[m.selectedProvider].Name
 		providerLine := lipgloss.NewStyle().Foreground(styles.GrayMedium).Render("PROVIDER  ") +
-			lipgloss.NewStyle().Foreground(styles.OrangeMid).Bold(true).Render(providerName)
+			styles.CreateBoldGradient(providerName, styles.AccentGradient)
 		lines = append(lines, providerLine)
 		lines = append(lines, "")
 
@@ -397,16 +397,11 @@ func (m ProviderModelSelectModel) View() tea.View {
 		// Suggestions
 		if m.loadingModels {
 			spinner := styles.SpinnerFrames[int(time.Since(m.loadingStart).Milliseconds()/100)%len(styles.SpinnerFrames)]
-			lines = append(lines, lipgloss.NewStyle().
-				Foreground(styles.OrangePrimary).
-				Render(spinner+" Loading models..."))
+			lines = append(lines, styles.CreateGradient(spinner+" Loading models...", styles.ProgressGradient))
 		} else if m.error != "" {
-			lines = append(lines, styles.ErrorStyle.Render("Error: "+m.error))
+			lines = append(lines, styles.CreateBoldGradient("Error: "+m.error, styles.ErrorGradient))
 		} else if len(m.filteredModels) > 0 {
-			suggestionsLabel := lipgloss.NewStyle().
-				Foreground(styles.OrangeMid).
-				Bold(true).
-				Render("MODEL CATALOG")
+			suggestionsLabel := styles.CreateBoldGradient("MODEL CATALOG", styles.AccentGradient)
 			lines = append(lines, suggestionsLabel)
 
 			maxSuggestions := m.height - 12

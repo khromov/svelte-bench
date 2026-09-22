@@ -101,7 +101,7 @@ func (m ResultsModel) View() tea.View {
 	var lines []string
 
 	// Title
-	title := styles.HeadingStyle.Render("BENCHMARK COMPLETE")
+	title := styles.CreateBoldGradient("BENCHMARK COMPLETE", styles.PrimaryGradient)
 
 	lines = append(lines, title, "")
 
@@ -119,9 +119,10 @@ func (m ResultsModel) View() tea.View {
 		avgPass /= float64(totalTests)
 	}
 
-	summary := lipgloss.NewStyle().
-		Foreground(styles.OrangeMid).
-		Render(fmt.Sprintf("%s • %s", m.state.Provider, modelRunSummary(m.state.Model)))
+	summary := styles.CreateGradient(
+		fmt.Sprintf("%s • %s", m.state.Provider, modelRunSummary(m.state.Model)),
+		styles.AccentGradient,
+	)
 
 	passColor := styles.OrangeSuccess
 	if avgPass < 0.5 {
@@ -138,9 +139,7 @@ func (m ResultsModel) View() tea.View {
 	lines = append(lines, summary, stats, "", "")
 
 	// Results table
-	resultsHeader := lipgloss.NewStyle().
-		Foreground(styles.OrangeMid).
-		Render("Results:")
+	resultsHeader := styles.CreateBoldGradient("Results:", styles.AccentGradient)
 	lines = append(lines, resultsHeader)
 
 	maxResults := m.height - 14
@@ -206,27 +205,18 @@ func (m ResultsModel) View() tea.View {
 	opt3 := "  Exit"
 
 	if m.selectedOption == 0 {
-		opt1 = lipgloss.NewStyle().
-			Foreground(styles.OrangePrimary).
-			Bold(true).
-			Render("> View benchmarks")
+		opt1 = styles.CreateBoldGradient("> View benchmarks", styles.PrimaryGradient)
 	} else if m.selectedOption == 1 {
-		opt2 = lipgloss.NewStyle().
-			Foreground(styles.OrangePrimary).
-			Bold(true).
-			Render("> Run another benchmark")
+		opt2 = styles.CreateBoldGradient("> Run another benchmark", styles.PrimaryGradient)
 	} else if m.selectedOption == 2 {
-		opt3 = lipgloss.NewStyle().
-			Foreground(styles.OrangePrimary).
-			Bold(true).
-			Render("> Exit")
+		opt3 = styles.CreateBoldGradient("> Exit", styles.PrimaryGradient)
 	}
 
 	lines = append(lines, opt1, opt2, opt3)
 	if m.openingResults {
-		lines = append(lines, "", styles.ProgressTextStyle.Render("Opening all results..."))
+		lines = append(lines, "", styles.CreateBoldGradient("Opening all results...", styles.ProgressGradient))
 	} else if m.openError != "" {
-		lines = append(lines, "", styles.ErrorStyle.Render("Could not open results: "+m.openError))
+		lines = append(lines, "", styles.CreateBoldGradient("Could not open results: "+m.openError, styles.ErrorGradient))
 	}
 
 	// Help

@@ -67,15 +67,12 @@ func (m WelcomeModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m WelcomeModel) View() tea.View {
 	var lines []string
 
-	title := styles.CreateGradient("SVELTEBENCH", styles.PrimaryGradient)
-
-	subtitle := lipgloss.NewStyle().
-		Foreground(styles.OrangeMid).
-		Render("HumanEval-style component benchmarks for Svelte 5")
+	title := styles.CreateBoldGradient("SVELTEBENCH", styles.PrimaryGradient)
+	subtitle := styles.CreateGradient("HumanEval-style component benchmarks for Svelte 5", styles.AccentGradient)
 
 	lines = append(lines, title, subtitle, "", "")
 
-	lines = append(lines, styles.ProgressTextStyle.Render("Press Enter to configure a benchmark run"))
+	lines = append(lines, styles.CreateBoldGradient("Press Enter to configure a benchmark run", styles.PrimaryGradient))
 
 	// Help text
 	lines = append(lines, "")

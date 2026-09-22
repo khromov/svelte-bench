@@ -25,35 +25,17 @@ var (
 	BgMedium = lipgloss.Color("#1A1A1A")
 )
 
-// Base styles
+// Base styles for layout, borders, and controls. Text accents use the
+// semantic gradient helpers in gradients.go.
 var (
-	// Title style - large centered text with orange gradient
-	TitleStyle = lipgloss.NewStyle().
-			Foreground(OrangePrimary).
-			Bold(true).
-			Align(lipgloss.Center).
-			MarginTop(2).
-			MarginBottom(1)
-
-	// HeadingStyle is used for every screen heading so the TUI has one visual hierarchy.
-	HeadingStyle = lipgloss.NewStyle().
-			Foreground(OrangePrimary).
-			Bold(true)
-
 	SectionLabelStyle = lipgloss.NewStyle().
-				Foreground(GrayDim).
-				Bold(true)
+			Foreground(GrayDim).
+			Bold(true)
 
 	SelectedRowStyle = lipgloss.NewStyle().
 				Background(BgMedium).
 				Foreground(White).
 				Bold(true)
-
-	// Subtitle style
-	SubtitleStyle = lipgloss.NewStyle().
-			Foreground(GrayMedium).
-			Align(lipgloss.Center).
-			MarginBottom(2)
 
 	// Header box style
 	HeaderBoxStyle = lipgloss.NewStyle().
@@ -113,23 +95,6 @@ var (
 			Foreground(GrayMedium).
 			Align(lipgloss.Center).
 			MarginTop(2)
-
-	// Status text styles
-	SuccessStyle = lipgloss.NewStyle().
-			Foreground(OrangeSuccess).
-			Bold(true)
-
-	ErrorStyle = lipgloss.NewStyle().
-			Foreground(OrangeError).
-			Bold(true)
-
-	WarningStyle = lipgloss.NewStyle().
-			Foreground(OrangeWarning)
-
-	// Progress text
-	ProgressTextStyle = lipgloss.NewStyle().
-				Foreground(OrangePrimary).
-				Bold(true)
 
 	// Stats bar at bottom
 	StatsBarStyle = lipgloss.NewStyle().

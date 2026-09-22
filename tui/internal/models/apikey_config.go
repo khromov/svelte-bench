@@ -160,12 +160,12 @@ func (m APIKeyConfigModel) View() tea.View {
 
 		if m.validating {
 			spinner := styles.GetSpinnerFrame(m.validationStart)
-			lines = append(lines, styles.ProgressTextStyle.Render(spinner+" Validating..."))
+			lines = append(lines, styles.CreateBoldGradient(spinner+" Validating...", styles.ProgressGradient))
 		} else if m.validationResult != "" {
 			if strings.HasPrefix(m.validationResult, "VALID") {
-				lines = append(lines, styles.SuccessStyle.Render(m.validationResult))
+				lines = append(lines, styles.CreateBoldGradient(m.validationResult, styles.SuccessGradient))
 			} else {
-				lines = append(lines, styles.ErrorStyle.Render(m.validationResult))
+				lines = append(lines, styles.CreateBoldGradient(m.validationResult, styles.ErrorGradient))
 			}
 		}
 
@@ -181,7 +181,7 @@ func (m APIKeyConfigModel) View() tea.View {
 	}
 
 	// Provider list
-	title := styles.HeadingStyle.Render("API CONFIGURATION")
+	title := styles.CreateBoldGradient("API CONFIGURATION", styles.PrimaryGradient)
 
 	var lines []string
 	lines = append(lines, title, "")
@@ -211,15 +211,15 @@ func (m APIKeyConfigModel) View() tea.View {
 
 		var line string
 		if provider.APIKey != "" {
-			status := styles.SuccessStyle.Render("VALID")
+			status := styles.CreateBoldGradient("VALID", styles.SuccessGradient)
 			if selected {
-				line = styles.ProgressTextStyle.Render("> " + provider.Name + " " + status)
+				line = styles.CreateBoldGradient("> "+provider.Name, styles.PrimaryGradient) + " " + status
 			} else {
 				line = "  " + provider.Name + " " + status
 			}
 		} else {
 			if selected {
-				line = styles.ProgressTextStyle.Render("> " + provider.Name)
+				line = styles.CreateBoldGradient("> "+provider.Name, styles.PrimaryGradient)
 			} else {
 				line = "  " + provider.Name
 			}
