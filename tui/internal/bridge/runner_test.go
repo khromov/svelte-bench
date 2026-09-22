@@ -1,9 +1,27 @@
 package bridge
 
 import (
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 )
+
+func TestRunBenchmarkReportsCommandStderr(t *testing.T) {
+	binDir := t.TempDir()
+	pnpmPath := filepath.Join(binDir, "pnpm")
+	if err := os.WriteFile(pnpmPath, []byte("#!/bin/sh\nprintf 'Anthropic validation failed: invalid model\\n' >&2\nexit 1\n"), 0700); err != nil {
+		t.Fatal(err)
+	}
+	t.Setenv("PATH", binDir+string(os.PathListSeparator)+os.Getenv("PATH"))
+
+	for range 10 {
+		err := RunBenchmark(BenchmarkConfig{Provider: "anthropic", Model: "test-model", Samples: 1}, nil)
+		if err == nil || !strings.Contains(err.Error(), "Anthropic validation failed: invalid model") {
+			t.Fatalf("expected command stderr in benchmark error, got %v", err)
+		}
+	}
+}
 
 func TestDebugLogEnabled(t *testing.T) {
 	t.Setenv(debugLogEnv, "")

@@ -165,17 +165,15 @@ func RunBenchmark(config BenchmarkConfig, eventHandler EventHandler) error {
 		}
 	}
 
-	// Check for stderr output
-	select {
-	case stderrMsg := <-stderrChan:
-		if waitErr != nil {
-			return fmt.Errorf("command failed: %w\nstderr: %s", waitErr, stderrMsg)
-		}
-		// Log stderr even if command succeeded (warnings, etc.)
-		if debugLog != nil && stderrMsg != "" {
-			fmt.Fprintf(debugLog, "STDERR (non-fatal): %s\n", stderrMsg)
-		}
-	default:
+	// Wait for the stderr reader before reporting a failure. Otherwise a fast
+	// command can exit before its diagnostic reaches this channel.
+	stderrMsg := <-stderrChan
+	if waitErr != nil && stderrMsg != "" {
+		return fmt.Errorf("command failed: %w\nstderr: %s", waitErr, stderrMsg)
+	}
+	// Log stderr even if command succeeded (warnings, etc.)
+	if debugLog != nil && stderrMsg != "" {
+		fmt.Fprintf(debugLog, "STDERR (non-fatal): %s\n", stderrMsg)
 	}
 
 	if waitErr != nil {
