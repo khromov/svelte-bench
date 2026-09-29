@@ -64,8 +64,8 @@ export class AnthropicProvider implements LLMProvider {
         ],
       };
 
-      // Anthropic rejects temperature for Claude Opus 5 models.
-      if (temperature !== undefined && !/^claude-opus-5(?:-|$)/.test(this.modelId)) {
+      // Anthropic rejects temperature for Claude Opus/Sonnet 5 models.
+      if (temperature !== undefined && !/^claude-(?:opus|sonnet)-5(?:-|$)/.test(this.modelId)) {
         requestOptions.temperature = temperature;
       }
 
