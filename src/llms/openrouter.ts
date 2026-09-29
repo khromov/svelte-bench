@@ -93,6 +93,9 @@ export class OpenRouterProvider implements LLMProvider {
       const requestOptions: any = {
         model: this.modelId,
         messages: messages,
+        // OpenRouter reserves against the model's full output limit when this
+        // is omitted. A component needs far less than a 65k-token completion.
+        max_completion_tokens: 8192,
       };
 
       // Add provider routing preferences if configured

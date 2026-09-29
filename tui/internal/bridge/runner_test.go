@@ -23,6 +23,20 @@ func TestRunBenchmarkReportsCommandStderr(t *testing.T) {
 	}
 }
 
+func TestRunBenchmarkReportsStartupStdout(t *testing.T) {
+	binDir := t.TempDir()
+	pnpmPath := filepath.Join(binDir, "pnpm")
+	if err := os.WriteFile(pnpmPath, []byte("#!/bin/sh\nprintf 'Model validation failed: insufficient credits\\n'\nprintf '$ pnpm run-tests\\n' >&2\nexit 1\n"), 0700); err != nil {
+		t.Fatal(err)
+	}
+	t.Setenv("PATH", binDir+string(os.PathListSeparator)+os.Getenv("PATH"))
+
+	err := RunBenchmark(BenchmarkConfig{Provider: "openrouter", Model: "fireworks/ember-1", Samples: 1}, nil)
+	if err == nil || !strings.Contains(err.Error(), "Model validation failed: insufficient credits") {
+		t.Fatalf("expected startup stdout in benchmark error, got %v", err)
+	}
+}
+
 func TestDebugLogEnabled(t *testing.T) {
 	t.Setenv(debugLogEnv, "")
 	if debugLogEnabled() {

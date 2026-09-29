@@ -61,7 +61,7 @@ func ParseEvents(reader io.Reader, callback func(BenchmarkEvent)) error {
 type EventHandler func(BenchmarkEvent)
 
 // ParseEventStream parses events from an io.ReadCloser
-func ParseEventStream(stream io.ReadCloser, handler EventHandler) error {
+func ParseEventStream(stream io.ReadCloser, handler EventHandler, outputHandler func(string)) error {
 	defer stream.Close()
 
 	scanner := bufio.NewScanner(stream)
@@ -70,7 +70,9 @@ func ParseEventStream(stream io.ReadCloser, handler EventHandler) error {
 
 		var event BenchmarkEvent
 		if err := json.Unmarshal([]byte(line), &event); err != nil {
-			// Skip non-JSON lines
+			if outputHandler != nil {
+				outputHandler(line)
+			}
 			continue
 		}
 
