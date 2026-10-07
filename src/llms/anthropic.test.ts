@@ -24,7 +24,7 @@ afterEach(() => {
 });
 
 describe("AnthropicProvider temperature", () => {
-  test.each(["claude-opus-5", "claude-opus-5-20260929", "claude-sonnet-5", "claude-sonnet-5-5"])(
+  test.each(["claude-opus-5", "claude-opus-5-20260929", "claude-sonnet-5", "claude-sonnet-5-5", "claude-haiku-5-5"])(
     "omits temperature for %s",
     async (model) => {
       process.env.ANTHROPIC_API_KEY = "test-key";
