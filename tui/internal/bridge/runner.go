@@ -112,10 +112,19 @@ func RunBenchmark(config BenchmarkConfig, eventHandler EventHandler) error {
 	eventChan := make(chan BenchmarkEvent, 100)
 	errChan := make(chan error, 1)
 	stderrChan := make(chan string, 1)
+	var stdoutLines []string
 
 	go func() {
-		err := ParseEventStream(io.NopCloser(stdout), func(event BenchmarkEvent) {
+		err := parseEventStream(io.NopCloser(stdout), func(event BenchmarkEvent) {
 			eventChan <- event
+		}, func(line string) {
+			if len(line) > 500 {
+				line = line[:500]
+			}
+			stdoutLines = append(stdoutLines, line)
+			if len(stdoutLines) > 10 {
+				stdoutLines = stdoutLines[1:]
+			}
 		})
 		if err != nil {
 			errChan <- err
@@ -168,8 +177,15 @@ func RunBenchmark(config BenchmarkConfig, eventHandler EventHandler) error {
 	// Wait for the stderr reader before reporting a failure. Otherwise a fast
 	// command can exit before its diagnostic reaches this channel.
 	stderrMsg := <-stderrChan
-	if waitErr != nil && stderrMsg != "" {
-		return fmt.Errorf("command failed: %w\nstderr: %s", waitErr, stderrMsg)
+	if waitErr != nil {
+		detail := ""
+		if len(stdoutLines) > 0 {
+			detail += "\nstdout: " + strings.Join(stdoutLines, "\n")
+		}
+		if stderrMsg != "" {
+			detail += "\nstderr: " + stderrMsg
+		}
+		return fmt.Errorf("command failed: %w%s", waitErr, detail)
 	}
 	// Log stderr even if command succeeded (warnings, etc.)
 	if debugLog != nil && stderrMsg != "" {

@@ -2,6 +2,7 @@ import type { LLMProvider } from "../llms";
 import type { HumanEvalResult } from "./humaneval";
 import { loadTestCheckpoint, removeTestCheckpoint, saveTestCheckpoint } from "./file";
 import { emitSampleProgress, emitTestComplete, emitTestStart, isTUIMode, log } from "./tui-events";
+import { getMissingSampleIndices, getRecordedSamples } from "./resume";
 import { loadTestDefinitions, runHumanEvalTest, type TestDefinition } from "./parallel-test-manager";
 
 interface MadmaxCheckpoint {
@@ -26,7 +27,6 @@ function checkpointMatches(
 ): checkpoint is MadmaxCheckpoint {
   return Boolean(
     checkpoint?.mode === "madmax" &&
-    checkpoint.completed &&
     checkpoint.provider === provider &&
     checkpoint.modelId === modelId &&
     checkpoint.testName === test.name &&
@@ -72,7 +72,11 @@ export async function runAllTestsHumanEvalMadmax(
   const results = await Promise.all(
     tests.map(async (test) => {
       const checkpoint = await loadTestCheckpoint(provider, modelId, test.name);
-      if (checkpointMatches(checkpoint, provider, modelId, test, numSamples, contextContent)) {
+      const existingSamples = checkpointMatches(checkpoint, provider, modelId, test, numSamples, contextContent)
+        ? getRecordedSamples(test, [checkpoint.result])
+        : [];
+      const missingIndices = getMissingSampleIndices(existingSamples, numSamples);
+      if (missingIndices.length === 0 && checkpoint) {
         log(`Resuming MADMAX category ${test.name} from its completed checkpoint`);
         emitCachedResult(checkpoint.result, numSamples);
         return checkpoint.result;
@@ -85,8 +89,8 @@ export async function runAllTestsHumanEvalMadmax(
         contextContent,
         undefined,
         undefined,
-        [],
-        undefined,
+        existingSamples,
+        missingIndices,
         { retryRateLimits: true },
       );
 
@@ -104,7 +108,7 @@ export async function runAllTestsHumanEvalMadmax(
         testName: test.name,
         numSamples,
         contextContent,
-        completed: true,
+        completed: getMissingSampleIndices(getRecordedSamples(test, [result]), numSamples).length === 0,
         result,
         timestamp: new Date().toISOString(),
       };
@@ -118,7 +122,9 @@ export async function runAllTestsHumanEvalMadmax(
     (a, b) => (testOrder.get(a.testName) ?? 0) - (testOrder.get(b.testName) ?? 0),
   );
 
-  if (orderedResults.length === tests.length && orderedResults.every((result) => result.numSamples > 0)) {
+  if (orderedResults.length === tests.length && orderedResults.every((result) =>
+    getMissingSampleIndices(getRecordedSamples(tests.find((test) => test.name === result.testName)!, [result]), numSamples).length === 0
+  )) {
     await Promise.all(tests.map((test) => removeTestCheckpoint(provider, modelId, test.name)));
   }
 

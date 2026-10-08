@@ -99,3 +99,16 @@ func TestBuildBenchmarkEnvEnablesMadmaxOnly(t *testing.T) {
 		t.Fatal("expected madmax mode to remove parallel flag")
 	}
 }
+
+func TestRunBenchmarkReportsStartupStdout(t *testing.T) {
+	binDir := t.TempDir()
+	pnpmPath := filepath.Join(binDir, "pnpm")
+	if err := os.WriteFile(pnpmPath, []byte("#!/bin/sh\nprintf 'ERR_PNPM_STARTUP: cannot start benchmark\\n'\nprintf '$ tsx ./index.ts\\n' >&2\nexit 1\n"), 0700); err != nil {
+		t.Fatal(err)
+	}
+	t.Setenv("PATH", binDir+string(os.PathListSeparator)+os.Getenv("PATH"))
+	err := RunBenchmark(BenchmarkConfig{Samples: 1}, nil)
+	if err == nil || !strings.Contains(err.Error(), "ERR_PNPM_STARTUP") || !strings.Contains(err.Error(), "$ tsx ./index.ts") {
+		t.Fatalf("expected both stdout diagnostics and stderr banners, got %v", err)
+	}
+}
