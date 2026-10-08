@@ -11,12 +11,18 @@ import { log } from "../utils/tui-events";
 export class OpenRouterProvider implements LLMProvider {
   private client: OpenAI;
   private modelId: string;
+  private maxCompletionTokens: number;
   name = "OpenRouter";
 
   constructor(modelId?: string) {
     const apiKey = process.env.OPENROUTER_API_KEY;
     if (!apiKey) {
       throw new Error("OPENROUTER_API_KEY environment variable is required");
+    }
+
+    this.maxCompletionTokens = Number(process.env.OPENROUTER_MAX_COMPLETION_TOKENS || "8192");
+    if (!Number.isSafeInteger(this.maxCompletionTokens) || this.maxCompletionTokens <= 0) {
+      throw new Error("OPENROUTER_MAX_COMPLETION_TOKENS must be a positive integer");
     }
 
     this.client = new OpenAI({
@@ -93,6 +99,8 @@ export class OpenRouterProvider implements LLMProvider {
       const requestOptions: any = {
         model: this.modelId,
         messages: messages,
+        // Bound credit reservation instead of inheriting a model's full output window.
+        max_completion_tokens: this.maxCompletionTokens,
       };
 
       // Add provider routing preferences if configured
@@ -214,6 +222,8 @@ export class OpenRouterProvider implements LLMProvider {
    */
   private isQuantizationError(error: any): boolean {
     if (!(error instanceof Error)) return false;
+    const status = (error as Error & { status?: number }).status;
+    if (status !== undefined && status !== 400 && status !== 404) return false;
     
     const errorMessage = error.message.toLowerCase();
     return (
