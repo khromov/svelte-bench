@@ -170,6 +170,18 @@ export class OpenRouterProvider implements LLMProvider {
       const errorObject = error as { status?: number; code?: number };
       const status = errorObject?.status ?? errorObject?.code;
       const errorMessage = error instanceof Error ? error.message : String(error);
+      if (status === 402) {
+        const creditError = new Error(
+          `OpenRouter HTTP 402: insufficient credits or API-key budget for ${this.modelId} ` +
+          `with OPENROUTER_MAX_COMPLETION_TOKENS=${this.maxCompletionTokens}. ` +
+          "Check the account balance at https://openrouter.ai/settings/credits and the key's spending limit. " +
+          "Add credits or use a funded key before retrying. Reducing the token limit changes benchmark conditions. " +
+          `Provider detail: ${errorMessage}`
+        );
+        creditError.name = "NonRetryableError";
+        throw Object.assign(creditError, { status: 402 });
+      }
+
       if (status === 429 || /rate limit/i.test(errorMessage)) {
         throw new RateLimitError(`OpenRouter rate limit exceeded: ${errorMessage}`);
       }

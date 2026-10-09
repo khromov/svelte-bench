@@ -43,6 +43,7 @@ export async function validateModel(provider: string, model: string): Promise<bo
  */
 export async function validateModels(provider: string, models: string[]): Promise<string[]> {
   const validModels: string[] = [];
+  const validationErrors: Error[] = [];
 
   for (const model of models) {
     try {
@@ -54,8 +55,15 @@ export async function validateModels(provider: string, models: string[]): Promis
         console.log(`✗ Model ${model} is not available for ${provider}`);
       }
     } catch (error) {
+      validationErrors.push(error instanceof Error ? error : new Error(String(error)));
       console.error(`Failed to validate ${model} for ${provider}:`, error);
     }
+  }
+
+  // Authentication, credit and network failures do not establish model validity.
+  // Preserve their cause instead of reporting that every model is invalid.
+  if (validModels.length === 0 && validationErrors.length > 0) {
+    throw validationErrors[0];
   }
 
   return validModels;

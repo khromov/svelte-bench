@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { OpenRouterProvider } from "./openrouter";
+import { withRetry } from "../utils/retry-wrapper";
 
 const { create } = vi.hoisted(() => ({ create: vi.fn() }));
 vi.mock("openai", () => ({
@@ -40,7 +41,11 @@ describe("OpenRouter output budget", () => {
     create.mockRejectedValue(
       Object.assign(new Error("402 insufficient credits; provider unavailable"), { status: 402 }),
     );
-    await expect(new OpenRouterProvider().generateCode("test")).rejects.toThrow("402 insufficient credits");
+    await expect(withRetry(() => new OpenRouterProvider().generateCode("test"))).rejects.toMatchObject({
+      name: "NonRetryableError",
+      status: 402,
+      message: expect.stringContaining("Add credits or use a funded key"),
+    });
     expect(create).toHaveBeenCalledOnce();
   });
 
