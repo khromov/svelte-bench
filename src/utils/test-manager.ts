@@ -7,7 +7,7 @@ import type { TestResult } from "./test-runner";
 import { calculatePassAtK, type HumanEvalResult } from "./humaneval";
 import { cleanCodeMarkdown } from "./code-cleaner";
 import { withRetry } from "./retry-wrapper";
-import { emitTestStart, emitSampleProgress, emitTestComplete, log } from "./tui-events";
+import { emitCachedResult, emitTestStart, emitSampleProgress, emitTestComplete, log } from "./tui-events";
 import { countMissingSamples, getMissingSampleIndices, getRecordedSamples, replaceTestResult } from "./resume";
 
 export interface TestDefinition {
@@ -445,6 +445,7 @@ export async function runAllTestsHumanEval(
 
       // Skip tests whose completed result already has every sample
       if (getMissingSampleIndices(getRecordedSamples(test, results), numSamples).length === 0) {
+        emitCachedResult(results.find((result) => result.testName === test.name)!, numSamples);
         continue;
       }
 

@@ -1,7 +1,7 @@
 import type { LLMProvider } from "../llms";
 import type { HumanEvalResult } from "./humaneval";
 import { loadTestCheckpoint, removeTestCheckpoint, saveTestCheckpoint } from "./file";
-import { emitSampleProgress, emitTestComplete, emitTestStart, isTUIMode, log } from "./tui-events";
+import { emitCachedResult, emitTestComplete, isTUIMode, log } from "./tui-events";
 import { getMissingSampleIndices, getRecordedSamples } from "./resume";
 import { loadTestDefinitions, runHumanEvalTest, type TestDefinition } from "./parallel-test-manager";
 
@@ -32,21 +32,6 @@ function checkpointMatches(
     checkpoint.testName === test.name &&
     checkpoint.numSamples === numSamples &&
     checkpoint.contextContent === contextContent,
-  );
-}
-
-function emitCachedResult(result: HumanEvalResult, numSamples: number): void {
-  if (!isTUIMode()) return;
-  emitTestStart(result.testName, 1, numSamples, result.modelId);
-  emitSampleProgress(result.testName, numSamples, numSamples, result.modelId);
-  emitTestComplete(
-    result.testName,
-    numSamples,
-    numSamples,
-    result.numCorrect > 0,
-    result.pass1,
-    result.pass10,
-    result.modelId,
   );
 }
 

@@ -8,7 +8,7 @@ import { calculatePassAtK, type HumanEvalResult } from "./humaneval";
 import { cleanCodeMarkdown } from "./code-cleaner";
 import { withRetry } from "./retry-wrapper";
 import crypto from "crypto";
-import { isTUIMode, emitTestStart, emitTestComplete, emitSampleProgress, emitRateLimit, log } from "./tui-events";
+import { emitCachedResult, isTUIMode, emitTestStart, emitTestComplete, emitSampleProgress, emitRateLimit, log } from "./tui-events";
 import { countMissingSamples, getMissingSampleIndices, getRecordedSamples, replaceTestResult } from "./resume";
 
 export interface TestDefinition {
@@ -527,6 +527,7 @@ export async function runAllTestsHumanEval(
 
       // Skip tests whose completed result already has every sample
       if (getMissingSampleIndices(getRecordedSamples(test, results), numSamples).length === 0) {
+        emitCachedResult(results.find((result) => result.testName === test.name)!, numSamples);
         continue;
       }
 

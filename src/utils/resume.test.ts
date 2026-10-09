@@ -1,6 +1,6 @@
 import path from "path";
 import fs from "fs/promises";
-import { describe, it, expect, vi, beforeEach, afterAll } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach, afterAll } from "vitest";
 import type { HumanEvalResult } from "./humaneval";
 import type { BenchmarkResult, TestDefinition } from "./test-manager";
 import { countMissingSamples, getMissingSampleIndices, getRecordedSamples, replaceTestResult } from "./resume";
@@ -32,6 +32,11 @@ const NUM_SAMPLES = 3;
 const promptPath = path.resolve(process.cwd(), "src/tests/counter/prompt.md");
 const testPath = path.resolve(process.cwd(), "src/tests/counter/test.ts");
 const tests: TestDefinition[] = ["alpha", "beta", "gamma", "delta"].map((name) => ({ name, promptPath, testPath }));
+
+afterEach(() => {
+  vi.unstubAllEnvs();
+  vi.restoreAllMocks();
+});
 
 afterAll(async () => {
   await fs.rm(path.resolve(process.cwd(), "tmp/samples", PROVIDER.toLowerCase()), { recursive: true, force: true });
@@ -146,6 +151,33 @@ describe.each([
       getModelIdentifier: () => MODEL,
     };
   }
+
+  it.each([true, false])("reports cached categories to the TUI without generation (passed: %s)", async (passed) => {
+    const { file, manager } = await setup();
+    vi.stubEnv("TUI_MODE", "true");
+    const cached = result("alpha", [0, 1, 2]);
+    if (!passed) {
+      cached.numCorrect = 0;
+      cached.pass1 = 0;
+      cached.pass10 = 0;
+      cached.samples.forEach((sample) => { sample.success = false; });
+    }
+    vi.mocked(file.loadCheckpoint).mockResolvedValue({
+      ...checkpointWithGaps(), completedResults: [cached], currentTestSamples: [],
+    });
+    const output = vi.spyOn(console, "log").mockImplementation(() => {});
+    const llm = provider(async () => "<p>ok</p>");
+    await manager.runAllTestsHumanEval(llm, NUM_SAMPLES, [tests[0]]);
+    const events = output.mock.calls
+      .filter(([line]) => typeof line === "string" && line.startsWith("{"))
+      .map(([line]) => JSON.parse(line));
+    expect(events.map((event) => event.type)).toEqual(["test_start", "sample_progress", "test_complete"]);
+    expect(events[2]).toMatchObject({
+      test: "alpha", model: MODEL, sample: NUM_SAMPLES, total: NUM_SAMPLES,
+      passed, passAtOne: passed ? 1 : 0, passAtTen: passed ? 1 : 0,
+    });
+    expect(llm.generateCode).not.toHaveBeenCalled();
+  });
 
   it("runs only the samples missing from the checkpoint", async () => {
     const { file, manager } = await setup();

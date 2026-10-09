@@ -1,3 +1,5 @@
+import type { HumanEvalResult } from "./humaneval";
+
 /**
  * TUI Event Emitter
  * Emits JSON events to stdout for the TUI to parse
@@ -145,4 +147,20 @@ export function emitComplete(resultsSaved: string): void {
     type: 'complete',
     resultsSaved,
   });
+}
+
+/** Restore a completed checkpoint category in the TUI without regenerating it. */
+export function emitCachedResult(result: HumanEvalResult, numSamples: number): void {
+  if (!isTUIMode()) return;
+  emitTestStart(result.testName, 1, numSamples, result.modelId);
+  emitSampleProgress(result.testName, numSamples, numSamples, result.modelId);
+  emitTestComplete(
+    result.testName,
+    numSamples,
+    numSamples,
+    result.numCorrect > 0,
+    result.pass1,
+    result.pass10,
+    result.modelId,
+  );
 }

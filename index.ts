@@ -16,8 +16,9 @@ import type { HumanEvalResult } from "./src/utils/humaneval";
 import { isRateLimitError } from "./src/utils/errors";
 import { ensureRequiredDirectories } from "./src/utils/ensure-dirs";
 import { validateModels } from "./src/utils/model-validator";
-import { isTUIMode, emitComplete, log } from "./src/utils/tui-events";
+import { isTUIMode, emitComplete, emitError, log } from "./src/utils/tui-events";
 import path from "path";
+import { getMissingSampleIndices, getRecordedSamples } from "./src/utils/resume";
 
 /**
  * Parse command line arguments
@@ -390,6 +391,29 @@ async function runBenchmark() {
         totalSamples - totalSuccess
       }`
     );
+
+    // API failures are excluded from score calculations, so positive scores
+    // alone cannot establish that the requested benchmark finished.
+    const expectedTests = testDefinitions ?? await loadTestDefinitions();
+    const missing: string[] = [];
+    for (const selected of selectedProviderModels) {
+      const expectedSamples = selected.modelId.startsWith("o1-pro") ? 1 : numSamples;
+      const modelResults = allResults.filter((result) =>
+        result.provider === selected.provider.name && result.modelId === selected.modelId
+      );
+      for (const test of expectedTests) {
+        const gaps = getMissingSampleIndices(getRecordedSamples(test, modelResults), expectedSamples);
+        if (gaps.length > 0) {
+          missing.push(`${selected.modelId}/${test.name} (${gaps.length}/${expectedSamples} missing)`);
+        }
+      }
+    }
+    if (missing.length > 0) {
+      const message = `Benchmark incomplete; missing samples: ${missing.join(", ")}. Checkpoint retained; rerun to retry missing samples.`;
+      emitError("", message);
+      console.error(message);
+      process.exit(1);
+    }
 
     // Emit complete event for TUI
     if (isTUIMode()) {
