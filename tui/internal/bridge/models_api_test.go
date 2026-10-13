@@ -1,6 +1,10 @@
 package bridge
 
 import (
+	"fmt"
+	"io"
+	"net/http"
+	"strings"
 	"testing"
 	"time"
 )
@@ -102,5 +106,63 @@ func TestOllamaModelParsingListsInstalledModels(t *testing.T) {
 func TestOllamaProviderNameMapsToBenchmarkProvider(t *testing.T) {
 	if got := ConvertProviderNameToEnvKey("Ollama (local)"); got != "ollama" {
 		t.Fatalf("expected ollama, got %q", got)
+	}
+}
+
+type modelRoundTripFunc func(*http.Request) (*http.Response, error)
+
+func (f modelRoundTripFunc) RoundTrip(r *http.Request) (*http.Response, error) {
+	return f(r)
+}
+
+func TestZAIModelDiscovery(t *testing.T) {
+	for _, tc := range []struct {
+		name      string
+		status    int
+		body      string
+		wantError bool
+	}{
+		{"catalog", http.StatusOK, `{"data":[{"id":"glm-4.6"},{"id":"glm-new"},{"id":""}]}`, false},
+		{"unauthorized", http.StatusUnauthorized, `{}`, true},
+		{"server error", http.StatusInternalServerError, `{}`, true},
+		{"malformed", http.StatusOK, `invalid`, true},
+		{"empty", http.StatusOK, `{"data":[]}`, true},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			original := http.DefaultTransport
+			t.Cleanup(func() { http.DefaultTransport = original })
+			http.DefaultTransport = modelRoundTripFunc(func(r *http.Request) (*http.Response, error) {
+				if r.Method != http.MethodGet || r.URL.String() != "https://api.z.ai/api/paas/v4/models" {
+					t.Errorf("unexpected request: %s %s", r.Method, r.URL)
+				}
+				if r.Header.Get("Authorization") != "Bearer test-key" {
+					t.Error("missing bearer authentication")
+				}
+				return &http.Response{StatusCode: tc.status, Body: io.NopCloser(strings.NewReader(tc.body))}, nil
+			})
+			models, err := fetchZAIModels("test-key")
+			if (err != nil) != tc.wantError {
+				t.Fatalf("models = %#v, error = %v", models, err)
+			}
+			if tc.wantError {
+				if len(models) != 0 {
+					t.Fatalf("failed discovery returned fallback models: %#v", models)
+				}
+			} else if len(models) != 2 || models[0].ID != "glm-4.6" || models[1].Name != "glm-new" {
+				t.Fatalf("unexpected catalog: %#v", models)
+			}
+		})
+	}
+}
+
+func TestZAIModelDiscoveryPropagatesNetworkErrors(t *testing.T) {
+	original := http.DefaultTransport
+	t.Cleanup(func() { http.DefaultTransport = original })
+	http.DefaultTransport = modelRoundTripFunc(func(r *http.Request) (*http.Response, error) {
+		return nil, fmt.Errorf("connection failed")
+	})
+	models, err := fetchZAIModels("test-key")
+	if err == nil || len(models) != 0 {
+		t.Fatalf("models = %#v, error = %v", models, err)
 	}
 }

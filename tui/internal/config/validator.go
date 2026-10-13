@@ -39,7 +39,7 @@ func ValidateAPIKey(provider, apiKey string) error {
 	case "MOONSHOT_API_KEY":
 		return validateBearerModels("https://api.moonshot.ai/v1/models", apiKey)
 	case "Z_AI_API_KEY":
-		return validateBearerModels("https://open.bigmodel.cn/api/paas/v4/models", apiKey)
+		return validateBearerModels("https://api.z.ai/api/paas/v4/models", apiKey)
 	case OllamaEnvKey:
 		return validateOllama(apiKey)
 	default:

@@ -62,3 +62,20 @@ func TestAnthropicValidationDistinguishesInvalidKeysFromOtherFailures(t *testing
 		})
 	}
 }
+
+func TestZAIValidationUsesZAIModelsEndpoint(t *testing.T) {
+	original := http.DefaultTransport
+	t.Cleanup(func() { http.DefaultTransport = original })
+	http.DefaultTransport = roundTripFunc(func(r *http.Request) (*http.Response, error) {
+		if r.Method != http.MethodGet || r.URL.String() != "https://api.z.ai/api/paas/v4/models" {
+			t.Errorf("unexpected request: %s %s", r.Method, r.URL)
+		}
+		if r.Header.Get("Authorization") != "Bearer test-key" {
+			t.Error("missing bearer authentication")
+		}
+		return response(http.StatusOK), nil
+	})
+	if err := ValidateAPIKey("Z_AI_API_KEY", "test-key"); err != nil {
+		t.Fatal(err)
+	}
+}

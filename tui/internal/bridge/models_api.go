@@ -950,85 +950,15 @@ func getOpenAIDescription(modelID string) string {
 	return ""
 }
 
-// fetchZAIModels fetches available models from Z.ai API
+// fetchZAIModels fetches available models from Z.ai API.
 func fetchZAIModels(apiKey string) ([]Model, error) {
-	// Z.ai API endpoint (based on TypeScript implementation)
-	req, err := http.NewRequest("GET", "https://open.bigmodel.cn/api/paas/v4/models", nil)
+	models, err := fetchOpenAICompatibleModels("https://api.z.ai/api/paas/v4/models", apiKey)
 	if err != nil {
-		// If API request fails, return static fallback list
-		return []Model{
-			{ID: "glm-4.5", Description: "GLM-4.5 flagship model"},
-			{ID: "glm-4.5-air", Description: "GLM-4.5 Air (lightweight)"},
-			{ID: "glm-4.5-x", Description: "GLM-4.5 X (extended)"},
-			{ID: "glm-4.5-airx", Description: "GLM-4.5 AirX"},
-			{ID: "glm-4.5-flash", Description: "GLM-4.5 Flash (fastest)"},
-			{ID: "glm-4-32b-0414-128k", Description: "GLM-4 32B (128k context)"},
-		}, nil
+		return nil, err
 	}
-
-	req.Header.Set("Authorization", "Bearer "+apiKey)
-	req.Header.Set("Content-Type", "application/json")
-
-	client := &http.Client{Timeout: 10 * time.Second}
-	resp, err := client.Do(req)
-	if err != nil || resp.StatusCode != 200 {
-		// If API request fails, return static fallback list
-		return []Model{
-			{ID: "glm-4.5", Description: "GLM-4.5 flagship model"},
-			{ID: "glm-4.5-air", Description: "GLM-4.5 Air (lightweight)"},
-			{ID: "glm-4.5-x", Description: "GLM-4.5 X (extended)"},
-			{ID: "glm-4.5-airx", Description: "GLM-4.5 AirX"},
-			{ID: "glm-4.5-flash", Description: "GLM-4.5 Flash (fastest)"},
-			{ID: "glm-4-32b-0414-128k", Description: "GLM-4 32B (128k context)"},
-		}, nil
+	for i := range models {
+		models[i].Description = getZAIModelDescription(models[i].ID)
 	}
-	defer resp.Body.Close()
-
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		// Return static fallback
-		return []Model{
-			{ID: "glm-4.5", Description: "GLM-4.5 flagship model"},
-			{ID: "glm-4.5-air", Description: "GLM-4.5 Air (lightweight)"},
-			{ID: "glm-4.5-x", Description: "GLM-4.5 X (extended)"},
-			{ID: "glm-4.5-airx", Description: "GLM-4.5 AirX"},
-			{ID: "glm-4.5-flash", Description: "GLM-4.5 Flash (fastest)"},
-			{ID: "glm-4-32b-0414-128k", Description: "GLM-4 32B (128k context)"},
-		}, nil
-	}
-
-	// Try to parse response (format may vary)
-	var result struct {
-		Data []struct {
-			ID      string `json:"id"`
-			Object  string `json:"object"`
-			Created int64  `json:"created"`
-			OwnedBy string `json:"owned_by"`
-		} `json:"data"`
-	}
-
-	if err := json.Unmarshal(body, &result); err != nil || len(result.Data) == 0 {
-		// Return static fallback if parsing fails
-		return []Model{
-			{ID: "glm-4.5", Description: "GLM-4.5 flagship model"},
-			{ID: "glm-4.5-air", Description: "GLM-4.5 Air (lightweight)"},
-			{ID: "glm-4.5-x", Description: "GLM-4.5 X (extended)"},
-			{ID: "glm-4.5-airx", Description: "GLM-4.5 AirX"},
-			{ID: "glm-4.5-flash", Description: "GLM-4.5 Flash (fastest)"},
-			{ID: "glm-4-32b-0414-128k", Description: "GLM-4 32B (128k context)"},
-		}, nil
-	}
-
-	models := make([]Model, 0, len(result.Data))
-	for _, m := range result.Data {
-		if m.ID != "" {
-			models = append(models, Model{
-				ID:          m.ID,
-				Description: getZAIModelDescription(m.ID),
-			})
-		}
-	}
-
 	return models, nil
 }
 
