@@ -81,11 +81,31 @@ func FetchModels(providerKey, apiKey string) ([]Model, error) {
 		return nil, err
 	}
 
+	sortModelsNewestFirst(models)
+
 	// Cache the results
 	modelCache[providerKey] = models
 	cacheExpiry[providerKey] = time.Now().Add(cacheDuration)
 
 	return models, nil
+}
+
+// sortModelsNewestFirst puts dated models first, newest to oldest. Missing
+// dates and equal dates fall back to reverse alphabetical model IDs.
+func sortModelsNewestFirst(models []Model) {
+	sort.SliceStable(models, func(i, j int) bool {
+		if !models[i].AddedAt.Equal(models[j].AddedAt) {
+			return models[i].AddedAt.After(models[j].AddedAt)
+		}
+		return strings.ToLower(models[i].ID) > strings.ToLower(models[j].ID)
+	})
+}
+
+func catalogTime(created int64) time.Time {
+	if created <= 0 {
+		return time.Time{}
+	}
+	return time.Unix(created, 0).UTC()
 }
 
 // FuzzySearch returns models ordered by relevance. Exact ID/token matches are
@@ -226,6 +246,7 @@ func fetchOpenAIModels(apiKey string) ([]Model, error) {
 			Name:        item.ID,
 			Description: getOpenAIDescription(item.ID),
 			IsPopular:   popular[item.ID],
+			AddedAt:     catalogTime(item.Created),
 		})
 	}
 
@@ -287,15 +308,11 @@ func parseOpenRouterModels(body []byte) ([]Model, error) {
 
 	models := make([]Model, 0)
 	for _, item := range result.Data {
-		var addedAt time.Time
-		if item.Created > 0 {
-			addedAt = time.Unix(item.Created, 0).UTC()
-		}
 		models = append(models, Model{
 			ID:          item.ID,
 			Name:        item.Name,
 			Description: item.Description,
-			AddedAt:     addedAt,
+			AddedAt:     catalogTime(item.Created),
 		})
 	}
 
@@ -328,7 +345,8 @@ func fetchGroqModels(apiKey string) ([]Model, error) {
 
 	var result struct {
 		Data []struct {
-			ID string `json:"id"`
+			ID      string `json:"id"`
+			Created int64  `json:"created"`
 		} `json:"data"`
 	}
 
@@ -342,6 +360,7 @@ func fetchGroqModels(apiKey string) ([]Model, error) {
 			ID:          item.ID,
 			Name:        item.ID,
 			Description: "",
+			AddedAt:     catalogTime(item.Created),
 		})
 	}
 
@@ -374,7 +393,8 @@ func fetchMistralModels(apiKey string) ([]Model, error) {
 
 	var result struct {
 		Data []struct {
-			ID string `json:"id"`
+			ID      string `json:"id"`
+			Created int64  `json:"created"`
 		} `json:"data"`
 	}
 
@@ -388,6 +408,7 @@ func fetchMistralModels(apiKey string) ([]Model, error) {
 			ID:          item.ID,
 			Name:        item.ID,
 			Description: "",
+			AddedAt:     catalogTime(item.Created),
 		})
 	}
 
@@ -440,11 +461,13 @@ func fetchAnthropicModels(apiKey string) ([]Model, error) {
 	}
 
 	for _, item := range result.Data {
+		addedAt, _ := time.Parse(time.RFC3339, item.CreatedAt)
 		models = append(models, Model{
 			ID:          item.ID,
 			Name:        item.DisplayName,
 			Description: "",
 			IsPopular:   popular[item.ID],
+			AddedAt:     addedAt,
 		})
 	}
 
@@ -709,7 +732,8 @@ func fetchOpenAICompatibleModels(url, apiKey string) ([]Model, error) {
 func parseOpenAICompatibleModels(body []byte) ([]Model, error) {
 	var result struct {
 		Data []struct {
-			ID string `json:"id"`
+			ID      string `json:"id"`
+			Created int64  `json:"created"`
 		} `json:"data"`
 	}
 	if err := json.Unmarshal(body, &result); err != nil {
@@ -719,7 +743,7 @@ func parseOpenAICompatibleModels(body []byte) ([]Model, error) {
 	models := make([]Model, 0, len(result.Data))
 	for _, item := range result.Data {
 		if item.ID != "" {
-			models = append(models, Model{ID: item.ID, Name: item.ID})
+			models = append(models, Model{ID: item.ID, Name: item.ID, AddedAt: catalogTime(item.Created)})
 		}
 	}
 	return models, nil
@@ -804,6 +828,7 @@ func parseMoonshotModels(body []byte) ([]Model, error) {
 			ID:        item.ID,
 			Name:      item.ID,
 			IsPopular: popular[item.ID],
+			AddedAt:   catalogTime(item.Created),
 		})
 	}
 

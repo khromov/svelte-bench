@@ -166,3 +166,38 @@ func TestZAIModelDiscoveryPropagatesNetworkErrors(t *testing.T) {
 		t.Fatalf("models = %#v, error = %v", models, err)
 	}
 }
+
+func TestModelsSortNewestFirstWithReverseAlphabeticalFallback(t *testing.T) {
+	newer := time.Date(2026, 10, 12, 0, 0, 0, 0, time.UTC)
+	older := newer.Add(-24 * time.Hour)
+	models := []Model{
+		{ID: "alpha", Name: "Zulu"},
+		{ID: "zulu", Name: "Alpha"},
+		{ID: "old", AddedAt: older},
+		{ID: "beta-new", AddedAt: newer},
+		{ID: "zeta-new", AddedAt: newer},
+		{ID: "Middle"},
+	}
+	sortModelsNewestFirst(models)
+	want := []string{"zeta-new", "beta-new", "old", "zulu", "Middle", "alpha"}
+	for i, id := range want {
+		if models[i].ID != id {
+			t.Fatalf("position %d: want %s, got %s", i, id, models[i].ID)
+		}
+	}
+}
+
+func TestCompatibleCatalogPreservesDatesAndTreatsMissingDatesAsUnknown(t *testing.T) {
+	models, err := parseOpenAICompatibleModels([]byte(`{"data":[{"id":"dated","created":1692901234},{"id":"missing"},{"id":"zero","created":0},{"id":"negative","created":-1}]}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(models) != 4 || !models[0].AddedAt.Equal(time.Unix(1692901234, 0).UTC()) {
+		t.Fatalf("unexpected models: %#v", models)
+	}
+	for _, model := range models[1:] {
+		if !model.AddedAt.IsZero() {
+			t.Errorf("%s should have an unknown date", model.ID)
+		}
+	}
+}
