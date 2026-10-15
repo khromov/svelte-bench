@@ -68,6 +68,8 @@ func FetchModels(providerKey, apiKey string) ([]Model, error) {
 		models, err = fetchZAIModels(apiKey)
 	case "META_API_KEY":
 		models, err = fetchOpenAICompatibleModels("https://api.meta.ai/v1/models", apiKey)
+	case "REFLECTION_API_KEY":
+		models, err = fetchOpenAICompatibleModels("https://api.reflection.ai/openai/v1/models", apiKey)
 	case "CURSOR_API_KEY":
 		models = []Model{{ID: "composer-1", Name: "Composer 1", IsPopular: true}}
 	case "OLLAMA_HOST":

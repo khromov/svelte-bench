@@ -201,3 +201,51 @@ func TestCompatibleCatalogPreservesDatesAndTreatsMissingDatesAsUnknown(t *testin
 		}
 	}
 }
+
+func TestReflectionModelDiscovery(t *testing.T) {
+	for _, tc := range []struct {
+		name      string
+		status    int
+		body      string
+		wantError bool
+	}{
+		{"catalog", http.StatusOK, `{"data":[{"id":"Beam-1.0-501B-A23B"},{"id":"Beam-next"},{"id":""}]}`, false},
+		{"unauthorized", http.StatusUnauthorized, `{}`, true},
+		{"server error", http.StatusInternalServerError, `{}`, true},
+		{"malformed", http.StatusOK, `invalid`, true},
+		{"empty", http.StatusOK, `{"data":[]}`, true},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			delete(modelCache, "REFLECTION_API_KEY")
+			t.Cleanup(func() { delete(modelCache, "REFLECTION_API_KEY") })
+			original := http.DefaultTransport
+			t.Cleanup(func() { http.DefaultTransport = original })
+			http.DefaultTransport = modelRoundTripFunc(func(r *http.Request) (*http.Response, error) {
+				if r.Method != http.MethodGet || r.URL.String() != "https://api.reflection.ai/openai/v1/models" {
+					t.Errorf("unexpected request: %s %s", r.Method, r.URL)
+				}
+				if r.Header.Get("Authorization") != "Bearer test-key" {
+					t.Error("missing bearer authentication")
+				}
+				return &http.Response{StatusCode: tc.status, Body: io.NopCloser(strings.NewReader(tc.body))}, nil
+			})
+			models, err := FetchModels("REFLECTION_API_KEY", "test-key")
+			if (err != nil) != tc.wantError {
+				t.Fatalf("models = %#v, error = %v", models, err)
+			}
+			if tc.wantError {
+				if len(models) != 0 {
+					t.Fatalf("failed discovery returned fallback models: %#v", models)
+				}
+			} else if len(models) != 2 || models[0].ID != "Beam-next" || models[1].Name != "Beam-1.0-501B-A23B" {
+				t.Fatalf("unexpected catalog: %#v", models)
+			}
+		})
+	}
+}
+
+func TestReflectionProviderNameMapsToBenchmarkProvider(t *testing.T) {
+	if got := ConvertProviderNameToEnvKey("Reflection"); got != "reflection" {
+		t.Fatalf("unexpected provider: %s", got)
+	}
+}

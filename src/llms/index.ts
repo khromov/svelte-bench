@@ -110,12 +110,15 @@ export async function getLLMProvider(
     case "cursor":
       const { CursorProvider } = await import("./cursor");
       return new CursorProvider(actualModel);
+    case "reflection":
+      const { ReflectionProvider } = await import("./reflection");
+      return new ReflectionProvider(actualModel);
   }
 
   // Provider not found
   throw new Error(
     `Unknown LLM provider: ${actualProvider}. ` +
-    `Native providers: openai, anthropic, google, openrouter, fireworks, ollama, zai, moonshot, xai, meta, minimax, cursor.`
+    `Native providers: openai, anthropic, google, openrouter, fireworks, ollama, zai, moonshot, xai, meta, minimax, cursor, reflection.`
   );
 }
 
@@ -141,6 +144,7 @@ export async function getAllLLMProviders(): Promise<ProviderWithModel[]> {
     { name: "meta", displayName: "Meta" },
     { name: "minimax", displayName: "MiniMax" },
     { name: "cursor", displayName: "Cursor" },
+    { name: "reflection", displayName: "Reflection" },
   ];
 
   for (const { name, displayName } of nativeProviders) {

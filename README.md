@@ -22,6 +22,7 @@ SvelteBench supports multiple LLM providers:
 - **Meta**
 - **Cursor**
 - **MiniMax** - MiniMax's OpenAI-compatible API
+- **Reflection** - Beam models through Reflection's OpenAI-compatible API
 
 ## Setup
 
@@ -120,6 +121,9 @@ CURSOR_API_KEY=your_cursor_api_key_here
 
 # MiniMax (optional)
 MINIMAX_API_KEY=your_minimax_api_key_here
+
+# Reflection (optional)
+REFLECTION_API_KEY=your_reflection_api_key_here
 ```
 
 ## Running the Benchmark

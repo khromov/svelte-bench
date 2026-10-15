@@ -52,6 +52,7 @@ func AllProviders() []Provider {
 		{Name: "Fireworks", EnvKey: "FIREWORKS_API_KEY"},
 		{Name: "Meta", EnvKey: "META_API_KEY"},
 		{Name: "Cursor", EnvKey: "CURSOR_API_KEY"},
+		{Name: "Reflection", EnvKey: "REFLECTION_API_KEY"},
 		{Name: "Moonshot", EnvKey: "MOONSHOT_API_KEY"},
 		{Name: "Ollama (local)", EnvKey: OllamaEnvKey},
 		{Name: "Z.ai", EnvKey: "Z_AI_API_KEY"},

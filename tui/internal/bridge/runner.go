@@ -351,6 +351,7 @@ func ConvertProviderNameToEnvKey(providerName string) string {
 		"Z.ai":            "zai",
 		"Meta":            "meta",
 		"Cursor":          "cursor",
+		"Reflection":      "reflection",
 		"Ollama (local)":  "ollama",
 	}
 

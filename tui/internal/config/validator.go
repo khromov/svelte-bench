@@ -36,6 +36,8 @@ func ValidateAPIKey(provider, apiKey string) error {
 		return validateFireworks(apiKey)
 	case "META_API_KEY":
 		return validateBearerModels("https://api.meta.ai/v1/models", apiKey)
+	case "REFLECTION_API_KEY":
+		return validateBearerModels("https://api.reflection.ai/openai/v1/models", apiKey)
 	case "MOONSHOT_API_KEY":
 		return validateBearerModels("https://api.moonshot.ai/v1/models", apiKey)
 	case "Z_AI_API_KEY":
@@ -54,7 +56,7 @@ func SupportsAPIKeyValidation(provider string) bool {
 	case "OPENAI_API_KEY", "ANTHROPIC_API_KEY", "GOOGLE_API_KEY", "OPENROUTER_API_KEY",
 		"GROQ_API_KEY", "DEEPSEEK_API_KEY", "XAI_API_KEY", "MISTRAL_API_KEY",
 		"COHERE_API_KEY", "FIREWORKS_API_KEY", "META_API_KEY", "MOONSHOT_API_KEY",
-		"Z_AI_API_KEY", OllamaEnvKey:
+		"Z_AI_API_KEY", "REFLECTION_API_KEY", OllamaEnvKey:
 		return true
 	default:
 		return false
