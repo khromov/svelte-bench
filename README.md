@@ -126,6 +126,13 @@ MINIMAX_API_KEY=your_minimax_api_key_here
 REFLECTION_API_KEY=your_reflection_api_key_here
 ```
 
+MiniMax is available in both the CLI (`DEBUG_PROVIDER=minimax`) and TUI. Set
+`MINIMAX_API_KEY`, then select a model in the TUI or set `DEBUG_MODEL=MiniMax-M3.1-Flash`.
+The TUI discovers models and validates keys using MiniMax's
+[model catalog](https://platform.minimax.io/docs/api-reference/models/openai/list-models).
+Generation uses the documented [Chat Completions API](https://platform.minimax.io/docs/api-reference/text-chat-openai),
+with reasoning separated from generated code. Custom model IDs are supported.
+
 ## Running the Benchmark
 
 ### Environment Variable Execution (default)

@@ -9,10 +9,12 @@ interface MiniMaxMessage {
 
 interface MiniMaxResponse {
   choices?: Array<{
+    finish_reason?: string;
     message?: {
-      content?: string;
+      content?: string | null;
     };
   }>;
+  error?: { message?: string };
   base_resp?: {
     status_code?: number;
     status_msg?: string;
@@ -23,7 +25,17 @@ export class MiniMaxProvider implements LLMProvider {
   private apiKey: string;
   private modelId: string;
   name = "MiniMax";
-  private readonly availableModels = ["MiniMax-M2.5", "MiniMax-M2.5-highspeed"];
+  private readonly availableModels = [
+    "MiniMax-M3.1-Flash",
+    "MiniMax-M3",
+    "MiniMax-M2.7",
+    "MiniMax-M2.7-highspeed",
+    "MiniMax-M2.5",
+    "MiniMax-M2.5-highspeed",
+    "MiniMax-M2.1",
+    "MiniMax-M2.1-highspeed",
+    "MiniMax-M2",
+  ];
 
   constructor(modelId?: string) {
     const apiKey = process.env.MINIMAX_API_KEY;
@@ -34,7 +46,7 @@ export class MiniMaxProvider implements LLMProvider {
     this.modelId = modelId || this.availableModels[0];
   }
 
-  async generateCode(prompt: string, _temperature?: number, contextContent?: string): Promise<string> {
+  async generateCode(prompt: string, temperature?: number, contextContent?: string): Promise<string> {
     console.log(`🤖 Generating code with MiniMax using model: ${this.modelId}...`);
 
     const systemPrompt = contextContent ? DEFAULT_SYSTEM_PROMPT_WITH_CONTEXT : DEFAULT_SYSTEM_PROMPT;
@@ -63,6 +75,8 @@ export class MiniMaxProvider implements LLMProvider {
               messages,
               max_completion_tokens: 8192,
               stream: false,
+              reasoning_split: true,
+              ...(temperature !== undefined ? { temperature } : {}),
             }),
             signal: controller.signal,
           });
@@ -76,7 +90,7 @@ export class MiniMaxProvider implements LLMProvider {
           }
 
           if (!response.ok) {
-            const errorMessage = data.base_resp?.status_msg || responseText;
+            const errorMessage = data.base_resp?.status_msg || data.error?.message || responseText;
             if (response.status === 429 || response.status >= 500) {
               throw new Error(`MiniMax API temporary error: ${response.status} ${errorMessage}`);
             }
@@ -85,11 +99,26 @@ export class MiniMaxProvider implements LLMProvider {
             throw error;
           }
 
-          const content = data.choices?.[0]?.message?.content;
-          if (!content) {
-            throw new Error(
-              `MiniMax returned an empty response${data.base_resp?.status_msg ? `: ${data.base_resp.status_msg}` : ""}`,
-            );
+          // MiniMax can report API errors inside an HTTP 200 response.
+          const code = data.base_resp?.status_code;
+          if (code) {
+            const error = new Error(`MiniMax API error ${code}: ${data.base_resp?.status_msg || "unknown error"}`);
+            if (![1000, 1001, 1002, 1024, 1033, 1039, 1041, 2045].includes(code)) {
+              error.name = "NonRetryableError";
+            }
+            throw error;
+          }
+
+          const choice = data.choices?.[0];
+          const content = choice?.message?.content;
+          if (!content?.trim()) {
+            const reason =
+              choice?.finish_reason === "length"
+                ? "output token budget exhausted during reasoning before an answer was returned"
+                : "empty response";
+            const error = new Error(`MiniMax returned no code: ${reason}`);
+            error.name = "NonRetryableError";
+            throw error;
           }
 
           return content;

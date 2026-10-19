@@ -350,6 +350,7 @@ func ConvertProviderNameToEnvKey(providerName string) string {
 		"Moonshot":        "moonshot",
 		"Z.ai":            "zai",
 		"Meta":            "meta",
+		"MiniMax":         "minimax",
 		"Cursor":          "cursor",
 		"Reflection":      "reflection",
 		"Ollama (local)":  "ollama",

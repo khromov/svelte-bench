@@ -96,3 +96,32 @@ func TestReflectionValidationUsesModelsEndpoint(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
+func TestMiniMaxValidationUsesModelsEndpoint(t *testing.T) {
+	if !SupportsAPIKeyValidation("MINIMAX_API_KEY") {
+		t.Fatal("MiniMax validation is not registered")
+	}
+	found := false
+	for _, provider := range AllProviders() {
+		if provider.Name == "MiniMax" && provider.EnvKey == "MINIMAX_API_KEY" {
+			found = true
+		}
+	}
+	if !found {
+		t.Fatal("MiniMax is missing from the provider picker")
+	}
+	original := http.DefaultTransport
+	t.Cleanup(func() { http.DefaultTransport = original })
+	http.DefaultTransport = roundTripFunc(func(r *http.Request) (*http.Response, error) {
+		if r.Method != http.MethodGet || r.URL.String() != "https://api.minimax.io/v1/models" {
+			t.Errorf("unexpected request: %s %s", r.Method, r.URL)
+		}
+		if r.Header.Get("Authorization") != "Bearer test-key" {
+			t.Error("missing bearer authentication")
+		}
+		return response(http.StatusOK), nil
+	})
+	if err := ValidateAPIKey("MINIMAX_API_KEY", "test-key"); err != nil {
+		t.Fatal(err)
+	}
+}

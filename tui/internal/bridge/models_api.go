@@ -66,6 +66,8 @@ func FetchModels(providerKey, apiKey string) ([]Model, error) {
 		models, err = fetchFireworksModels(apiKey)
 	case "Z_AI_API_KEY":
 		models, err = fetchZAIModels(apiKey)
+	case "MINIMAX_API_KEY":
+		models, err = fetchOpenAICompatibleModels("https://api.minimax.io/v1/models", apiKey)
 	case "META_API_KEY":
 		models, err = fetchOpenAICompatibleModels("https://api.meta.ai/v1/models", apiKey)
 	case "REFLECTION_API_KEY":

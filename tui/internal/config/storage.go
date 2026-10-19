@@ -51,6 +51,7 @@ func AllProviders() []Provider {
 		{Name: "Cohere", EnvKey: "COHERE_API_KEY"},
 		{Name: "Fireworks", EnvKey: "FIREWORKS_API_KEY"},
 		{Name: "Meta", EnvKey: "META_API_KEY"},
+		{Name: "MiniMax", EnvKey: "MINIMAX_API_KEY"},
 		{Name: "Cursor", EnvKey: "CURSOR_API_KEY"},
 		{Name: "Reflection", EnvKey: "REFLECTION_API_KEY"},
 		{Name: "Moonshot", EnvKey: "MOONSHOT_API_KEY"},
