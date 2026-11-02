@@ -109,7 +109,15 @@ func catalogTime(created int64) time.Time {
 	if created <= 0 {
 		return time.Time{}
 	}
-	return time.Unix(created, 0).UTC()
+	return validCatalogDate(time.Unix(created, 0).UTC())
+}
+
+// Reject epoch placeholders, timestamps in milliseconds, and future dates.
+func validCatalogDate(date time.Time) time.Time {
+	if date.Before(time.Date(2010, 1, 1, 0, 0, 0, 0, time.UTC)) || date.After(time.Now()) {
+		return time.Time{}
+	}
+	return date.UTC()
 }
 
 // FuzzySearch returns models ordered by relevance. Exact ID/token matches are
@@ -471,7 +479,7 @@ func fetchAnthropicModels(apiKey string) ([]Model, error) {
 			Name:        item.DisplayName,
 			Description: "",
 			IsPopular:   popular[item.ID],
-			AddedAt:     addedAt,
+			AddedAt:     validCatalogDate(addedAt),
 		})
 	}
 
@@ -747,7 +755,9 @@ func parseOpenAICompatibleModels(body []byte) ([]Model, error) {
 	models := make([]Model, 0, len(result.Data))
 	for _, item := range result.Data {
 		if item.ID != "" {
-			models = append(models, Model{ID: item.ID, Name: item.ID, AddedAt: catalogTime(item.Created)})
+			// Compatible APIs do not guarantee that created is maintained per model.
+			// Only provider-specific parsers with known date semantics expose it.
+			models = append(models, Model{ID: item.ID, Name: item.ID})
 		}
 	}
 	return models, nil
@@ -832,7 +842,8 @@ func parseMoonshotModels(body []byte) ([]Model, error) {
 			ID:        item.ID,
 			Name:      item.ID,
 			IsPopular: popular[item.ID],
-			AddedAt:   catalogTime(item.Created),
+			// Moonshot returns the same synthetic created timestamp for all models.
+			// It is not a maintained model release or catalog date.
 		})
 	}
 

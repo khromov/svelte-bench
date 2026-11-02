@@ -1,7 +1,14 @@
-import { startVitest } from "vitest/node";
-import path from "path";
+import { execFile } from "node:child_process";
+import { createRequire } from "node:module";
+import { tmpdir } from "node:os";
+import { promisify } from "node:util";
+import path from "node:path";
+import fs from "node:fs/promises";
 import { getTmpDir } from "./file";
-import fs from "fs/promises";
+
+const execFileAsync = promisify(execFile);
+const require = createRequire(import.meta.url);
+const vitestCLI = path.join(path.dirname(require.resolve("vitest/package.json")), "vitest.mjs");
 
 export interface TestResult {
   testName: string;
@@ -9,175 +16,92 @@ export interface TestResult {
   testFiles: number;
   totalTests: number;
   failedTests: number;
-  errors: string[]; // All errors that occurred during test execution
+  errors: string[];
 }
 
-/**
- * Run tests for a specific component
- * @param testName The name of the test
- * @param provider The provider name (optional)
- * @param testDir Optional specific directory for test files (for parallel execution)
- * @returns Test results
- */
+interface VitestReport {
+  success: boolean;
+  numTotalTests: number;
+  numFailedTests: number;
+  numRuntimeErrorTestSuites: number;
+  testResults: {
+    status: string;
+    message?: string;
+    assertionResults: { status: string; failureMessages: string[] }[];
+  }[];
+}
+
+/** Run each sample in its own process so concurrent Vitest instances cannot
+ * share process state, and a timed-out runner cannot poison later samples. */
 export async function runTest(testName: string, provider?: string, testDir?: string): Promise<TestResult> {
-  // Create timeout error message
-  const timeoutMessage = `Test timeout: ${testName} (${
-    provider || "unknown"
-  }) exceeded the maximum execution time of 120 seconds`;
-
-  // Create an AbortController for the timeout
-  const abortController = new AbortController();
-  const signal = abortController.signal;
-
-  // Use a timeout promise to avoid forcing the process to exit
-  const timeoutPromise = new Promise<TestResult>((_, reject) => {
-    const timeoutId = setTimeout(() => {
-      console.error(`⚠️ ${timeoutMessage}`);
-      // Instead of process.exit, we'll reject with a clear error
-      abortController.abort(); // Signal abortion to potentially listening handlers
-      reject(new Error(timeoutMessage));
-    }, 120000); // Increase to 120 second timeout for parallel execution
-
-    // Make sure the timeout is cleared if the promise is rejected/resolved elsewhere
-    signal.addEventListener("abort", () => {
-      clearTimeout(timeoutId);
-    });
-  });
-
+  let reportDir: string | undefined;
   try {
+    const testFilePath = path.resolve(testDir || getTmpDir(provider), `${testName}.test.ts`);
+    await fs.access(testFilePath);
+    reportDir = await fs.mkdtemp(path.join(tmpdir(), "svelte-bench-vitest-"));
+    const reportPath = path.join(reportDir, "result.json");
     console.log(`🧪 Running tests for ${testName}${provider ? ` (${provider})` : ""}...`);
 
-    const tmpDir = testDir || getTmpDir(provider);
-    const testFilePath = path.resolve(tmpDir, `${testName}.test.ts`);
-
-    // Verify the test file exists before running the test
+    let executionError: unknown;
     try {
-      await fs.access(testFilePath);
+      await execFileAsync(
+        process.execPath,
+        [
+          vitestCLI,
+          "run",
+          testFilePath,
+          // Threads belong to this child process and die with it on timeout.
+          // A single sample contains one suite; extra workers provide no benefit.
+          "--pool=threads",
+          "--maxWorkers=1",
+          "--reporter=json",
+          `--outputFile=${reportPath}`,
+        ],
+        { timeout: 120000, killSignal: "SIGKILL", maxBuffer: 8 * 1024 * 1024 },
+      );
     } catch (error) {
-      abortController.abort(); // Clean up the timeout
-      throw new Error(`Test file not found: ${testFilePath}`);
+      if ((error as { killed?: boolean }).killed) {
+        throw new Error(
+          `Test timeout: ${testName} (${provider || "unknown"}) exceeded the maximum execution time of 120 seconds`,
+        );
+      }
+      // Vitest exits nonzero for ordinary assertion and compilation failures.
+      // Its report still contains the diagnostics we need for scoring.
+      executionError = error;
     }
 
-    // Race between the test execution and the timeout
-    const testPromise = async (): Promise<TestResult> => {
-      try {
-        const vitest = await startVitest([testFilePath], {
-          watch: false,
-          reporters: ["verbose"],
-        });
-
-        await vitest.close();
-        const testModules = vitest.state.getTestModules();
-
-        // Collect all errors
-        const allErrors: string[] = [];
-
-        // Get unhandled errors
-        const unhandledErrors = vitest.state.getUnhandledErrors();
-        for (const error of unhandledErrors) {
-          const errorMessage = error instanceof Error ? error.message : String(error);
-          allErrors.push(errorMessage);
-        }
-
-        // Calculate success/failure
-        let success = true;
-        let totalTests = 0;
-        let failedTests = 0;
-
-        if (!testModules || testModules.length === 0) {
-          return {
-            testName,
-            success: false,
-            testFiles: 0,
-            totalTests: 0,
-            failedTests: 0,
-            errors: allErrors,
-          };
-        }
-
-        for (const module of testModules) {
-          if (!module.ok()) {
-            success = false;
-          }
-
-          // Add module errors
-          const moduleErrors = module.errors();
-          for (const error of moduleErrors) {
-            if (error.message) {
-              allErrors.push(error.message);
-            }
-          }
-
-          if (!module.children) {
-            continue;
-          }
-
-          try {
-            const tests = Array.from(module.children.allTests());
-            totalTests += tests.length;
-
-            const moduleFailedTests = tests.filter((t) => {
-              const result = t.result();
-
-              // Collect test errors
-              if (result.state === "failed" && result.errors) {
-                for (const testError of result.errors) {
-                  if (testError.message) {
-                    allErrors.push(testError.message);
-                  }
-                }
-              }
-
-              return result.state === "failed";
-            });
-
-            failedTests += moduleFailedTests.length;
-          } catch (err) {
-            console.error(`Error processing module tests for ${testName}${provider ? ` (${provider})` : ""}:`, err);
-            const errorMessage = err instanceof Error ? err.message : String(err);
-            allErrors.push(errorMessage);
-            success = false;
-          }
-        }
-
-        const result: TestResult = {
-          testName,
-          success,
-          testFiles: testModules.length,
-          totalTests,
-          failedTests,
-          errors: allErrors,
-        };
-
-        console.log(`📊 Test results for ${testName}${provider ? ` (${provider})` : ""}:`);
-        console.log(`   Success: ${result.success ? "Yes ✅" : "No ❌"}`);
-        console.log(`   Total Tests: ${result.totalTests}`);
-        console.log(`   Failed Tests: ${result.failedTests}`);
-        console.log(`   Errors: ${result.errors.length}`);
-
-        return result;
-      } finally {
-        // Always abort the controller to clean up the timeout
-        abortController.abort();
-      }
-    };
-
-    // Race the test execution against the timeout
-    return await Promise.race([testPromise(), timeoutPromise]);
-  } catch (error) {
-    // Make sure to abort the controller to clean up the timeout
-    abortController.abort();
-
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    console.error(`Error running tests for ${testName}${provider ? ` (${provider})` : ""}:`, errorMessage);
-
+    let report: VitestReport;
+    try {
+      report = JSON.parse(await fs.readFile(reportPath, "utf8"));
+    } catch {
+      throw executionError || new Error("Vitest did not produce a valid test report");
+    }
+    const errors = report.testResults.flatMap((suite) => [
+      ...(suite.message ? [suite.message] : []),
+      ...suite.assertionResults.flatMap((test) => test.failureMessages),
+    ]);
+    if (executionError && errors.length === 0) {
+      errors.push(executionError instanceof Error ? executionError.message : String(executionError));
+    }
     return {
       testName,
-      success: false,
-      testFiles: 0,
-      totalTests: 0,
-      failedTests: 0,
-      errors: [errorMessage],
+      success:
+        !executionError &&
+        report.success &&
+        report.numTotalTests > 0 &&
+        report.testResults.length > 0 &&
+        !report.numRuntimeErrorTestSuites &&
+        report.testResults.every((suite) => suite.status === "passed"),
+      testFiles: report.testResults.length,
+      totalTests: report.numTotalTests,
+      failedTests: report.numFailedTests,
+      errors,
     };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`Error running tests for ${testName}:`, message);
+    return { testName, success: false, testFiles: 0, totalTests: 0, failedTests: 0, errors: [message] };
+  } finally {
+    if (reportDir) await fs.rm(reportDir, { recursive: true, force: true });
   }
 }

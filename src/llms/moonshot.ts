@@ -65,16 +65,17 @@ export class MoonshotProvider implements LLMProvider {
   async generateCode(prompt: string, temperature?: number, contextContent?: string): Promise<string> {
     // Use TEMPERATURE_OVERRIDE env var if present, otherwise use provided temperature or default
     const envTemperature = process.env.TEMPERATURE_OVERRIDE ? parseFloat(process.env.TEMPERATURE_OVERRIDE) : temperature;
-    // Kimi K3 only accepts the default temperature value of 1.
-    const requiresDefaultTemperature = /^kimi-k3(?:-|$)/i.test(this.modelId);
-    // Ensure temperature is within valid range [0, 1] for other Moonshot models.
-    const validTemperature = requiresDefaultTemperature
-      ? 1
+    // These Kimi models have fixed sampling parameters. Let the API use its
+    // model-specific defaults, including during low-temperature validation.
+    // https://platform.kimi.ai/docs/api/models-overview
+    const hasFixedTemperature = /^kimi-(?:k2\.[567]|k3(?:\.\d+)?)(?:-|$)/i.test(this.modelId);
+    const validTemperature = hasFixedTemperature
+      ? undefined
       : envTemperature !== undefined
         ? Math.max(0, Math.min(1, envTemperature))
         : 0.7;
 
-    log(`🤖 Generating code with Moonshot using model: ${this.modelId} (temp: ${validTemperature})...`);
+    log(`🤖 Generating code with Moonshot using model: ${this.modelId} (temp: ${validTemperature ?? "API default"})...`);
 
     const systemPrompt = contextContent ? DEFAULT_SYSTEM_PROMPT_WITH_CONTEXT : DEFAULT_SYSTEM_PROMPT;
 
@@ -102,7 +103,7 @@ export class MoonshotProvider implements LLMProvider {
     const requestBody: MoonshotRequest = {
       model: this.modelId,
       messages,
-      temperature: validTemperature,
+      ...(validTemperature !== undefined ? { temperature: validTemperature } : {}),
       max_tokens: 4000,
       stream: false,
     };
@@ -176,22 +177,9 @@ export class MoonshotProvider implements LLMProvider {
           console.warn(
             `⚠️  Moonshot retry attempt ${attempt}/10 for model ${this.modelId} after error: ${error.message}`,
           );
-
-          // On final retry attempt, provide helpful message before failing
-          if (attempt === 10) {
-            console.error(`\n❌ Moonshot model ${this.modelId} failed after 10 retry attempts.`);
-            console.error(`📝 The benchmark will resume from where it left off when you restart.`);
-            console.error(`⏳ This appears to be a rate limit issue. Please wait before retrying.`);
-            console.error(`💾 Progress has been saved to the checkpoint file.\n`);
-          }
         },
       },
-    ).catch((error) => {
-      // If all retries failed, exit the process with error
-      console.error(`\n🛑 Stopping benchmark due to persistent Moonshot API failures.`);
-      console.error(`ℹ️  To resume, run the same command again. The benchmark will continue from the last checkpoint.`);
-      process.exit(1);
-    });
+    );
   }
 
   /**

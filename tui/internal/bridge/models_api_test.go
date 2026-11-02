@@ -187,15 +187,15 @@ func TestModelsSortNewestFirstWithReverseAlphabeticalFallback(t *testing.T) {
 	}
 }
 
-func TestCompatibleCatalogPreservesDatesAndTreatsMissingDatesAsUnknown(t *testing.T) {
+func TestCompatibleCatalogDoesNotTrustUnverifiedCreatedDates(t *testing.T) {
 	models, err := parseOpenAICompatibleModels([]byte(`{"data":[{"id":"dated","created":1692901234},{"id":"missing"},{"id":"zero","created":0},{"id":"negative","created":-1}]}`))
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(models) != 4 || !models[0].AddedAt.Equal(time.Unix(1692901234, 0).UTC()) {
+	if len(models) != 4 {
 		t.Fatalf("unexpected models: %#v", models)
 	}
-	for _, model := range models[1:] {
+	for _, model := range models {
 		if !model.AddedAt.IsZero() {
 			t.Errorf("%s should have an unknown date", model.ID)
 		}
@@ -285,7 +285,7 @@ func TestMiniMaxModelDiscovery(t *testing.T) {
 				if len(models) != 0 {
 					t.Fatalf("failed discovery returned fallback models: %#v", models)
 				}
-			} else if len(models) != 2 || models[0].ID != "MiniMax-M3.1-Flash" || models[1].Name != "MiniMax-M3" || !models[0].AddedAt.Equal(time.Unix(1780272001, 0).UTC()) {
+			} else if len(models) != 2 || models[0].ID != "MiniMax-M3.1-Flash" || models[1].Name != "MiniMax-M3" {
 				t.Fatalf("unexpected catalog: %#v", models)
 			}
 		})
@@ -295,5 +295,25 @@ func TestMiniMaxModelDiscovery(t *testing.T) {
 func TestMiniMaxProviderNameMapsToBenchmarkProvider(t *testing.T) {
 	if got := ConvertProviderNameToEnvKey("MiniMax"); got != "minimax" {
 		t.Fatalf("unexpected provider: %s", got)
+	}
+}
+
+func TestCatalogTimeRejectsInvalidDates(t *testing.T) {
+	for _, timestamp := range []int64{0, -1, 123, 1692901234000, time.Now().Add(24 * time.Hour).Unix()} {
+		if !catalogTime(timestamp).IsZero() {
+			t.Errorf("accepted invalid date %d", timestamp)
+		}
+	}
+}
+
+func TestMoonshotDoesNotExposeSyntheticDates(t *testing.T) {
+	models, err := parseMoonshotModels([]byte(`{"data":[{"id":"kimi-k3","created":1793583120},{"id":"kimi-k3.1-pro","created":1793583120}]}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, model := range models {
+		if !model.AddedAt.IsZero() {
+			t.Errorf("synthetic date exposed for %s", model.ID)
+		}
 	}
 }

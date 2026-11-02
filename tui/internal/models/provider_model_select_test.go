@@ -85,3 +85,12 @@ func TestSelectingOllamaSkipsTheAPIKeyPrompt(t *testing.T) {
 		t.Fatalf("expected benchmark provider ollama, got %q", got)
 	}
 }
+
+func TestModelRowOmitsUnknownDate(t *testing.T) {
+	model := modelSelectionFixture()
+	model.width = 90
+	row := model.renderModelRow(bridge.Model{ID: "kimi-k3.1-pro"}, false)
+	if strings.Contains(row, "Added") || strings.Contains(row, "0001-") {
+		t.Fatalf("unknown date should be omitted, got %q", row)
+	}
+}
