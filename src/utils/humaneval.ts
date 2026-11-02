@@ -43,6 +43,7 @@ export interface HumanEvalResult {
   testName: string;
   provider: string;
   modelId: string;
+  modelUrl?: string;
   numSamples: number;
   numCorrect: number;
   pass1: number;

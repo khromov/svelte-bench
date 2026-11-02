@@ -1,6 +1,7 @@
 package bridge
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"os"
@@ -17,6 +18,7 @@ const debugLogEnv = "TUI_DEBUG_LOG"
 type BenchmarkConfig struct {
 	Provider    string
 	Model       string
+	ModelURLs   map[string]string
 	APIKeys     map[string]string
 	Parallel    bool
 	Madmax      bool
@@ -239,6 +241,12 @@ func buildBenchmarkEnv(base []string, config BenchmarkConfig) []string {
 	values["DEBUG_MODE"] = "true"
 	values["DEBUG_PROVIDER"] = config.Provider
 	values["DEBUG_MODEL"] = config.Model
+	delete(values, "MODEL_URLS")
+	if len(config.ModelURLs) > 0 {
+		if data, err := json.Marshal(config.ModelURLs); err == nil {
+			values["MODEL_URLS"] = string(data)
+		}
+	}
 	values["DEBUG_SAMPLES"] = fmt.Sprintf("%d", config.Samples)
 	if config.Madmax {
 		values["MADMAX_EXECUTION"] = "true"

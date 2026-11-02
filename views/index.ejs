@@ -275,6 +275,7 @@
             modelScores.set(`${providerData.provider}|${modelName}`, {
               provider: providerData.provider,
               model: modelName,
+              modelUrl: results.find(result => result.modelUrl)?.modelUrl,
               averagePass1: avgPass1,
               score: avgPass1 * 100, // Convert to percentage
               tps: tpsResult ? tpsResult.tps : null,
@@ -427,6 +428,7 @@
                     <span class="model-name"><%= model.model %></span>
                   </a>
                   <span class="provider-name">(<%= model.provider %>)</span>
+                  <% if (model.modelUrl) { %><a class="model-external-link" href="<%= model.modelUrl %>" target="_blank" rel="noopener noreferrer" aria-label="Open model page for <%= model.model %>">Model page ↗</a><% } %>
                 </td>
                 <td>
                   <div style="display: flex; align-items: center; gap: 0.75rem;">
@@ -545,6 +547,8 @@
 
                       <div class="accordion-content" data-state="open">
                         <div class="accordion-content-inner">
+                          <% const modelPage = results.find(result => result.modelUrl)?.modelUrl; %>
+                          <% if (modelPage) { %><a class="model-external-link model-detail-link" href="<%= modelPage %>" target="_blank" rel="noopener noreferrer">View model page ↗</a><% } %>
                           <div class="table-scroll-wrapper">
                             <table class="results-table">
                       <tr>

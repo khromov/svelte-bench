@@ -1,3 +1,4 @@
+import { modelUrl } from "./src/utils/model-url";
 import fs from "fs/promises";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -135,7 +136,7 @@ function groupBenchmarkResults(results: HumanEvalResult[]): ProviderData[] {
       if (!providerData.models[result.modelId]) {
         providerData.models[result.modelId] = [];
       }
-      providerData.models[result.modelId].push(result);
+      providerData.models[result.modelId].push({ ...result, modelUrl: modelUrl(result.modelId, result.modelUrl) });
     });
 
     // Sort models alphabetically

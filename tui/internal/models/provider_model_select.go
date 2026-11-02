@@ -470,6 +470,11 @@ func (m ProviderModelSelectModel) startBenchmark(modelIDs []string) (tea.Model, 
 	m.state.ProviderKey = m.providers[m.selectedProvider].EnvKey
 	m.state.Model = strings.Join(modelIDs, ",")
 
+	if m.state.Provider == "ollama" {
+		model := NewModelURLModel(m.state, modelIDs)
+		return model, model.Init()
+	}
+	m.state.ModelURLs = nil
 	model := NewBenchmarkModel(m.state)
 	return model, model.Init()
 }

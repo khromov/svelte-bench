@@ -1,4 +1,5 @@
 import fs from "fs/promises";
+import { modelUrl } from "./src/utils/model-url";
 import path from "path";
 import type { HumanEvalResult } from "./src/utils/humaneval";
 import { ensureBenchmarksDir, loadTestDefinitions } from "./src/utils/test-manager";
@@ -210,7 +211,7 @@ async function mergeAndSaveResults(): Promise<void> {
     warnAboutShortSampleCounts(key, info.results);
 
     console.log(`📊 Including results for ${key} from ${path.basename(info.filePath)}`);
-    mergedResults.push(...info.results);
+    mergedResults.push(...info.results.map((result) => ({ ...result, modelUrl: modelUrl(result.modelId, result.modelUrl) })));
     includedFiles.add(info.filePath);
   }
 

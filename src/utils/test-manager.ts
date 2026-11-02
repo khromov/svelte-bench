@@ -611,6 +611,10 @@ export async function saveBenchmarkResults(
     const filePath = path.resolve(process.cwd(), "benchmarks", filename);
 
     // Add context information to the results if it's not already there
+    let modelUrls: Record<string, string> = {};
+    if (process.env.MODEL_URLS) {
+      try { modelUrls = JSON.parse(process.env.MODEL_URLS); } catch { throw new Error("MODEL_URLS must be a JSON object mapping model IDs to URLs"); }
+    }
     const resultsWithContext = results.map((result) => {
       if (!result.context) {
         result.context = {
@@ -621,6 +625,7 @@ export async function saveBenchmarkResults(
       }
       return {
         ...result,
+        ...(result.provider.toLowerCase() === "ollama" && modelUrls[result.modelId] ? { modelUrl: modelUrls[result.modelId] } : {}),
         timestamp: new Date().toISOString(),
       };
     });

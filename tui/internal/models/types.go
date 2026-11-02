@@ -32,6 +32,7 @@ type SharedState struct {
 	Provider                 string
 	ProviderKey              string
 	Model                    string
+	ModelURLs                map[string]string
 	Parallel                 bool
 	Madmax                   bool
 	Results                  []TestResult

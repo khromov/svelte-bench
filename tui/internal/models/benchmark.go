@@ -589,12 +589,13 @@ func (m BenchmarkModel) runBenchmark() tea.Cmd {
 			}
 
 			config := bridge.BenchmarkConfig{
-				Provider: m.state.Provider,
-				Model:    m.state.Model,
-				APIKeys:  apiKeys,
-				Parallel: m.state.Parallel,
-				Madmax:   m.state.Madmax,
-				Samples:  10,
+				Provider:  m.state.Provider,
+				Model:     m.state.Model,
+				ModelURLs: m.state.ModelURLs,
+				APIKeys:   apiKeys,
+				Parallel:  m.state.Parallel,
+				Madmax:    m.state.Madmax,
+				Samples:   10,
 			}
 
 			// Run benchmark and handle events
