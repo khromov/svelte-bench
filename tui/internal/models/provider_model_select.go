@@ -8,6 +8,7 @@ import (
 	"svelte-bench/tui/internal/styles"
 	"sync"
 	"time"
+	"unicode"
 
 	"charm.land/bubbles/v2/textinput"
 	tea "charm.land/bubbletea/v2"
@@ -181,6 +182,9 @@ func (m ProviderModelSelectModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					}
 				}
 			case "enter":
+				if len(m.providers) == 0 {
+					return m, nil
+				}
 				provider := m.providers[m.selectedProvider]
 				m.state.Provider = bridge.ConvertProviderNameToEnvKey(provider.Name)
 				m.state.ProviderKey = provider.EnvKey
@@ -193,6 +197,25 @@ func (m ProviderModelSelectModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				// Keep the flow consistent whether the key was already configured or
 				// entered moments ago: choose execution mode before loading models.
 				return NewExecutionModeModel(m.state), nil
+			default:
+				key := []rune(msg.String())
+				if len(key) == 1 && unicode.IsLetter(key[0]) {
+					for offset := 1; offset <= len(m.providers); offset++ {
+						index := (m.selectedProvider + offset) % len(m.providers)
+						name := []rune(m.providers[index].Name)
+						if len(name) > 0 && unicode.ToLower(name[0]) == unicode.ToLower(key[0]) {
+							m.selectedProvider = index
+							maxVisible := max(5, m.height-8)
+							if index < m.scrollOffset {
+								m.scrollOffset = index
+							}
+							if index >= m.scrollOffset+maxVisible {
+								m.scrollOffset = index - maxVisible + 1
+							}
+							break
+						}
+					}
+				}
 			}
 		} else {
 			// Step 1: Type model name with autocomplete
@@ -371,7 +394,7 @@ func (m ProviderModelSelectModel) View() tea.View {
 		lines = append(lines, "")
 		lines = append(lines, lipgloss.NewStyle().
 			Foreground(styles.GrayDim).
-			Render("Up/Down: Navigate • Enter: Select • ✓ Valid • Stored • ! Invalid • Left: Back • Double Esc: Quit • Ctrl+C: Quit"))
+			Render("Up/Down or letter: Navigate • Enter: Select • ✓ Valid • Stored • ! Invalid • Left: Back • Double Esc: Quit • Ctrl+C: Quit"))
 	} else {
 		// Searchable, multi-select model catalog.
 		providerName := m.providers[m.selectedProvider].Name

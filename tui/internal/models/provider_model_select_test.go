@@ -94,3 +94,22 @@ func TestModelRowOmitsUnknownDate(t *testing.T) {
 		t.Fatalf("unknown date should be omitted, got %q", row)
 	}
 }
+
+func TestProviderLetterNavigationCyclesAndScrolls(t *testing.T) {
+	model := NewProviderModelSelectModel(&SharedState{Config: &config.Config{APIKeys: map[string]string{}}})
+	model.providers = []config.Provider{{Name: "Alpha"}, {Name: "Beta"}, {Name: "Bravo"}, {Name: "Charlie"}, {Name: "Delta"}, {Name: "Echo"}, {Name: "Breeze"}}
+	model.height = 13
+	for _, tc := range []struct {
+		key  rune
+		want int
+	}{{'b', 1}, {'B', 2}, {'b', 6}, {'b', 1}, {'z', 1}} {
+		updated, _ := model.Update(tea.KeyPressMsg{Code: tc.key})
+		model = updated.(ProviderModelSelectModel)
+		if model.selectedProvider != tc.want {
+			t.Fatalf("key %q: got %d, want %d", tc.key, model.selectedProvider, tc.want)
+		}
+		if model.selectedProvider < model.scrollOffset || model.selectedProvider >= model.scrollOffset+5 {
+			t.Fatalf("selected provider %d outside viewport starting at %d", model.selectedProvider, model.scrollOffset)
+		}
+	}
+}
