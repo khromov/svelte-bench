@@ -211,7 +211,12 @@ async function mergeAndSaveResults(): Promise<void> {
     warnAboutShortSampleCounts(key, info.results);
 
     console.log(`📊 Including results for ${key} from ${path.basename(info.filePath)}`);
-    mergedResults.push(...info.results.map((result) => ({ ...result, modelUrl: modelUrl(result.modelId, result.modelUrl) })));
+    mergedResults.push(
+      ...info.results.map((result) => ({
+        ...result,
+        modelUrl: modelUrl(result.modelId, result.modelUrl, result.provider),
+      })),
+    );
     includedFiles.add(info.filePath);
   }
 

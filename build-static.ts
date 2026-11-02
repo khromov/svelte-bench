@@ -136,7 +136,10 @@ function groupBenchmarkResults(results: HumanEvalResult[]): ProviderData[] {
       if (!providerData.models[result.modelId]) {
         providerData.models[result.modelId] = [];
       }
-      providerData.models[result.modelId].push({ ...result, modelUrl: modelUrl(result.modelId, result.modelUrl) });
+      providerData.models[result.modelId].push({
+        ...result,
+        modelUrl: modelUrl(result.modelId, result.modelUrl, result.provider),
+      });
     });
 
     // Sort models alphabetically
