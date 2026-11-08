@@ -10,12 +10,12 @@ No historical result files or scores were changed.
 ## Future runs
 
 The OpenAI, Anthropic, Google, OpenRouter, Fireworks, Meta, xAI, Reflection,
-Tinker, Z.ai, Moonshot and MiniMax adapters capture response usage and IDs.
+Tinker, Z.ai, Moonshot, MiniMax and Cursor adapters capture response usage and IDs.
 Sequential and parallel results save an `apiUsage` array on each sample and
 preserve it across checkpoints/resumption. An asynchronous context associates
 requests with their sample, including provider retries; there is no shared
-"last response" field on providers. Ollama is excluded. Cursor's agent SDK is
-not instrumented and its costs remain unavailable.
+"last response" field on providers. Ollama is excluded. Cursor uses a fresh SDK agent per sample and retrieves that
+agent's billed usage; delayed or failed billing lookups retain token usage.
 
 Requests are also appended immediately to `benchmarks/api-usage/*.jsonl`, before
 cleaning and testing. These ledgers retain returned responses rejected by code
@@ -27,7 +27,9 @@ Validation probes outside benchmark samples and failed HTTP requests without a
 usage response are excluded. Provider SDK retries without returned usage cannot
 be reconstructed. This is not an account invoice.
 
-OpenRouter's `usage.cost` is preferred, including a genuine zero charge. Other
+OpenRouter's `usage.cost`, xAI's `usage.cost_in_usd_ticks` (1e10 ticks/USD), and
+Cursor's `chargedCents` (100 cents/USD) are preferred, including genuine zero
+charges. Other
 providers' undocumented cost fields are not interpreted as USD. For BYOK,
 OpenRouter's account charge may exclude upstream billing; raw usage details are
 retained. Token counts remain available even without a supported price.
@@ -62,7 +64,8 @@ models used in the audit window, plus verified native OpenAI, Anthropic and
 Google rates for recent models. Native entries cover standard text requests.
 Google Argon's introductory rates expire December 1; OpenAI entries reject
 long-context requests and Haiku 5.5 rejects prompts above its supported tier.
-Anthropic cache writes are left unpriced because TTL changes their rate. `cost:prices` fetches all flat-rate models to
+Anthropic cache writes use distinct 5-minute and 1-hour rates when returned in
+the usage breakdown. `cost:prices` fetches all flat-rate models to
 `pricing/openrouter-current.json` for review. Models with context overrides or
 per-request charges are deliberately omitted. Review and merge new snapshots
 into the catalog; do not replace old date ranges needed for historical costing.
@@ -103,7 +106,49 @@ They do not add historical runs or separate ledgers to those totals.
 
 API-reported, estimated and mixed costs are labeled. Partial coverage displays
 the recorded amount with a Partial label, never as a complete total. Missing
-historical usage shows Not recorded; usage without a usable price shows
+historical usage shows `--`; usage without a usable price shows
 Unavailable. Local models have no API cost. Small charges below $0.0001 remain
 visible instead of rounding to a free request. Auxiliary cost-report JSON is
 excluded from benchmark routes and raw-result downloads.
+
+## Provider coverage audit
+
+Cost calculation is supported across all providers with verified request charges
+or applicable native rates. This is provider coverage, not a claim that every
+model or billing mode has a price. Unknown future model IDs still require a
+verified native rate unless their API reports a billed charge.
+
+| Provider   | Cost path                                | Coverage / limitations                                                                     |
+| ---------- | ---------------------------------------- | ------------------------------------------------------------------------------------------ |
+| OpenRouter | API-reported `usage.cost`                | Model independent; account charge can exclude upstream BYOK billing                        |
+| xAI        | API-reported `cost_in_usd_ticks` / 1e10  | Model independent; raw integer ticks retained                                              |
+| Cursor     | SDK `getUsage().cost.chargedCents` / 100 | Fresh agent per sample; eventual billing may be unavailable initially                      |
+| OpenAI     | Native rate estimate                     | Current Sol/Luna rates and cache pricing; unsupported long-context tiers remain unknown    |
+| Anthropic  | Native rate estimate                     | Current Opus/Sonnet/Haiku rates, separate 5m/1h cache writes; Haiku context limit enforced |
+| Google     | Native rate estimate                     | Argon introductory rate with explicit expiration                                           |
+| MiniMax    | Native rate estimate                     | M3.1 Flash and standard M3, with M3 context limit                                          |
+| Moonshot   | Native rate estimate                     | K3/K3.1 and current K2 models, cache reads and writes                                      |
+| Z.ai       | Native rate estimate                     | Current GLM text models and documented free Flash models                                   |
+| Meta       | Native rate estimate                     | Muse Spark 1.1–1.3, explicit Contributor model IDs                                         |
+| Tinker     | Native sampling rate estimate            | Exact IDs from the published model and serverless catalogs, not training prices            |
+| Fireworks  | Native rate estimate                     | Supported standard serverless model IDs; GPU-hour/on-demand deployments remain unknown     |
+| Reflection | Tokens captured; price unknown           | No public first-party price or documented billed USD field found in the developer docs     |
+| Ollama     | No API cost                              | Local compute/electricity not estimated                                                    |
+
+`provider-cost-coverage.test.ts` verifies native cache calculations for each
+estimate provider, model-independent actual charges for OpenRouter/xAI/Cursor,
+and unknown Reflection cost. No account-wide spending is assigned to a sample.
+
+Additional first-party sources checked:
+
+- [xAI cost units](https://docs.x.ai/developers/cost-tracking)
+- [Cursor SDK usage and billed cents](https://cursor.com/docs/sdk/typescript)
+- [MiniMax native rates](https://platform.minimax.io/docs/pricing/overview)
+- [Kimi native rates](https://platform.kimi.ai/docs/pricing/chat)
+- [Kimi cache accounting](https://platform.kimi.ai/docs/guide/context-caching)
+- [Z.ai native rates](https://docs.z.ai/guides/overview/pricing)
+- [Meta native rates](https://llama.developer.meta.com/docs/pricing-rate-limits)
+- [Tinker native model rates](https://tinker-docs.thinkingmachines.ai/tinker/models.json)
+- [Tinker serverless rates](https://tinker-docs.thinkingmachines.ai/tinker/serverless.json)
+- [Fireworks standard serverless rates](https://docs.fireworks.ai/serverless/pricing)
+- [Reflection usage fields](https://developers.reflection.ai/text-generation)

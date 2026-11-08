@@ -11,6 +11,8 @@ export interface ApiUsage {
   outputTokens?: number;
   cachedInputTokens?: number;
   cacheWriteTokens?: number;
+  cacheWrite5mTokens?: number;
+  cacheWrite1hTokens?: number;
   reasoningTokens?: number;
   rawUsage?: unknown;
   cost: { usd: number | null; source: "api" | "estimate" | "unavailable"; reason?: string; pricing?: Price };
@@ -24,6 +26,7 @@ export interface Price {
   output: number;
   cacheRead?: number;
   cacheWrite?: number;
+  cacheWrite1h?: number;
   maxInputTokens?: number;
   effectiveFrom: string;
   effectiveTo?: string;
@@ -65,8 +68,19 @@ export function normalizeApiUsage(provider: string, modelId: string, response: a
     output = candidates === undefined ? undefined : candidates + (reasoning ?? 0);
     cached = count(u.cachedContentTokenCount);
   }
-  // Only OpenRouter documents usage.cost as the charged amount in USD.
-  const apiCost = provider === "OpenRouter" && finite(u.cost) ? u.cost : undefined;
+  let apiCost = provider === "OpenRouter" && finite(u.cost) ? u.cost : undefined;
+  if (provider === "xAI" && count(u.cost_in_usd_ticks) !== undefined) apiCost = u.cost_in_usd_ticks / 1e10;
+  if (provider === "Cursor") {
+    input = count(u.inputTokens);
+    output = count(u.outputTokens);
+    cached = count(u.cacheReadTokens);
+    write = count(u.cacheWriteTokens);
+    reasoning = count(u.reasoningTokens);
+    // Preserve the SDK total input count; cache fields are its breakdown.
+    if (finite(response?.cost?.chargedCents)) apiCost = response.cost.chargedCents / 100;
+  }
+  const cacheWrite5mTokens = count(u.cache_creation?.ephemeral_5m_input_tokens);
+  const cacheWrite1hTokens = count(u.cache_creation?.ephemeral_1h_input_tokens);
   return {
     provider,
     modelId,
@@ -76,8 +90,10 @@ export function normalizeApiUsage(provider: string, modelId: string, response: a
     outputTokens: output,
     cachedInputTokens: cached,
     cacheWriteTokens: write,
+    cacheWrite5mTokens,
+    cacheWrite1hTokens,
     reasoningTokens: reasoning,
-    rawUsage: raw,
+    rawUsage: provider === "Cursor" ? { usage: raw, cost: response?.cost } : raw,
     cost:
       apiCost === undefined
         ? { usd: null, source: "unavailable", reason: "No API-reported USD cost or applicable documented rate" }
@@ -105,11 +121,17 @@ export function estimateCost(usage: ApiUsage, prices: Price[]): ApiUsage["cost"]
   if (!rate) return usage.cost;
   if (rate.maxInputTokens !== undefined && input > rate.maxInputTokens)
     return { usd: null, source: "unavailable", reason: "Input exceeds documented pricing tier" };
+  const write1h = usage.cacheWrite1hTokens ?? 0;
+  const write5m = usage.cacheWrite5mTokens ?? write - write1h;
   if (
+    write5m + write1h !== write ||
+    write5m < 0 ||
+    write1h < 0 ||
     cached + write > input ||
     ![rate.input, rate.output].every(finite) ||
     (cached > 0 && !finite(rate.cacheRead)) ||
-    (write > 0 && !finite(rate.cacheWrite))
+    (write5m > 0 && !finite(rate.cacheWrite)) ||
+    (write1h > 0 && !finite(rate.cacheWrite1h))
   ) {
     return { usd: null, source: "unavailable", reason: "Incomplete cache pricing or inconsistent token counts" };
   }
@@ -119,7 +141,8 @@ export function estimateCost(usage: ApiUsage, prices: Price[]): ApiUsage["cost"]
       (input - cached - write) * rate.input +
       output * rate.output +
       cached * (rate.cacheRead ?? 0) +
-      write * (rate.cacheWrite ?? 0),
+      write5m * (rate.cacheWrite ?? 0) +
+      write1h * (rate.cacheWrite1h ?? 0),
     source: "estimate",
     pricing: rate,
   };

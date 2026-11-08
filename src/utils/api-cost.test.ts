@@ -87,3 +87,26 @@ describe("API cost accounting", () => {
     expect(second.map((r) => r.responseId)).toEqual(["parallel"]);
   });
 });
+
+it("reads xAI billed USD ticks, including zero, without treating other providers' ticks as USD", () => {
+  expect(normalizeApiUsage("xAI", "any-future-model", { usage: { cost_in_usd_ticks: 37756000 } }).cost).toEqual({
+    source: "api",
+    usd: 0.0037756,
+  });
+  expect(normalizeApiUsage("xAI", "test", { usage: { cost_in_usd_ticks: 0 } }).cost.usd).toBe(0);
+  expect(normalizeApiUsage("OpenAI", "test", { usage: { cost_in_usd_ticks: 100 } }).cost.usd).toBeNull();
+});
+it("prices separate Anthropic cache write TTLs and rejects inconsistent breakdowns", () => {
+  const row = normalizeApiUsage("Anthropic", "test/model", {
+    usage: {
+      input_tokens: 100,
+      output_tokens: 20,
+      cache_creation_input_tokens: 50,
+      cache_creation: { ephemeral_5m_input_tokens: 30, ephemeral_1h_input_tokens: 20 },
+    },
+  });
+  const p = { ...rate, provider: "Anthropic", cacheWrite1h: 4e-6 };
+  expect(estimateCost(row, [p]).usd).toBeCloseTo(100 * 2e-6 + 20 * 10e-6 + 30 * 2.5e-6 + 20 * 4e-6);
+  expect(estimateCost(row, [{ ...p, cacheWrite1h: undefined }]).usd).toBeNull();
+  expect(estimateCost({ ...row, cacheWriteTokens: 51 }, [p]).usd).toBeNull();
+});

@@ -1,3 +1,5 @@
+import { recordApiResponse } from "../utils/api-cost";
+import type { SDKAgent } from "@cursor/sdk";
 import { DEFAULT_SYSTEM_PROMPT, DEFAULT_SYSTEM_PROMPT_WITH_CONTEXT } from "../utils/prompt";
 import type { LLMProvider } from "./index";
 import { Agent } from "@cursor/sdk";
@@ -31,6 +33,7 @@ export class CursorProvider implements LLMProvider {
   async generateCode(prompt: string, temperature?: number, contextContent?: string): Promise<string> {
     const cwd = await fs.mkdtemp(path.join(os.tmpdir(), "svelte-bench-cursor-"));
 
+    let agent: SDKAgent | undefined;
     try {
       console.log(`🤖 Generating code with Cursor using model: ${this.modelId}...`);
 
@@ -43,7 +46,7 @@ export class CursorProvider implements LLMProvider {
         `\n\nWrite the component to a file named "${OUTPUT_FILENAME}" in the current working directory. Do not create any other files.`,
       ].join("");
 
-      const result = await Agent.prompt(fullPrompt, {
+      agent = await Agent.create({
         // The SDK does not implicitly read CURSOR_API_KEY. Passing it here is
         // required to authenticate the local agent run with the configured
         // Cursor user API key.
@@ -53,6 +56,21 @@ export class CursorProvider implements LLMProvider {
           cwd,
           sandboxOptions: { enabled: false },
         },
+      });
+
+      const run = await agent.send(fullPrompt);
+      const result = await run.wait();
+      // One fresh agent per benchmark sample, so its totals contain no other samples.
+      let billed;
+      try {
+        billed = await agent.getUsage();
+      } catch {
+        console.warn("Cursor billed usage is unavailable; retaining the run's token usage");
+      }
+      recordApiResponse(this.name, this.modelId, {
+        id: result.id,
+        usage: billed?.usage ?? result.usage,
+        cost: billed?.cost,
       });
 
       if (result.status === "error") {
@@ -66,6 +84,7 @@ export class CursorProvider implements LLMProvider {
       console.error("Error generating code with Cursor:", error);
       throw new Error(`Failed to generate code: ${error instanceof Error ? error.message : String(error)}`);
     } finally {
+      agent?.close();
       await fs.rm(cwd, { recursive: true, force: true });
     }
   }

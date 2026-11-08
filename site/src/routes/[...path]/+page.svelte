@@ -140,8 +140,8 @@
     {#if tab !== "local" && shown.some((m) => m.provider.toLowerCase() !== "ollama")}
       <p class="mt-4 max-w-3xl text-xs leading-relaxed text-muted-foreground">
         Experimental costs cover recorded samples and returned retry attempts, in USD. API reported charges and
-        documented-rate estimates are labeled separately. Partial amounts exclude unknown charges. “Not recorded” means
-        usage was not saved, not zero cost. Validation probes and requests without returned usage are excluded.
+        documented-rate estimates are labeled separately. Partial amounts exclude unknown charges. “--” means usage was
+        not saved, not zero cost. Validation probes and requests without returned usage are excluded.
       </p>
     {/if}
     <section class="mt-12">

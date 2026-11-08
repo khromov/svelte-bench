@@ -44,9 +44,9 @@
                     attempts.
                   </p>
                   <p class="mt-1 text-xs text-muted-foreground">
-                    Input: {cost.inputTokens?.toLocaleString("en-US") ?? "Not recorded"} tokens · Output: {cost.outputTokens?.toLocaleString(
+                    Input: {cost.inputTokens?.toLocaleString("en-US") ?? "--"} tokens · Output: {cost.outputTokens?.toLocaleString(
                       "en-US",
-                    ) ?? "Not recorded"} tokens
+                    ) ?? "--"} tokens
                   </p>
                   {#if cost.apiRequests && cost.estimatedRequests}<p class="mt-1 text-xs text-muted-foreground">
                       API reported: {formatUsd(cost.apiUsd)} · Estimated: {formatUsd(cost.estimatedUsd)}

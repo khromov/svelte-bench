@@ -251,7 +251,7 @@ test("renders API-reported, estimated, partial and missing costs without calling
   expect(screen.getAllByText("$0.05")[0]).toBeVisible();
   expect(screen.getAllByText("Estimated")[0]).toBeVisible();
   expect(screen.getAllByText("API reported · Partial")[0]).toBeVisible();
-  expect(screen.getAllByText("Not recorded")[0]).toBeVisible();
+  expect(screen.getAllByText("--")[0]).toBeVisible();
   expect(screen.getAllByText("$0.00")[0]).toBeVisible();
   const user = userEvent.setup();
   await user.click(screen.getByRole("link", { name: /^api-paid$/ }));

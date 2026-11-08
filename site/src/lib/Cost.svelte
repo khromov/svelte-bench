@@ -6,7 +6,7 @@
 {#if cost.local}
   <span class="text-muted-foreground" aria-label="API cost does not apply to local models">—</span>
 {:else if cost.status === "missing"}
-  <span class="text-xs text-muted-foreground">Not recorded</span>
+  <span class="text-xs text-muted-foreground" aria-label="Cost usage was not recorded">--</span>
 {:else if cost.status === "unavailable"}
   <span class="text-xs text-muted-foreground">Unavailable</span>
 {:else}
