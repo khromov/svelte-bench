@@ -121,96 +121,104 @@
         ></Accordion.Item
       ></Accordion.Root
     >{/each}
-  <div class="mb-5 flex flex-wrap items-center justify-between gap-4">
-    <Tabs.Root value={tab} onValueChange={(value) => update("tab", value)}
-      ><Tabs.List
+  {#snippet resultsPanel()}
+    <p aria-live="polite" class="mb-4 text-sm text-muted-foreground">
+      {shown.length} models{merged ? " · Average pass@1 scores" : ""}
+    </p>
+    {#if merged}<Leaderboard
+        models={shown}
+        local={tab === "local"}
+        {sort}
+        onsort={sortBy}
+        maxTps={Math.max(0, ...all.map((m) => m.tps ?? 0))}
+        showTps={all.some((m) => m.tps !== null)}
+        showTime={all.some((m) => m.tokenTimes !== null)}
+      />{/if}
+    {#if !shown.length}<p class="rounded-lg border p-8 text-center text-muted-foreground">No matching models.</p>{/if}
+    {#if all.some((m) => m.tps || m.tokenTimes)}<p class="mt-4 max-w-3xl text-xs leading-relaxed text-muted-foreground">
+        * Local models ran through Ollama on an AMD Ryzen 5 7640HS processor (50W TDP) with Radeon 760M RDNA3 graphics.
+        Speed is the generation rate on that hardware. Estimated response time uses average output tokens, including
+        thinking, divided by speed, with one sample per test.
+      </p>{/if}
+    <section class="mt-12">
+      <h2 class="mb-4 text-xl font-semibold tracking-tight">Results by provider</h2>
+      <Accordion.Root type="multiple" value={search ? providers : []}>
+        {#each providers as provider (provider)}<Accordion.Item value={provider}
+            ><Accordion.Trigger
+              ><span class="text-base"
+                >{provider}
+                <Badge variant="secondary">{shown.filter((m) => m.provider === provider).length} models</Badge></span
+              ></Accordion.Trigger
+            ><Accordion.Content>
+              <Accordion.Root
+                type="multiple"
+                value={search ? shown.filter((m) => m.provider === provider).map((m) => m.key) : []}
+              >
+                {#each shown
+                  .filter((m) => m.provider === provider)
+                  .sort((a, b) => a.model.localeCompare(b.model)) as model (model.key)}<Accordion.Item value={model.key}
+                    ><Accordion.Trigger
+                      ><span class="min-w-0 break-all pr-3"
+                        >{model.model}
+                        <span class="ml-2 font-mono text-muted-foreground">{model.score.toFixed(1)}%</span></span
+                      ></Accordion.Trigger
+                    ><Accordion.Content>
+                      <div class="mb-4 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+                        {#if model.modelUrl}<a href={model.modelUrl} class="underline" target="_blank" rel="noreferrer"
+                            >Model details ↗</a
+                          >{/if}{#if model.tps}<span>{formatTps(model.tps)} tok/s</span
+                          >{/if}{#if model.tokenTimes?.avgResponseSeconds != null}<span
+                            >~{formatDuration(model.tokenTimes.avgResponseSeconds)} / response</span
+                          >{/if}
+                      </div>
+                      <Table.Root
+                        ><Table.Header
+                          ><Table.Row
+                            ><Table.Head>Test</Table.Head><Table.Head>Correct</Table.Head><Table.Head>pass@1</Table.Head
+                            ><Table.Head>pass@10</Table.Head><Table.Head>Samples</Table.Head></Table.Row
+                          ></Table.Header
+                        ><Table.Body
+                          >{#each model.tests as result (result)}<Table.Row
+                              ><Table.Cell class="font-medium">{result.testName}</Table.Cell><Table.Cell
+                                >{result.numCorrect}/{result.numSamples}</Table.Cell
+                              ><Table.Cell>{(result.pass1 * 100).toFixed(1)}%</Table.Cell><Table.Cell
+                                >{(result.pass10 * 100).toFixed(1)}%</Table.Cell
+                              ><Table.Cell><Samples {result} /></Table.Cell></Table.Row
+                            >{/each}</Table.Body
+                        ></Table.Root
+                      >
+                    </Accordion.Content></Accordion.Item
+                  >{/each}
+              </Accordion.Root>
+            </Accordion.Content></Accordion.Item
+          >{/each}
+      </Accordion.Root>
+    </section>
+  {/snippet}
+  <Tabs.Root value={tab} onValueChange={(value) => update("tab", value)}>
+    <div class="mb-5 flex flex-wrap items-center justify-between gap-4">
+      <Tabs.List
         ><Tabs.Trigger value="all">All models <span class="ml-1 text-xs">{all.length}</span></Tabs.Trigger><Tabs.Trigger
           value="local"
           >Local models <span class="ml-1 text-xs"
             >{all.filter((m) => m.provider.toLowerCase() === "ollama").length}</span
           ></Tabs.Trigger
         ></Tabs.List
-      ></Tabs.Root
-    >
-    <div class="flex w-full items-center gap-2 sm:w-80">
-      <Input
-        aria-label="Search models and providers"
-        placeholder="Search models or providers…"
-        value={search}
-        oninput={(event) => update("search", event.currentTarget.value)}
-      />{#if search}<Button variant="ghost" onclick={() => update("search", "")}>Clear</Button>{/if}
+      >
+      <div class="flex w-full items-center gap-2 sm:w-80">
+        <Input
+          aria-label="Search models and providers"
+          placeholder="Search models or providers…"
+          value={search}
+          oninput={(event) => update("search", event.currentTarget.value)}
+        />{#if search}<Button variant="ghost" onclick={() => update("search", "")}>Clear</Button>{/if}
+      </div>
     </div>
-  </div>
-  <p aria-live="polite" class="mb-4 text-sm text-muted-foreground">
-    {shown.length} models{merged ? " · Average pass@1 scores" : ""}
-  </p>
-  {#if merged}<Leaderboard
-      models={shown}
-      local={tab === "local"}
-      {sort}
-      onsort={sortBy}
-      maxTps={Math.max(0, ...all.map((m) => m.tps ?? 0))}
-      showTps={all.some((m) => m.tps !== null)}
-      showTime={all.some((m) => m.tokenTimes !== null)}
-    />{/if}
-  {#if !shown.length}<p class="rounded-lg border p-8 text-center text-muted-foreground">No matching models.</p>{/if}
-  {#if all.some((m) => m.tps || m.tokenTimes)}<p class="mt-4 max-w-3xl text-xs leading-relaxed text-muted-foreground">
-      * Local models ran through Ollama on an AMD Ryzen 5 7640HS processor (50W TDP) with Radeon 760M RDNA3 graphics.
-      Speed is the generation rate on that hardware. Estimated response time uses average output tokens, including
-      thinking, divided by speed, with one sample per test.
-    </p>{/if}
-  <section class="mt-12">
-    <h2 class="mb-4 text-xl font-semibold tracking-tight">Results by provider</h2>
-    <Accordion.Root type="multiple" value={search ? providers : []}>
-      {#each providers as provider (provider)}<Accordion.Item value={provider}
-          ><Accordion.Trigger
-            ><span class="text-base"
-              >{provider}
-              <Badge variant="secondary">{shown.filter((m) => m.provider === provider).length} models</Badge></span
-            ></Accordion.Trigger
-          ><Accordion.Content>
-            <Accordion.Root
-              type="multiple"
-              value={search ? shown.filter((m) => m.provider === provider).map((m) => m.key) : []}
-            >
-              {#each shown
-                .filter((m) => m.provider === provider)
-                .sort((a, b) => a.model.localeCompare(b.model)) as model (model.key)}<Accordion.Item value={model.key}
-                  ><Accordion.Trigger
-                    ><span class="min-w-0 break-all pr-3"
-                      >{model.model}
-                      <span class="ml-2 font-mono text-muted-foreground">{model.score.toFixed(1)}%</span></span
-                    ></Accordion.Trigger
-                  ><Accordion.Content>
-                    <div class="mb-4 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
-                      {#if model.modelUrl}<a href={model.modelUrl} class="underline" target="_blank" rel="noreferrer"
-                          >Model details ↗</a
-                        >{/if}{#if model.tps}<span>{formatTps(model.tps)} tok/s</span
-                        >{/if}{#if model.tokenTimes?.avgResponseSeconds != null}<span
-                          >~{formatDuration(model.tokenTimes.avgResponseSeconds)} / response</span
-                        >{/if}
-                    </div>
-                    <Table.Root
-                      ><Table.Header
-                        ><Table.Row
-                          ><Table.Head>Test</Table.Head><Table.Head>Correct</Table.Head><Table.Head>pass@1</Table.Head
-                          ><Table.Head>pass@10</Table.Head><Table.Head>Samples</Table.Head></Table.Row
-                        ></Table.Header
-                      ><Table.Body
-                        >{#each model.tests as result (result)}<Table.Row
-                            ><Table.Cell class="font-medium">{result.testName}</Table.Cell><Table.Cell
-                              >{result.numCorrect}/{result.numSamples}</Table.Cell
-                            ><Table.Cell>{(result.pass1 * 100).toFixed(1)}%</Table.Cell><Table.Cell
-                              >{(result.pass10 * 100).toFixed(1)}%</Table.Cell
-                            ><Table.Cell><Samples {result} /></Table.Cell></Table.Row
-                          >{/each}</Table.Body
-                      ></Table.Root
-                    >
-                  </Accordion.Content></Accordion.Item
-                >{/each}
-            </Accordion.Root>
-          </Accordion.Content></Accordion.Item
-        >{/each}
-    </Accordion.Root>
-  </section>
+    <Tabs.Content value="all"
+      >{#if tab === "all"}{@render resultsPanel()}{/if}</Tabs.Content
+    >
+    <Tabs.Content value="local"
+      >{#if tab === "local"}{@render resultsPanel()}{/if}</Tabs.Content
+    >
+  </Tabs.Root>
 {/if}

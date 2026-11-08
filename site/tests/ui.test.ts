@@ -124,3 +124,17 @@ test("sort controls update the URL, preserve rank labels and restore navigation 
   await user.click(screen.getByRole("button", { name: /Score/ }));
   await waitFor(() => expect(page.url.searchParams.has("sort")).toBe(false));
 });
+
+test("connects keyboard-operated tabs to their result panels", async () => {
+  const user = userEvent.setup();
+  render(App, { data });
+  const all = screen.getByRole("tab", { name: /All models/ });
+  all.focus();
+  await user.keyboard("{ArrowRight}");
+  const local = screen.getByRole("tab", { name: /Local models/ });
+  await waitFor(() => expect(local).toHaveAttribute("aria-selected", "true"));
+  const panel = screen.getByRole("tabpanel");
+  expect(local).toHaveAttribute("aria-controls", panel.id);
+  expect(panel).toHaveAttribute("aria-labelledby", local.id);
+  await waitFor(() => expect(page.url.searchParams.get("tab")).toBe("local"));
+});
