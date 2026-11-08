@@ -263,7 +263,7 @@ src/tests/your-test/
 After running the benchmark, results are saved in multiple formats:
 
 - **JSON Results**: `benchmarks/benchmark-results-{timestamp}.json` - Machine-readable results with pass@k metrics
-- **HTML Visualization**: `benchmarks/benchmark-results-{timestamp}.html` - Interactive visualization of results
+- **HTML Visualization**: `site/build/benchmark-results-{timestamp}.html` - Interactive visualization of results
 - **Individual Model Results**: `benchmarks/benchmark-results-{provider}-{model}-{timestamp}.json` - Per-model results
 
 When running with a context file, the results filename will include "with-context" in the name.
@@ -298,8 +298,8 @@ pnpm run build-v1
 
 This creates merged JSON and HTML files:
 
-- `pnpm run merge` → `benchmarks/benchmark-results-merged.{json,html}` (current results)
-- `pnpm run merge-v1` → `benchmarks/v1/benchmark-results-merged.{json,html}` (legacy results)
+- `pnpm build` → `benchmarks/benchmark-results-merged.json` and `site/build/benchmark-results-merged.html` (current results)
+- `pnpm build-v1` → `benchmarks/v1/v1-benchmark-results-merged.json` and `site/build/v1/v1-benchmark-results-merged.html` (legacy results)
 
 The standard build process uses current results by default.
 
@@ -459,3 +459,44 @@ Contributions are welcome! Please ensure:
 ## License
 
 MIT
+
+### Static frontend
+
+The `site/` workspace uses SvelteKit 3, Svelte 5, adapter-static, Tailwind CSS 4,
+and vendored shadcn-svelte components. Benchmark execution and Vitest configuration
+remain at the repository root. No API keys are needed to build the site.
+
+```bash
+pnpm install --frozen-lockfile
+pnpm check
+pnpm check:site
+pnpm test:site
+pnpm build
+pnpm verify:site
+pnpm preview
+# Open the merged leaderboard in the default browser:
+pnpm open
+```
+
+`pnpm build` merges current and legacy results separately, copies unchanged JSON
+into `site/static/`, and prerenders every run into `site/build/`. Both `/index.html`
+and `/` retain the result index. Individual `.html` links and relative JSON
+download paths remain unchanged, including `v1/`. `build-v1` builds the complete
+site so navigation between current and legacy results is always available.
+
+The default base path is `/svelte-bench`. GitHub Pages configures its base path
+before building and uploads `site/build`; pull requests run the same production
+build and verify its artifact. Set `BASE_PATH` to an empty string for root hosting,
+and use the same value for both build and preview. `pnpm preview` serves the exact
+static artifact with no SPA fallback. For frontend development use
+`pnpm --filter @svelte-bench/site dev` after a build prepares JSON downloads.
+
+The frontend reads result files only in server modules during prerendering. JSON
+schemas, HumanEval calculations, and current-result merge selection are unchanged.
+Generated samples and context are escaped text. Search, the local-model tab, and
+local speed/response sorting persist in `search`, `tab`, and `sort` URL parameters.
+Theme preference persists in local storage. Model links use the shared URL resolver;
+unavailable release dates are omitted.
+
+Dependency compatibility notes and validation details are in
+[site/README.md](site/README.md).

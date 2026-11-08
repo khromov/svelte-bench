@@ -42,18 +42,20 @@ jobs:
       - name: Install deps
         run: pnpm install --frozen-lockfile --prefer-offline
 
+      - name: Setup Pages
+        id: pages
+        uses: actions/configure-pages@v6
+
       - name: Build static files
         env:
           NODE_ENV: production
+          BASE_PATH: ${{ steps.pages.outputs.base_path }}
         run: pnpm run build
-
-      - name: Setup Pages
-        uses: actions/configure-pages@v6
 
       - name: Upload pages artifact
         uses: actions/upload-pages-artifact@v5
         with:
-          path: benchmarks
+          path: site/build
           name: github-pages
           retention-days: 1
 
