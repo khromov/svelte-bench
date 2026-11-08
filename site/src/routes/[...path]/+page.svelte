@@ -117,9 +117,6 @@
       ></Accordion.Root
     >{/each}
   {#snippet resultsPanel()}
-    <p aria-live="polite" class="mb-4 text-sm text-muted-foreground">
-      {shown.length} models{merged ? " · Average pass@1 scores" : ""}
-    </p>
     {#if merged}<Leaderboard
         models={shown}
         local={tab === "local"}
@@ -194,15 +191,14 @@
     </section>
   {/snippet}
   <Tabs.Root class="min-w-0" value={tab} onValueChange={(value) => update("tab", value)}>
-    <div class="mb-5 flex flex-wrap items-center justify-between gap-4">
-      <Tabs.List
-        ><Tabs.Trigger value="all">All models <span class="ml-1 text-xs">{all.length}</span></Tabs.Trigger><Tabs.Trigger
-          value="local"
-          >Local models <span class="ml-1 text-xs"
-            >{all.filter((m) => m.provider.toLowerCase() === "ollama").length}</span
-          ></Tabs.Trigger
-        ></Tabs.List
-      >
+    <Tabs.List
+      ><Tabs.Trigger value="all">All models <span class="ml-1 text-xs">{all.length}</span></Tabs.Trigger><Tabs.Trigger
+        value="local"
+        >Local models <span class="ml-1 text-xs">{all.filter((m) => m.provider.toLowerCase() === "ollama").length}</span
+        ></Tabs.Trigger
+      ></Tabs.List
+    >
+    <div class="mb-4 mt-3 flex flex-wrap items-center justify-between gap-4">
       <div class="flex w-full items-center gap-2 sm:w-80">
         <Input
           aria-label="Search models and providers"
@@ -211,6 +207,9 @@
           oninput={(event) => update("search", event.currentTarget.value)}
         />{#if search}<Button variant="ghost" onclick={() => update("search", "")}>Clear</Button>{/if}
       </div>
+      <p aria-live="polite" class="ml-auto text-right text-sm text-muted-foreground">
+        {shown.length} models{merged ? " · Average pass@1 scores" : ""}
+      </p>
     </div>
     <Tabs.Content class="min-w-0" value="all"
       >{#if tab === "all"}{@render resultsPanel()}{/if}</Tabs.Content
