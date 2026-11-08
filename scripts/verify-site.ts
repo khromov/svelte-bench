@@ -24,6 +24,11 @@ for (const directory of ["", "v1"]) {
 }
 await access("site/build/index.html");
 await access("site/build/v1/index.html");
+for (const name of ["index.html", "v1/index.html"]) {
+  const html = await readFile(path.join("site/build", name), "utf8");
+  assert(html.includes("Model leaderboard"), `Index no longer opens the leaderboard: ${name}`);
+  assert(html.includes("Raw results"), `Historical runs unavailable: ${name}`);
+}
 for (const name of await readdir("site/build/_app/immutable/nodes")) {
   if (name.endsWith(".js")) {
     const script = await readFile(path.join("site/build/_app/immutable/nodes", name), "utf8");

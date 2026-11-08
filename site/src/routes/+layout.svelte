@@ -39,23 +39,21 @@
 <Tooltip.Provider>
   <a href="#main" class="sr-only focus:not-sr-only">Skip to results</a>
   <header class="border-b">
-    <nav aria-label="Main" class="mx-auto flex max-w-6xl flex-wrap items-center gap-2 px-4 py-4 sm:px-8">
+    <nav aria-label="Main" class="mx-auto flex max-w-[1440px] items-center gap-1 px-4 py-3 sm:gap-2 sm:px-6 lg:px-8">
       <a class="mr-auto text-xl font-semibold tracking-tight" href={resolve("/[...path]", { path: "" })}
         ><span class="text-primary">Svelte</span>Bench</a
       >
-      <Button variant="ghost" href={resolve("/[...path]", { path: "benchmark-results-merged.html" })}
-        >Leaderboard</Button
+      <Button variant="ghost" size="sm" href={resolve("/[...path]", { path: "v1/v1-benchmark-results-merged.html" })}
+        >v1 results</Button
       >
-      <Button variant="ghost" href={resolve("/[...path]", { path: "index.html" })}>Runs</Button>
-      <Button variant="ghost" href={resolve("/[...path]", { path: "v1/index.html" })}>Legacy v1</Button>
-      <Button variant="ghost" href="https://github.com/khromov/svelte-bench">GitHub</Button>
+      <Button variant="ghost" size="sm" href="https://github.com/khromov/svelte-bench">GitHub</Button>
       <Button variant="outline" size="icon" aria-label="Toggle theme" onclick={toggleTheme}
         >{#if dark}<Sun size={16} />{:else}<Moon size={16} />{/if}</Button
       >
     </nav>
   </header>
-  <main id="main" class="mx-auto max-w-6xl px-4 py-10 sm:px-8 sm:py-14">{@render children()}</main>
-  <footer class="mx-auto max-w-6xl border-t px-4 py-6 text-sm text-muted-foreground sm:px-8">
+  <main id="main" class="mx-auto max-w-[1440px] min-w-0 px-4 py-8 sm:px-6 lg:px-8">{@render children()}</main>
+  <footer class="mx-auto max-w-[1440px] border-t px-4 py-6 text-sm text-muted-foreground sm:px-8">
     Svelte 5 components · HumanEval methodology · pass@k
   </footer>
 </Tooltip.Provider>

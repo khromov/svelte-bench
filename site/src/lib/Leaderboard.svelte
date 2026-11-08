@@ -29,13 +29,13 @@
 </script>
 
 <div class="overflow-hidden rounded-xl border">
-  <Table.Root>
+  <Table.Root class={local ? "min-w-[44rem]" : ""}>
     <Table.Header
       ><Table.Row>
         <Table.Head class="w-14">Rank</Table.Head><Table.Head>Model</Table.Head>
-        <Table.Head class="w-40"
-          ><Button variant="ghost" size="sm" disabled={!local} onclick={() => onsort("score")}>Score ↓</Button
-          ></Table.Head
+        <Table.Head class={local ? "w-40" : "w-[34%]"}
+          >{#if local}<Button variant="ghost" size="sm" onclick={() => onsort("score")}>Score ↓</Button
+            >{:else}Score{/if}</Table.Head
         >
         {#if showTps}<Table.Head aria-sort={ariaSort("tps")}
             ><Button variant="ghost" size="sm" disabled={!local} onclick={() => onsort("tps")}
@@ -53,9 +53,9 @@
       {#each models as model (model.key)}
         <Table.Row>
           <Table.Cell class="font-mono text-muted-foreground">{model.rank}</Table.Cell>
-          <Table.Cell class="max-w-52 whitespace-normal sm:max-w-96">
+          <Table.Cell class="whitespace-normal">
             <a
-              class="break-words font-medium underline-offset-4 hover:underline"
+              class="wrap-anywhere font-medium underline-offset-4 hover:underline"
               href={`#${modelAnchor(model.provider, model.model)}`}
               onclick={(event) => {
                 if (event.button || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
@@ -73,8 +73,10 @@
             <div class="mt-1 text-xs text-muted-foreground">{model.provider}</div>
           </Table.Cell>
           <Table.Cell
-            ><div class="mb-2 font-mono font-semibold">{model.score.toFixed(1)}%</div>
-            <Progress value={model.score} aria-label={`${model.model} pass@1`} class="max-w-28" /></Table.Cell
+            ><div class="flex items-center gap-3">
+              <span class="w-14 shrink-0 font-mono font-semibold">{model.score.toFixed(1)}%</span>
+              <Progress value={model.score} aria-label={`${model.model} pass@1`} class="min-w-12 flex-1" />
+            </div></Table.Cell
           >
           {#if showTps}<Table.Cell
               ><div class="font-mono">{model.tps === null ? "—" : `${formatTps(model.tps)} tok/s`}</div>

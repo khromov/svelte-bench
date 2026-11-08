@@ -39,8 +39,9 @@
   });
   const merged = $derived(data.selected?.includes("merged"));
   const prefix = $derived(data.legacy ? "v1/" : "");
-  const mergedFile = $derived(data.files.find((name) => name.includes("merged")));
   const providers = $derived([...new Set(shown.map((model) => model.provider))].sort((a, b) => a.localeCompare(b)));
+  let expandedProviders = $derived(search ? providers : target ? [target.provider] : []);
+  let expandedModels = $derived(search ? shown.map((model) => model.key) : target ? [target.key] : []);
   const contexts = $derived(
     data.results
       .filter((r) => r.context?.used)
@@ -68,9 +69,15 @@
     update("sort", direction === first ? key : `${key}-${direction}`);
   }
   function openModel(hash: string) {
+    if (hash === url.hash && target) {
+      expandedProviders = [...new Set([...expandedProviders, target.provider])];
+      expandedModels = [...new Set([...expandedModels, target.key])];
+      void tick().then(() => document.getElementById(hash.slice(1))?.scrollIntoView({ block: "start" }));
+      return;
+    }
     const next = new URL(url.href);
     next.hash = hash;
-    void goto(next, { shallow: true, reset: false });
+    void goto(next, { reset: false });
   }
 </script>
 
@@ -86,51 +93,20 @@
       them separately from current results.
     </p>
   </aside>{/if}
-<div class="mb-8 flex flex-wrap items-end justify-between gap-4">
+<div class="mb-6 flex flex-wrap items-end justify-between gap-4">
   <div>
     <p class="mb-3 text-sm font-medium text-muted-foreground">SVELTE 5 · HUMANEVAL</p>
     <h1 class="text-3xl font-semibold tracking-tight sm:text-4xl">
       {data.selected ? (merged ? "Model leaderboard" : "Benchmark run") : "Benchmark results"}
     </h1>
     <p class="mt-3 max-w-2xl break-all text-sm text-muted-foreground">
-      {data.selected ?? "Explore the latest results and every individual benchmark run."}
+      {merged ? "Compare models on real Svelte 5 component tests." : (data.selected ?? "No results available yet.")}
     </p>
   </div>
   {#if data.selected}<Button variant="outline" href={download(data.selected)} download>Download JSON ↓</Button>{/if}
 </div>
 {#if !data.selected}
-  {#if mergedFile}<section class="mb-8 rounded-xl border bg-card p-6 sm:p-8">
-      <Badge variant="secondary">Latest results</Badge>
-      <h2 class="mt-4 text-2xl font-semibold tracking-tight">Compare the models</h2>
-      <p class="my-4 text-muted-foreground">The most recent result for each model, merged into one leaderboard.</p>
-      <div class="flex flex-wrap gap-3">
-        <Button href={link(mergedFile)}>View leaderboard →</Button><Button
-          variant="outline"
-          href={download(mergedFile)}
-          download>Download JSON</Button
-        >
-      </div>
-    </section>{/if}
-  <Accordion.Root type="single"
-    ><Accordion.Item value="runs"
-      ><Accordion.Trigger
-        ><span class="text-lg"
-          >Raw results <Badge variant="secondary">{data.files.filter((n) => !n.includes("merged")).length} runs</Badge
-          ></span
-        ></Accordion.Trigger
-      ><Accordion.Content
-        ><ul class="divide-y">
-          {#each data.files.filter((n) => !n.includes("merged")) as name (name)}<li
-              class="flex flex-wrap items-center justify-between gap-3 py-4"
-            >
-              <a class="min-w-0 break-all text-sm hover:underline" href={link(name)}>{name.replace(".json", "")}</a
-              ><Button size="sm" variant="outline" href={download(name)} download>JSON ↓</Button>
-            </li>{/each}
-        </ul></Accordion.Content
-      ></Accordion.Item
-    ></Accordion.Root
-  >
-  {#if !data.files.length}<p>No benchmark results found.</p>{/if}
+  <p>No benchmark results found.</p>
 {:else}
   {#each contexts as context (context)}<Accordion.Root type="single" class="mb-6 rounded-lg border px-4"
       ><Accordion.Item value="context" class="border-0"
@@ -151,18 +127,20 @@
         onsort={sortBy}
         onmodel={openModel}
         maxTps={Math.max(0, ...all.map((m) => m.tps ?? 0))}
-        showTps={all.some((m) => m.tps !== null)}
-        showTime={all.some((m) => m.tokenTimes !== null)}
+        showTps={tab === "local" && all.some((m) => m.tps !== null)}
+        showTime={tab === "local" && all.some((m) => m.tokenTimes !== null)}
       />{/if}
     {#if !shown.length}<p class="rounded-lg border p-8 text-center text-muted-foreground">No matching models.</p>{/if}
-    {#if all.some((m) => m.tps || m.tokenTimes)}<p class="mt-4 max-w-3xl text-xs leading-relaxed text-muted-foreground">
+    {#if tab === "local" && all.some((m) => m.tps || m.tokenTimes)}<p
+        class="mt-4 max-w-3xl text-xs leading-relaxed text-muted-foreground"
+      >
         * Local models ran through Ollama on an AMD Ryzen 5 7640HS processor (50W TDP) with Radeon 760M RDNA3 graphics.
         Speed is the generation rate on that hardware. Estimated response time uses average output tokens, including
         thinking, divided by speed, with one sample per test.
       </p>{/if}
     <section class="mt-12">
       <h2 class="mb-4 text-xl font-semibold tracking-tight">Results by provider</h2>
-      <Accordion.Root type="multiple" value={search ? providers : target ? [target.provider] : []}>
+      <Accordion.Root type="multiple" bind:value={expandedProviders}>
         {#each providers as provider (provider)}<Accordion.Item value={provider}
             ><Accordion.Trigger
               ><span class="text-base"
@@ -170,14 +148,7 @@
                 <Badge variant="secondary">{shown.filter((m) => m.provider === provider).length} models</Badge></span
               ></Accordion.Trigger
             ><Accordion.Content>
-              <Accordion.Root
-                type="multiple"
-                value={search
-                  ? shown.filter((m) => m.provider === provider).map((m) => m.key)
-                  : target?.provider === provider
-                    ? [target.key]
-                    : []}
-              >
+              <Accordion.Root type="multiple" bind:value={expandedModels}>
                 {#each shown
                   .filter((m) => m.provider === provider)
                   .sort((a, b) => a.model.localeCompare(b.model)) as model (model.key)}<Accordion.Item
@@ -222,7 +193,7 @@
       </Accordion.Root>
     </section>
   {/snippet}
-  <Tabs.Root value={tab} onValueChange={(value) => update("tab", value)}>
+  <Tabs.Root class="min-w-0" value={tab} onValueChange={(value) => update("tab", value)}>
     <div class="mb-5 flex flex-wrap items-center justify-between gap-4">
       <Tabs.List
         ><Tabs.Trigger value="all">All models <span class="ml-1 text-xs">{all.length}</span></Tabs.Trigger><Tabs.Trigger
@@ -241,11 +212,32 @@
         />{#if search}<Button variant="ghost" onclick={() => update("search", "")}>Clear</Button>{/if}
       </div>
     </div>
-    <Tabs.Content value="all"
+    <Tabs.Content class="min-w-0" value="all"
       >{#if tab === "all"}{@render resultsPanel()}{/if}</Tabs.Content
     >
-    <Tabs.Content value="local"
+    <Tabs.Content class="min-w-0" value="local"
       >{#if tab === "local"}{@render resultsPanel()}{/if}</Tabs.Content
     >
   </Tabs.Root>
+  <section class="mt-12" aria-label="Historical benchmark runs">
+    <Accordion.Root type="single"
+      ><Accordion.Item value="runs"
+        ><Accordion.Trigger
+          ><span class="text-lg"
+            >Raw results <Badge variant="secondary">{data.files.filter((n) => !n.includes("merged")).length} runs</Badge
+            ></span
+          ></Accordion.Trigger
+        ><Accordion.Content
+          ><ul class="divide-y">
+            {#each data.files.filter((n) => !n.includes("merged")) as name (name)}<li
+                class="flex flex-wrap items-center justify-between gap-3 py-4"
+              >
+                <a class="min-w-0 break-all text-sm hover:underline" href={link(name)}>{name.replace(".json", "")}</a
+                ><Button size="sm" variant="outline" href={download(name)} download>JSON ↓</Button>
+              </li>{/each}
+          </ul></Accordion.Content
+        ></Accordion.Item
+      ></Accordion.Root
+    >
+  </section>
 {/if}

@@ -8,6 +8,9 @@ for name in 'table tabs input button badge accordion dialog tooltip progress'.sp
         target = root / 'components/ui' / name / pathlib.Path(f['target']).name
         target.parent.mkdir(parents=True, exist_ok=True)
         content = f['content'].replace('$UTILS$', '#lib/utils').replace('$LIB$', '#lib').replace('$UI$', '#lib/components/ui').replace('$COMPONENTS$', '#lib/components').replace('$HOOKS$', '#lib/hooks')
+        # Registry state/orientation selectors must match the installed Bits UI attributes.
+        if name == 'tabs':
+            content = content.replace('data-horizontal:', 'data-[orientation=horizontal]:').replace('data-vertical:', 'data-[orientation=vertical]:').replace('group-data-horizontal/', 'group-data-[orientation=horizontal]/').replace('group-data-vertical/', 'group-data-[orientation=vertical]/').replace('data-active:', 'data-[state=active]:')
         icons = set()
         def replace_icon(match):
             attrs = match[1]

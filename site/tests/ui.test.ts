@@ -183,13 +183,13 @@ test.each([
     expect(screen.getByRole("button", { name: "Samples (1)" })).toBeInTheDocument();
     // Hash navigation while mounted opens another model, including from shallow URL state.
     await userEvent.click(screen.getByRole("link", { name: "local-test" }));
-    expect(page.shallow?.url.hash).toBe("#model-ollama-local-test");
+    expect(page.url.hash).toBe("#model-ollama-local-test");
     await waitFor(() =>
       expect(screen.getByRole("button", { name: /local-test 100/ })).toHaveAttribute("aria-expanded", "true"),
     );
     await userEvent.click(screen.getByRole("tab", { name: /All models/ }));
-    await waitFor(() => expect(page.shallow?.url.searchParams.has("tab")).toBe(false));
-    expect(page.shallow?.url.hash).toBe("#model-ollama-local-test");
+    await waitFor(() => expect((page.shallow?.url ?? page.url).searchParams.has("tab")).toBe(false));
+    expect((page.shallow?.url ?? page.url).hash).toBe("#model-ollama-local-test");
   },
 );
 
@@ -199,4 +199,15 @@ test("ignores unknown model fragments without opening unrelated results", async 
   await waitFor(() => expect(screen.getByRole("link", { name: "local-test" })).toBeInTheDocument());
   expect(screen.getByRole("button", { name: /ollama 1 models/ })).toHaveAttribute("aria-expanded", "false");
   expect(Element.prototype.scrollIntoView).not.toHaveBeenCalled();
+});
+
+test("reopens a collapsed model when its current anchor is clicked again", async () => {
+  page.url = new URL(`${location.href}#model-ollama-local-test`);
+  render(App, { data });
+  const trigger = await screen.findByRole("button", { name: /local-test 100/ });
+  expect(trigger).toHaveAttribute("aria-expanded", "true");
+  await userEvent.click(trigger);
+  expect(trigger).toHaveAttribute("aria-expanded", "false");
+  await userEvent.click(screen.getByRole("link", { name: "local-test" }));
+  await waitFor(() => expect(trigger).toHaveAttribute("aria-expanded", "true"));
 });
