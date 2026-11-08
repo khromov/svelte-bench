@@ -25,7 +25,7 @@ export interface LLMProvider {
    * Get all available models for this provider
    * @returns Array of model identifiers
    */
-  getModels(): string[];
+  getModels(): string[] | Promise<string[]>;
 
   /**
    * Get the model identifier that was used for generation
@@ -59,7 +59,9 @@ export async function getLLMProvider(
   let actualModel = modelId;
 
   if (providerName.includes(':') && !modelId) {
-    const [provider, model] = providerName.split(':', 2);
+    const separator = providerName.indexOf(':');
+    const provider = providerName.slice(0, separator);
+    const model = providerName.slice(separator + 1);
     actualProvider = provider;
     actualModel = model;
   }
@@ -110,6 +112,9 @@ export async function getLLMProvider(
     case "cursor":
       const { CursorProvider } = await import("./cursor");
       return new CursorProvider(actualModel);
+    case "tinker":
+      const { TinkerProvider } = await import("./tinker");
+      return new TinkerProvider(actualModel);
     case "reflection":
       const { ReflectionProvider } = await import("./reflection");
       return new ReflectionProvider(actualModel);
@@ -118,7 +123,7 @@ export async function getLLMProvider(
   // Provider not found
   throw new Error(
     `Unknown LLM provider: ${actualProvider}. ` +
-    `Native providers: openai, anthropic, google, openrouter, fireworks, ollama, zai, moonshot, xai, meta, minimax, cursor, reflection.`
+    `Native providers: openai, anthropic, google, openrouter, fireworks, ollama, zai, moonshot, xai, meta, minimax, cursor, reflection, tinker.`
   );
 }
 
@@ -145,12 +150,13 @@ export async function getAllLLMProviders(): Promise<ProviderWithModel[]> {
     { name: "minimax", displayName: "MiniMax" },
     { name: "cursor", displayName: "Cursor" },
     { name: "reflection", displayName: "Reflection" },
+    { name: "tinker", displayName: "Thinking Machines Tinker" },
   ];
 
   for (const { name, displayName } of nativeProviders) {
     try {
       const nativeProvider = await getLLMProvider(name, "default");
-      for (const modelId of nativeProvider.getModels()) {
+      for (const modelId of await nativeProvider.getModels()) {
         const provider = await getLLMProvider(name, modelId);
         providers.push({
           provider,

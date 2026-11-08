@@ -125,3 +125,16 @@ func TestMiniMaxValidationUsesModelsEndpoint(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
+func TestTinkerProviderRegistration(t *testing.T) {
+	cfg := &Config{APIKeys: map[string]string{"TM_TINKER_API_KEY": "test-key"}}
+	for _, provider := range cfg.GetConfiguredProviders() {
+		if provider.EnvKey == "TM_TINKER_API_KEY" {
+			if provider.Name != "Thinking Machines Tinker" || provider.APIKey != "test-key" {
+				t.Fatalf("unexpected provider: %#v", provider)
+			}
+			return
+		}
+	}
+	t.Fatal("Tinker is missing from the configured provider picker")
+}
