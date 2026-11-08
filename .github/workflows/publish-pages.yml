@@ -1,0 +1,131 @@
+name: Publish Pages Artifact
+
+on:
+  workflow_call:
+    inputs:
+      artifact-name:
+        required: true
+        type: string
+      preview-number:
+        default: 0
+        type: number
+      remove-preview:
+        default: false
+        type: boolean
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pages: write
+      id-token: write
+    # Serialize the read/modify/push/deploy cycle across production and all PRs.
+    concurrency:
+      group: pages-publication
+      cancel-in-progress: false
+    environment:
+      name: ${{ inputs.preview-number && 'github-pages-preview' || 'github-pages' }}
+      url: ${{ steps.url.outputs.url }}
+    steps:
+      - name: Find publication storage
+        id: storage
+        uses: actions/github-script@v8
+        with:
+          script: |
+            try {
+              await github.rest.repos.getBranch({ ...context.repo, branch: 'gh-pages' });
+              core.setOutput('exists', 'true');
+              core.setOutput('ref', 'gh-pages');
+            } catch (error) {
+              if (error.status !== 404) throw error;
+              core.setOutput('exists', 'false');
+              core.setOutput('ref', context.payload.repository.default_branch);
+            }
+
+      - uses: actions/checkout@v6
+        if: steps.storage.outputs.exists == 'true' || !inputs.remove-preview
+        with:
+          ref: ${{ steps.storage.outputs.ref }}
+          path: publication
+          # This isolated checkout contains generated files only. Build jobs are read-only.
+          persist-credentials: true
+
+      - uses: actions/download-artifact@v5
+        if: ${{ !inputs.remove-preview }}
+        with:
+          name: ${{ inputs.artifact-name }}
+          path: incoming
+
+      - uses: actions/download-artifact@v5
+        if: steps.storage.outputs.exists == 'false' && inputs.preview-number && !inputs.remove-preview
+        with:
+          name: pages-production-bootstrap
+          path: bootstrap
+
+      - name: Update publication
+        if: steps.storage.outputs.exists == 'true' || !inputs.remove-preview
+        working-directory: publication
+        env:
+          STORAGE_EXISTS: ${{ steps.storage.outputs.exists }}
+          PREVIEW_NUMBER: ${{ inputs.preview-number }}
+          REMOVE_PREVIEW: ${{ inputs.remove-preview }}
+        run: |
+          set -euo pipefail
+          if [ "$STORAGE_EXISTS" = false ]; then
+            git checkout --orphan gh-pages
+            git rm -rf --ignore-unmatch .
+            if [ "$PREVIEW_NUMBER" != 0 ]; then
+              rsync -a ../bootstrap/ ./
+            fi
+          fi
+          if [ "$PREVIEW_NUMBER" != 0 ]; then
+            [[ "$PREVIEW_NUMBER" =~ ^[1-9][0-9]*$ ]]
+            destination="pr-preview/pr-$PREVIEW_NUMBER"
+            if [ "$REMOVE_PREVIEW" = true ]; then
+              rm -rf -- "$destination"
+            else
+              mkdir -p "$destination"
+              rsync -a --delete ../incoming/ "$destination/"
+            fi
+          else
+            rsync -a --delete --exclude='.git' --exclude='pr-preview/' ../incoming/ ./
+          fi
+          touch .nojekyll
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add --all
+          if ! git diff --cached --quiet; then
+            git commit -m "Publish Pages (PR $PREVIEW_NUMBER, run $GITHUB_RUN_ID)"
+            git push origin HEAD:gh-pages
+          fi
+
+      - name: Setup Pages
+        id: pages
+        if: steps.storage.outputs.exists == 'true' || !inputs.remove-preview
+        uses: actions/configure-pages@v6
+
+      - name: Set deployment URL
+        id: url
+        if: steps.storage.outputs.exists == 'true' || !inputs.remove-preview
+        env:
+          BASE_URL: ${{ steps.pages.outputs.base_url }}
+          PREVIEW_NUMBER: ${{ inputs.preview-number }}
+        run: |
+          url="${BASE_URL%/}/"
+          if [ "$PREVIEW_NUMBER" != 0 ]; then
+            url="${url}pr-preview/pr-${PREVIEW_NUMBER}/"
+          fi
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+          echo "Pages deployment: $url" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload complete Pages artifact
+        if: steps.storage.outputs.exists == 'true' || !inputs.remove-preview
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: publication
+          retention-days: 1
+
+      - name: Deploy to GitHub Pages
+        if: steps.storage.outputs.exists == 'true' || !inputs.remove-preview
+        uses: actions/deploy-pages@v5

@@ -1,0 +1,103 @@
+name: Build and Deploy PR Preview
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    # Fork PRs still run test-build.yml, but cannot publish using a write token.
+    if: github.event.action != 'closed' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - run: pnpm install --frozen-lockfile --prefer-offline
+      - run: pnpm check && pnpm check:site && pnpm test:site
+
+      - name: Build preview
+        env:
+          NODE_ENV: production
+          BASE_PATH: /${{ github.event.repository.name }}/pr-preview/pr-${{ github.event.number }}
+        run: pnpm build && pnpm verify:site
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pages-preview
+          path: site/build
+          include-hidden-files: true
+          retention-days: 1
+
+      - name: Check publication storage
+        id: storage
+        uses: actions/github-script@v8
+        with:
+          script: |
+            try {
+              await github.rest.repos.getBranch({ ...context.repo, branch: 'gh-pages' });
+              core.setOutput('exists', 'true');
+            } catch (error) {
+              if (error.status !== 404) throw error;
+              core.setOutput('exists', 'false');
+            }
+
+      # Seed the shared publication from main, never from PR code, on first use.
+      # Supports the EJS production renderer until the SvelteKit PR is merged.
+      - name: Checkout production for first publication
+        if: steps.storage.outputs.exists == 'false'
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          path: production-source
+          persist-credentials: false
+
+      - name: Build production for first publication
+        if: steps.storage.outputs.exists == 'false'
+        working-directory: production-source
+        env:
+          NODE_ENV: production
+          BASE_PATH: /${{ github.event.repository.name }}
+        run: |
+          pnpm install --frozen-lockfile --prefer-offline
+          pnpm build
+          if [ -d site/build ]; then
+            mv site/build ../production-bootstrap
+          else
+            mv benchmarks ../production-bootstrap
+          fi
+
+      - uses: actions/upload-artifact@v4
+        if: steps.storage.outputs.exists == 'false'
+        with:
+          name: pages-production-bootstrap
+          path: production-bootstrap
+          include-hidden-files: true
+          retention-days: 1
+
+  publish:
+    needs: build
+    if: >-
+      always() &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      (needs.build.result == 'success' || github.event.action == 'closed')
+    permissions:
+      contents: write
+      pages: write
+      id-token: write
+    uses: ./.github/workflows/publish-pages.yml
+    with:
+      artifact-name: pages-preview
+      preview-number: ${{ github.event.number }}
+      remove-preview: ${{ github.event.action == 'closed' }}
