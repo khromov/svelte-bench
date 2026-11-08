@@ -1,4 +1,6 @@
 <script lang="ts">
+  import Cost from "#lib/Cost.svelte";
+  import { summarizeCost, formatUsd } from "#lib/costs.js";
   import type { Result } from "#lib/results.js";
   import * as Dialog from "#lib/components/ui/dialog/index.js";
   import * as Accordion from "#lib/components/ui/accordion/index.js";
@@ -32,6 +34,29 @@
             ></Accordion.Trigger
           >
           <Accordion.Content>
+            {#if result.provider.toLowerCase() !== "ollama"}
+              {@const cost = summarizeCost([{ provider: result.provider, samples: [sample] }])}
+              <div class="mb-4 rounded-md border p-3 text-sm">
+                <div class="mb-2 flex flex-wrap items-center gap-3"><span>Sample cost (USD)</span><Cost {cost} /></div>
+                {#if cost.requests}
+                  <p class="text-xs text-muted-foreground">
+                    {cost.requests} recorded {cost.requests === 1 ? "request" : "requests"}, including returned retry
+                    attempts.
+                  </p>
+                  <p class="mt-1 text-xs text-muted-foreground">
+                    Input: {cost.inputTokens?.toLocaleString("en-US") ?? "--"} tokens · Output: {cost.outputTokens?.toLocaleString(
+                      "en-US",
+                    ) ?? "--"} tokens
+                  </p>
+                  {#if cost.apiRequests && cost.estimatedRequests}<p class="mt-1 text-xs text-muted-foreground">
+                      API reported: {formatUsd(cost.apiUsd)} · Estimated: {formatUsd(cost.estimatedUsd)}
+                    </p>{/if}
+                {/if}
+                {#if cost.status === "partial"}<p class="mt-1 text-xs text-muted-foreground">
+                    Recorded charges only; the sample total is unknown.
+                  </p>{/if}
+              </div>
+            {/if}
             {#if sample.temperature !== undefined}<p class="mb-3 text-muted-foreground">
                 Temperature: {sample.temperature}
               </p>{/if}

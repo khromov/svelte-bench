@@ -11,6 +11,7 @@
   import { Button } from "#lib/components/ui/button/index.js";
   import { Badge } from "#lib/components/ui/badge/index.js";
   import Leaderboard from "#lib/Leaderboard.svelte";
+  import Cost from "#lib/Cost.svelte";
   import TestResults from "#lib/TestResults.svelte";
   let { data }: PageProps = $props();
   let ready = $state(false);
@@ -130,6 +131,13 @@
         Speed is the generation rate on that hardware. Estimated response time uses average output tokens, including
         thinking, divided by speed, with one sample per test.
       </p>{/if}
+    {#if tab !== "local" && shown.some((m) => m.provider.toLowerCase() !== "ollama")}
+      <p class="mt-4 max-w-3xl text-xs leading-relaxed text-muted-foreground">
+        Experimental costs cover recorded samples and returned retry attempts, in USD. API reported charges and
+        documented-rate estimates are labeled separately. Partial amounts exclude unknown charges. “--” means usage was
+        not saved, not zero cost. Validation probes and requests without returned usage are excluded.
+      </p>
+    {/if}
     <section class="mt-12">
       <h2 class="mb-4 text-xl font-semibold tracking-tight">Results by provider</h2>
       <Accordion.Root type="multiple" bind:value={expandedProviders}>
@@ -161,6 +169,11 @@
                             >~{formatDuration(model.tokenTimes.avgResponseSeconds)} / response</span
                           >{/if}
                       </div>
+                      {#if model.provider.toLowerCase() !== "ollama"}
+                        <div class="mb-4 flex flex-wrap items-center gap-3 text-sm">
+                          <span>Run cost (USD)</span><Cost cost={model.cost} />
+                        </div>
+                      {/if}
                       <TestResults results={model.tests} />
                     </Accordion.Content></Accordion.Item
                   >{/each}

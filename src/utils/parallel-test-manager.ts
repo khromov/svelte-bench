@@ -1,3 +1,4 @@
+import { captureApiUsage, type ApiUsage } from "./api-cost";
 import path from "path";
 import fs from "fs/promises";
 import type { LLMProvider } from "../llms";
@@ -30,6 +31,7 @@ export interface CheckpointData {
 }
 
 export interface BenchmarkResult {
+  apiUsage?: ApiUsage[];
   testName: string;
   llmProvider: string;
   modelIdentifier: string;
@@ -116,6 +118,7 @@ async function runSingleTestSample(
   contextContent?: string,
   executionOptions: TestExecutionOptions = {}
 ): Promise<BenchmarkResult> {
+  const apiUsage: ApiUsage[] = [];
   const providerName = llmProvider.name;
   const testDir = getUniqueTestDir(providerName, test.name, sampleIndex);
 
@@ -133,7 +136,10 @@ async function runSingleTestSample(
     
     let generatedCode = await withRetry(
       async () => {
-        const rawCode = await llmProvider.generateCode(prompt, temperature, contextContent);
+        const rawCode = await captureApiUsage(
+          apiUsage, test.name, sampleIndex,
+          () => llmProvider.generateCode(prompt, temperature, contextContent)
+        );
         const cleanedCode = cleanCodeMarkdown(rawCode);
         
         if (!cleanedCode.trim()) {
@@ -191,6 +197,7 @@ async function runSingleTestSample(
       timestamp: new Date().toISOString(),
       sampleIndex,
       temperature,
+      apiUsage,
     };
   } catch (error) {
     // Clean up on error
@@ -220,6 +227,7 @@ async function runSingleTestSample(
       timestamp: new Date().toISOString(),
       sampleIndex,
       temperature,
+      apiUsage,
     };
   }
 }
@@ -432,6 +440,7 @@ export async function runHumanEvalTest(
         success: s.testResult.success,
         errors: s.testResult.errors || [],
         temperature: s.temperature,
+        apiUsage: s.apiUsage,
       })),
     };
 

@@ -1,3 +1,4 @@
+import { normalizeApiUsage } from "./api-cost";
 import path from "path";
 import fs from "fs/promises";
 import { describe, it, expect, vi, beforeEach, afterEach, afterAll } from "vitest";
@@ -93,6 +94,13 @@ function checkpointWithGaps() {
 }
 
 describe("resume helpers", () => {
+  it("preserves API usage and actual cost when rebuilding completed samples", () => {
+    const completed = result("alpha", [0]);
+    const usage = normalizeApiUsage("OpenRouter", "test", { id: "gen-test", usage: { cost: 0.1, prompt_tokens: 100, completion_tokens: 20 } });
+    completed.samples[0].apiUsage = [usage];
+    expect(getRecordedSamples(tests[0], [completed])[0].apiUsage).toEqual([usage]);
+  });
+
   it("merges completed and in-progress samples by index", () => {
     const samples = getRecordedSamples(
       tests[1],

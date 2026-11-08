@@ -1,3 +1,4 @@
+import { recordApiResponse } from "../utils/api-cost";
 import { DEFAULT_SYSTEM_PROMPT, DEFAULT_SYSTEM_PROMPT_WITH_CONTEXT } from "../utils/prompt";
 import type { LLMProvider } from "./index";
 import { withRetry } from "../utils/retry-wrapper";
@@ -99,6 +100,7 @@ export class MiniMaxProvider implements LLMProvider {
             throw error;
           }
 
+          recordApiResponse(this.name, this.modelId, data);
           // MiniMax can report API errors inside an HTTP 200 response.
           const code = data.base_resp?.status_code;
           if (code) {

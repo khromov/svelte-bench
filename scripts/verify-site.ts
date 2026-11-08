@@ -5,7 +5,9 @@ import path from "node:path";
 import { modelAnchor, models, type Result } from "../site/src/lib/results.js";
 let count = 0;
 for (const directory of ["", "v1"]) {
-  for (const name of (await readdir(path.join("benchmarks", directory))).filter((n) => n.endsWith(".json"))) {
+  for (const name of (await readdir(path.join("benchmarks", directory))).filter(
+    (n) => n.includes("benchmark-results-") && n.endsWith(".json"),
+  )) {
     const source = await readFile(path.join("benchmarks", directory, name));
     assert.deepEqual(await readFile(path.join("site/build", directory, name)), source, `Download changed: ${name}`);
     const html = await readFile(path.join("site/build", directory, name.replace(/\.json$/, ".html")), "utf8");

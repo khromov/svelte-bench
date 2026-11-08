@@ -1,3 +1,4 @@
+import { recordApiResponse } from "../utils/api-cost";
 import {
   DEFAULT_SYSTEM_PROMPT,
   DEFAULT_SYSTEM_PROMPT_WITH_CONTEXT,
@@ -129,6 +130,7 @@ export class OpenAIProvider implements LLMProvider {
 
       const response = await this.client.responses.create(requestOptions);
 
+      recordApiResponse(this.name, cleanModelId, response);
       return response.output_text;
     } catch (error) {
       console.error("Error generating code with OpenAI:", error);

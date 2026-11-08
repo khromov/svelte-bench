@@ -37,6 +37,7 @@ export function getRecordedSamples(
         timestamp: new Date().toISOString(),
         sampleIndex: sample.index,
         temperature: sample.temperature,
+        apiUsage: sample.apiUsage,
       });
     }
   }

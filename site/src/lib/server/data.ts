@@ -6,7 +6,7 @@ const root = path.resolve(process.cwd(), "../benchmarks");
 export async function files(legacy = false) {
   const names = await readdir(path.join(root, legacy ? "v1" : ""));
   return names
-    .filter((name) => name.endsWith(".json"))
+    .filter((name) => name.includes("benchmark-results-") && name.endsWith(".json"))
     .sort((a, b) => b.localeCompare(a, undefined, { numeric: true, sensitivity: "base" }));
 }
 export async function readResults(name: string, legacy: boolean): Promise<Result[]> {

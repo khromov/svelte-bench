@@ -1,3 +1,4 @@
+import { recordApiResponse } from "../utils/api-cost";
 import {
   DEFAULT_SYSTEM_PROMPT,
   DEFAULT_SYSTEM_PROMPT_WITH_CONTEXT,
@@ -62,6 +63,7 @@ export class GoogleGenAIProvider implements LLMProvider {
 
       const response = await this.client.models.generateContent(requestOptions);
 
+      recordApiResponse(this.name, this.modelId, response);
       return response.text || "";
     } catch (error) {
       console.error("Error generating code with Google Gemini:", error);

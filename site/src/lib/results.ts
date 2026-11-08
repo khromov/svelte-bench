@@ -1,3 +1,4 @@
+import { summarizeCost } from "./costs.js";
 import type { HumanEvalResult } from "../../../src/utils/humaneval.js";
 export type Result = HumanEvalResult;
 export const isLocal = (provider: string) => provider.toLowerCase() === "ollama";
@@ -25,6 +26,7 @@ export function models(results: Result[], legacy = false) {
       provider: tests[0].provider,
       model: tests[0].modelId,
       tests,
+      cost: summarizeCost(tests),
       modelUrl: tests.find((r) => r.modelUrl)?.modelUrl,
       averagePass1: tests.reduce((sum, r) => sum + r.pass1, 0) / tests.length,
       score: (tests.reduce((sum, r) => sum + r.pass1, 0) / tests.length) * 100,
@@ -60,31 +62,39 @@ export function visibleModels(all: Model[], search: string, tab: string, sort: s
   const filtered = all.filter(
     (m) => (tab !== "local" || isLocal(m.provider)) && `${m.provider} ${m.model}`.toLowerCase().includes(query),
   );
-  if (!/^(rank|model|score|tps|time)(-asc|-desc)?$/.test(sort)) return filtered;
+  if (!/^(rank|model|score|tps|time|cost)(-asc|-desc)?$/.test(sort)) return filtered;
   const [key] = sort.split("-");
   // Default score order retains the published ranking and local speed tie-breaker.
   if (sort === "score" || sort === "score-desc") return filtered;
   return filtered.sort((a, b) => {
     const av =
-      key === "model"
-        ? a.model
-        : key === "rank"
-          ? a.rank
-          : key === "score"
-            ? a.score
-            : key === "tps"
-              ? a.tps
-              : a.tokenTimes?.avgResponseSeconds;
+      key === "cost"
+        ? a.cost.status === "complete"
+          ? a.cost.knownUsd
+          : null
+        : key === "model"
+          ? a.model
+          : key === "rank"
+            ? a.rank
+            : key === "score"
+              ? a.score
+              : key === "tps"
+                ? a.tps
+                : a.tokenTimes?.avgResponseSeconds;
     const bv =
-      key === "model"
-        ? b.model
-        : key === "rank"
-          ? b.rank
-          : key === "score"
-            ? b.score
-            : key === "tps"
-              ? b.tps
-              : b.tokenTimes?.avgResponseSeconds;
+      key === "cost"
+        ? b.cost.status === "complete"
+          ? b.cost.knownUsd
+          : null
+        : key === "model"
+          ? b.model
+          : key === "rank"
+            ? b.rank
+            : key === "score"
+              ? b.score
+              : key === "tps"
+                ? b.tps
+                : b.tokenTimes?.avgResponseSeconds;
     return compareValues(av, bv, sort) || a.rank - b.rank;
   });
 }
@@ -110,14 +120,18 @@ export function compareValues(
 export function sortResults(results: Result[], sort: string) {
   const key = sort.split("-")[0];
   const value = (r: Result) =>
-    key === "correct"
-      ? r.numCorrect
-      : key === "pass1"
-        ? r.pass1
-        : key === "pass10"
-          ? r.pass10
-          : key === "samples"
-            ? r.numSamples
-            : r.testName;
+    key === "cost"
+      ? summarizeCost([r]).status === "complete"
+        ? summarizeCost([r]).knownUsd
+        : null
+      : key === "correct"
+        ? r.numCorrect
+        : key === "pass1"
+          ? r.pass1
+          : key === "pass10"
+            ? r.pass10
+            : key === "samples"
+              ? r.numSamples
+              : r.testName;
   return [...results].sort((a, b) => compareValues(value(a), value(b), sort) || a.testName.localeCompare(b.testName));
 }

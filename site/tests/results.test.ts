@@ -5,7 +5,7 @@ import { models, visibleModels, formatDuration, type Result } from "../src/lib/r
 import { legacyRanking, legacyV1Ranking } from "./fixtures/legacy-ranking.js";
 const benchmarks = path.resolve("../benchmarks");
 test("matches archived EJS scores, ordering, speed and response metadata across every current result", async () => {
-  const files = (await readdir(benchmarks)).filter((f) => f.endsWith(".json"));
+  const files = (await readdir(benchmarks)).filter((f) => f.startsWith("benchmark-results-") && f.endsWith(".json"));
   for (const file of files) {
     const results: Result[] = JSON.parse(await readFile(path.join(benchmarks, file), "utf8"));
     const providers = [...new Set(results.map((r) => r.provider))].sort((a, b) => a.localeCompare(b));

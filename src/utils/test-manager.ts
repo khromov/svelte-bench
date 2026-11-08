@@ -1,3 +1,4 @@
+import { captureApiUsage, type ApiUsage } from "./api-cost";
 import path from "path";
 import fs from "fs/promises";
 import type { LLMProvider } from "../llms";
@@ -31,6 +32,7 @@ export interface CheckpointData {
 // We still need BenchmarkResult for the runSingleTest function
 // which is used by runHumanEvalTest
 export interface BenchmarkResult {
+  apiUsage?: ApiUsage[];
   testName: string;
   llmProvider: string;
   modelIdentifier: string;
@@ -88,6 +90,7 @@ export async function runSingleTest(
   temperature?: number,
   contextContent?: string
 ): Promise<BenchmarkResult> {
+  const apiUsage: ApiUsage[] = [];
   try {
     const providerName = llmProvider.name;
 
@@ -102,7 +105,10 @@ export async function runSingleTest(
     );
     let generatedCode = await withRetry(
       async () => {
-        const rawCode = await llmProvider.generateCode(prompt, temperature, contextContent);
+        const rawCode = await captureApiUsage(
+          apiUsage, test.name, sampleIndex,
+          () => llmProvider.generateCode(prompt, temperature, contextContent)
+        );
         
         // Apply cleaning to remove markdown code blocks
         const cleanedCode = cleanCodeMarkdown(rawCode);
@@ -163,6 +169,7 @@ export async function runSingleTest(
       timestamp: new Date().toISOString(),
       sampleIndex,
       temperature,
+      apiUsage,
     };
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
@@ -189,6 +196,7 @@ export async function runSingleTest(
       timestamp: new Date().toISOString(),
       sampleIndex,
       temperature,
+      apiUsage,
     };
   }
 }
@@ -359,6 +367,7 @@ export async function runHumanEvalTest(
         success: s.testResult.success,
         errors: s.testResult.errors || [],
         temperature: s.temperature,
+        apiUsage: s.apiUsage,
       })),
     };
   } catch (error) {

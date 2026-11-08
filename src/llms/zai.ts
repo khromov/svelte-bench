@@ -1,3 +1,4 @@
+import { recordApiResponse } from "../utils/api-cost";
 import { DEFAULT_SYSTEM_PROMPT, DEFAULT_SYSTEM_PROMPT_WITH_CONTEXT } from "../utils/prompt";
 import type { LLMProvider } from "./index";
 import { withRetry } from "../utils/retry-wrapper";
@@ -103,6 +104,7 @@ export class ZAIProvider implements LLMProvider {
           }
 
           const data = await response.json();
+          recordApiResponse(this.name, this.modelId, data);
           const content = data.choices?.[0]?.message?.content;
 
           if (!content) {

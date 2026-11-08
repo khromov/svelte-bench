@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Cost from "#lib/Cost.svelte";
   import SortHeader from "#lib/SortHeader.svelte";
   import type { Model } from "#lib/results.js";
   import { modelAnchor, formatDuration, formatTps, responseTitle } from "#lib/results.js";
@@ -33,6 +34,7 @@
         <SortHeader label="Rank" column="rank" {sort} {onsort} />
         <SortHeader label="Model" column="model" {sort} {onsort} />
         <SortHeader label="Score" column="score" {sort} {onsort} />
+        {#if !local}<SortHeader label="Run cost (USD)" column="cost" {sort} {onsort} />{/if}
         {#if showTps}<SortHeader label="Speed" column="tps" {sort} {onsort} />{/if}
         {#if showTime}<SortHeader label="Avg. response" column="time" {sort} {onsort} />{/if}
       </Table.Row></Table.Header
@@ -66,6 +68,7 @@
               <Progress value={model.score} aria-label={`${model.model} pass@1`} class="min-w-12 flex-1" />
             </div></Table.Cell
           >
+          {#if !local}<Table.Cell><Cost cost={model.cost} /></Table.Cell>{/if}
           {#if showTps}<Table.Cell
               ><div class="font-mono">{model.tps === null ? "—" : `${formatTps(model.tps)} tok/s`}</div>
               {#if model.tps}<Progress
