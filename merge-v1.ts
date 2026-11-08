@@ -30,7 +30,7 @@ function extractTimestamp(filename: string): Date | null {
  * Get all benchmark JSON files from the benchmarks directory
  */
 async function getBenchmarkFiles(): Promise<string[]> {
-  const benchmarksDir = path.resolve(process.cwd(), "benchmarks");
+  const benchmarksDir = path.resolve(process.cwd(), "benchmarks", "v1");
   const files = await fs.readdir(benchmarksDir);
 
   // Filter for JSON files only, exclude the merged file itself,
@@ -41,7 +41,7 @@ async function getBenchmarkFiles(): Promise<string[]> {
         file.endsWith(".json") &&
         file.includes("benchmark-results") &&
         !file.includes("with-context") &&
-        file !== "benchmark-results-merged.json",
+        !file.includes("merged"),
     )
     .map((file) => path.join(benchmarksDir, file));
 }
@@ -119,7 +119,7 @@ async function mergeAndSaveResults(): Promise<void> {
 
   // Save merged results
   await ensureBenchmarksDir();
-  const outputPath = path.resolve(process.cwd(), "benchmarks", "benchmark-results-merged.json");
+  const outputPath = path.resolve(process.cwd(), "benchmarks", "v1", "v1-benchmark-results-merged.json");
 
   await fs.writeFile(outputPath, JSON.stringify(mergedResults, null, 2));
 
