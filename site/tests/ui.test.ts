@@ -211,3 +211,52 @@ test("reopens a collapsed model when its current anchor is clicked again", async
   await userEvent.click(screen.getByRole("link", { name: "local-test" }));
   await waitFor(() => expect(trigger).toHaveAttribute("aria-expanded", "true"));
 });
+
+test("renders API-reported, estimated, partial and missing costs without calling missing usage free", async () => {
+  const request = (usd: number, source: "api" | "estimate") => ({
+    provider: "OpenRouter",
+    modelId: "fixture",
+    measuredAt: "2026-11-08T00:00:00.000Z",
+    inputTokens: 100,
+    outputTokens: 20,
+    cost: { usd, source },
+  });
+  const remote = (modelId: string, apiUsage?: Result["samples"][number]["apiUsage"]): Result => ({
+    ...result,
+    provider: "OpenRouter",
+    modelId,
+    samples: [{ ...result.samples[0], apiUsage }],
+  });
+  render(App, {
+    data: {
+      ...data,
+      results: [
+        remote("api-paid", [request(0.12, "api")]),
+        remote("estimated", [request(0.05, "estimate")]),
+        remote("missing"),
+        {
+          ...remote("partial", [request(0.2, "api")]),
+          samples: [
+            { ...result.samples[0], apiUsage: [request(0.2, "api")] },
+            { ...result.samples[0], index: 1 },
+          ],
+        },
+        remote("actual-zero", [request(0, "api")]),
+        result,
+      ],
+    },
+  });
+  expect(screen.getByRole("columnheader", { name: /Run cost/ })).toBeVisible();
+  expect(screen.getAllByText("$0.12")[0]).toBeVisible();
+  expect(screen.getAllByText("$0.05")[0]).toBeVisible();
+  expect(screen.getAllByText("Estimated")[0]).toBeVisible();
+  expect(screen.getAllByText("API reported · Partial")[0]).toBeVisible();
+  expect(screen.getAllByText("Not recorded")[0]).toBeVisible();
+  expect(screen.getAllByText("$0.00")[0]).toBeVisible();
+  const user = userEvent.setup();
+  await user.click(screen.getByRole("link", { name: /^api-paid$/ }));
+  await user.click(await screen.findByRole("button", { name: "Samples (1)" }));
+  await user.click(screen.getByRole("button", { name: /Sample 1/ }));
+  expect(screen.getByText("Sample cost (USD)")).toBeVisible();
+  expect(screen.getByText(/Input: 100 tokens/)).toBeVisible();
+});

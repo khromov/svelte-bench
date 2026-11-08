@@ -92,3 +92,18 @@ Leave unsupported cache-write TTLs or billing modes unpriced.
 
 Experimental: validate observed costs against actual provider account billing
 before presenting these figures as complete benchmark spend.
+
+## Rendered benchmark costs
+
+The SvelteKit leaderboard displays run cost in USD, with per-test totals in model
+panels and per-sample charges and token counts in the Samples dialog. Totals use
+only the samples in the selected benchmark result (the merged leaderboard uses
+the selected run for each model), including all saved returned retry attempts.
+They do not add historical runs or separate ledgers to those totals.
+
+API-reported, estimated and mixed costs are labeled. Partial coverage displays
+the recorded amount with a Partial label, never as a complete total. Missing
+historical usage shows Not recorded; usage without a usable price shows
+Unavailable. Local models have no API cost. Small charges below $0.0001 remain
+visible instead of rounding to a free request. Auxiliary cost-report JSON is
+excluded from benchmark routes and raw-result downloads.

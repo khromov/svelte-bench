@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Cost from "#lib/Cost.svelte";
   import type { Model } from "#lib/results.js";
   import { modelAnchor, formatDuration, formatTps, responseTitle } from "#lib/results.js";
   import * as Table from "#lib/components/ui/table/index.js";
@@ -37,6 +38,7 @@
           >{#if local}<Button variant="ghost" size="sm" onclick={() => onsort("score")}>Score ↓</Button
             >{:else}Score{/if}</Table.Head
         >
+        {#if !local}<Table.Head>Run cost <span class="text-xs text-muted-foreground">USD</span></Table.Head>{/if}
         {#if showTps}<Table.Head aria-sort={ariaSort("tps")}
             ><Button variant="ghost" size="sm" disabled={!local} onclick={() => onsort("tps")}
               >Speed {sort.startsWith("tps") ? (sort.endsWith("asc") ? "↑" : "↓") : ""}</Button
@@ -78,6 +80,7 @@
               <Progress value={model.score} aria-label={`${model.model} pass@1`} class="min-w-12 flex-1" />
             </div></Table.Cell
           >
+          {#if !local}<Table.Cell><Cost cost={model.cost} /></Table.Cell>{/if}
           {#if showTps}<Table.Cell
               ><div class="font-mono">{model.tps === null ? "—" : `${formatTps(model.tps)} tok/s`}</div>
               {#if model.tps}<Progress

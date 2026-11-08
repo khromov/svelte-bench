@@ -12,6 +12,8 @@
   import { Button } from "#lib/components/ui/button/index.js";
   import { Badge } from "#lib/components/ui/badge/index.js";
   import Leaderboard from "#lib/Leaderboard.svelte";
+  import Cost from "#lib/Cost.svelte";
+  import { summarizeCost } from "#lib/costs.js";
   import Samples from "#lib/Samples.svelte";
   let { data }: PageProps = $props();
   let ready = $state(false);
@@ -135,6 +137,13 @@
         Speed is the generation rate on that hardware. Estimated response time uses average output tokens, including
         thinking, divided by speed, with one sample per test.
       </p>{/if}
+    {#if tab !== "local" && shown.some((m) => m.provider.toLowerCase() !== "ollama")}
+      <p class="mt-4 max-w-3xl text-xs leading-relaxed text-muted-foreground">
+        Experimental costs cover recorded samples and returned retry attempts, in USD. API reported charges and
+        documented-rate estimates are labeled separately. Partial amounts exclude unknown charges. “Not recorded” means
+        usage was not saved, not zero cost. Validation probes and requests without returned usage are excluded.
+      </p>
+    {/if}
     <section class="mt-12">
       <h2 class="mb-4 text-xl font-semibold tracking-tight">Results by provider</h2>
       <Accordion.Root type="multiple" bind:value={expandedProviders}>
@@ -166,11 +175,18 @@
                             >~{formatDuration(model.tokenTimes.avgResponseSeconds)} / response</span
                           >{/if}
                       </div>
+                      {#if model.provider.toLowerCase() !== "ollama"}
+                        <div class="mb-4 flex flex-wrap items-center gap-3 text-sm">
+                          <span>Run cost (USD)</span><Cost cost={model.cost} />
+                        </div>
+                      {/if}
                       <Table.Root
                         ><Table.Header
                           ><Table.Row
                             ><Table.Head>Test</Table.Head><Table.Head>Correct</Table.Head><Table.Head>pass@1</Table.Head
-                            ><Table.Head>pass@10</Table.Head><Table.Head>Samples</Table.Head></Table.Row
+                            ><Table.Head>pass@10</Table.Head>{#if model.provider.toLowerCase() !== "ollama"}<Table.Head
+                                >Cost (USD)</Table.Head
+                              >{/if}<Table.Head>Samples</Table.Head></Table.Row
                           ></Table.Header
                         ><Table.Body
                           >{#each model.tests as result (result)}<Table.Row
@@ -178,7 +194,9 @@
                                 >{result.numCorrect}/{result.numSamples}</Table.Cell
                               ><Table.Cell>{(result.pass1 * 100).toFixed(1)}%</Table.Cell><Table.Cell
                                 >{(result.pass10 * 100).toFixed(1)}%</Table.Cell
-                              ><Table.Cell><Samples {result} /></Table.Cell></Table.Row
+                              >{#if model.provider.toLowerCase() !== "ollama"}<Table.Cell
+                                  ><Cost cost={summarizeCost([result])} /></Table.Cell
+                                >{/if}<Table.Cell><Samples {result} /></Table.Cell></Table.Row
                             >{/each}</Table.Body
                         ></Table.Root
                       >

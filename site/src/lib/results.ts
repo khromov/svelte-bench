@@ -1,3 +1,4 @@
+import { summarizeCost } from "./costs.js";
 import type { HumanEvalResult } from "../../../src/utils/humaneval.js";
 export type Result = HumanEvalResult;
 export const isLocal = (provider: string) => provider.toLowerCase() === "ollama";
@@ -25,6 +26,7 @@ export function models(results: Result[], legacy = false) {
       provider: tests[0].provider,
       model: tests[0].modelId,
       tests,
+      cost: summarizeCost(tests),
       modelUrl: tests.find((r) => r.modelUrl)?.modelUrl,
       averagePass1: tests.reduce((sum, r) => sum + r.pass1, 0) / tests.length,
       score: (tests.reduce((sum, r) => sum + r.pass1, 0) / tests.length) * 100,

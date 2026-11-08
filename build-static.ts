@@ -10,7 +10,8 @@ for (const directory of ["", "v1"]) {
     if (name.endsWith(".json")) await rm(path.join(target, name));
   }
   for (const name of await readdir(source)) {
-    if (name.includes("benchmark-results-") && name.endsWith(".json")) await copyFile(path.join(source, name), path.join(target, name));
+    if (name.includes("benchmark-results-") && name.endsWith(".json"))
+      await copyFile(path.join(source, name), path.join(target, name));
   }
 }
 await writeFile(path.join(destination, ".nojekyll"), "");
