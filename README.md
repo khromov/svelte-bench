@@ -23,6 +23,7 @@ SvelteBench supports multiple LLM providers:
 - **Cursor**
 - **MiniMax** - MiniMax's OpenAI-compatible API
 - **Reflection** - Beam models through Reflection's OpenAI-compatible API
+- **Thinking Machines Tinker** - OpenAI-compatible Chat Completions; live model discovery
 
 ## Setup
 
@@ -124,6 +125,9 @@ MINIMAX_API_KEY=your_minimax_api_key_here
 
 # Reflection (optional)
 REFLECTION_API_KEY=your_reflection_api_key_here
+
+# Thinking Machines Tinker (optional)
+TM_TINKER_API_KEY=your_tinker_api_key_here
 ```
 
 MiniMax is available in both the CLI (`DEBUG_PROVIDER=minimax`) and TUI. Set
@@ -132,6 +136,15 @@ The TUI discovers models and validates keys using MiniMax's
 [model catalog](https://platform.minimax.io/docs/api-reference/models/openai/list-models).
 Generation uses the documented [Chat Completions API](https://platform.minimax.io/docs/api-reference/text-chat-openai),
 with reasoning separated from generated code. Custom model IDs are supported.
+
+Thinking Machines Tinker uses [OpenAI-compatible Chat Completions](https://tinker-docs.thinkingmachines.ai/tinker/compatible-apis/openai/)
+at `https://tinker.thinkingmachines.dev/services/tinker-prod/oai/api/v1` with `TM_TINKER_API_KEY`.
+Select it in the TUI or set `DEBUG_PROVIDER=tinker` and `DEBUG_MODEL` to a Tinker model ID
+or a full `tinker://.../sampler_weights/...` checkpoint path. Model IDs are case-sensitive.
+Discovery reads Tinker's documented [model and serverless JSON catalogs](https://tinker-docs.thinkingmachines.ai/tinker/models/).
+Release dates are shown only when explicit `release_date` metadata is supplied; the current catalogs provide none.
+Generation returns the answer content with reasoning separated, uses an 8192-token output budget,
+and leaves reasoning effort at the API default. Account billing must be enabled for inference.
 
 ## Running the Benchmark
 
