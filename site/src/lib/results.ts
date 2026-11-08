@@ -1,6 +1,15 @@
 import type { HumanEvalResult } from "../../../src/utils/humaneval.js";
 export type Result = HumanEvalResult;
 export const isLocal = (provider: string) => provider.toLowerCase() === "ollama";
+// Keep the IDs published by the EJS renderer: existing inbound links depend on them.
+export function modelAnchor(provider: string, model: string) {
+  const slug = (value: string) =>
+    value
+      .replace(/\s+/g, "-")
+      .replace(/[^\w-]/g, "")
+      .toLowerCase();
+  return `model-${slug(provider)}-${slug(model)}`;
+}
 export function models(results: Result[], legacy = false) {
   const groups = new Map<string, Result[]>();
   // Match the original renderer's alphabetical provider/model insertion order before ranking.

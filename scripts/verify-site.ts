@@ -2,6 +2,7 @@
 import assert from "node:assert/strict";
 import { readdir, readFile, access } from "node:fs/promises";
 import path from "node:path";
+import { modelAnchor, models, type Result } from "../site/src/lib/results.js";
 let count = 0;
 for (const directory of ["", "v1"]) {
   for (const name of (await readdir(path.join("benchmarks", directory))).filter((n) => n.endsWith(".json"))) {
@@ -10,6 +11,14 @@ for (const directory of ["", "v1"]) {
     const html = await readFile(path.join("site/build", directory, name.replace(/\.json$/, ".html")), "utf8");
     assert(html.includes("Download JSON"), `Missing rendered page: ${name}`);
     if (directory) assert(html.includes("Legacy v1 results"));
+    if (name === "benchmark-results-merged.json" || name === "v1-benchmark-results-merged.json") {
+      const results: Result[] = JSON.parse(source.toString());
+      for (const model of models(results, !!directory)) {
+        const anchor = modelAnchor(model.provider, model.model);
+        assert(html.includes(`href="#${anchor}"`), `Missing model deep link in ${directory}/${name}: ${anchor}`);
+      }
+      assert(html.includes("Model leaderboard"), `Merged URL no longer renders the leaderboard: ${directory}`);
+    }
     count++;
   }
 }
@@ -22,5 +31,5 @@ for (const name of await readdir("site/build/_app/immutable/nodes")) {
   }
 }
 console.log(
-  `Verified ${count} result HTML pages, unchanged JSON downloads, both indexes, and browser module boundaries.`,
+  `Verified ${count} result HTML pages, unchanged JSON downloads, merged leaderboards and model deep links, both indexes, and browser module boundaries.`,
 );

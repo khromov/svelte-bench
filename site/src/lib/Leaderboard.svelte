@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { Model } from "#lib/results.js";
-  import { formatDuration, formatTps, responseTitle } from "#lib/results.js";
+  import { modelAnchor, formatDuration, formatTps, responseTitle } from "#lib/results.js";
   import * as Table from "#lib/components/ui/table/index.js";
   import * as Tooltip from "#lib/components/ui/tooltip/index.js";
   import { Button } from "#lib/components/ui/button/index.js";
@@ -10,6 +10,7 @@
     local,
     sort,
     onsort,
+    onmodel,
     maxTps,
     showTps,
     showTime,
@@ -18,6 +19,7 @@
     local: boolean;
     sort: string;
     onsort: (key: string) => void;
+    onmodel: (hash: string) => void;
     maxTps: number;
     showTps: boolean;
     showTime: boolean;
@@ -52,12 +54,22 @@
         <Table.Row>
           <Table.Cell class="font-mono text-muted-foreground">{model.rank}</Table.Cell>
           <Table.Cell class="max-w-52 whitespace-normal sm:max-w-96">
+            <a
+              class="break-words font-medium underline-offset-4 hover:underline"
+              href={`#${modelAnchor(model.provider, model.model)}`}
+              onclick={(event) => {
+                if (event.button || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+                event.preventDefault();
+                onmodel(`#${modelAnchor(model.provider, model.model)}`);
+              }}>{model.model}</a
+            >
             {#if model.modelUrl}<a
-                class="break-words font-medium underline-offset-4 hover:underline"
                 href={model.modelUrl}
                 target="_blank"
-                rel="noreferrer">{model.model} ↗</a
-              >{:else}<span class="break-words font-medium">{model.model}</span>{/if}
+                rel="noreferrer"
+                class="ml-2 text-xs underline"
+                aria-label={`Open model page for ${model.model}`}>Model page ↗</a
+              >{/if}
             <div class="mt-1 text-xs text-muted-foreground">{model.provider}</div>
           </Table.Cell>
           <Table.Cell

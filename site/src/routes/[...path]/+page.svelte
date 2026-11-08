@@ -1,10 +1,10 @@
 <script lang="ts">
-  import { onMount } from "svelte";
+  import { onMount, tick } from "svelte";
   import { page } from "$app/state";
   import { goto } from "$app/navigation";
   import { resolve, asset } from "$app/paths";
   import type { PageProps } from "./$types.js";
-  import { models, visibleModels, formatTps, formatDuration } from "#lib/results.js";
+  import { models, modelAnchor, visibleModels, formatTps, formatDuration } from "#lib/results.js";
   import * as Tabs from "#lib/components/ui/tabs/index.js";
   import * as Accordion from "#lib/components/ui/accordion/index.js";
   import * as Table from "#lib/components/ui/table/index.js";
@@ -18,11 +18,25 @@
   onMount(() => {
     ready = true;
   });
-  const search = $derived(ready ? (page.url.searchParams.get("search") ?? "") : "");
-  const tab = $derived(ready && page.url.searchParams.get("tab") === "local" ? "local" : "all");
-  const sort = $derived(ready ? (page.url.searchParams.get("sort") ?? "score") : "score");
+  const url = $derived(page.shallow?.url ?? page.url);
+  const search = $derived(ready ? (url.searchParams.get("search") ?? "") : "");
+  const tab = $derived(ready && url.searchParams.get("tab") === "local" ? "local" : "all");
+  const sort = $derived(ready ? (url.searchParams.get("sort") ?? "score") : "score");
   const all = $derived(models(data.results, data.legacy));
   const shown = $derived(visibleModels(all, search, tab, sort));
+  const target = $derived(ready ? shown.find((m) => `#${modelAnchor(m.provider, m.model)}` === url.hash) : undefined);
+  $effect(() => {
+    if (!target) return;
+    const id = modelAnchor(target.provider, target.model);
+    // The provider and model panels must mount before the browser can scroll to the anchor.
+    let cancelled = false;
+    void tick().then(() => {
+      if (!cancelled) document.getElementById(id)?.scrollIntoView({ block: "start" });
+    });
+    return () => {
+      cancelled = true;
+    };
+  });
   const merged = $derived(data.selected?.includes("merged"));
   const prefix = $derived(data.legacy ? "v1/" : "");
   const mergedFile = $derived(data.files.find((name) => name.includes("merged")));
@@ -40,11 +54,11 @@
     return asset((prefix + name) as Parameters<typeof asset>[0]);
   }
   function update(key: string, value: string) {
-    const url = new URL(page.url.href);
+    const next = new URL(url.href);
     if (value && !(key === "tab" && value === "all") && !(key === "sort" && value === "score"))
-      url.searchParams.set(key, value);
-    else url.searchParams.delete(key);
-    void goto(url, { shallow: true, replace: true, reset: false });
+      next.searchParams.set(key, value);
+    else next.searchParams.delete(key);
+    void goto(next, { shallow: true, replace: true, reset: false });
   }
   function sortBy(key: string) {
     if (key === "score") return update("sort", "score");
@@ -52,6 +66,11 @@
     const current = sort.split("-");
     const direction = current[0] === key ? ((current[1] ?? first) === "asc" ? "desc" : "asc") : first;
     update("sort", direction === first ? key : `${key}-${direction}`);
+  }
+  function openModel(hash: string) {
+    const next = new URL(url.href);
+    next.hash = hash;
+    void goto(next, { shallow: true, reset: false });
   }
 </script>
 
@@ -130,6 +149,7 @@
         local={tab === "local"}
         {sort}
         onsort={sortBy}
+        onmodel={openModel}
         maxTps={Math.max(0, ...all.map((m) => m.tps ?? 0))}
         showTps={all.some((m) => m.tps !== null)}
         showTime={all.some((m) => m.tokenTimes !== null)}
@@ -142,7 +162,7 @@
       </p>{/if}
     <section class="mt-12">
       <h2 class="mb-4 text-xl font-semibold tracking-tight">Results by provider</h2>
-      <Accordion.Root type="multiple" value={search ? providers : []}>
+      <Accordion.Root type="multiple" value={search ? providers : target ? [target.provider] : []}>
         {#each providers as provider (provider)}<Accordion.Item value={provider}
             ><Accordion.Trigger
               ><span class="text-base"
@@ -152,11 +172,18 @@
             ><Accordion.Content>
               <Accordion.Root
                 type="multiple"
-                value={search ? shown.filter((m) => m.provider === provider).map((m) => m.key) : []}
+                value={search
+                  ? shown.filter((m) => m.provider === provider).map((m) => m.key)
+                  : target?.provider === provider
+                    ? [target.key]
+                    : []}
               >
                 {#each shown
                   .filter((m) => m.provider === provider)
-                  .sort((a, b) => a.model.localeCompare(b.model)) as model (model.key)}<Accordion.Item value={model.key}
+                  .sort((a, b) => a.model.localeCompare(b.model)) as model (model.key)}<Accordion.Item
+                    value={model.key}
+                    id={modelAnchor(model.provider, model.model)}
+                    class="scroll-mt-6"
                     ><Accordion.Trigger
                       ><span class="min-w-0 break-all pr-3"
                         >{model.model}

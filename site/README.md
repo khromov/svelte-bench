@@ -28,6 +28,13 @@ made the component sources explicit. Normal checks use `svelte-kit sync`.
 
 ## Verification
 
+Published result URLs remain stable: `/benchmark-results-merged.html` renders the
+current merged leaderboard, `?tab=local` selects local models, and the original
+`#model-{provider}-{model}` fragments expand the provider/model results and scroll
+to them after hydration. Leaderboard names link to these details; external model
+pages have separate links. The same behavior applies under `/v1/` and on run pages.
+The root remains an index linking to the current leaderboard and individual runs.
+
 `pnpm test:site` compares current scores, ranking, speed, and response metadata
 against the original EJS ranking calculation captured at commit
 5288732327023915ac0b2ee1206113a8dd8f1c10. It also checks legacy ranking, local tie

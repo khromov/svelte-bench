@@ -1,5 +1,5 @@
 import "@testing-library/jest-dom/vitest";
-import { afterEach, beforeEach, expect, test } from "vitest";
+import { afterEach, beforeEach, expect, test, vi } from "vitest";
 import { cleanup, render, screen, waitFor } from "@testing-library/svelte";
 import userEvent from "@testing-library/user-event";
 import App from "./App.svelte";
@@ -30,12 +30,14 @@ const data = {
   results: [result, { ...result, provider: "cloud", modelId: "remote-test" }],
 };
 beforeEach(() => {
+  Element.prototype.scrollIntoView = vi.fn();
   Object.defineProperty(window, "matchMedia", {
     configurable: true,
     value: () => ({ matches: false, addEventListener() {}, removeEventListener() {} }),
   });
   history.replaceState({}, "", "/svelte-bench/benchmark-results-merged.html");
   page.url = new URL(location.href);
+  page.shallow = null;
   localStorage.clear();
   document.documentElement.classList.remove("dark");
 });
@@ -51,8 +53,8 @@ test("restores URL filters, supports tabs and preserves the current search input
   await user.click(screen.getByRole("tab", { name: /All models/ }));
   await user.type(search, "remote");
   expect(search).toHaveFocus();
-  await waitFor(() => expect(page.url.searchParams.get("search")).toBe("remote"));
-  expect(screen.getByText("remote-test", { selector: "a, span.font-medium" })).toBeInTheDocument();
+  await waitFor(() => expect(page.shallow?.url.searchParams.get("search")).toBe("remote"));
+  expect(screen.getByRole("link", { name: "remote-test" })).toBeInTheDocument();
   expect(screen.getByRole("link", { name: /Download JSON/ })).toHaveAttribute(
     "href",
     "/svelte-bench/benchmark-results-merged.json",
@@ -113,16 +115,17 @@ test("sort controls update the URL, preserve rank labels and restore navigation 
   });
   await user.click(screen.getByRole("tab", { name: /Local models/ }));
   await user.click(screen.getByRole("button", { name: /Speed/ }));
-  await waitFor(() => expect(page.url.searchParams.get("sort")).toBe("tps"));
+  await waitFor(() => expect(page.shallow?.url.searchParams.get("sort")).toBe("tps"));
   await user.click(screen.getByRole("button", { name: /Speed/ }));
-  await waitFor(() => expect(page.url.searchParams.get("sort")).toBe("tps-asc"));
+  await waitFor(() => expect(page.shallow?.url.searchParams.get("sort")).toBe("tps-asc"));
   const rows = screen.getAllByRole("row");
   expect(rows[1]).toHaveTextContent("slow");
   expect(rows[1].querySelector("td")?.textContent).toBe("2");
   page.url = new URL(`${location.origin}/svelte-bench/benchmark-results-merged.html?tab=local&sort=time`);
+  page.shallow = null;
   await waitFor(() => expect(screen.getAllByRole("row")[1]).toHaveTextContent("fast"));
   await user.click(screen.getByRole("button", { name: /Score/ }));
-  await waitFor(() => expect(page.url.searchParams.has("sort")).toBe(false));
+  await waitFor(() => expect(page.shallow?.url.searchParams.has("sort")).toBe(false));
 });
 
 test("connects keyboard-operated tabs to their result panels", async () => {
@@ -136,5 +139,64 @@ test("connects keyboard-operated tabs to their result panels", async () => {
   const panel = screen.getByRole("tabpanel");
   expect(local).toHaveAttribute("aria-controls", panel.id);
   expect(panel).toHaveAttribute("aria-labelledby", local.id);
-  await waitFor(() => expect(page.url.searchParams.get("tab")).toBe("local"));
+  await waitFor(() => expect(page.shallow?.url.searchParams.get("tab")).toBe("local"));
+});
+
+test.each([
+  [false, ""],
+  [false, "?tab=local"],
+  [true, ""],
+  [true, "?tab=local"],
+] as const)(
+  "restores old model anchors and opens their detailed results (legacy=%s, query=%s)",
+  async (legacy, query) => {
+    const modelId = "hf.co/webai-official/air-26B-A4B-GGUF:latest";
+    const hash = "#model-ollama-hfcowebai-officialair-26b-a4b-gguflatest";
+    const selected = `${legacy ? "v1-" : ""}benchmark-results-merged.json`;
+    const pathname = `/svelte-bench/${legacy ? "v1/" : ""}${selected.replace(".json", ".html")}`;
+    page.url = new URL(`${location.origin}${pathname}${query}${hash}`);
+    render(App, {
+      data: {
+        ...data,
+        legacy,
+        selected,
+        results: [
+          { ...result, modelId, modelUrl: "https://huggingface.co/webai-official/air-26B-A4B-GGUF" },
+          ...data.results,
+        ],
+      },
+    });
+    await waitFor(() =>
+      expect(screen.getByRole("tab", { name: query ? /Local models/ : /All models/ })).toHaveAttribute(
+        "aria-selected",
+        "true",
+      ),
+    );
+    if (query) expect(screen.queryByRole("link", { name: "remote-test" })).not.toBeInTheDocument();
+    const link = screen.getByRole("link", { name: modelId });
+    expect(link).toHaveAttribute("href", hash);
+    expect(screen.getByRole("link", { name: `Open model page for ${modelId}` })).toHaveAttribute("target", "_blank");
+    const trigger = await screen.findByRole("button", { name: `${modelId} 100.0%` });
+    expect(trigger).toHaveAttribute("aria-expanded", "true");
+    expect(document.getElementById(hash.slice(1))).toContainElement(trigger);
+    await waitFor(() => expect(Element.prototype.scrollIntoView).toHaveBeenCalled());
+    expect(screen.getByRole("button", { name: "Samples (1)" })).toBeInTheDocument();
+    // Hash navigation while mounted opens another model, including from shallow URL state.
+    await userEvent.click(screen.getByRole("link", { name: "local-test" }));
+    expect(page.shallow?.url.hash).toBe("#model-ollama-local-test");
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: /local-test 100/ })).toHaveAttribute("aria-expanded", "true"),
+    );
+    await userEvent.click(screen.getByRole("tab", { name: /All models/ }));
+    await waitFor(() => expect(page.shallow?.url.searchParams.has("tab")).toBe(false));
+    expect(page.shallow?.url.hash).toBe("#model-ollama-local-test");
+  },
+);
+
+test("ignores unknown model fragments without opening unrelated results", async () => {
+  page.url = new URL(`${location.href}#model-missing`);
+  render(App, { data });
+  await waitFor(() => expect(screen.getByRole("link", { name: "local-test" })).toBeInTheDocument());
+  expect(screen.getByRole("button", { name: /ollama 1 models/ })).toHaveAttribute("aria-expanded", "false");
+  expect(Element.prototype.scrollIntoView).not.toHaveBeenCalled();
 });
