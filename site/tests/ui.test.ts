@@ -88,7 +88,7 @@ test("renders legacy warning and context without optional speed metadata", async
     },
   });
   expect(screen.getByRole("note")).toHaveTextContent("Legacy v1 results");
-  expect(screen.queryByRole("columnheader", { name: /Speed/ })).not.toBeInTheDocument();
+  expect(screen.queryByRole("columnheader", { name: /Sort by Speed/ })).not.toBeInTheDocument();
   await userEvent.click(screen.getByRole("button", { name: "Context file: docs.txt" }));
   expect(screen.getByText("<script>context</script>")).toBeInTheDocument();
 });
@@ -114,9 +114,9 @@ test("sort controls update the URL, preserve rank labels and restore navigation 
     },
   });
   await user.click(screen.getByRole("tab", { name: /Local models/ }));
-  await user.click(screen.getByRole("button", { name: /Speed/ }));
+  await user.click(screen.getByRole("button", { name: /Sort by Speed/ }));
   await waitFor(() => expect(page.shallow?.url.searchParams.get("sort")).toBe("tps"));
-  await user.click(screen.getByRole("button", { name: /Speed/ }));
+  await user.click(screen.getByRole("button", { name: /Sort by Speed/ }));
   await waitFor(() => expect(page.shallow?.url.searchParams.get("sort")).toBe("tps-asc"));
   const rows = screen.getAllByRole("row");
   expect(rows[1]).toHaveTextContent("slow");
@@ -210,4 +210,25 @@ test("reopens a collapsed model when its current anchor is clicked again", async
   expect(trigger).toHaveAttribute("aria-expanded", "false");
   await userEvent.click(screen.getByRole("link", { name: "local-test" }));
   await waitFor(() => expect(trigger).toHaveAttribute("aria-expanded", "true"));
+});
+
+test("every visible table header sorts both ways, including detailed test results", async () => {
+  const user = userEvent.setup();
+  render(App, { data });
+  for (const label of ["Rank", "Model", "Score"]) {
+    const header = screen.getByRole("button", { name: `Sort by ${label}` });
+    await user.click(header);
+    await waitFor(() => expect(header.closest("th")).not.toHaveAttribute("aria-sort", "none"));
+    const first = header.closest("th")!.getAttribute("aria-sort");
+    await user.click(header);
+    await waitFor(() => expect(header.closest("th")!.getAttribute("aria-sort")).not.toBe(first));
+  }
+  await user.click(screen.getByRole("link", { name: "remote-test" }));
+  for (const label of ["Test", "Correct", "pass@1", "pass@10", "Samples"]) {
+    const header = screen.getByRole("button", { name: `Sort by ${label}` });
+    await user.click(header);
+    const first = header.closest("th")!.getAttribute("aria-sort");
+    await user.click(header);
+    expect(header.closest("th")!.getAttribute("aria-sort")).not.toBe(first);
+  }
 });

@@ -4,15 +4,14 @@
   import { goto } from "$app/navigation";
   import { resolve, asset } from "$app/paths";
   import type { PageProps } from "./$types.js";
-  import { models, modelAnchor, visibleModels, formatTps, formatDuration } from "#lib/results.js";
+  import { models, modelAnchor, visibleModels, formatTps, formatDuration, nextSort } from "#lib/results.js";
   import * as Tabs from "#lib/components/ui/tabs/index.js";
   import * as Accordion from "#lib/components/ui/accordion/index.js";
-  import * as Table from "#lib/components/ui/table/index.js";
   import { Input } from "#lib/components/ui/input/index.js";
   import { Button } from "#lib/components/ui/button/index.js";
   import { Badge } from "#lib/components/ui/badge/index.js";
   import Leaderboard from "#lib/Leaderboard.svelte";
-  import Samples from "#lib/Samples.svelte";
+  import TestResults from "#lib/TestResults.svelte";
   let { data }: PageProps = $props();
   let ready = $state(false);
   onMount(() => {
@@ -62,11 +61,7 @@
     void goto(next, { shallow: true, replace: true, reset: false });
   }
   function sortBy(key: string) {
-    if (key === "score") return update("sort", "score");
-    const first = key === "time" ? "asc" : "desc";
-    const current = sort.split("-");
-    const direction = current[0] === key ? ((current[1] ?? first) === "asc" ? "desc" : "asc") : first;
-    update("sort", direction === first ? key : `${key}-${direction}`);
+    update("sort", nextSort(sort, key));
   }
   function openModel(hash: string) {
     if (hash === url.hash && target) {
@@ -166,22 +161,7 @@
                             >~{formatDuration(model.tokenTimes.avgResponseSeconds)} / response</span
                           >{/if}
                       </div>
-                      <Table.Root
-                        ><Table.Header
-                          ><Table.Row
-                            ><Table.Head>Test</Table.Head><Table.Head>Correct</Table.Head><Table.Head>pass@1</Table.Head
-                            ><Table.Head>pass@10</Table.Head><Table.Head>Samples</Table.Head></Table.Row
-                          ></Table.Header
-                        ><Table.Body
-                          >{#each model.tests as result (result)}<Table.Row
-                              ><Table.Cell class="font-medium">{result.testName}</Table.Cell><Table.Cell
-                                >{result.numCorrect}/{result.numSamples}</Table.Cell
-                              ><Table.Cell>{(result.pass1 * 100).toFixed(1)}%</Table.Cell><Table.Cell
-                                >{(result.pass10 * 100).toFixed(1)}%</Table.Cell
-                              ><Table.Cell><Samples {result} /></Table.Cell></Table.Row
-                            >{/each}</Table.Body
-                        ></Table.Root
-                      >
+                      <TestResults results={model.tests} />
                     </Accordion.Content></Accordion.Item
                   >{/each}
               </Accordion.Root>

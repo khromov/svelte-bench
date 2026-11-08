@@ -1,9 +1,9 @@
 <script lang="ts">
+  import SortHeader from "#lib/SortHeader.svelte";
   import type { Model } from "#lib/results.js";
   import { modelAnchor, formatDuration, formatTps, responseTitle } from "#lib/results.js";
   import * as Table from "#lib/components/ui/table/index.js";
   import * as Tooltip from "#lib/components/ui/tooltip/index.js";
-  import { Button } from "#lib/components/ui/button/index.js";
   import { Progress } from "#lib/components/ui/progress/index.js";
   let {
     models,
@@ -24,29 +24,17 @@
     showTps: boolean;
     showTime: boolean;
   } = $props();
-  const ariaSort = (key: string): "ascending" | "descending" | "none" =>
-    sort.startsWith(key) ? (sort.endsWith("asc") || sort === "time" ? "ascending" : "descending") : "none";
 </script>
 
 <div class="overflow-hidden rounded-xl border">
   <Table.Root class={local ? "min-w-[44rem]" : ""}>
     <Table.Header
       ><Table.Row>
-        <Table.Head class="w-14">Rank</Table.Head><Table.Head>Model</Table.Head>
-        <Table.Head class={local ? "w-40" : "w-[34%]"}
-          >{#if local}<Button variant="ghost" size="sm" onclick={() => onsort("score")}>Score ↓</Button
-            >{:else}Score{/if}</Table.Head
-        >
-        {#if showTps}<Table.Head aria-sort={ariaSort("tps")}
-            ><Button variant="ghost" size="sm" disabled={!local} onclick={() => onsort("tps")}
-              >Speed {sort.startsWith("tps") ? (sort.endsWith("asc") ? "↑" : "↓") : ""}</Button
-            ></Table.Head
-          >{/if}
-        {#if showTime}<Table.Head aria-sort={ariaSort("time")}
-            ><Button variant="ghost" size="sm" disabled={!local} onclick={() => onsort("time")}
-              >Avg. response {sort.startsWith("time") ? (sort.endsWith("desc") ? "↓" : "↑") : ""}</Button
-            ></Table.Head
-          >{/if}
+        <SortHeader label="Rank" column="rank" {sort} {onsort} />
+        <SortHeader label="Model" column="model" {sort} {onsort} />
+        <SortHeader label="Score" column="score" {sort} {onsort} />
+        {#if showTps}<SortHeader label="Speed" column="tps" {sort} {onsort} />{/if}
+        {#if showTime}<SortHeader label="Avg. response" column="time" {sort} {onsort} />{/if}
       </Table.Row></Table.Header
     >
     <Table.Body>
