@@ -1,3 +1,4 @@
+import type { ApiUsage } from "./api-cost";
 /**
  * Implementation of the HumanEval methodology from the paper
  * "Evaluating Large Language Models Trained on Code"
@@ -54,6 +55,7 @@ export interface HumanEvalResult {
     content?: string;
   };
   samples: {
+    apiUsage?: ApiUsage[];
     index: number;
     code: string;
     success: boolean;

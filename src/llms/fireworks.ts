@@ -1,3 +1,4 @@
+import { recordApiResponse } from "../utils/api-cost";
 import { DEFAULT_SYSTEM_PROMPT, DEFAULT_SYSTEM_PROMPT_WITH_CONTEXT } from "../utils/prompt";
 import type { LLMProvider } from "./index";
 import OpenAI from "openai";
@@ -56,6 +57,7 @@ export class FireworksProvider implements LLMProvider {
       });
 
       clearTimeout(timeoutId);
+      recordApiResponse(this.name, this.modelId, completion);
       return completion.choices[0]?.message.content || "";
     } catch (error) {
       clearTimeout(timeoutId);

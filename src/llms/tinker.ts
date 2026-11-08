@@ -1,3 +1,4 @@
+import { recordApiResponse } from "../utils/api-cost";
 import OpenAI from "openai";
 import type {
   ChatCompletionCreateParamsNonStreaming,
@@ -43,6 +44,7 @@ export class TinkerProvider implements LLMProvider {
         ...(temperature !== undefined ? { temperature } : {}),
       };
       const completion = await this.client.chat.completions.create(request);
+      recordApiResponse(this.name, this.modelId, completion);
       const choice = completion.choices[0];
       const content = choice?.message.content;
       if (!content?.trim()) {

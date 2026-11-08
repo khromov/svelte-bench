@@ -1,3 +1,4 @@
+import { recordApiResponse } from "../utils/api-cost";
 import { DEFAULT_SYSTEM_PROMPT, DEFAULT_SYSTEM_PROMPT_WITH_CONTEXT } from "../utils/prompt";
 import type { LLMProvider } from "./index";
 import OpenAI from "openai";
@@ -86,6 +87,7 @@ export class MetaProvider implements LLMProvider {
       // Clear timeout on successful completion
       clearTimeout(timeoutId);
 
+      recordApiResponse(this.name, this.modelId, completion);
       return completion.choices[0]?.message.content || "";
     } catch (error) {
       // Clear timeout on error

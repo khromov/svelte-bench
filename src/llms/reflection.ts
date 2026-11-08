@@ -1,3 +1,4 @@
+import { recordApiResponse } from "../utils/api-cost";
 import OpenAI from "openai";
 import type { ChatCompletionMessageParam } from "openai/resources/chat/completions";
 import { DEFAULT_SYSTEM_PROMPT, DEFAULT_SYSTEM_PROMPT_WITH_CONTEXT } from "../utils/prompt";
@@ -38,6 +39,7 @@ export class ReflectionProvider implements LLMProvider {
         max_completion_tokens: 8192,
         ...(temperature !== undefined ? { temperature } : {}),
       });
+      recordApiResponse(this.name, this.modelId, completion);
       const choice = completion.choices[0];
       const content = choice?.message.content;
       if (!content?.trim()) {

@@ -1,3 +1,4 @@
+import { recordApiResponse } from "../utils/api-cost";
 import { DEFAULT_SYSTEM_PROMPT, DEFAULT_SYSTEM_PROMPT_WITH_CONTEXT } from "../utils/prompt";
 import type { LLMProvider } from "./index";
 import { withRetry } from "../utils/retry-wrapper";
@@ -150,6 +151,7 @@ export class MoonshotProvider implements LLMProvider {
           }
 
           const data: MoonshotResponse = await response.json();
+          recordApiResponse(this.name, this.modelId, data);
 
           if (!data.choices || data.choices.length === 0) {
             throw new Error("Moonshot returned empty response");

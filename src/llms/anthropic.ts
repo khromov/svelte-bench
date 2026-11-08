@@ -1,3 +1,4 @@
+import { recordApiResponse } from "../utils/api-cost";
 import {
   DEFAULT_SYSTEM_PROMPT,
   DEFAULT_SYSTEM_PROMPT_WITH_CONTEXT,
@@ -71,6 +72,7 @@ export class AnthropicProvider implements LLMProvider {
 
       const completion = await this.client.messages.create(requestOptions);
 
+      recordApiResponse(this.name, this.modelId, completion);
       return completion.content[0]?.type === "text"
         ? completion.content[0].text
         : "";
