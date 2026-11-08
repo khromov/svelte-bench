@@ -8,19 +8,13 @@ on:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
-
-concurrency:
-  group: pages
-  cancel-in-progress: true
 
 jobs:
-  build-and-deploy:
+  build:
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+    permissions:
+      contents: read
+      pages: read
 
     steps:
       - name: Checkout
@@ -52,13 +46,23 @@ jobs:
           BASE_PATH: ${{ steps.pages.outputs.base_path }}
         run: pnpm run build
 
-      - name: Upload pages artifact
-        uses: actions/upload-pages-artifact@v5
+      - name: Verify static artifact
+        run: pnpm verify:site
+
+      - name: Upload production artifact
+        uses: actions/upload-artifact@v4
         with:
           path: site/build
-          name: github-pages
+          name: pages-production
+          include-hidden-files: true
           retention-days: 1
 
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v5
+  publish:
+    needs: build
+    permissions:
+      contents: write
+      pages: write
+      id-token: write
+    uses: ./.github/workflows/publish-pages.yml
+    with:
+      artifact-name: pages-production
