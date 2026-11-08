@@ -69,6 +69,7 @@ export class CursorProvider implements LLMProvider {
       }
       recordApiResponse(this.name, this.modelId, {
         id: result.id,
+        agentId: agent.agentId,
         usage: billed?.usage ?? result.usage,
         cost: billed?.cost,
       });

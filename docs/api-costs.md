@@ -53,7 +53,9 @@ pnpm cost:report --ledger /tmp/reconciled.jsonl --output /tmp/costs.json
 Reconciliation performs read-only `/generation?id=...` requests. It fails on
 missing/expired IDs or authentication errors and leaves the original untouched.
 It does not associate unrelated account spend with benchmark runs by timestamp.
-Historical files in this audit have no IDs to look up. `--ledger` reports
+Cursor rows with a saved `billingId` can also be reconciled through the SDK
+using `CURSOR_API_KEY` after billing settles. Historical files in this audit
+have no IDs to look up. `--ledger` reports
 separate per-model ledger totals (including rejected responses), deduplicating
 exact response IDs; do not add these to sample totals.
 
@@ -152,3 +154,6 @@ Additional first-party sources checked:
 - [Tinker serverless rates](https://tinker-docs.thinkingmachines.ai/tinker/serverless.json)
 - [Fireworks standard serverless rates](https://docs.fireworks.ai/serverless/pricing)
 - [Reflection usage fields](https://developers.reflection.ai/text-generation)
+
+Every leaderboard and per-test table header toggles ascending/descending.
+Unknown and partial cost totals stay at the bottom in both directions.

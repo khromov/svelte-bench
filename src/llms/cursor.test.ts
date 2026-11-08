@@ -25,7 +25,7 @@ describe("CursorProvider", () => {
     const usage = { inputTokens: 100, outputTokens: 20, cacheReadTokens: 30, cacheWriteTokens: 10, totalTokens: 120 };
     create.mockImplementation(async (options) => {
       await fs.writeFile(`${options.local.cwd}/Component.svelte`, "<p>Generated</p>");
-      return { send, getUsage, close };
+      return { agentId: "agent-per-sample", send, getUsage, close };
     });
     send.mockResolvedValue({ wait: async () => ({ id: "run-1", status: "finished", usage }) });
     if (billingFails) getUsage.mockRejectedValue(new Error("billing pending"));

@@ -6,6 +6,7 @@ export interface ApiUsage {
   provider: string;
   modelId: string;
   responseId?: string;
+  billingId?: string;
   measuredAt: string;
   inputTokens?: number;
   outputTokens?: number;
@@ -85,6 +86,7 @@ export function normalizeApiUsage(provider: string, modelId: string, response: a
     provider,
     modelId,
     responseId: response?.id ?? response?.responseId,
+    billingId: provider === "Cursor" ? response?.agentId : undefined,
     measuredAt: new Date().toISOString(),
     inputTokens: input,
     outputTokens: output,
