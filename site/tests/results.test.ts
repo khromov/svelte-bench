@@ -89,12 +89,20 @@ const fixture = (modelId: string, tps?: number, seconds?: number): Result => ({
         },
       }),
 });
-test("ties favor faster local models; missing metrics sort last in either direction; other tabs keep rank", () => {
+test("ties favor faster local models; missing metrics sort last in either direction; all tabs support sorting", () => {
   const all = models([fixture("slow", 10, 4), fixture("fast", 20, 2), fixture("unknown")]);
   expect(all.map((m) => m.model)).toEqual(["fast", "slow", "unknown"]);
   expect(visibleModels(all, "", "local", "tps-asc").map((m) => m.model)).toEqual(["slow", "fast", "unknown"]);
   expect(visibleModels(all, "", "local", "time").map((m) => m.model)).toEqual(["fast", "slow", "unknown"]);
-  expect(visibleModels(all, "", "all", "time-desc").map((m) => m.model)).toEqual(["fast", "slow", "unknown"]);
+  expect(visibleModels(all, "", "all", "time-desc").map((m) => m.model)).toEqual(["slow", "fast", "unknown"]);
   expect(visibleModels(all, "OLLAMA FAST", "local", "score").map((m) => m.model)).toEqual(["fast"]);
   expect(formatDuration(192)).toBe("3m 12s");
+});
+
+test("all leaderboard columns toggle ascending/descending with missing metrics last", () => {
+  const all = models([fixture("alpha", 10, 4), { ...fixture("beta", 20, 2), pass1: 0.5 }, fixture("unknown")]);
+  expect(visibleModels(all, "", "all", "model").map((m) => m.model)).toEqual(["alpha", "beta", "unknown"]);
+  expect(visibleModels(all, "", "all", "model-desc").map((m) => m.model)).toEqual(["unknown", "beta", "alpha"]);
+  expect(visibleModels(all, "", "all", "score-asc")[0].model).toBe("beta");
+  expect(visibleModels(all, "", "all", "rank-desc")[0].rank).toBe(3);
 });

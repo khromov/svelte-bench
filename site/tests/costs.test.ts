@@ -1,3 +1,4 @@
+import { models, visibleModels, sortResults } from "../src/lib/results.js";
 import { expect, test } from "vitest";
 import { summarizeCost, formatUsd, costSource } from "../src/lib/costs.js";
 import type { Result } from "../src/lib/results.js";
@@ -48,4 +49,47 @@ test("mixed coverage shows a partial amount rather than a complete total", () =>
     inputTokens: null,
   });
   expect(summarizeCost([result([sample([request(0.2), request(null, "unavailable")])])]).status).toBe("partial");
+});
+
+test("cost sorts ascending/descending with partial and missing totals last in both tables", () => {
+  const fixture = (id: string, amount?: number, partial = false): Result => ({
+    provider: "OpenRouter",
+    modelId: id,
+    testName: id,
+    numSamples: partial ? 2 : 1,
+    numCorrect: 1,
+    pass1: 1,
+    pass10: 1,
+    samples: [
+      sample(amount === undefined ? undefined : [request(amount)]),
+      ...(partial ? [{ ...sample(), index: 1 }] : []),
+    ],
+  });
+  const results = [
+    fixture("expensive", 0.2),
+    fixture("unknown"),
+    fixture("cheap", 0.1),
+    fixture("partial", 0.001, true),
+  ];
+  const all = models(results);
+  expect(
+    visibleModels(all, "", "all", "cost")
+      .slice(0, 2)
+      .map((r) => r.model),
+  ).toEqual(["cheap", "expensive"]);
+  expect(
+    visibleModels(all, "", "all", "cost-desc")
+      .slice(0, 2)
+      .map((r) => r.model),
+  ).toEqual(["expensive", "cheap"]);
+  expect(
+    sortResults(results, "cost")
+      .slice(0, 2)
+      .map((r) => r.testName),
+  ).toEqual(["cheap", "expensive"]);
+  expect(
+    sortResults(results, "cost-desc")
+      .slice(0, 2)
+      .map((r) => r.testName),
+  ).toEqual(["expensive", "cheap"]);
 });

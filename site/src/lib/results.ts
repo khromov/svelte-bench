@@ -62,12 +62,76 @@ export function visibleModels(all: Model[], search: string, tab: string, sort: s
   const filtered = all.filter(
     (m) => (tab !== "local" || isLocal(m.provider)) && `${m.provider} ${m.model}`.toLowerCase().includes(query),
   );
-  if (tab !== "local" || !/^(tps|time)(-asc|-desc)?$/.test(sort)) return filtered;
-  const [key, direction = key === "time" ? "asc" : "desc"] = sort.split("-");
+  if (!/^(rank|model|score|tps|time|cost)(-asc|-desc)?$/.test(sort)) return filtered;
+  const [key] = sort.split("-");
+  // Default score order retains the published ranking and local speed tie-breaker.
+  if (sort === "score" || sort === "score-desc") return filtered;
   return filtered.sort((a, b) => {
-    const av = key === "tps" ? a.tps : a.tokenTimes?.avgResponseSeconds;
-    const bv = key === "tps" ? b.tps : b.tokenTimes?.avgResponseSeconds;
-    if (av == null || bv == null) return av == null ? (bv == null ? a.rank - b.rank : 1) : -1;
-    return (direction === "asc" ? av - bv : bv - av) || a.rank - b.rank;
+    const av =
+      key === "cost"
+        ? a.cost.status === "complete"
+          ? a.cost.knownUsd
+          : null
+        : key === "model"
+          ? a.model
+          : key === "rank"
+            ? a.rank
+            : key === "score"
+              ? a.score
+              : key === "tps"
+                ? a.tps
+                : a.tokenTimes?.avgResponseSeconds;
+    const bv =
+      key === "cost"
+        ? b.cost.status === "complete"
+          ? b.cost.knownUsd
+          : null
+        : key === "model"
+          ? b.model
+          : key === "rank"
+            ? b.rank
+            : key === "score"
+              ? b.score
+              : key === "tps"
+                ? b.tps
+                : b.tokenTimes?.avgResponseSeconds;
+    return compareValues(av, bv, sort) || a.rank - b.rank;
   });
+}
+export function sortDirection(sort: string) {
+  const [key, explicit] = sort.split("-");
+  return explicit ?? (["rank", "model", "test", "time", "cost"].includes(key) ? "asc" : "desc");
+}
+export function nextSort(current: string, key: string) {
+  return current.split("-")[0] === key ? `${key}-${sortDirection(current) === "asc" ? "desc" : "asc"}` : key;
+}
+export function compareValues(
+  a: number | string | null | undefined,
+  b: number | string | null | undefined,
+  sort: string,
+) {
+  if (a == null || b == null) return a == null ? (b == null ? 0 : 1) : -1;
+  const value =
+    typeof a === "string" && typeof b === "string"
+      ? a.localeCompare(b, "en", { numeric: true })
+      : Number(a) - Number(b);
+  return sortDirection(sort) === "asc" ? value : -value;
+}
+export function sortResults(results: Result[], sort: string) {
+  const key = sort.split("-")[0];
+  const value = (r: Result) =>
+    key === "cost"
+      ? summarizeCost([r]).status === "complete"
+        ? summarizeCost([r]).knownUsd
+        : null
+      : key === "correct"
+        ? r.numCorrect
+        : key === "pass1"
+          ? r.pass1
+          : key === "pass10"
+            ? r.pass10
+            : key === "samples"
+              ? r.numSamples
+              : r.testName;
+  return [...results].sort((a, b) => compareValues(value(a), value(b), sort) || a.testName.localeCompare(b.testName));
 }
