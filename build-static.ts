@@ -17,8 +17,8 @@ async function loadBenchmarkFiles(): Promise<Array<{ name: string; path: string;
   const benchmarksDir = path.resolve(process.cwd(), "benchmarks");
   const files = await fs.readdir(benchmarksDir);
 
-  // Filter only JSON files
-  const jsonFiles = files.filter((file) => file.endsWith(".json"));
+  // Only render benchmark result arrays, not auxiliary JSON such as API cost reports.
+  const jsonFiles = files.filter((file) => file.startsWith("benchmark-results-") && file.endsWith(".json"));
 
   // Get file details with modification time
   const fileDetails = await Promise.all(
