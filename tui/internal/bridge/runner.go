@@ -361,6 +361,7 @@ func ConvertProviderNameToEnvKey(providerName string) string {
 		"MiniMax":                  "minimax",
 		"Cursor":                   "cursor",
 		"Reflection":               "reflection",
+		"Qwen":                     "qwen",
 		"Thinking Machines Tinker": "tinker",
 		"Ollama (local)":           "ollama",
 	}

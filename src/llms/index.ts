@@ -115,6 +115,9 @@ export async function getLLMProvider(
     case "tinker":
       const { TinkerProvider } = await import("./tinker");
       return new TinkerProvider(actualModel);
+    case "qwen":
+      const { QwenProvider } = await import("./qwen");
+      return new QwenProvider(actualModel);
     case "reflection":
       const { ReflectionProvider } = await import("./reflection");
       return new ReflectionProvider(actualModel);
@@ -123,7 +126,7 @@ export async function getLLMProvider(
   // Provider not found
   throw new Error(
     `Unknown LLM provider: ${actualProvider}. ` +
-    `Native providers: openai, anthropic, google, openrouter, fireworks, ollama, zai, moonshot, xai, meta, minimax, cursor, reflection, tinker.`
+    `Native providers: openai, anthropic, google, openrouter, fireworks, ollama, zai, moonshot, xai, meta, minimax, cursor, reflection, tinker, qwen.`
   );
 }
 
@@ -151,6 +154,7 @@ export async function getAllLLMProviders(): Promise<ProviderWithModel[]> {
     { name: "cursor", displayName: "Cursor" },
     { name: "reflection", displayName: "Reflection" },
     { name: "tinker", displayName: "Thinking Machines Tinker" },
+    { name: "qwen", displayName: "Qwen" },
   ];
 
   for (const { name, displayName } of nativeProviders) {

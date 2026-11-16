@@ -72,6 +72,14 @@ func FetchModels(providerKey, apiKey string) ([]Model, error) {
 		models, err = fetchOpenAICompatibleModels("https://api.meta.ai/v1/models", apiKey)
 	case "REFLECTION_API_KEY":
 		models, err = fetchOpenAICompatibleModels("https://api.reflection.ai/openai/v1/models", apiKey)
+	case "QWEN_API_KEY":
+		// QwenCloud does not provide GET /models. Keep dates unknown.
+		models = []Model{
+			{ID: "qwen4-max", Name: "Qwen4 Max", IsPopular: true},
+			{ID: "qwen3.8-max", Name: "Qwen3.8 Max"},
+			{ID: "qwen3.8-flash", Name: "Qwen3.8 Flash"},
+			{ID: "qwen3.7-plus", Name: "Qwen3.7 Plus"},
+		}
 	case "TM_TINKER_API_KEY":
 		models, err = fetchTinkerModels()
 	case "CURSOR_API_KEY":

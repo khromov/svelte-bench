@@ -17,6 +17,7 @@ SvelteBench supports multiple LLM providers:
 - **Fireworks** - Fireworks-hosted models through its OpenAI-compatible API
 - **Ollama** - Run models locally
 - **Z.ai**
+- **Qwen** - QwenCloud Responses API
 - **Moonshot**
 - **xAI**
 - **Meta**
@@ -126,6 +127,10 @@ MINIMAX_API_KEY=your_minimax_api_key_here
 # Reflection (optional)
 REFLECTION_API_KEY=your_reflection_api_key_here
 
+# QwenCloud (optional, US East by default)
+QWEN_API_KEY=your_qwen_api_key_here
+# QWEN_BASE_URL=https://us-east-1.maas.qwencloudapi.com/compatible-mode/v1
+
 # Thinking Machines Tinker (optional)
 TM_TINKER_API_KEY=your_tinker_api_key_here
 ```
@@ -136,6 +141,16 @@ The TUI discovers models and validates keys using MiniMax's
 [model catalog](https://platform.minimax.io/docs/api-reference/models/openai/list-models).
 Generation uses the documented [Chat Completions API](https://platform.minimax.io/docs/api-reference/text-chat-openai),
 with reasoning separated from generated code. Custom model IDs are supported.
+
+Qwen uses the [QwenCloud Responses API](https://docs.qwencloud.com/api-reference/chat/openai-responses)
+with `QWEN_API_KEY` and defaults to the US (Virginia) endpoint from the linked model page.
+Select **Qwen** in the TUI or set `DEBUG_PROVIDER=qwen` and `DEBUG_MODEL=qwen4-max`.
+Set `QWEN_BASE_URL` to the OpenAI-compatible base URL for another region or plan;
+API keys must match the endpoint's region and billing plan. Reasoning uses the model's default,
+and temperature is sent only when specified by the benchmark.
+QwenCloud has no `GET /models` endpoint, so the picker uses a small documented model list
+without release dates. Custom model IDs are accepted; availability depends on region and account.
+Keys are checked during the benchmark's model validation request.
 
 Thinking Machines Tinker uses [OpenAI-compatible Chat Completions](https://tinker-docs.thinkingmachines.ai/tinker/compatible-apis/openai/)
 at `https://tinker.thinkingmachines.dev/services/tinker-prod/oai/api/v1` with `TM_TINKER_API_KEY`.
