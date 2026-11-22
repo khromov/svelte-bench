@@ -1,3 +1,5 @@
+import { reportProviderError } from "../utils/tui-events";
+
 /**
  * Interface for LLM providers
  * Defines the common functionality that all LLM providers must implement
@@ -158,8 +160,15 @@ export async function getAllLLMProviders(): Promise<ProviderWithModel[]> {
   ];
 
   for (const { name, displayName } of nativeProviders) {
+    let nativeProvider: LLMProvider;
     try {
-      const nativeProvider = await getLLMProvider(name, "default");
+      nativeProvider = await getLLMProvider(name, "default");
+    } catch {
+      // Provider not configured, skip it.
+      continue;
+    }
+
+    try {
       for (const modelId of await nativeProvider.getModels()) {
         const provider = await getLLMProvider(name, modelId);
         providers.push({
@@ -168,8 +177,8 @@ export async function getAllLLMProviders(): Promise<ProviderWithModel[]> {
           modelId,
         });
       }
-    } catch {
-      // Provider not configured, skip it.
+    } catch (error) {
+      reportProviderError(displayName, "model catalog", "discovery", error);
     }
   }
 

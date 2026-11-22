@@ -19,22 +19,23 @@ type benchmarkErrorMsg struct{ err error }
 
 // BenchmarkModel handles benchmark execution
 type BenchmarkModel struct {
-	state        *SharedState
-	tests        map[string]*TestResult
-	testOrder    []string
-	startTime    time.Time
-	running      bool
-	totalSamples int
-	currentCount int
-	width        int
-	height       int
-	frame        int // For animations
-	eventChan    chan bridge.BenchmarkEvent
-	modelCount   int
-	progress     map[string]int
-	completed    map[string]bool
-	scoreTotals  map[string]float64
-	scoreCounts  map[string]int
+	state         *SharedState
+	tests         map[string]*TestResult
+	testOrder     []string
+	startTime     time.Time
+	running       bool
+	totalSamples  int
+	currentCount  int
+	providerError string
+	width         int
+	height        int
+	frame         int // For animations
+	eventChan     chan bridge.BenchmarkEvent
+	modelCount    int
+	progress      map[string]int
+	completed     map[string]bool
+	scoreTotals   map[string]float64
+	scoreCounts   map[string]int
 }
 
 // NewBenchmarkModel creates a new benchmark model
@@ -171,13 +172,16 @@ func (m BenchmarkModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m BenchmarkModel) View() tea.View {
-	// The fixed portions of this view use 13 rows including the outer padding.
-	// Calculate the test window from that actual footprint so all categories are
-	// shown whenever the terminal has room, instead of hiding most of them at
-	// ordinary terminal heights.
-	fixedRows := 15
+	var diagnostics []string
 	if m.state.Error != "" {
-		fixedRows += 2
+		diagnostics = append(diagnostics, m.renderError("Error: "+m.state.Error))
+	}
+	if m.providerError != "" && (m.state.Error == "" || !strings.Contains(m.providerError, m.state.Error)) {
+		diagnostics = append(diagnostics, m.renderError("Provider: "+m.providerError))
+	}
+	fixedRows := 15
+	for _, diagnostic := range diagnostics {
+		fixedRows += lipgloss.Height(diagnostic)
 	}
 	maxTestsShown := m.height - fixedRows
 	if maxTestsShown < 1 {
@@ -204,6 +208,7 @@ func (m BenchmarkModel) View() tea.View {
 		Render(fmt.Sprintf("%s • %s • %s", m.state.Provider, modelRunSummary(m.state.Model), mode))
 
 	sections = append(sections, title, info, "")
+	sections = append(sections, diagnostics...)
 
 	// Overall progress - compact
 	barWidth := m.width - 20
@@ -267,12 +272,6 @@ func (m BenchmarkModel) View() tea.View {
 		Render(stats))
 	sections = append(sections, m.renderOverallScore())
 
-	// Show error if present
-	if m.state.Error != "" {
-		sections = append(sections, "")
-		sections = append(sections, styles.CreateBoldGradient("Error: "+m.state.Error, styles.ErrorGradient))
-	}
-
 	// Help
 	sections = append(sections, "")
 	sections = append(sections, lipgloss.NewStyle().
@@ -286,6 +285,11 @@ func (m BenchmarkModel) View() tea.View {
 		Render(lipgloss.JoinVertical(lipgloss.Left, sections...))
 
 	return newView(content)
+}
+
+func (m BenchmarkModel) renderError(message string) string {
+	return lipgloss.NewStyle().Width(max(1, m.width-4)).
+		Foreground(styles.GrayLight).Bold(true).Render(message)
 }
 
 func (m *BenchmarkModel) renderTest(test *TestResult) string {
@@ -500,6 +504,9 @@ func (m *BenchmarkModel) handleEvent(event bridge.BenchmarkEvent) {
 				}
 			}
 		}
+
+	case bridge.EventProviderError:
+		m.providerError = event.Error
 
 	case bridge.EventError:
 		// Handle benchmark error

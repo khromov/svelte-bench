@@ -16,7 +16,7 @@ import type { HumanEvalResult } from "./src/utils/humaneval";
 import { isRateLimitError } from "./src/utils/errors";
 import { ensureRequiredDirectories } from "./src/utils/ensure-dirs";
 import { validateModels } from "./src/utils/model-validator";
-import { isTUIMode, emitComplete, emitError, log } from "./src/utils/tui-events";
+import { isTUIMode, emitComplete, emitError, formatErrorMessage, log } from "./src/utils/tui-events";
 import path from "path";
 import { getMissingSampleIndices, getRecordedSamples } from "./src/utils/resume";
 
@@ -427,7 +427,9 @@ async function runBenchmark() {
     // Exit with appropriate code
     process.exitCode = totalSuccess > 0 ? 0 : 1;
   } catch (error) {
-    console.error("Error running benchmark:", error);
+    const message = formatErrorMessage(error);
+    emitError("", message);
+    console.error("Error running benchmark:", message);
     process.exitCode = 1;
   }
 }

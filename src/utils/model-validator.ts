@@ -1,4 +1,5 @@
 import { getLLMProvider } from "../llms";
+import { reportProviderError } from "./tui-events";
 
 /**
  * Validates if a model exists for a given provider by making a minimal API call
@@ -14,9 +15,11 @@ export async function validateModel(provider: string, model: string): Promise<bo
     const llmProvider = await getLLMProvider(provider, model);
 
     // Make a minimal API call to validate model
-    await llmProvider.generateCode(simplePrompt, 0.1);
+    const response = await llmProvider.generateCode(simplePrompt, 0.1);
+    if (!response?.trim()) throw new Error("Provider returned an empty validation response");
     return true;
   } catch (error: any) {
+    reportProviderError(provider, model, "validation", error);
     // Check for model not found errors
     if (
       error.message?.includes("does not exist") ||
@@ -25,12 +28,10 @@ export async function validateModel(provider: string, model: string): Promise<bo
       error.status === 404 ||
       error.status === 400
     ) {
-      console.error(`Invalid model '${model}' for provider ${provider}: ${error.message}`);
       return false;
     }
 
     // For other errors (network, auth), throw them up
-    console.error(`Validation error for ${provider}/${model}:`, error.message);
     throw error;
   }
 }
@@ -56,7 +57,6 @@ export async function validateModels(provider: string, models: string[]): Promis
       }
     } catch (error) {
       validationErrors.push(error instanceof Error ? error : new Error(String(error)));
-      console.error(`Failed to validate ${model} for ${provider}:`, error);
     }
   }
 

@@ -10,6 +10,7 @@ export type TUIEventType =
   | 'test_complete'
   | 'sample_progress'
   | 'rate_limit'
+  | 'provider_error'
   | 'error'
   | 'complete';
 
@@ -137,6 +138,23 @@ export function emitError(testName: string, error: string): void {
     test: testName,
     error,
   });
+}
+
+export function formatErrorMessage(error: unknown): string {
+  let message = error instanceof Error ? error.message : String(error);
+  for (const [name, value] of Object.entries(process.env)) {
+    if (/(_API_KEY|_API_TOKEN|_ACCESS_TOKEN)$/.test(name) && value) {
+      message = message.replaceAll(value, "[redacted]");
+    }
+  }
+  message = message.replace(/[\x00-\x1f\x7f-\x9f]+/g, " ").trim();
+  return message.length > 2000 ? `${message.slice(0, 1997)}...` : message;
+}
+
+export function reportProviderError(provider: string, model: string, stage: string, error: unknown): void {
+  const message = `${provider}/${model} (${stage}): ${formatErrorMessage(error)}`;
+  console.error(message);
+  emitTUIEvent({ type: 'provider_error', error: message });
 }
 
 /**

@@ -93,16 +93,18 @@ export class ZAIProvider implements LLMProvider {
 
           clearTimeout(timeoutId);
 
-          if (!response.ok) {
-            // Check for rate limiting or temporary errors
-            if (response.status === 429 || response.status >= 500) {
-              throw new Error(`Z.ai API temporary error: ${response.status} ${response.statusText}`);
+          const data = await response.json().catch((error) => {
+            if (response.ok) throw error;
+            return null;
+          });
+          if (!response.ok || data?.error) {
+            const detail = data?.error?.message || response.statusText;
+            const error = new Error(`Z.ai API HTTP ${response.status}${detail ? `: ${detail}` : ""}`);
+            if (response.status >= 400 && response.status < 500 && response.status !== 429) {
+              error.name = "NonRetryableError";
             }
-            // Non-retryable error
-            throw new Error(`Z.ai API request failed: ${response.status} ${response.statusText}`);
+            throw error;
           }
-
-          const data = await response.json();
           const content = data.choices?.[0]?.message?.content;
 
           if (!content) {
@@ -129,21 +131,13 @@ export class ZAIProvider implements LLMProvider {
         backoffFactor: 2,
         onRetry: (error, attempt) => {
           console.warn(`⚠️  Z.ai retry attempt ${attempt}/10 for model ${this.modelId} after error: ${error.message}`);
-
-          // On final retry attempt, provide helpful message before failing
-          if (attempt === 10) {
-            console.error(`\n❌ Z.ai model ${this.modelId} failed after 10 retry attempts.`);
-            console.error(`📝 The benchmark will resume from where it left off when you restart.`);
-            console.error(`⏳ This appears to be a rate limit issue. Please wait before retrying.`);
-            console.error(`💾 Progress has been saved to the checkpoint file.\n`);
-          }
         },
       },
     ).catch((error) => {
-      // If all retries failed, exit the process with error
-      console.error(`\n🛑 Stopping benchmark due to persistent Z.ai API failures.`);
-      console.error(`ℹ️  To resume, run the same command again. The benchmark will continue from the last checkpoint.`);
-      process.exit(1);
+      // The provider already retried the request. Let the benchmark report the failure.
+      const finalError = error instanceof Error ? error : new Error(String(error));
+      finalError.name = "NonRetryableError";
+      throw finalError;
     });
   }
 

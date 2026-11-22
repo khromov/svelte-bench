@@ -15,6 +15,7 @@ const (
 	EventTestComplete   EventType = "test_complete"
 	EventSampleProgress EventType = "sample_progress"
 	EventRateLimit      EventType = "rate_limit"
+	EventProviderError  EventType = "provider_error"
 	EventError          EventType = "error"
 	EventComplete       EventType = "complete"
 )

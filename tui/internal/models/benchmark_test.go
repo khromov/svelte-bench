@@ -105,3 +105,23 @@ func TestBenchmarkAcceptsFullyRunFailedCategories(t *testing.T) {
 		t.Fatalf("expected %d results, got %d", len(model.testOrder), len(state.Results))
 	}
 }
+
+func TestBenchmarkKeepsProviderErrorVisibleAfterIncompleteRun(t *testing.T) {
+	state := &SharedState{Provider: "zai", Model: "glm"}
+	model := NewBenchmarkModel(state)
+	model.running = true
+	model.width = 48
+
+	model.handleEvent(bridge.BenchmarkEvent{
+		Type:  bridge.EventProviderError,
+		Error: "Z.ai/glm (counter, sample 1): HTTP 429 Credits exhausted",
+	})
+	if !model.running || state.Error != "" {
+		t.Fatal("a provider diagnostic should not stop benchmark progress")
+	}
+	model.handleEvent(bridge.BenchmarkEvent{Type: bridge.EventError, Error: "Benchmark incomplete"})
+	view := model.View().Content
+	if !strings.Contains(view, "Benchmark incomplete") || !strings.Contains(view, "Credits exhausted") {
+		t.Fatalf("expected both the final status and provider reason in the view, got %q", view)
+	}
+}

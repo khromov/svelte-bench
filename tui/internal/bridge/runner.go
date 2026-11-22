@@ -134,8 +134,12 @@ func RunBenchmark(config BenchmarkConfig, eventHandler EventHandler) error {
 
 	// Handle events
 	eventCount := 0
+	var benchmarkError string
 	for event := range eventChan {
 		eventCount++
+		if event.Type == EventError && event.Error != "" {
+			benchmarkError = event.Error
+		}
 		if debugLog != nil && eventCount <= 10 {
 			fmt.Fprintf(debugLog, "EVENT %d: Type=%s, Test=%s, Sample=%d, Total=%d\n",
 				eventCount, event.Type, event.Test, event.Sample, event.Total)
@@ -166,6 +170,9 @@ func RunBenchmark(config BenchmarkConfig, eventHandler EventHandler) error {
 		fmt.Fprintf(debugLog, "\n=== STDERR ===\n%s\n", stderrMsg)
 	}
 	if waitErr != nil {
+		if benchmarkError != "" {
+			return fmt.Errorf("%s: %w", benchmarkError, waitErr)
+		}
 		detail := ""
 		if len(stdoutLines) > 0 {
 			detail += "\nstdout: " + strings.Join(stdoutLines, "\n")

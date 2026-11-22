@@ -128,9 +128,17 @@ export class OpenAIProvider implements LLMProvider {
       }
 
       const response = await this.client.responses.create(requestOptions);
+      if (response.error) throw new Error(`${response.error.code}: ${response.error.message}`);
 
       return response.output_text;
     } catch (error) {
+      if (error instanceof OpenAI.APIError && error.status === 429 &&
+          (error.code === "credit_balance_exhausted" || error.code === "insufficient_quota" ||
+           error.type === "insufficient_quota")) {
+        const quotaError = new Error(`OpenAI API quota exhausted: ${error.message}`);
+        quotaError.name = "NonRetryableError";
+        throw quotaError;
+      }
       console.error("Error generating code with OpenAI:", error);
       throw new Error(
         `Failed to generate code: ${

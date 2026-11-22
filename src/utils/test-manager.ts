@@ -5,8 +5,7 @@ import { cleanTmpDir, writeToTmpFile, readFile, saveCheckpoint, loadCheckpoint, 
 import { runTest } from "./test-runner";
 import type { TestResult } from "./test-runner";
 import { calculatePassAtK, type HumanEvalResult } from "./humaneval";
-import { cleanCodeMarkdown } from "./code-cleaner";
-import { withRetry } from "./retry-wrapper";
+import { generateBenchmarkCode } from "./generate-benchmark-code";
 import { emitCachedResult, emitTestStart, emitSampleProgress, emitTestComplete, log } from "./tui-events";
 import { countMissingSamples, getMissingSampleIndices, getRecordedSamples, replaceTestResult } from "./resume";
 
@@ -100,28 +99,8 @@ export async function runSingleTest(
         sampleIndex + 1
       }, temp: ${temperature ?? 'default'})...`
     );
-    let generatedCode = await withRetry(
-      async () => {
-        const rawCode = await llmProvider.generateCode(prompt, temperature, contextContent);
-        
-        // Apply cleaning to remove markdown code blocks
-        const cleanedCode = cleanCodeMarkdown(rawCode);
-        
-        // Check if the cleaned code is empty or only whitespace
-        if (!cleanedCode.trim()) {
-          console.warn(`⚠️ Generated code is empty after cleaning for ${test.name} with ${providerName}. Raw code was:`, rawCode);
-          throw new Error("Generated code is empty after cleaning. This indicates an empty response from the LLM provider.");
-        }
-        
-        return cleanedCode;
-      },
-      {
-        onRetry: (error, attempt) => {
-          console.warn(
-            `⚠️  Retry attempt ${attempt} for ${test.name} with ${providerName} after error: ${error.message}`
-          );
-        },
-      }
+    let generatedCode = await generateBenchmarkCode(
+      llmProvider, test.name, sampleIndex, prompt, temperature, contextContent,
     );
 
     // Check if the generated code already includes <svelte:options runes={true} />
