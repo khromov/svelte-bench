@@ -68,7 +68,8 @@ async function runBenchmark() {
         log(`👉 Using context file: ${contextFilePath}`);
       } catch (error) {
         console.error(`Error loading context file: ${error}`);
-        process.exit(1);
+        process.exitCode = 1;
+        return;
       }
     }
 
@@ -278,7 +279,7 @@ async function runBenchmark() {
             const message = error instanceof Error ? error.message : String(error);
             console.error(`\n❌ ${message}`);
             console.error("Turn off parallel execution and retry.");
-            process.exit(1);
+            throw error;
           }
           console.error(
             `Error running tests with ${providerWithModel.name} (${providerWithModel.modelId}):`,
@@ -412,7 +413,8 @@ async function runBenchmark() {
       const message = `Benchmark incomplete; missing samples: ${missing.join(", ")}. Checkpoint retained; rerun to retry missing samples.`;
       emitError("", message);
       console.error(message);
-      process.exit(1);
+      process.exitCode = 1;
+      return;
     }
 
     // Emit complete event for TUI
@@ -423,16 +425,15 @@ async function runBenchmark() {
     // Note: We no longer clean sample directories at the end - they're preserved for inspection
 
     // Exit with appropriate code
-    const exitCode = totalSuccess > 0 ? 0 : 1;
-    process.exit(exitCode);
+    process.exitCode = totalSuccess > 0 ? 0 : 1;
   } catch (error) {
     console.error("Error running benchmark:", error);
-    process.exit(1);
+    process.exitCode = 1;
   }
 }
 
 // Run the benchmark
 runBenchmark().catch((error) => {
   console.error("Unhandled error:", error);
-  process.exit(1);
+  process.exitCode = 1;
 });

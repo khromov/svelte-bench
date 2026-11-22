@@ -1,6 +1,7 @@
 package bridge
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -99,11 +100,9 @@ func RunBenchmark(config BenchmarkConfig, eventHandler EventHandler) error {
 		return fmt.Errorf("failed to get stdout pipe: %w", err)
 	}
 
-	// Get stderr pipe
-	stderr, err := cmd.StderrPipe()
-	if err != nil {
-		return fmt.Errorf("failed to get stderr pipe: %w", err)
-	}
+	// Wait drains stderr before it returns when Stderr is a writer.
+	var stderr bytes.Buffer
+	cmd.Stderr = &stderr
 
 	// Start command
 	if err := cmd.Start(); err != nil {
@@ -113,7 +112,6 @@ func RunBenchmark(config BenchmarkConfig, eventHandler EventHandler) error {
 	// Parse events from stdout in a goroutine
 	eventChan := make(chan BenchmarkEvent, 100)
 	errChan := make(chan error, 1)
-	stderrChan := make(chan string, 1)
 	var stdoutLines []string
 
 	go func() {
@@ -132,19 +130,6 @@ func RunBenchmark(config BenchmarkConfig, eventHandler EventHandler) error {
 			errChan <- err
 		}
 		close(eventChan)
-	}()
-
-	// Capture stderr for debugging
-	go func() {
-		stderrBytes, _ := io.ReadAll(stderr)
-		if len(stderrBytes) > 0 {
-			stderrMsg := string(stderrBytes)
-			stderrChan <- stderrMsg
-			if debugLog != nil {
-				fmt.Fprintf(debugLog, "\n=== STDERR ===\n%s\n", stderrMsg)
-			}
-		}
-		close(stderrChan)
 	}()
 
 	// Handle events
@@ -176,9 +161,10 @@ func RunBenchmark(config BenchmarkConfig, eventHandler EventHandler) error {
 		}
 	}
 
-	// Wait for the stderr reader before reporting a failure. Otherwise a fast
-	// command can exit before its diagnostic reaches this channel.
-	stderrMsg := <-stderrChan
+	stderrMsg := stderr.String()
+	if debugLog != nil && stderrMsg != "" {
+		fmt.Fprintf(debugLog, "\n=== STDERR ===\n%s\n", stderrMsg)
+	}
 	if waitErr != nil {
 		detail := ""
 		if len(stdoutLines) > 0 {
@@ -189,15 +175,6 @@ func RunBenchmark(config BenchmarkConfig, eventHandler EventHandler) error {
 		}
 		return fmt.Errorf("command failed: %w%s", waitErr, detail)
 	}
-	// Log stderr even if command succeeded (warnings, etc.)
-	if debugLog != nil && stderrMsg != "" {
-		fmt.Fprintf(debugLog, "STDERR (non-fatal): %s\n", stderrMsg)
-	}
-
-	if waitErr != nil {
-		return fmt.Errorf("command failed: %w", waitErr)
-	}
-
 	// Check for parsing errors
 	select {
 	case err := <-errChan:
