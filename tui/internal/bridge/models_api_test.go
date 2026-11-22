@@ -317,3 +317,33 @@ func TestMoonshotDoesNotExposeSyntheticDates(t *testing.T) {
 		}
 	}
 }
+
+func TestQwenModelCatalog(t *testing.T) {
+	delete(modelCache, "QWEN_API_KEY")
+	t.Cleanup(func() { delete(modelCache, "QWEN_API_KEY") })
+	original := http.DefaultTransport
+	t.Cleanup(func() { http.DefaultTransport = original })
+	http.DefaultTransport = modelRoundTripFunc(func(r *http.Request) (*http.Response, error) {
+		t.Fatalf("QwenCloud does not support model discovery: %s", r.URL)
+		return nil, nil
+	})
+	models, err := FetchModels("QWEN_API_KEY", "test-key")
+	if err != nil || len(models) != 4 {
+		t.Fatalf("unexpected catalog: %#v, %v", models, err)
+	}
+	found := false
+	for _, model := range models {
+		if !model.AddedAt.IsZero() {
+			t.Errorf("%s should have an unknown date", model.ID)
+		}
+		if model.ID == "qwen4-max" && model.IsPopular {
+			found = true
+		}
+	}
+	if !found {
+		t.Fatal("Qwen4 Max is missing from the picker")
+	}
+	if got := ConvertProviderNameToEnvKey("Qwen"); got != "qwen" {
+		t.Fatalf("unexpected benchmark provider: %s", got)
+	}
+}

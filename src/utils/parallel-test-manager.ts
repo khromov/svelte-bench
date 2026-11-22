@@ -5,8 +5,7 @@ import { readFile, saveCheckpoint, loadCheckpoint, removeCheckpoint } from "./fi
 import { runTest } from "./test-runner";
 import type { TestResult } from "./test-runner";
 import { calculatePassAtK, type HumanEvalResult } from "./humaneval";
-import { cleanCodeMarkdown } from "./code-cleaner";
-import { withRetry } from "./retry-wrapper";
+import { generateBenchmarkCode } from "./generate-benchmark-code";
 import crypto from "crypto";
 import { emitCachedResult, isTUIMode, emitTestStart, emitTestComplete, emitSampleProgress, emitRateLimit, log } from "./tui-events";
 import { countMissingSamples, getMissingSampleIndices, getRecordedSamples, replaceTestResult } from "./resume";
@@ -131,34 +130,14 @@ async function runSingleTestSample(
       );
     }
     
-    let generatedCode = await withRetry(
-      async () => {
-        const rawCode = await llmProvider.generateCode(prompt, temperature, contextContent);
-        const cleanedCode = cleanCodeMarkdown(rawCode);
-        
-        if (!cleanedCode.trim()) {
-          console.warn(`⚠️ Generated code is empty after cleaning for ${test.name} with ${providerName}`);
-          throw new Error("Generated code is empty after cleaning");
-        }
-        
-        return cleanedCode;
-      },
+    let generatedCode = await generateBenchmarkCode(
+      llmProvider, test.name, sampleIndex, prompt, temperature, contextContent,
       {
-        onRetry: (error, attempt) => {
-          console.warn(
-            `⚠️  Retry attempt ${attempt} for ${test.name} with ${providerName} after error: ${error.message}`
-          );
-        },
         retryRateLimits: executionOptions.retryRateLimits,
-        onRateLimit: (error, attempt, delayMs) => {
-          if (isTUIMode()) {
-            emitRateLimit(test.name, attempt, delayMs);
-          }
-          console.warn(
-            `Rate limit for ${test.name} with ${providerName}; retry ${attempt} in ${delayMs}ms: ${error.message}`
-          );
+        onRateLimit: (_error, attempt, delayMs) => {
+          emitRateLimit(test.name, attempt, delayMs);
         },
-      }
+      },
     );
 
     // Add runes if not present

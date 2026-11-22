@@ -7,7 +7,7 @@ indicators keep semantic green/red colors.
 
 ## Dependency compatibility
 
-All direct JavaScript packages were checked against npm's stable `latest` tags.
+The root JavaScript dependencies incorporate the versions from `main`.
 The root uses TypeScript 7.0.2. `svelte-check` 4.7.8 requires TypeScript 6 alongside
 TypeScript 7: the site uses TypeScript 6.0.3 as its compatibility API and aliases
 latest TypeScript 7.0.2 as `@typescript/native`, running checks with `--tsgo`.
@@ -16,8 +16,7 @@ This is the only direct package intentionally below its latest major.
 Bits UI 2.20.6 requests runed ^0.35.1, whose optional Kit peer only allows Kit 2.
 The workspace overrides runed to 0.38.0, which supports Kit 3. Component interaction
 checks cover accordion, dialog, tabs, and progress integration with that release.
-Obsolete Undici 6 security overrides were removed: Undici is now 8.12.4 and OpenAI
-7.53.0 supports it. Frozen installation and peer checks pass.
+The workspace uses Undici 8 with a compatible OpenAI SDK.
 
 Components are vendored from the official shadcn-svelte `vega` registry, using its
 neutral theme. `scripts/fetch-ui.py` records the source and maps registry import

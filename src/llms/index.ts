@@ -1,3 +1,5 @@
+import { reportProviderError } from "../utils/tui-events";
+
 /**
  * Interface for LLM providers
  * Defines the common functionality that all LLM providers must implement
@@ -115,6 +117,9 @@ export async function getLLMProvider(
     case "tinker":
       const { TinkerProvider } = await import("./tinker");
       return new TinkerProvider(actualModel);
+    case "qwen":
+      const { QwenProvider } = await import("./qwen");
+      return new QwenProvider(actualModel);
     case "reflection":
       const { ReflectionProvider } = await import("./reflection");
       return new ReflectionProvider(actualModel);
@@ -123,7 +128,7 @@ export async function getLLMProvider(
   // Provider not found
   throw new Error(
     `Unknown LLM provider: ${actualProvider}. ` +
-    `Native providers: openai, anthropic, google, openrouter, fireworks, ollama, zai, moonshot, xai, meta, minimax, cursor, reflection, tinker.`
+    `Native providers: openai, anthropic, google, openrouter, fireworks, ollama, zai, moonshot, xai, meta, minimax, cursor, reflection, tinker, qwen.`
   );
 }
 
@@ -151,11 +156,19 @@ export async function getAllLLMProviders(): Promise<ProviderWithModel[]> {
     { name: "cursor", displayName: "Cursor" },
     { name: "reflection", displayName: "Reflection" },
     { name: "tinker", displayName: "Thinking Machines Tinker" },
+    { name: "qwen", displayName: "Qwen" },
   ];
 
   for (const { name, displayName } of nativeProviders) {
+    let nativeProvider: LLMProvider;
     try {
-      const nativeProvider = await getLLMProvider(name, "default");
+      nativeProvider = await getLLMProvider(name, "default");
+    } catch {
+      // Provider not configured, skip it.
+      continue;
+    }
+
+    try {
       for (const modelId of await nativeProvider.getModels()) {
         const provider = await getLLMProvider(name, modelId);
         providers.push({
@@ -164,8 +177,8 @@ export async function getAllLLMProviders(): Promise<ProviderWithModel[]> {
           modelId,
         });
       }
-    } catch {
-      // Provider not configured, skip it.
+    } catch (error) {
+      reportProviderError(displayName, "model catalog", "discovery", error);
     }
   }
 

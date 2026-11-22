@@ -112,3 +112,22 @@ func TestRunBenchmarkReportsStartupStdout(t *testing.T) {
 		t.Fatalf("expected both stdout diagnostics and stderr banners, got %v", err)
 	}
 }
+
+func TestRunBenchmarkPrioritizesStructuredError(t *testing.T) {
+	binDir := t.TempDir()
+	pnpmPath := filepath.Join(binDir, "pnpm")
+	script := `#!/bin/sh
+printf '%s\n' '{"type":"error","error":"OpenAI API quota exhausted"}'
+printf '%s\n' '$ tsx ./index.ts' >&2
+exit 1
+`
+	if err := os.WriteFile(pnpmPath, []byte(script), 0700); err != nil {
+		t.Fatal(err)
+	}
+	t.Setenv("PATH", binDir+string(os.PathListSeparator)+os.Getenv("PATH"))
+
+	err := RunBenchmark(BenchmarkConfig{Samples: 1}, nil)
+	if err == nil || !strings.HasPrefix(err.Error(), "OpenAI API quota exhausted") {
+		t.Fatalf("expected the structured benchmark error first, got %v", err)
+	}
+}

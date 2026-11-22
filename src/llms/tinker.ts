@@ -38,12 +38,17 @@ export class TinkerProvider implements LLMProvider {
       const request: ChatCompletionCreateParamsNonStreaming & { separate_reasoning: boolean } = {
         model: this.modelId,
         messages,
-        max_tokens: 8192,
+        max_completion_tokens: 8192,
         separate_reasoning: true,
         ...(temperature !== undefined ? { temperature } : {}),
       };
-      const completion = await this.client.chat.completions.create(request);
-      const choice = completion.choices[0];
+      let { choices: [choice] } = await this.client.chat.completions.create(request);
+      if (choice?.finish_reason === "length" && !choice.message.content?.trim()) {
+        ({ choices: [choice] } = await this.client.chat.completions.create({
+          ...request,
+          max_completion_tokens: 16384,
+        }));
+      }
       const content = choice?.message.content;
       if (!content?.trim()) {
         const reason =

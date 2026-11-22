@@ -138,3 +138,19 @@ func TestTinkerProviderRegistration(t *testing.T) {
 	}
 	t.Fatal("Tinker is missing from the configured provider picker")
 }
+
+func TestQwenProviderRegistration(t *testing.T) {
+	if SupportsAPIKeyValidation("QWEN_API_KEY") {
+		t.Fatal("QwenCloud has no model-list endpoint for key validation")
+	}
+	cfg := &Config{APIKeys: map[string]string{"QWEN_API_KEY": "test-key"}}
+	for _, provider := range cfg.GetConfiguredProviders() {
+		if provider.EnvKey == "QWEN_API_KEY" {
+			if provider.Name != "Qwen" || provider.APIKey != "test-key" {
+				t.Fatalf("unexpected provider: %#v", provider)
+			}
+			return
+		}
+	}
+	t.Fatal("Qwen is missing from the configured provider picker")
+}

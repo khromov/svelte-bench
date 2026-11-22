@@ -69,7 +69,7 @@ describe("Tinker provider", () => {
     expect(new Headers(options.headers).get("Authorization")).toBe("Bearer test-key");
     expect(JSON.parse(options.body)).toEqual({
       model: "thinkingmachines/Inkling:peft:262144",
-      max_tokens: 8192,
+      max_completion_tokens: 8192,
       separate_reasoning: true,
       temperature: 0,
       messages: [
@@ -89,11 +89,20 @@ describe("Tinker provider", () => {
     expect(body).not.toHaveProperty("reasoning_effort");
   });
 
-  it("reports reasoning budget exhaustion without returning reasoning as code", async () => {
-    fetchMock.mockResolvedValue(answer(null, "length"));
+  it("retries once with a larger budget when reasoning consumes the entire completion", async () => {
+    fetchMock.mockResolvedValueOnce(answer(null, "length")).mockResolvedValueOnce(answer());
+    await expect(new TinkerProvider("test-model").generateCode("prompt")).resolves.toBe("<p>hello</p>");
+    expect(fetchMock.mock.calls.map(([, options]) => JSON.parse(options.body).max_completion_tokens)).toEqual([
+      8192, 16384,
+    ]);
+  });
+
+  it("reports reasoning budget exhaustion after the retry", async () => {
+    fetchMock.mockImplementation(async () => answer(null, "length"));
     await expect(new TinkerProvider("test-model").generateCode("prompt")).rejects.toThrow(
       "budget exhausted during reasoning",
     );
+    expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 
   it.each([400, 401, 402, 403, 404, 409, 429, 503])(
