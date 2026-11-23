@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { cleanCodeMarkdown } from "./code-cleaner";
+import { cleanCodeMarkdown, stripInlineThinking } from "./code-cleaner";
 
 describe("cleanCodeMarkdown", () => {
   it("should remove triple backticks with language identifier", () => {
@@ -81,5 +81,40 @@ $inspect(text).with((newValue, oldValue) => {
   console.log(\`Text changed from "\${oldValue}" to "\${newValue}"\`)
 })`;
     expect(cleanCodeMarkdown(input)).toBe(expected);
+  });
+});
+
+describe("stripInlineThinking", () => {
+  const RIPPLE = "hf.co/AtomicChat/Ripple-65B-Preview-GGUF:IQ3_XXS";
+  const component = '<div data-testid="greeting">Hello, World!</div>';
+
+  it("removes a <think> block for Ripple models", () => {
+    const input = `<think>\nWe need a <div> with {braces}.\n</think>\n${component}`;
+    expect(stripInlineThinking(input, RIPPLE).trim()).toBe(component);
+  });
+
+  it("matches Ripple model ids case-insensitively", () => {
+    const input = `<think>reasoning</think>${component}`;
+    expect(stripInlineThinking(input, "ripple-preview:65b-q4_K_M")).toBe(component);
+  });
+
+  it("removes reasoning when only the closing tag is emitted", () => {
+    const input = `reasoning from a template-opened block\n</think>\n${component}`;
+    expect(stripInlineThinking(input, RIPPLE).trim()).toBe(component);
+  });
+
+  it("leaves an unclosed <think> unchanged", () => {
+    const input = `<think>\nreasoning\n${component}`;
+    expect(stripInlineThinking(input, RIPPLE)).toBe(input);
+  });
+
+  it("does not touch other models", () => {
+    const input = `<think>reasoning</think>${component}`;
+    expect(stripInlineThinking(input, "hf.co/Brooooooklyn/Clairic-GGUF:UD-Q4_K_XL")).toBe(input);
+  });
+
+  it("works with markdown cleaning afterwards", () => {
+    const input = `<think>\nuse \`\`\`svelte fences?\n</think>\n\`\`\`svelte\n${component}\n\`\`\``;
+    expect(cleanCodeMarkdown(stripInlineThinking(input, RIPPLE))).toBe(component);
   });
 });

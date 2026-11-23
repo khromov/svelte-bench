@@ -1,3 +1,19 @@
+// Models whose GGUF chat template doesn't declare thinking support, so Ollama leaves their
+// <think>...</think> reasoning inline in the response content instead of splitting it out.
+const INLINE_THINKING_MODELS = /ripple/i;
+const THINK_CLOSE_TAG = "</think>";
+
+/**
+ * Drops inline reasoning from models that emit it in the response content.
+ * Only applies to models matching INLINE_THINKING_MODELS; everything up to and including the
+ * last </think> is removed. A response with an unclosed <think> is returned unchanged.
+ */
+export function stripInlineThinking(code: string, modelId: string): string {
+  if (!INLINE_THINKING_MODELS.test(modelId)) return code;
+  const end = code.lastIndexOf(THINK_CLOSE_TAG);
+  return end === -1 ? code : code.slice(end + THINK_CLOSE_TAG.length);
+}
+
 /**
  * Cleans markdown code block formatting from LLM-generated code
  *

@@ -1,5 +1,5 @@
 import type { LLMProvider } from "../llms";
-import { cleanCodeMarkdown } from "./code-cleaner";
+import { cleanCodeMarkdown, stripInlineThinking } from "./code-cleaner";
 import { withRetry, type RetryOptions } from "./retry-wrapper";
 import { reportProviderError } from "./tui-events";
 
@@ -17,7 +17,7 @@ export async function generateBenchmarkCode(
   try {
     return await withRetry(async () => {
       const rawCode = await provider.generateCode(prompt, temperature, contextContent);
-      const code = cleanCodeMarkdown(rawCode);
+      const code = cleanCodeMarkdown(stripInlineThinking(rawCode, model));
       if (!code.trim()) throw new Error("Provider returned no code");
       return code;
     }, {
