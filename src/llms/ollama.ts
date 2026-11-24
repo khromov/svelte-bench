@@ -51,6 +51,18 @@ export function createOllamaClient(host: string = getOllamaHost()): Ollama {
   return new Ollama({ host, fetch: timeoutFetch as unknown as typeof fetch });
 }
 
+// Models that stall the Ollama host unless loaded with a smaller context window
+const CONTEXT_OVERRIDES: Array<[RegExp, number]> = [[/ripple/i, 4096]];
+
+/**
+ * Per-model Ollama options that must be sent with every request for that model, including
+ * warm-up and unload calls: a request with a different num_ctx makes Ollama reload the model.
+ */
+export function getOllamaModelOptions(modelId: string): { num_ctx?: number } {
+  const override = CONTEXT_OVERRIDES.find(([pattern]) => pattern.test(modelId));
+  return override ? { num_ctx: override[1] } : {};
+}
+
 export class OllamaProvider implements LLMProvider {
   private client: Ollama;
   private modelId: string;
@@ -117,11 +129,13 @@ export class OllamaProvider implements LLMProvider {
         stream: false,
       };
 
-      // Add temperature if it's defined
-      if (temperature !== undefined) {
-        requestOptions.options = {
-          temperature: temperature,
-        };
+      const options = {
+        ...getOllamaModelOptions(this.modelId),
+        // Add temperature if it's defined
+        ...(temperature !== undefined ? { temperature } : {}),
+      };
+      if (Object.keys(options).length > 0) {
+        requestOptions.options = options;
       }
 
       const response = (await this.client.chat(requestOptions)) as any;

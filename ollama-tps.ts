@@ -6,7 +6,7 @@ import path from "path";
 import { DEFAULT_SYSTEM_PROMPT } from "./src/utils/prompt";
 import { loadTestDefinitions } from "./src/utils/test-manager";
 import { writeFileAtomic } from "./src/utils/file";
-import { createOllamaClient, getOllamaHost } from "./src/llms/ollama";
+import { createOllamaClient, getOllamaHost, getOllamaModelOptions } from "./src/llms/ollama";
 import type { HumanEvalResult, TpsDetails } from "./src/utils/humaneval";
 import {
   ensureModelInstalled,
@@ -136,7 +136,7 @@ async function measureModel(
       { role: "user", content: prompt },
     ],
     stream: false,
-    options: { temperature: 0 },
+    options: { ...getOllamaModelOptions(modelId), temperature: 0 },
   });
 
   const evalCount = response.eval_count ?? 0;

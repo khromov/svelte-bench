@@ -2,6 +2,7 @@ import fs from "fs/promises";
 import path from "path";
 import type { Ollama } from "ollama";
 import type { HumanEvalResult } from "./humaneval";
+import { getOllamaModelOptions } from "../llms/ollama";
 
 /**
  * Helpers shared by the scripts that post-process Ollama benchmark results
@@ -145,7 +146,7 @@ export async function warmUpModel(client: Ollama, modelId: string): Promise<void
     model: modelId,
     messages: [{ role: "user", content: "Say hi." }],
     stream: false,
-    options: { num_predict: 1 },
+    options: { ...getOllamaModelOptions(modelId), num_predict: 1 },
   });
 }
 
@@ -154,7 +155,12 @@ export async function warmUpModel(client: Ollama, modelId: string): Promise<void
  */
 export async function unloadModel(client: Ollama, modelId: string): Promise<void> {
   try {
-    await client.generate({ model: modelId, prompt: "", keep_alive: 0 });
+    await client.generate({
+      model: modelId,
+      prompt: "",
+      keep_alive: 0,
+      options: getOllamaModelOptions(modelId),
+    });
   } catch (error) {
     console.warn(`⚠️ Could not unload ${modelId}: ${error instanceof Error ? error.message : error}`);
   }

@@ -5,7 +5,7 @@ import fs from "fs/promises";
 import path from "path";
 import { DEFAULT_SYSTEM_PROMPT } from "./src/utils/prompt";
 import { loadTestDefinitions, type TestDefinition } from "./src/utils/test-manager";
-import { createOllamaClient, getOllamaHost } from "./src/llms/ollama";
+import { createOllamaClient, getOllamaHost, getOllamaModelOptions } from "./src/llms/ollama";
 import type { HumanEvalResult, TokenTimeSample } from "./src/utils/humaneval";
 import {
   ensureModelInstalled,
@@ -161,6 +161,7 @@ async function measureSample(
       { role: "user", content: prompt },
     ],
     stream: false,
+    options: getOllamaModelOptions(modelId),
   });
 
   // eval_count / eval_duration cover the whole generation, thinking and answer alike: Ollama
