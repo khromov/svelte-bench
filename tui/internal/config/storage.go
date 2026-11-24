@@ -59,6 +59,7 @@ func AllProviders() []Provider {
 		{Name: "Moonshot", EnvKey: "MOONSHOT_API_KEY"},
 		{Name: "Ollama (local)", EnvKey: OllamaEnvKey},
 		{Name: "Z.ai", EnvKey: "Z_AI_API_KEY"},
+		{Name: "Z.ai Coding Plan", EnvKey: "Z_AI_CODING_API_KEY"},
 	}
 	sort.SliceStable(providers, func(i, j int) bool {
 		return strings.ToLower(providers[i].Name) < strings.ToLower(providers[j].Name)

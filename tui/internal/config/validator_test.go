@@ -80,6 +80,27 @@ func TestZAIValidationUsesZAIModelsEndpoint(t *testing.T) {
 	}
 }
 
+func TestZAICodingValidationUsesCodingPlanModelsEndpoint(t *testing.T) {
+	const provider = "Z_AI_CODING_API_KEY"
+	original := http.DefaultTransport
+	t.Cleanup(func() { http.DefaultTransport = original })
+	http.DefaultTransport = roundTripFunc(func(r *http.Request) (*http.Response, error) {
+		if r.Method != http.MethodGet || r.URL.String() != "https://api.z.ai/api/coding/paas/v4/models" {
+			t.Errorf("unexpected request: %s %s", r.Method, r.URL)
+		}
+		if r.Header.Get("Authorization") != "Bearer coding-key" {
+			t.Error("missing Coding Plan key")
+		}
+		return response(http.StatusOK), nil
+	})
+	if !SupportsAPIKeyValidation(provider) {
+		t.Fatal("Coding Plan provider should support API key validation")
+	}
+	if err := ValidateAPIKey(provider, "coding-key"); err != nil {
+		t.Fatal(err)
+	}
+}
+
 func TestReflectionValidationUsesModelsEndpoint(t *testing.T) {
 	original := http.DefaultTransport
 	t.Cleanup(func() { http.DefaultTransport = original })

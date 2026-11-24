@@ -17,6 +17,7 @@ SvelteBench supports multiple LLM providers:
 - **Fireworks** - Fireworks-hosted models through its OpenAI-compatible API
 - **Ollama** - Run models locally
 - **Z.ai**
+- **Z.ai Coding Plan**
 - **Qwen** - QwenCloud Responses API
 - **Moonshot**
 - **xAI**
@@ -108,6 +109,9 @@ OLLAMA_HOST=http://127.0.0.1:11434
 
 # Z.ai (optional)
 Z_AI_API_KEY=your_z_ai_api_key_here
+
+# Z.ai Coding Plan (optional). Select Z.ai Coding Plan in the TUI or use DEBUG_PROVIDER=zai-coding.
+Z_AI_CODING_API_KEY=your_z_ai_coding_plan_api_key_here
 
 # Moonshot (optional)
 MOONSHOT_API_KEY=your_moonshot_api_key_here

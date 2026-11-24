@@ -97,8 +97,9 @@ export async function getLLMProvider(
       const { OllamaProvider } = await import("./ollama");
       return new OllamaProvider(actualModel);
     case "zai":
+    case "zai-coding":
       const { ZAIProvider } = await import("./zai");
-      return new ZAIProvider(actualModel);
+      return new ZAIProvider(actualModel, actualProvider.toLowerCase() === "zai-coding" ? "coding" : "standard");
     case "moonshot":
       const { MoonshotProvider } = await import("./moonshot");
       return new MoonshotProvider(actualModel);
@@ -128,7 +129,7 @@ export async function getLLMProvider(
   // Provider not found
   throw new Error(
     `Unknown LLM provider: ${actualProvider}. ` +
-    `Native providers: openai, anthropic, google, openrouter, fireworks, ollama, zai, moonshot, xai, meta, minimax, cursor, reflection, tinker, qwen.`
+    `Native providers: openai, anthropic, google, openrouter, fireworks, ollama, zai, zai-coding, moonshot, xai, meta, minimax, cursor, reflection, tinker, qwen.`
   );
 }
 
@@ -149,6 +150,7 @@ export async function getAllLLMProviders(): Promise<ProviderWithModel[]> {
     { name: "fireworks", displayName: "Fireworks" },
     { name: "ollama", displayName: "Ollama" },
     { name: "zai", displayName: "Z.ai" },
+    { name: "zai-coding", displayName: "Z.ai Coding Plan" },
     { name: "moonshot", displayName: "Moonshot AI" },
     { name: "xai", displayName: "xAI" },
     { name: "meta", displayName: "Meta" },

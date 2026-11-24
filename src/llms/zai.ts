@@ -5,21 +5,24 @@ import { withRetry } from "../utils/retry-wrapper";
 export class ZAIProvider implements LLMProvider {
   private apiKey: string;
   private modelId: string;
-  name = "Z.ai";
-  private readonly availableModels = [
-    "glm-4.5", // x
-    "glm-4.5-air", // x
-    "glm-4.5-x",
-    "glm-4.5-airx",
-    "glm-4.5-flash",
-    "glm-4-32b-0414-128k",
-    "glm-4.6",
-  ];
+  private readonly endpoint: string;
+  private readonly availableModels: string[];
+  readonly name: string;
 
-  constructor(modelId?: string) {
-    const apiKey = process.env.Z_AI_API_KEY;
+  constructor(modelId?: string, variant: "standard" | "coding" = "standard") {
+    const coding = variant === "coding";
+    this.name = coding ? "Z.ai Coding Plan" : "Z.ai";
+    this.endpoint = coding
+      ? "https://api.z.ai/api/coding/paas/v4/chat/completions"
+      : "https://open.bigmodel.cn/api/paas/v4/chat/completions";
+    this.availableModels = coding
+      ? ["glm-5.4", "glm-5.3", "glm-5.3-flash"]
+      : ["glm-4.5", "glm-4.5-air", "glm-4.5-x", "glm-4.5-airx", "glm-4.5-flash", "glm-4-32b-0414-128k", "glm-4.6"];
+
+    const envKey = coding ? "Z_AI_CODING_API_KEY" : "Z_AI_API_KEY";
+    const apiKey = process.env[envKey];
     if (!apiKey) {
-      throw new Error("Z_AI_API_KEY environment variable is required");
+      throw new Error(`${envKey} environment variable is required`);
     }
     this.apiKey = apiKey;
     this.modelId = modelId || this.availableModels[0];
@@ -33,7 +36,7 @@ export class ZAIProvider implements LLMProvider {
    * @returns The generated code
    */
   async generateCode(prompt: string, temperature?: number, contextContent?: string): Promise<string> {
-    console.log(`🤖 Generating code with Z.ai using model: ${this.modelId} (temp: ${temperature ?? "default"})...`);
+    console.log(`🤖 Generating code with ${this.name} using model: ${this.modelId} (temp: ${temperature ?? "default"})...`);
 
     const systemPrompt = contextContent ? DEFAULT_SYSTEM_PROMPT_WITH_CONTEXT : DEFAULT_SYSTEM_PROMPT;
 
@@ -81,7 +84,7 @@ export class ZAIProvider implements LLMProvider {
         ); // 2 minutes
 
         try {
-          const response = await fetch("https://open.bigmodel.cn/api/paas/v4/chat/completions", {
+          const response = await fetch(this.endpoint, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -99,7 +102,7 @@ export class ZAIProvider implements LLMProvider {
           });
           if (!response.ok || data?.error) {
             const detail = data?.error?.message || response.statusText;
-            const error = new Error(`Z.ai API HTTP ${response.status}${detail ? `: ${detail}` : ""}`);
+            const error = new Error(`${this.name} API HTTP ${response.status}${detail ? `: ${detail}` : ""}`);
             if (response.status >= 400 && response.status < 500 && response.status !== 429) {
               error.name = "NonRetryableError";
             }
@@ -108,7 +111,7 @@ export class ZAIProvider implements LLMProvider {
           const content = data.choices?.[0]?.message?.content;
 
           if (!content) {
-            throw new Error("Z.ai returned empty response");
+            throw new Error(`${this.name} returned empty response`);
           }
 
           return content;
@@ -117,7 +120,7 @@ export class ZAIProvider implements LLMProvider {
 
           // Check if it's an abort error (timeout)
           if (error instanceof Error && error.name === "AbortError") {
-            console.error(`Z.ai request timed out after 2 minutes for model: ${this.modelId}`);
+            console.error(`${this.name} request timed out after 2 minutes for model: ${this.modelId}`);
             throw new Error(`Request timed out after 2 minutes: ${this.modelId}`);
           }
 
@@ -130,7 +133,7 @@ export class ZAIProvider implements LLMProvider {
         maxDelayMs: 60000, // Max 1 minute between retries
         backoffFactor: 2,
         onRetry: (error, attempt) => {
-          console.warn(`⚠️  Z.ai retry attempt ${attempt}/10 for model ${this.modelId} after error: ${error.message}`);
+          console.warn(`⚠️  ${this.name} retry attempt ${attempt}/10 for model ${this.modelId} after error: ${error.message}`);
         },
       },
     ).catch((error) => {

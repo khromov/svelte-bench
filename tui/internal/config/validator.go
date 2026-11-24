@@ -44,6 +44,8 @@ func ValidateAPIKey(provider, apiKey string) error {
 		return validateBearerModels("https://api.moonshot.ai/v1/models", apiKey)
 	case "Z_AI_API_KEY":
 		return validateBearerModels("https://api.z.ai/api/paas/v4/models", apiKey)
+	case "Z_AI_CODING_API_KEY":
+		return validateBearerModels("https://api.z.ai/api/coding/paas/v4/models", apiKey)
 	case OllamaEnvKey:
 		return validateOllama(apiKey)
 	default:
@@ -58,7 +60,7 @@ func SupportsAPIKeyValidation(provider string) bool {
 	case "OPENAI_API_KEY", "ANTHROPIC_API_KEY", "GOOGLE_API_KEY", "OPENROUTER_API_KEY",
 		"GROQ_API_KEY", "DEEPSEEK_API_KEY", "XAI_API_KEY", "MISTRAL_API_KEY",
 		"COHERE_API_KEY", "FIREWORKS_API_KEY", "META_API_KEY", "MOONSHOT_API_KEY",
-		"Z_AI_API_KEY", "REFLECTION_API_KEY", "MINIMAX_API_KEY", OllamaEnvKey:
+		"Z_AI_API_KEY", "Z_AI_CODING_API_KEY", "REFLECTION_API_KEY", "MINIMAX_API_KEY", OllamaEnvKey:
 		return true
 	default:
 		return false

@@ -167,6 +167,33 @@ func TestZAIModelDiscoveryPropagatesNetworkErrors(t *testing.T) {
 	}
 }
 
+func TestZAICodingModelDiscoveryFiltersTheCatalog(t *testing.T) {
+	const provider = "Z_AI_CODING_API_KEY"
+	original := http.DefaultTransport
+	t.Cleanup(func() {
+		http.DefaultTransport = original
+		delete(modelCache, provider)
+		delete(cacheExpiry, provider)
+	})
+	http.DefaultTransport = modelRoundTripFunc(func(r *http.Request) (*http.Response, error) {
+		if r.Method != http.MethodGet || r.URL.String() != "https://api.z.ai/api/coding/paas/v4/models" {
+			t.Errorf("unexpected request: %s %s", r.Method, r.URL)
+		}
+		if r.Header.Get("Authorization") != "Bearer coding-key" {
+			t.Error("missing Coding Plan key")
+		}
+		body := `{"data":[{"id":"glm-5.2"},{"id":"glm-5.4"},{"id":"glm-5.3"},{"id":"glm-5.3-flash"}]}`
+		return &http.Response{StatusCode: http.StatusOK, Body: io.NopCloser(strings.NewReader(body))}, nil
+	})
+	models, err := FetchModels(provider, "coding-key")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(models) != 3 || models[0].ID != "glm-5.4" || models[1].ID != "glm-5.3-flash" || models[2].ID != "glm-5.3" {
+		t.Fatalf("unexpected Coding Plan catalog: %#v", models)
+	}
+}
+
 func TestModelsSortNewestFirstWithReverseAlphabeticalFallback(t *testing.T) {
 	newer := time.Date(2026, 10, 12, 0, 0, 0, 0, time.UTC)
 	older := newer.Add(-24 * time.Hour)

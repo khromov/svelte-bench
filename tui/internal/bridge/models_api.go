@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"slices"
 	"sort"
 	"strings"
 	"time"
@@ -66,6 +67,8 @@ func FetchModels(providerKey, apiKey string) ([]Model, error) {
 		models, err = fetchFireworksModels(apiKey)
 	case "Z_AI_API_KEY":
 		models, err = fetchZAIModels(apiKey)
+	case "Z_AI_CODING_API_KEY":
+		models, err = fetchZAICodingModels(apiKey)
 	case "MINIMAX_API_KEY":
 		models, err = fetchOpenAICompatibleModels("https://api.minimax.io/v1/models", apiKey)
 	case "META_API_KEY":
@@ -1008,6 +1011,26 @@ func fetchZAIModels(apiKey string) ([]Model, error) {
 	}
 	for i := range models {
 		models[i].Description = getZAIModelDescription(models[i].ID)
+	}
+	return models, nil
+}
+
+func fetchZAICodingModels(apiKey string) ([]Model, error) {
+	models, err := fetchOpenAICompatibleModels("https://api.z.ai/api/coding/paas/v4/models", apiKey)
+	if err != nil {
+		return nil, err
+	}
+	// The Coding Plan catalog also lists models outside the documented plan.
+	models = slices.DeleteFunc(models, func(model Model) bool {
+		switch model.ID {
+		case "glm-5.4", "glm-5.3", "glm-5.3-flash":
+			return false
+		default:
+			return true
+		}
+	})
+	if len(models) == 0 {
+		return nil, fmt.Errorf("no Z.ai Coding Plan models returned")
 	}
 	return models, nil
 }
