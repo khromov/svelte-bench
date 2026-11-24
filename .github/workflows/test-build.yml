@@ -30,7 +30,17 @@ jobs:
       - name: Install deps
         run: pnpm install --frozen-lockfile --prefer-offline
 
+      - name: Type checks
+        run: pnpm check && pnpm check:site
+
+      - name: Renderer tests
+        run: pnpm test:site
+
       - name: Test build
         env:
           NODE_ENV: production
+          BASE_PATH: /svelte-bench
         run: pnpm run build
+
+      - name: Verify static artifact
+        run: pnpm verify:site
