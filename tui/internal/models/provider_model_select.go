@@ -94,7 +94,7 @@ func NewProviderModelSelectFromExecution(state *SharedState) ProviderModelSelect
 	m := NewProviderModelSelectModel(state)
 	m.exitOnBack = false
 	for i, provider := range m.providers {
-		if provider.EnvKey == state.ProviderKey {
+		if provider.Key() == state.ProviderKey {
 			m.selectedProvider = i
 			break
 		}
@@ -107,7 +107,7 @@ func NewModelSelectionModel(state *SharedState) ProviderModelSelectModel {
 	m := NewProviderModelSelectFromExecution(state)
 	m.step = 1
 	for i, provider := range m.providers {
-		if provider.EnvKey == state.ProviderKey {
+		if provider.Key() == state.ProviderKey {
 			m.selectedProvider = i
 			break
 		}
@@ -187,11 +187,11 @@ func (m ProviderModelSelectModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 				provider := m.providers[m.selectedProvider]
 				m.state.Provider = bridge.ConvertProviderNameToEnvKey(provider.Name)
-				m.state.ProviderKey = provider.EnvKey
-				if provider.RequiresAPIKey() && (provider.APIKey == "" || m.validationErrors[provider.EnvKey] != "") {
+				m.state.ProviderKey = provider.Key()
+				if provider.RequiresAPIKey() && (provider.APIKey == "" || m.validationErrors[provider.Key()] != "") {
 					return NewAPIKeyPromptModel(m.state, provider), nil
 				}
-				if m.validating && config.SupportsAPIKeyValidation(provider.EnvKey) && !m.validated[provider.EnvKey] {
+				if m.validating && config.SupportsAPIKeyValidation(provider.Key()) && !m.validated[provider.Key()] {
 					return m, nil
 				}
 				// Keep the flow consistent whether the key was already configured or
@@ -362,9 +362,9 @@ func (m ProviderModelSelectModel) View() tea.View {
 		for i := startIdx; i < endIdx; i++ {
 			provider := m.providers[i]
 			status := ""
-			if m.validated[provider.EnvKey] {
+			if m.validated[provider.Key()] {
 				status = " ✓"
-			} else if m.validationErrors[provider.EnvKey] != "" {
+			} else if m.validationErrors[provider.Key()] != "" {
 				status = " !"
 			} else if provider.APIKey != "" && m.validating {
 				status = " …"
@@ -490,7 +490,7 @@ func (m ProviderModelSelectModel) selectedModelIDs() []string {
 
 func (m ProviderModelSelectModel) startBenchmark(modelIDs []string) (tea.Model, tea.Cmd) {
 	m.state.Provider = bridge.ConvertProviderNameToEnvKey(m.providers[m.selectedProvider].Name)
-	m.state.ProviderKey = m.providers[m.selectedProvider].EnvKey
+	m.state.ProviderKey = m.providers[m.selectedProvider].Key()
 	m.state.Model = strings.Join(modelIDs, ",")
 
 	if m.state.Provider == "ollama" {
@@ -563,7 +563,7 @@ func (m ProviderModelSelectModel) loadModels(provider config.Provider) tea.Cmd {
 	m.loadingStart = time.Now()
 
 	return func() tea.Msg {
-		models, err := bridge.FetchModels(provider.EnvKey, provider.APIKey)
+		models, err := bridge.FetchModels(provider.Key(), provider.APIKey)
 		return modelsLoadedMsg{models: models, err: err}
 	}
 }
@@ -579,13 +579,13 @@ func (m ProviderModelSelectModel) validateConfiguredProviders() tea.Cmd {
 		results := make(chan result, len(m.providers))
 		var wg sync.WaitGroup
 		for _, provider := range m.providers {
-			if provider.APIKey == "" || !config.SupportsAPIKeyValidation(provider.EnvKey) {
+			if provider.APIKey == "" || !config.SupportsAPIKeyValidation(provider.Key()) {
 				continue
 			}
 			wg.Add(1)
 			go func(provider config.Provider) {
 				defer wg.Done()
-				results <- result{key: provider.EnvKey, err: config.ValidateAPIKey(provider.EnvKey, provider.APIKey)}
+				results <- result{key: provider.Key(), err: config.ValidateAPIKey(provider.Key(), provider.APIKey)}
 			}(provider)
 		}
 		wg.Wait()

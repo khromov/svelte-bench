@@ -126,7 +126,9 @@ async function runBenchmark() {
         const provider = await getLLMProvider(debugProvider, modelId);
         selectedProviderModels.push({
           provider,
-          name: debugProvider.charAt(0).toUpperCase() + debugProvider.slice(1),
+          name: debugProvider.toLowerCase() === "zai-coding"
+            ? provider.name
+            : debugProvider.charAt(0).toUpperCase() + debugProvider.slice(1),
           modelId,
         });
       }

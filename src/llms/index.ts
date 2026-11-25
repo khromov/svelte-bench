@@ -150,7 +150,7 @@ export async function getAllLLMProviders(): Promise<ProviderWithModel[]> {
     { name: "fireworks", displayName: "Fireworks" },
     { name: "ollama", displayName: "Ollama" },
     { name: "zai", displayName: "Z.ai" },
-    { name: "zai-coding", displayName: "Z.ai Coding Plan" },
+    { name: "zai-coding", displayName: "Z.ai (Coding Plan)" },
     { name: "moonshot", displayName: "Moonshot AI" },
     { name: "xai", displayName: "xAI" },
     { name: "meta", displayName: "Meta" },

@@ -7,6 +7,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"svelte-bench/tui/internal/config"
 )
 
 func TestOpenRouterModelParsingIncludesCatalogDate(t *testing.T) {
@@ -168,7 +170,7 @@ func TestZAIModelDiscoveryPropagatesNetworkErrors(t *testing.T) {
 }
 
 func TestZAICodingModelDiscoveryFiltersTheCatalog(t *testing.T) {
-	const provider = "Z_AI_CODING_API_KEY"
+	const provider = config.ZAICodingProviderKey
 	original := http.DefaultTransport
 	t.Cleanup(func() {
 		http.DefaultTransport = original

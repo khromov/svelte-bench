@@ -66,7 +66,7 @@ func (m APIKeyPromptModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.error = "API key cannot be empty"
 				return m, nil
 			}
-			if config.SupportsAPIKeyValidation(m.provider.EnvKey) {
+			if config.SupportsAPIKeyValidation(m.provider.Key()) {
 				m.validating = true
 				m.error = ""
 				return m, m.validateKey(key)
@@ -120,7 +120,7 @@ type apiKeyValidatedMsg struct {
 
 func (m APIKeyPromptModel) validateKey(key string) tea.Cmd {
 	return func() tea.Msg {
-		return apiKeyValidatedMsg{key: key, err: config.ValidateAPIKey(m.provider.EnvKey, key)}
+		return apiKeyValidatedMsg{key: key, err: config.ValidateAPIKey(m.provider.Key(), key)}
 	}
 }
 

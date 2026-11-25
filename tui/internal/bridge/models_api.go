@@ -10,6 +10,8 @@ import (
 	"strings"
 	"time"
 
+	"svelte-bench/tui/internal/config"
+
 	"github.com/sahilm/fuzzy"
 )
 
@@ -67,7 +69,7 @@ func FetchModels(providerKey, apiKey string) ([]Model, error) {
 		models, err = fetchFireworksModels(apiKey)
 	case "Z_AI_API_KEY":
 		models, err = fetchZAIModels(apiKey)
-	case "Z_AI_CODING_API_KEY":
+	case config.ZAICodingProviderKey:
 		models, err = fetchZAICodingModels(apiKey)
 	case "MINIMAX_API_KEY":
 		models, err = fetchOpenAICompatibleModels("https://api.minimax.io/v1/models", apiKey)
@@ -1030,7 +1032,7 @@ func fetchZAICodingModels(apiKey string) ([]Model, error) {
 		}
 	})
 	if len(models) == 0 {
-		return nil, fmt.Errorf("no Z.ai Coding Plan models returned")
+		return nil, fmt.Errorf("no Z.ai (Coding Plan) models returned")
 	}
 	return models, nil
 }

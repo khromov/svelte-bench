@@ -25,7 +25,6 @@ type APIKeyConfigModel struct {
 	selectedIndex    int
 	editing          bool
 	input            components.MaskedInput
-	editingProvider  string
 	validating       bool
 	validationStart  time.Time
 	validationResult string
@@ -83,7 +82,7 @@ func (m APIKeyConfigModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					// Start validation
 					m.validating = true
 					m.validationStart = time.Now()
-					return m, m.validateKey(m.editingProvider, key)
+					return m, m.validateKey(m.providers[m.selectedIndex], key)
 				}
 				m.editing = false
 				m.input.Blur()
@@ -116,7 +115,6 @@ func (m APIKeyConfigModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "enter":
 			// Edit selected provider's key
 			m.editing = true
-			m.editingProvider = m.providers[m.selectedIndex].EnvKey
 			m.input.SetValue(m.providers[m.selectedIndex].APIKey)
 			m.input.Focus()
 			m.validationResult = ""
@@ -136,7 +134,11 @@ func (m APIKeyConfigModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if msg.success {
 			m.validationResult = "VALID"
 			// Save the key
-			m.providers[m.selectedIndex].APIKey = m.input.Value()
+			for i := range m.providers {
+				if m.providers[i].EnvKey == msg.provider {
+					m.providers[i].APIKey = m.input.Value()
+				}
+			}
 			m.state.Config.APIKeys[msg.provider] = m.input.Value()
 			m.editing = false
 			m.input.Blur()
@@ -250,18 +252,18 @@ func (m APIKeyConfigModel) View() tea.View {
 	return newView(content)
 }
 
-func (m APIKeyConfigModel) validateKey(provider, key string) tea.Cmd {
+func (m APIKeyConfigModel) validateKey(provider config.Provider, key string) tea.Cmd {
 	return func() tea.Msg {
-		err := config.ValidateAPIKey(provider, key)
+		err := config.ValidateAPIKey(provider.Key(), key)
 		if err != nil {
 			return validationMsg{
-				provider: provider,
+				provider: provider.EnvKey,
 				success:  false,
 				error:    redactAPIKey(err.Error(), key),
 			}
 		}
 		return validationMsg{
-			provider: provider,
+			provider: provider.EnvKey,
 			success:  true,
 		}
 	}

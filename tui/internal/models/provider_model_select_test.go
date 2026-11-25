@@ -68,6 +68,34 @@ func TestOpenRouterModelRowShowsCatalogDate(t *testing.T) {
 	}
 }
 
+func TestZAICodingPlanSharesCredentialsAndKeepsItsSelection(t *testing.T) {
+	state := &SharedState{
+		Config:                   &config.Config{APIKeys: map[string]string{"Z_AI_API_KEY": "shared-key"}},
+		ValidatedProviders:       map[string]bool{config.ZAICodingProviderKey: true},
+		ProviderValidationErrors: map[string]string{"Z_AI_API_KEY": "standard endpoint failed"},
+	}
+	model := NewProviderModelSelectModel(state)
+	for i, provider := range model.providers {
+		if provider.Name == "Z.ai (Coding Plan)" {
+			model.selectedProvider = i
+			break
+		}
+	}
+
+	updated, _ := model.Update(tea.KeyPressMsg{Code: tea.KeyEnter})
+	if _, ok := updated.(ExecutionModeModel); !ok {
+		t.Fatalf("Coding Plan should advance with the shared key, got %T", updated)
+	}
+	if state.Provider != "zai-coding" || state.ProviderKey != config.ZAICodingProviderKey {
+		t.Fatalf("unexpected Coding Plan selection: %q, %q", state.Provider, state.ProviderKey)
+	}
+	model = NewModelSelectionModel(state)
+	provider := model.providers[model.selectedProvider]
+	if provider.Name != "Z.ai (Coding Plan)" || provider.APIKey != "shared-key" {
+		t.Fatal("model selection should keep the Coding Plan provider and shared key")
+	}
+}
+
 func TestSelectingOllamaSkipsTheAPIKeyPrompt(t *testing.T) {
 	model := NewProviderModelSelectModel(&SharedState{Config: &config.Config{APIKeys: map[string]string{}}})
 	model.validating = false

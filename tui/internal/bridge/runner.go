@@ -341,7 +341,7 @@ func ConvertProviderNameToEnvKey(providerName string) string {
 		"Fireworks":                "fireworks",
 		"Moonshot":                 "moonshot",
 		"Z.ai":                     "zai",
-		"Z.ai Coding Plan":         "zai-coding",
+		"Z.ai (Coding Plan)":       "zai-coding",
 		"Meta":                     "meta",
 		"MiniMax":                  "minimax",
 		"Cursor":                   "cursor",

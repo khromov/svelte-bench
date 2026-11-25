@@ -11,7 +11,7 @@ export class ZAIProvider implements LLMProvider {
 
   constructor(modelId?: string, variant: "standard" | "coding" = "standard") {
     const coding = variant === "coding";
-    this.name = coding ? "Z.ai Coding Plan" : "Z.ai";
+    this.name = coding ? "Z.ai (Coding Plan)" : "Z.ai";
     this.endpoint = coding
       ? "https://api.z.ai/api/coding/paas/v4/chat/completions"
       : "https://open.bigmodel.cn/api/paas/v4/chat/completions";
@@ -19,10 +19,9 @@ export class ZAIProvider implements LLMProvider {
       ? ["glm-5.4", "glm-5.3", "glm-5.3-flash"]
       : ["glm-4.5", "glm-4.5-air", "glm-4.5-x", "glm-4.5-airx", "glm-4.5-flash", "glm-4-32b-0414-128k", "glm-4.6"];
 
-    const envKey = coding ? "Z_AI_CODING_API_KEY" : "Z_AI_API_KEY";
-    const apiKey = process.env[envKey];
+    const apiKey = process.env.Z_AI_API_KEY;
     if (!apiKey) {
-      throw new Error(`${envKey} environment variable is required`);
+      throw new Error("Z_AI_API_KEY environment variable is required");
     }
     this.apiKey = apiKey;
     this.modelId = modelId || this.availableModels[0];

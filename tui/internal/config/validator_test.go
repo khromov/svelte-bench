@@ -81,7 +81,7 @@ func TestZAIValidationUsesZAIModelsEndpoint(t *testing.T) {
 }
 
 func TestZAICodingValidationUsesCodingPlanModelsEndpoint(t *testing.T) {
-	const provider = "Z_AI_CODING_API_KEY"
+	const provider = ZAICodingProviderKey
 	original := http.DefaultTransport
 	t.Cleanup(func() { http.DefaultTransport = original })
 	http.DefaultTransport = roundTripFunc(func(r *http.Request) (*http.Response, error) {

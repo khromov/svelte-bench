@@ -24,13 +24,24 @@ type Provider struct {
 	Name   string
 	EnvKey string
 	APIKey string
+	key    string
 }
 
 // OllamaEnvKey identifies the Ollama provider. Ollama runs locally and needs
 // no API key, so its "key" is the host URL instead.
 const OllamaEnvKey = "OLLAMA_HOST"
 
+const ZAICodingProviderKey = "zai-coding"
+
 const defaultOllamaHost = "http://127.0.0.1:11434"
+
+// Key identifies the provider for selection, validation, and model discovery.
+func (p Provider) Key() string {
+	if p.key != "" {
+		return p.key
+	}
+	return p.EnvKey
+}
 
 // RequiresAPIKey reports whether the provider must have a key before it can be used.
 func (p Provider) RequiresAPIKey() bool {
@@ -59,7 +70,7 @@ func AllProviders() []Provider {
 		{Name: "Moonshot", EnvKey: "MOONSHOT_API_KEY"},
 		{Name: "Ollama (local)", EnvKey: OllamaEnvKey},
 		{Name: "Z.ai", EnvKey: "Z_AI_API_KEY"},
-		{Name: "Z.ai Coding Plan", EnvKey: "Z_AI_CODING_API_KEY"},
+		{Name: "Z.ai (Coding Plan)", EnvKey: "Z_AI_API_KEY", key: ZAICodingProviderKey},
 	}
 	sort.SliceStable(providers, func(i, j int) bool {
 		return strings.ToLower(providers[i].Name) < strings.ToLower(providers[j].Name)
