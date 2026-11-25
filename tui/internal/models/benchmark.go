@@ -27,6 +27,8 @@ type BenchmarkModel struct {
 	totalSamples  int
 	currentCount  int
 	providerError string
+	startedTests  bool
+	startupRetry  bridge.BenchmarkEvent
 	width         int
 	height        int
 	frame         int // For animations
@@ -406,6 +408,17 @@ func scoreColor(score float64) color.Color {
 
 func (m BenchmarkModel) renderActiveSummary() string {
 	label := "Preparing next test..."
+	switch {
+	case m.state.Error != "":
+		label = "Benchmark stopped"
+	case m.startupRetry.RetryAttempt > 0 && !m.startedTests:
+		label = fmt.Sprintf("Model validation retry %d • %ds backoff", m.startupRetry.RetryAttempt, m.startupRetry.RetryAfter)
+		if m.startupRetry.Error != "" {
+			label += " • " + m.startupRetry.Error
+		}
+	case !m.startedTests:
+		label = "Validating model access..."
+	}
 	running := make([]*TestResult, 0, len(m.testOrder))
 	for _, name := range m.testOrder {
 		test := m.tests[name]
@@ -444,6 +457,7 @@ func (m *BenchmarkModel) handleEvent(event bridge.BenchmarkEvent) {
 	key := modelTestKey(event.Model, event.Test)
 	switch event.Type {
 	case bridge.EventTestStart:
+		m.startedTests = true
 		if test, ok := m.tests[event.Test]; ok {
 			test.Status = StatusRunning
 			test.RetryAfter = 0
@@ -495,9 +509,11 @@ func (m *BenchmarkModel) handleEvent(event bridge.BenchmarkEvent) {
 				test.RetryAfter = event.RetryAfter
 				test.RetryAttempt = event.RetryAttempt
 			}
+		} else if !m.startedTests {
+			m.startupRetry = event
 		} else {
 			for _, test := range m.tests {
-				if test.Status == StatusRunning {
+				if test.Status == StatusRunning || test.Status == StatusRateLimit {
 					test.Status = StatusRateLimit
 					test.RetryAfter = event.RetryAfter
 					test.RetryAttempt = event.RetryAttempt

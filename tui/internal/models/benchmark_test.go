@@ -125,3 +125,29 @@ func TestBenchmarkKeepsProviderErrorVisibleAfterIncompleteRun(t *testing.T) {
 		t.Fatalf("expected both the final status and provider reason in the view, got %q", view)
 	}
 }
+
+func TestBenchmarkShowsRateLimitDuringValidation(t *testing.T) {
+	model := NewBenchmarkModel(&SharedState{Provider: "zai-coding", Model: "glm-5.4"})
+	if !strings.Contains(model.View().Content, "Validating model access") {
+		t.Fatal("startup should show that model access is being validated")
+	}
+
+	model.handleEvent(bridge.BenchmarkEvent{
+		Type:         bridge.EventRateLimit,
+		RetryAttempt: 2,
+		RetryAfter:   5,
+		Error:        "API HTTP 429: overloaded",
+	})
+	view := model.View().Content
+	if !strings.Contains(view, "Model validation retry 2") || !strings.Contains(view, "HTTP 429") {
+		t.Fatalf("the retry and its cause should be visible at 0%%, got %q", view)
+	}
+	if model.currentCount != 0 || model.tests["counter"].Status != StatusQueued {
+		t.Fatal("validation should leave the sample progress and test status unchanged")
+	}
+
+	model.handleEvent(bridge.BenchmarkEvent{Type: bridge.EventTestStart, Test: "counter"})
+	if strings.Contains(model.View().Content, "Model validation retry") {
+		t.Fatal("the validation retry should disappear when a sample starts")
+	}
+}

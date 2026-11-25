@@ -19,11 +19,11 @@ const DEFAULT_OPTIONS: Required<RetryOptions> = {
   onRetry: (error, attempt) => {
     console.warn(`⚠️  Retry attempt ${attempt} after error: ${error.message}`);
   },
-  onRateLimit: (_error, attempt, delayMs) => {
+  onRateLimit: (error, attempt, delayMs) => {
     if (isTUIMode()) {
       // Provider-specific retry wrappers do not know the benchmark category;
       // the TUI treats an unnamed event as applying to active categories.
-      emitRateLimit("", attempt, delayMs);
+      emitRateLimit("", attempt, delayMs, error);
     }
   },
   retryRateLimits: false,

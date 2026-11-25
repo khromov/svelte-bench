@@ -119,13 +119,14 @@ export function emitSampleProgress(
 /**
  * Emit rate limit event
  */
-export function emitRateLimit(testName: string, retryAttempt: number, retryDelayMs: number): void {
+export function emitRateLimit(testName: string, retryAttempt: number, retryDelayMs: number, error?: Error): void {
   emitTUIEvent({
     type: 'rate_limit',
     test: testName,
     retryAttempt,
     retryAfter: Math.ceil(retryDelayMs / 1000),
     retryDelayMs,
+    error: error && formatErrorMessage(error),
   });
 }
 

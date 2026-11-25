@@ -6,11 +6,13 @@ export class ZAIProvider implements LLMProvider {
   private apiKey: string;
   private modelId: string;
   private readonly endpoint: string;
+  private readonly maxAttempts: number;
   private readonly availableModels: string[];
   readonly name: string;
 
   constructor(modelId?: string, variant: "standard" | "coding" = "standard") {
     const coding = variant === "coding";
+    this.maxAttempts = coding ? 3 : 10;
     this.name = coding ? "Z.ai (Coding Plan)" : "Z.ai";
     this.endpoint = coding
       ? "https://api.z.ai/api/coding/paas/v4/chat/completions"
@@ -93,8 +95,6 @@ export class ZAIProvider implements LLMProvider {
             signal: controller.signal,
           });
 
-          clearTimeout(timeoutId);
-
           const data = await response.json().catch((error) => {
             if (response.ok) throw error;
             return null;
@@ -115,8 +115,6 @@ export class ZAIProvider implements LLMProvider {
 
           return content;
         } catch (error) {
-          clearTimeout(timeoutId);
-
           // Check if it's an abort error (timeout)
           if (error instanceof Error && error.name === "AbortError") {
             console.error(`${this.name} request timed out after 2 minutes for model: ${this.modelId}`);
@@ -124,15 +122,17 @@ export class ZAIProvider implements LLMProvider {
           }
 
           throw error;
+        } finally {
+          clearTimeout(timeoutId);
         }
       },
       {
-        maxAttempts: 10,
+        maxAttempts: this.maxAttempts,
         initialDelayMs: 2000, // Start with 2 seconds for z.ai
         maxDelayMs: 60000, // Max 1 minute between retries
         backoffFactor: 2,
         onRetry: (error, attempt) => {
-          console.warn(`⚠️  ${this.name} retry attempt ${attempt}/10 for model ${this.modelId} after error: ${error.message}`);
+          console.warn(`⚠️  ${this.name} retry attempt ${attempt}/${this.maxAttempts} for model ${this.modelId} after error: ${error.message}`);
         },
       },
     ).catch((error) => {
